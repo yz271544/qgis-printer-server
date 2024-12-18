@@ -18,65 +18,27 @@ private:
     std::shared_ptr<oatpp::network::Server> server;
 
 public:
-    void Init() override {
-        // 初始化Oatpp相关环境等，比如初始化一些组件注册等
-        oatpp::Environment::init();
-    }
+    WebStarter();
 
-    void Setup() override {
-        // 设置路由、中间件等相关配置
-        auto router = oatpp::web::server::HttpRouter::createShared();
-        // 这里可以添加具体的路由处理逻辑，比如：
-        // router->route("GET", "/", [](const oatpp::web::server::HttpRequestPtr& request) {
-        //     return oatpp::web::server::HttpResponse::createShared()->writeBody("Hello, Oatpp!");
-        // });
+    ~WebStarter();
 
-        // 路由 GET - "/hello" 请求到处理程序
-        router->route("GET", "/hello", std::make_shared<Handler>());
+    void Init() override;
 
-        // 创建 HTTP 连接处理程序
-        auto connectionHandler = oatpp::web::server::HttpConnectionHandler::createShared(router);
+    void Setup() override;
 
-        // 创建 TCP 连接提供者
-        auto connectionProvider = oatpp::network::tcp::server::ConnectionProvider::createShared({"localhost", 8080, oatpp::network::Address::IP_4});
+    void Start() override;
 
-        // 创建服务器，它接受提供的 TCP 连接并将其传递给 HTTP 连接处理程序
-        server = oatpp::network::Server::createShared(connectionProvider, connectionHandler);
+    void Stop() override;
 
-        // 打印服务器端口
-        OATPP_LOGi("MyApp", "Server running on port {}", static_cast<const char*>(connectionProvider->getProperty("port").getData()));
-    }
+    int PriorityGroup() override;
 
-    void Start() override {
-        // 启动Web服务器
-        server->run();
-    }
+    bool StartBlocking() override;
 
-    void Stop() override {
-        // 停止Web服务器
-        server->stop();
-        oatpp::Environment::destroy();
-    }
+    int Priority() override;
 
-    int PriorityGroup() override {
-        return AppGroup;
-    }
+    std::string GetName() override;
 
-    bool StartBlocking() override {
-        return true;  // 通常Web服务器启动会阻塞当前线程，可根据实际调整
-    }
-
-    int Priority() override {
-        return DEFAULT_PRIORITY;
-    }
-
-    std::string GetName() override {
-        return "WebStarter";
-    }
-
-    YAML::Node GetConfig() override {
-
-    }
+    YAML::Node GetConfig() override;
 };
 
 

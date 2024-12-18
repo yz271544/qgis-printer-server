@@ -12,11 +12,13 @@ int main() {
     ConfStarter conf_starter;
     WebStarter web_starter;
 
-    auto logger_starter = LoggerStarter::getInstance();
+    auto logger_starter = LoggerStarter::getInstance(spdlog::level::debug);
     auto logger = logger_starter->getLogger();
 
     logger->getLogger()->info("This is an info log");
     logger->getLogger()->error("This is an error log");
+
+    spdlog::debug("main debug test");
 
     auto starter_register = StarterRegister::getInstance();
 

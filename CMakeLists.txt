@@ -8,7 +8,6 @@ find_package(spdlog REQUIRED)
 find_package(oatpp REQUIRED)
 
 add_executable(cboot src/main.cpp
-        src/core/starter.cpp
         src/core/starter.h
         src/core/starterregister.cpp
         src/core/starterregister.h

@@ -12,17 +12,12 @@
 // 封装日志操作的Logger类
 class Logger {
 public:
-    void setLevel(spdlog::level::level_enum level) {
-        logger_->set_level(level);
-    }
 
-    void addSink(std::shared_ptr<spdlog::sinks::sink> sink) {
-        logger_->sinks().push_back(sink);
-    }
+    void setLevel(spdlog::level::level_enum level);
 
-    std::shared_ptr<spdlog::logger> getLogger() const {
-        return logger_;
-    }
+    void addSink(const std::shared_ptr<spdlog::sinks::sink>& sink);
+
+    [[nodiscard]] std::shared_ptr<spdlog::logger> getLogger() const;
 
 private:
     std::shared_ptr<spdlog::logger> logger_ = spdlog::stdout_color_mt("console");
@@ -32,31 +27,17 @@ private:
 class LoggerStarter {
 public:
     // 获取单例实例的方法
-    static std::shared_ptr<LoggerStarter> getInstance() {
-        static std::shared_ptr<LoggerStarter> instance(new LoggerStarter());
-        return instance;
-    }
+    static std::shared_ptr<LoggerStarter> getInstance(spdlog::level::level_enum level);
 
     // 获取内部封装的Logger对象的方法
-    std::shared_ptr<Logger> getLogger() {
-        return logger_;
-    }
+    std::shared_ptr<Logger> getLogger();
 
-    void setLevel(spdlog::level::level_enum level) {
-        logger_->setLevel(level);
-    }
+    void setLevel(spdlog::level::level_enum level);
 
-    void addFileSink(const std::string& filename) {
-        auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(filename);
-        logger_->addSink(file_sink);
-    }
+    void addFileSink(const std::string& filename);
 
 private:
-    LoggerStarter() {
-        logger_ = std::make_shared<Logger>();
-        // 可以在这里读取配置文件，设置默认的日志级别等
-        logger_->setLevel(spdlog::level::info);
-    }
+    explicit LoggerStarter(spdlog::level::level_enum level);
 
     std::shared_ptr<Logger> logger_;
 };

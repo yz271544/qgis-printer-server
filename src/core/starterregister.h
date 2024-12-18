@@ -17,36 +17,24 @@ private:
     std::vector<Starter*> blockingStarters;
     std::unordered_map<std::string, Starter*> allStarters;
     static StarterRegister* instance;
-    StarterRegister() {}
+    StarterRegister() = default;
 
 public:
     static StarterRegister* getInstance() {
         if (instance == nullptr) {
             instance = new StarterRegister();
+            instance->nonBlockingStarters = std::vector<Starter*>();
+            instance->blockingStarters = std::vector<Starter*>();
+            instance->allStarters = std::unordered_map<std::string, Starter*>();
         }
         return instance;
     }
 
-    std::vector<Starter*> AllStarters() {
-        std::vector<Starter*> starters;
-        starters.reserve(nonBlockingStarters.size() + blockingStarters.size());
-        starters.insert(starters.end(), nonBlockingStarters.begin(), nonBlockingStarters.end());
-        starters.insert(starters.end(), blockingStarters.begin(), blockingStarters.end());
-        return starters;
-    }
+    std::vector<Starter*> AllStarters();
 
-    void Register(Starter* starter) {
-        if (starter->StartBlocking()) {
-            blockingStarters.push_back(starter);
-        } else {
-            nonBlockingStarters.push_back(starter);
-        }
-        allStarters[starter->GetName()] = starter;
-    }
+    void Register(Starter* starter);
 
-    Starter* get_starter(const std::string& name) {
-        return allStarters[name];
-    }
+    Starter* get_starter(const std::string& name);
 };
 
 std::vector<Starter*> SortStarters();

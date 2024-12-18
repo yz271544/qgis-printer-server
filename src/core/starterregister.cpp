@@ -36,3 +36,24 @@ std::vector<Starter*> SortStarters() {
     std::sort(starters.begin(), starters.end(), cmp);
     return starters;
 }
+
+std::vector<Starter*> StarterRegister::AllStarters() {
+    std::vector<Starter*> starters;
+    starters.reserve(nonBlockingStarters.size() + blockingStarters.size());
+    starters.insert(starters.end(), nonBlockingStarters.begin(), nonBlockingStarters.end());
+    starters.insert(starters.end(), blockingStarters.begin(), blockingStarters.end());
+    return starters;
+}
+
+void StarterRegister::Register(Starter* starter) {
+    if (starter->StartBlocking()) {
+        blockingStarters.push_back(starter);
+    } else {
+        nonBlockingStarters.push_back(starter);
+    }
+    allStarters[starter->GetName()] = starter;
+}
+
+Starter* StarterRegister::get_starter(const std::string& name) {
+    return allStarters[name];
+}

@@ -21,8 +21,6 @@ enum PriorityGroup {
     AppGroup = 10
 };
 
-
-
 // 抽象的Starter基类，定义相关接口
 class Starter {
 public:
