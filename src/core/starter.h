@@ -33,6 +33,8 @@ public:
     virtual int Priority() = 0;
     virtual std::string GetName() = 0;
     virtual YAML::Node GetConfig() = 0;
+    // 添加获取启动器实例的抽象方法，方便后续在其他启动器中查找特定启动器实例
+    virtual Starter* GetInstance() = 0;
 };
 
 

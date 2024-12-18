@@ -83,3 +83,8 @@ std::string ConfStarter::GetName() {
 YAML::Node ConfStarter::GetConfig() {
     return config;
 }
+
+// 实现Starter基类中获取启动器实例的抽象方法
+Starter* ConfStarter::GetInstance() {
+    return getInstance();
+}

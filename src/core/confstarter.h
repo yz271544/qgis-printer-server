@@ -23,6 +23,14 @@ public:
     // 析构函数，用于释放相关资源，目前示例中暂未涉及复杂资源释放，可按需完善
     ~ConfStarter();
 
+    Starter* GetInstance() override;
+
+    // 获取单例实例的静态方法
+    static ConfStarter* getInstance() {
+        static ConfStarter instance;
+        return &instance;
+    }
+
     // 初始化方法，从指定路径加载配置文件，若加载失败会输出错误信息
     void Init() override;
 
@@ -49,6 +57,7 @@ public:
 
     // 获取已加载并解析的配置内容，外部模块可以通过此方法获取配置信息用于后续操作
     YAML::Node GetConfig() override;
+
 
 };
 

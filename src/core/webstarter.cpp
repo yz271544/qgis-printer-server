@@ -6,7 +6,9 @@
 
 #include <spdlog/spdlog.h>
 
+#include "confstarter.h"
 #include "starter.h"
+#include "starterregister.h"
 #include "handler/hellohandler.h"
 #include "oatpp/web/server/HttpConnectionHandler.hpp"
 #include "oatpp/network/tcp/server/ConnectionProvider.hpp"
@@ -20,12 +22,36 @@ WebStarter::WebStarter() {}
 
 WebStarter::~WebStarter() {}
 
+Starter* WebStarter::GetInstance() {
+    return this;
+}
 
 void WebStarter::Init() {
     SPDLOG_DEBUG("WebStarter Init start");
     SPDLOG_INFO("WebStarter Init start");
+
+    // 先查找ConfStarter实例，获取配置信息
+    ConfStarter* confStarter = dynamic_cast<ConfStarter*>(StarterRegister::getInstance()->get_starter("ConfStarter"));
+    if (confStarter) {
+        YAML::Node configOfStart = confStarter->GetConfig();
+        this->config = std::make_shared<YAML::Node>(configOfStart);
+        YAML::Node * values = this->config.get();
+
+        // 根据获取到的配置信息来初始化Web相关配置，比如端口号、路由等设置
+        std::string app_name = (*values)["app"]["name"].as<std::string>();
+        int webPort = (*values)["web"]["port"].as<int>();  // 假设默认端口8080，如果配置中没有指定
+        std::string webRoutePrefix = (*values)["web"]["route_prefix"].as<std::string>();  // 假设默认路由前缀为 /
+        // 这里可以添加更多根据配置初始化Web相关的代码，比如加载特定的中间件等
+
+        std::cout << "APP name:" << app_name << " WebStarter Init with port: " << webPort << ", route prefix: " << webRoutePrefix << std::endl;
+    } else {
+        std::cerr << "Could not find ConfStarter instance to get config for WebStarter." << std::endl;
+    }
+
     // 初始化Oatpp相关环境等，比如初始化一些组件注册等
     oatpp::Environment::init();
+
+
     SPDLOG_INFO("WebStarter Init end");
 }
 
@@ -40,7 +66,7 @@ void WebStarter::Setup() {
     // });
 
     // 路由 GET - "/hello" 请求到处理程序
-    router->route("GET", "/hello", std::make_shared<Handler>());
+    router->route("GET", "/hello", std::make_shared<HelloHandler>());
 
     // 创建 HTTP 连接处理程序
     auto connectionHandler = oatpp::web::server::HttpConnectionHandler::createShared(router);
@@ -90,5 +116,5 @@ std::string WebStarter::GetName() {
 }
 
 YAML::Node WebStarter::GetConfig() {
-
+    return *(config);
 }

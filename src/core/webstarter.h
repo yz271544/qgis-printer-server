@@ -16,11 +16,14 @@ class WebStarter : public Starter {
 private:
     std::shared_ptr<oatpp::web::server::HttpConnectionHandler> connectionHandler;
     std::shared_ptr<oatpp::network::Server> server;
+    std::shared_ptr<YAML::Node> config;
 
 public:
     WebStarter();
 
     ~WebStarter();
+
+    Starter* GetInstance() override;
 
     void Init() override;
 

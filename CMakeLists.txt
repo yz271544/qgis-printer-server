@@ -18,6 +18,7 @@ add_executable(cboot src/main.cpp
         src/core/webstarter.cpp
         src/core/webstarter.h
         src/core/handler/hellohandler.h
+        src/core/handler/hellohandler.cpp
 )
 
 target_link_libraries(cboot yaml-cpp spdlog::spdlog oatpp::oatpp)

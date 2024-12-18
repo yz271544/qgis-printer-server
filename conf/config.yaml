@@ -1,2 +1,5 @@
 app:
   name: cboot
+web:
+  port: 8080
+  route_prefix: /
