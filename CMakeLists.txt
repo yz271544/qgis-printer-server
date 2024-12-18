@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 find_package(yaml-cpp REQUIRED)
 find_package(spdlog REQUIRED)
+find_package(oatpp REQUIRED)
 
 add_executable(cboot src/main.cpp
         src/core/starter.cpp
@@ -15,6 +16,9 @@ add_executable(cboot src/main.cpp
         src/core/confstarter.h
         src/core/loggerstarter.cpp
         src/core/loggerstarter.h
+        src/core/webstarter.cpp
+        src/core/webstarter.h
+        src/core/handler/hellohandler.h
 )
 
-target_link_libraries(cboot yaml-cpp spdlog::spdlog)
+target_link_libraries(cboot yaml-cpp spdlog::spdlog oatpp::oatpp)
