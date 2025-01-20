@@ -1,11 +1,11 @@
 ﻿//
-// Created by etl on 24-12-18.
+// Created by Lyndon on 2025/1/20.
 //
 
-#ifndef WEBSTARTER_H
-#define WEBSTARTER_H
+#ifndef HOOKSTARTER_H
+#define HOOKSTARTER_H
 
-
+#include <csignal>
 #include "starter.h"
 #include "handler/hellohandler.h"
 #include "oatpp/web/server/HttpConnectionHandler.hpp"
@@ -15,6 +15,7 @@
 
 #include "confstarter.h"
 #include "starter.h"
+#include "startercontext.h"
 #include "starterregister.h"
 #include "handler/hellohandler.h"
 #include "oatpp/web/server/HttpConnectionHandler.hpp"
@@ -22,18 +23,17 @@
 #include "oatpp/network/Server.hpp"
 #include "oatpp/Environment.hpp"
 
-class WebStarter : public BaseStarter {
-private:
-    std::shared_ptr<oatpp::web::server::HttpConnectionHandler> connectionHandler;
-    std::shared_ptr<oatpp::network::Server> server;
-    std::shared_ptr<YAML::Node> config;
+
+class HookStarter : public BaseStarter {
 
 public:
-    WebStarter();
+    static void static_sig_handler(int sig);
 
-    ~WebStarter();
+    HookStarter(StarterRegister* starterRegister);
 
-    BaseStarter* GetInstance();
+    ~HookStarter();
+
+    Starter* GetInstance();
 
     void Init(StarterContext& context);
 
@@ -52,8 +52,16 @@ public:
     std::string GetName();
 
     YAML::Node GetConfig();
+
+    void sig_handler(StarterContext& context);
+
+private:
+    static HookStarter* instance;
+    StarterContext context;
+    StarterRegister* starterRegister;
+    std::vector<std::function<void(StarterContext&)>> callbacks;
 };
 
 
 
-#endif //WEBSTARTER_H
+#endif //HOOKSTARTER_H

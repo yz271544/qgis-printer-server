@@ -11,9 +11,13 @@ if(NOT CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif()
 
-if (MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE /wd4267)
-endif()
+#if (MSVC)
+#    target_compile_options(${PROJECT_NAME} PRIVATE /wd4267)
+#endif()
+
+# 生成 config.h 头文件
+message("CMAKE_HOME_DIRECTORY: ${CMAKE_HOME_DIRECTORY}")
+configure_file(${CMAKE_HOME_DIRECTORY}/src/config.h.in ${CMAKE_HOME_DIRECTORY}/src/config.h)
 
 # 使用 FetchContent 下载并构建 yaml-cpp
 FetchContent_Declare(
@@ -33,7 +37,39 @@ FetchContent_MakeAvailable(spdlog)
 
 find_package(oatpp REQUIRED)
 
-add_executable(${PROJECT_NAME} src/main.cpp)
+
+
+add_executable(${PROJECT_NAME} src/main.cpp
+        src/core/starter.h
+        src/core/starterregister.cpp
+        src/core/starterregister.h
+        src/core/confstarter.cpp
+        src/core/confstarter.h
+        src/core/loggerstarter.cpp
+        src/core/loggerstarter.h
+        src/core/webstarter.cpp
+        src/core/webstarter.h
+        src/core/handler/hellohandler.h
+        src/core/handler/hellohandler.cpp
+        src/core/hookstarter.cpp
+        src/core/hookstarter.h
+        src/core/error/egonexception.cpp
+        src/core/error/egonexception.h
+        src/core/startercontext.cpp
+        src/core/startercontext.h
+        src/core/bootapplication.cpp
+        src/core/bootapplication.h
+)
+
+# 添加自定义命令，在构建时复制 conf 目录（构建阶段）
+add_custom_command(
+        TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/conf
+        ${CMAKE_BINARY_DIR}/conf
+        COMMENT "Copying conf directory to build directory"
+)
+
 
 target_link_libraries(${PROJECT_NAME}
         PRIVATE

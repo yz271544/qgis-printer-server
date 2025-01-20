@@ -1,18 +1,10 @@
-//
+﻿//
 // Created by etl on 24-12-18.
 //
 
 #include "webstarter.h"
 
-#include <spdlog/spdlog.h>
 
-#include "confstarter.h"
-#include "starter.h"
-#include "starterregister.h"
-#include "handler/hellohandler.h"
-#include "oatpp/web/server/HttpConnectionHandler.hpp"
-#include "oatpp/network/tcp/server/ConnectionProvider.hpp"
-#include "oatpp/network/Server.hpp"
 
 //
 // Created by etl on 24-12-18.
@@ -22,11 +14,11 @@ WebStarter::WebStarter() {}
 
 WebStarter::~WebStarter() {}
 
-Starter* WebStarter::GetInstance() {
+BaseStarter* WebStarter::GetInstance() {
     return this;
 }
 
-void WebStarter::Init() {
+void WebStarter::Init(StarterContext& context) {
     SPDLOG_DEBUG("WebStarter Init start");
     SPDLOG_INFO("WebStarter Init start");
 
@@ -49,13 +41,16 @@ void WebStarter::Init() {
     }
 
     // 初始化Oatpp相关环境等，比如初始化一些组件注册等
+#if defined(_WIN32)
     oatpp::Environment::init();
-
+#else
+    oatpp::base::Environment::init();
+#endif
 
     SPDLOG_INFO("WebStarter Init end");
 }
 
-void WebStarter::Setup() {
+void WebStarter::Setup(StarterContext& context) {
     SPDLOG_DEBUG("WebStarter Setup start");
     SPDLOG_INFO("WebStarter Setup start");
     // 设置路由、中间件等相关配置
@@ -78,11 +73,12 @@ void WebStarter::Setup() {
     server = oatpp::network::Server::createShared(connectionProvider, connectionHandler);
 
     // 打印服务器端口
-    OATPP_LOGi("MyApp", "Server running on port {}", static_cast<const char*>(connectionProvider->getProperty("port").getData()));
+    // OATPP_LOGI("MyApp", "Server running on port {}", static_cast<const char*>(connectionProvider->getProperty("port").getData()));
+    // OATPP_LOGI("MyApp", "Server running on port {}", connectionProvider->getProperty("port").getData());
     SPDLOG_INFO("WebStarter Setup end");
 }
 
-void WebStarter::Start() {
+void WebStarter::Start(StarterContext& context) {
     SPDLOG_DEBUG("WebStarter Start start");
     SPDLOG_INFO("WebStarter Start start");
     // 启动Web服务器
@@ -90,12 +86,16 @@ void WebStarter::Start() {
     SPDLOG_INFO("WebStarter Start end");
 }
 
-void WebStarter::Stop() {
+void WebStarter::Stop(StarterContext& context) {
     SPDLOG_DEBUG("WebStarter Stop start");
     SPDLOG_INFO("WebStarter Stop start");
     // 停止Web服务器
     server->stop();
+#if defined(_WIN32)
     oatpp::Environment::destroy();
+#else
+    oatpp::base::Environment::destroy();
+#endif
     SPDLOG_INFO("WebStarter Stop end");
 }
 

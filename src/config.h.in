@@ -1,0 +1,43 @@
+﻿//
+// Created by Lyndon on 2024/12/17.
+//
+
+#ifndef CONFIG_H
+#define CONFIG_H
+#if _MSC_VER >= 1600
+#pragma execution_character_set("utf-8")
+#endif
+
+#if defined(_WIN32)
+#include <windows.h>
+#endif
+
+#include <string>
+#include <algorithm>
+#include <cstdlib>
+
+#if defined(_WIN32)
+// for Windows
+inline const char* CONF_FILE = "./conf/config.yaml";
+#elif defined(__linux__)
+// for Linux
+inline const char* CONF_FILE = "./conf/config.yaml";
+#endif
+
+// Function to get boolean value from environment variable
+inline bool getEnvBool(const char* envVarName, bool defaultValue = false) {
+    const char* envValue = getenv(envVarName);
+    if (envValue == nullptr) {
+        return defaultValue;
+    }
+    std::string value(envValue);
+    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) { return std::tolower(c); });
+    if (value == "true" || value == "1") {
+        return true;
+    } else if (value == "false" || value == "0") {
+        return false;
+    }
+    return defaultValue;
+}
+
+#endif //CONFIG_H

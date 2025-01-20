@@ -1,6 +1,8 @@
-#include <iostream>
+﻿#include <iostream>
 
+#include "core/bootapplication.h"
 #include "core/confstarter.h"
+#include "core/hookstarter.h"
 #include "core/loggerstarter.h"
 #include "core/starterregister.h"
 #include "core/webstarter.h"
@@ -40,23 +42,31 @@ int main() {
 
     spdlog::debug("main debug test");
 
+    StarterContext* starterContext = new StarterContext();
     auto starter_register = StarterRegister::getInstance();
+
+    BootApplication* boot = new BootApplication(false, *starterContext, starter_register);
+
+    HookStarter hook_starter(starter_register);
 
     starter_register->Register(&conf_starter);
     starter_register->Register(&web_starter);
+    starter_register->Register(&hook_starter);
 
     // 获取并排序所有的Starters
-    std::vector<Starter*> sortedStarters = SortStarters();
-    for (Starter* starter : sortedStarters) {
-        starter->Init();
-        starter->Setup();
-        starter->Start();
-    }
+    // std::vector<Starter*> sortedStarters = SortStarters();
+    // for (Starter* starter : sortedStarters) {
+    //     starter->Init();
+    //     starter->Setup();
+    //     starter->Start();
+    // }
 
     // 这里假设应用运行一段时间后，进行停止操作（实际可能根据具体逻辑来决定何时停止）
-    for (auto it = sortedStarters.rbegin(); it!= sortedStarters.rend(); ++it) {
-        (*it)->Stop();
-    }
+    // for (auto it = sortedStarters.rbegin(); it!= sortedStarters.rend(); ++it) {
+    //     (*it)->Stop();
+    // }
+
+    boot->Start();
 
     return 0;
 
