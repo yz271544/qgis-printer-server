@@ -1,24 +1,42 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.25)
 project(cboot)
 
-set(CMAKE_CXX_STANDARD 20)
+include(FetchContent)
 
-find_package(yaml-cpp REQUIRED)
-find_package(spdlog REQUIRED)
+set($ENV{proxy_http} "http://127.0.0.1:10808")
+set($ENV{proxys_http} "http://127.0.0.1:10808")
+
+if(NOT CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD 20)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+endif()
+
+if (MSVC)
+    target_compile_options(${PROJECT_NAME} PRIVATE /wd4267)
+endif()
+
+# 使用 FetchContent 下载并构建 yaml-cpp
+FetchContent_Declare(
+        yaml-cpp
+        GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+        GIT_TAG master
+)
+FetchContent_MakeAvailable(yaml-cpp)
+
+# 使用 FetchContent 下载并构建 spdlog
+FetchContent_Declare(
+        spdlog
+        GIT_REPOSITORY https://github.com/gabime/spdlog.git
+        GIT_TAG v1.9.2
+)
+FetchContent_MakeAvailable(spdlog)
+
 find_package(oatpp REQUIRED)
 
-add_executable(cboot src/main.cpp
-        src/core/starter.h
-        src/core/starterregister.cpp
-        src/core/starterregister.h
-        src/core/confstarter.cpp
-        src/core/confstarter.h
-        src/core/loggerstarter.cpp
-        src/core/loggerstarter.h
-        src/core/webstarter.cpp
-        src/core/webstarter.h
-        src/core/handler/hellohandler.h
-        src/core/handler/hellohandler.cpp
-)
+add_executable(${PROJECT_NAME} src/main.cpp)
 
-target_link_libraries(cboot yaml-cpp spdlog::spdlog oatpp::oatpp)
+target_link_libraries(${PROJECT_NAME}
+        PRIVATE
+        yaml-cpp
+        spdlog::spdlog
+        oatpp::oatpp)
