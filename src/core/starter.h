@@ -7,9 +7,13 @@
 #define STARTER_H
 
 #include <limits>
-
-#include "startercontext.h"
 #include "yaml-cpp/yaml.h"
+
+#include <stdexcept>
+
+#include "starter.h"
+#include "error/egonexception.h"
+
 
 const int INT_MAX_VALUE = std::numeric_limits<int>::max();
 const int DEFAULT_PRIORITY = 10000;
@@ -20,6 +24,30 @@ enum PriorityGroup {
     BasicResourcesGroup = 20,
     AppGroup = 10
 };
+
+
+class StarterContext {
+public:
+
+    StarterContext() = default;
+
+    // 获取配置
+    YAML::Node Props() const;
+
+    // 设置配置
+    void SetProps(const YAML::Node& conf);
+
+    // 重载 [] 运算符，用于访问上下文
+    YAML::Node operator[](const std::string& key) const;
+
+    // 添加键值对到上下文
+    void Add(const std::string& key, const YAML::Node& value);
+
+private:
+    static constexpr const char* KeyProps = "_conf"; // 配置键
+    std::map<std::string, YAML::Node> context_;       // 上下文存储
+};
+
 
 // 抽象的Starter基类，定义相关接口
 class Starter {
@@ -38,6 +66,21 @@ public:
     virtual Starter* GetInstance() = 0;
 };
 
+
+class BaseStarter : public Starter {
+public:
+    ~BaseStarter() override = default;
+    void Init(StarterContext& context) override {}
+    void Setup(StarterContext& context) override {}
+    void Start(StarterContext& context) override {}
+    void Stop(StarterContext& context) override {}
+    int PriorityGroup() override { return PriorityGroup::BasicResourcesGroup; }
+    bool StartBlocking() override { return false; }
+    int Priority() override { return DEFAULT_PRIORITY; }
+    virtual std::string GetName() = 0;
+    virtual YAML::Node GetConfig() = 0;
+    virtual Starter* GetInstance() = 0;
+};
 
 
 

@@ -2,7 +2,7 @@
 // Created by Lyndon on 2025/1/20.
 //
 
-#include "startercontext.h"
+#include "starter.h"
 
 
 // 获取配置

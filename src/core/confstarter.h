@@ -9,7 +9,6 @@
 #include <iostream>
 
 #include "starter.h"
-#include "startercontext.h"
 #include "yaml-cpp/yaml.h"
 
 class ConfStarter : public BaseStarter {

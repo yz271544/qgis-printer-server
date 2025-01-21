@@ -5,17 +5,15 @@
 #ifndef HOOKSTARTER_H
 #define HOOKSTARTER_H
 
+#include <spdlog/spdlog.h>
 #include <csignal>
 #include "starter.h"
 #include "handler/hellohandler.h"
 #include "oatpp/web/server/HttpConnectionHandler.hpp"
 #include "oatpp/network/tcp/server/ConnectionProvider.hpp"
 #include "oatpp/network/Server.hpp"
-#include <spdlog/spdlog.h>
-
 #include "confstarter.h"
 #include "starter.h"
-#include "startercontext.h"
 #include "starterregister.h"
 #include "handler/hellohandler.h"
 #include "oatpp/web/server/HttpConnectionHandler.hpp"

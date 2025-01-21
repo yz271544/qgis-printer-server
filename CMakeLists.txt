@@ -11,6 +11,13 @@ if(NOT CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif()
 
+if (MSVC)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ignore:4099")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /ignore:4099")
+    set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} /ignore:4099")
+    add_definitions(-D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING)
+    add_compile_options(/wd4267)
+endif()
 #if (MSVC)
 #    target_compile_options(${PROJECT_NAME} PRIVATE /wd4267)
 #endif()
@@ -41,6 +48,7 @@ find_package(oatpp REQUIRED)
 
 add_executable(${PROJECT_NAME} src/main.cpp
         src/core/starter.h
+        src/core/starter.cpp
         src/core/starterregister.cpp
         src/core/starterregister.h
         src/core/confstarter.cpp
@@ -55,8 +63,6 @@ add_executable(${PROJECT_NAME} src/main.cpp
         src/core/hookstarter.h
         src/core/error/egonexception.cpp
         src/core/error/egonexception.h
-        src/core/startercontext.cpp
-        src/core/startercontext.h
         src/core/bootapplication.cpp
         src/core/bootapplication.h
 )
