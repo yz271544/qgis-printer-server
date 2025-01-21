@@ -19,8 +19,9 @@
 #include "oatpp/web/server/HttpConnectionHandler.hpp"
 #include "oatpp/network/tcp/server/ConnectionProvider.hpp"
 #include "oatpp/network/Server.hpp"
+#if defined(_WIN32) && defined(_MSC_VER)
 #include "oatpp/Environment.hpp"
-
+#endif
 
 class HookStarter : public BaseStarter {
 
