@@ -45,3 +45,30 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --target install
 
 ```
+
+## windows
+
+### with vcpkg
+
+clone vcpkg to your computer
+
+```bash
+git clone https://github.com/microsoft/vcpkg.git
+
+# bootstrap vcpkg
+cd vcpkg
+.\bootstrap-vcpkg.bat
+
+# put the vcpkg to the path you like
+
+PATH=%PATH%;D:\iProject\cpath\vcpkg
+
+```
+
+cmake options
+
+```
+-DCMAKE_TOOLCHAIN_FILE=D:\iProject\cpath\vcpkg\scripts\buildsystems\vcpkg.cmake
+
+```
+

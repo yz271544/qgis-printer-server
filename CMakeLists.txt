@@ -45,7 +45,8 @@ FetchContent_MakeAvailable(spdlog)
 find_package(oatpp REQUIRED)
 find_package(oatpp-curl REQUIRED)
 
-
+message("oatpp_VERSION: ${oatpp_VERSION}")
+message("oatpp-curl_VERSION: ${oatpp_VERSION}")
 
 add_executable(${PROJECT_NAME} src/main.cpp
         src/core/starter.h
@@ -67,6 +68,14 @@ add_executable(${PROJECT_NAME} src/main.cpp
         src/core/bootapplication.cpp
         src/core/bootapplication.h
 )
+
+# 获取 oatpp 的版本号
+if(${oatpp_VERSION} VERSION_LESS "1.4.0")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE OATPP_VERSION_LESS_1_4_0)
+else()
+    target_compile_definitions(${PROJECT_NAME} PRIVATE OATPP_VERSION_GREATER_EQUAL_1_4_0)
+endif()
+
 
 # 添加自定义命令，在构建时复制 conf 目录（构建阶段）
 add_custom_command(
