@@ -21,7 +21,7 @@
 #include "oatpp/network/tcp/server/ConnectionProvider.hpp"
 #include "oatpp/network/Server.hpp"
 #if defined(_WIN32) && defined(_MSC_VER)
-#include "oatpp/Environment.hpp"
+#include "oatpp/core/base/Environment.hpp"
 #endif
 
 class WebStarter : public BaseStarter {

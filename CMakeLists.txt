@@ -43,6 +43,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(spdlog)
 
 find_package(oatpp REQUIRED)
+find_package(oatpp-curl REQUIRED)
 
 
 
