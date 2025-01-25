@@ -42,6 +42,10 @@ void WebStarter::Init(StarterContext& context) {
 
     // 初始化Oatpp相关环境等，比如初始化一些组件注册等
 #if defined(_WIN32) && defined(_MSC_VER)
+    oatpp::Environment::init();
+#elif defined(__linux__) || defined(__APPLE__)
+    oatpp::Environment::init();
+#else
     oatpp::base::Environment::init();
 #else
     oatpp::Environment::init();
@@ -92,6 +96,10 @@ void WebStarter::Stop(StarterContext& context) {
     // 停止Web服务器
     server->stop();
 #if defined(_WIN32) && defined(_MSC_VER)
+    oatpp::Environment::destroy();
+#elif defined(__linux__) || defined(__APPLE__)
+    oatpp::Environment::destroy();
+#else
     oatpp::base::Environment::destroy();
 #else
     oatpp::Environment::destroy();
