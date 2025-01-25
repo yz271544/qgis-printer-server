@@ -1,0 +1,42 @@
+file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.h *.cpp)
+set(SOURCES ${SOURCES})
+message("SOURCES: ${SOURCES}")
+
+add_executable(${PROJECT_NAME} ${SOURCES})
+add_library(${PROJECT_NAME}_lib STATIC ${SOURCES})
+
+
+# 获取 oatpp 的版本号
+if(${oatpp_VERSION} VERSION_LESS "1.4.0")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE OATPP_VERSION_LESS_1_4_0)
+    target_compile_definitions(${PROJECT_NAME}_lib PRIVATE OATPP_VERSION_LESS_1_4_0)
+else()
+    target_compile_definitions(${PROJECT_NAME} PRIVATE OATPP_VERSION_GREATER_EQUAL_1_4_0)
+    target_compile_definitions(${PROJECT_NAME}_lib PRIVATE OATPP_VERSION_GREATER_EQUAL_1_4_0)
+endif()
+
+
+# 添加自定义命令，在构建时复制 conf 目录（构建阶段）
+add_custom_command(
+        TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/conf
+        ${CMAKE_BINARY_DIR}/src/conf
+        COMMENT "Copying conf directory to build directory"
+)
+
+target_include_directories(${PROJECT_NAME} PRIVATE ${yaml-cpp_SOURCE_DIR}/include ${spdlog_SOURCE_DIR}/include ${oatpp_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME}_lib PRIVATE ${yaml-cpp_SOURCE_DIR}/include ${spdlog_SOURCE_DIR}/include ${oatpp_INCLUDE_DIRS})
+
+
+target_link_libraries(${PROJECT_NAME}
+        PRIVATE
+        yaml-cpp
+        spdlog::spdlog
+        oatpp::oatpp)
+
+target_link_libraries(${PROJECT_NAME}_lib
+        PRIVATE
+        yaml-cpp
+        spdlog::spdlog
+        oatpp::oatpp)

@@ -48,47 +48,8 @@ find_package(oatpp-curl REQUIRED)
 message("oatpp_VERSION: ${oatpp_VERSION}")
 message("oatpp-curl_VERSION: ${oatpp_VERSION}")
 
-add_executable(${PROJECT_NAME} src/main.cpp
-        src/core/starter.h
-        src/core/starter.cpp
-        src/core/starterregister.cpp
-        src/core/starterregister.h
-        src/core/confstarter.cpp
-        src/core/confstarter.h
-        src/core/loggerstarter.cpp
-        src/core/loggerstarter.h
-        src/core/webstarter.cpp
-        src/core/webstarter.h
-        src/core/handler/hellohandler.h
-        src/core/handler/hellohandler.cpp
-        src/core/hookstarter.cpp
-        src/core/hookstarter.h
-        src/core/error/egonexception.cpp
-        src/core/error/egonexception.h
-        src/core/bootapplication.cpp
-        src/core/bootapplication.h
-)
+include_directories(src)
+add_subdirectory(src)
+add_subdirectory(lib/googletest)
+add_subdirectory(tests)
 
-# 获取 oatpp 的版本号
-if(${oatpp_VERSION} VERSION_LESS "1.4.0")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE OATPP_VERSION_LESS_1_4_0)
-else()
-    target_compile_definitions(${PROJECT_NAME} PRIVATE OATPP_VERSION_GREATER_EQUAL_1_4_0)
-endif()
-
-
-# 添加自定义命令，在构建时复制 conf 目录（构建阶段）
-add_custom_command(
-        TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/conf
-        ${CMAKE_BINARY_DIR}/conf
-        COMMENT "Copying conf directory to build directory"
-)
-
-
-target_link_libraries(${PROJECT_NAME}
-        PRIVATE
-        yaml-cpp
-        spdlog::spdlog
-        oatpp::oatpp)
