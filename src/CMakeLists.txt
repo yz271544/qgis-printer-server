@@ -2,7 +2,9 @@ file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.h *.cpp)
 set(SOURCES ${SOURCES})
 message("SOURCES: ${SOURCES}")
 
-add_executable(${PROJECT_NAME} ${SOURCES})
+add_executable(${PROJECT_NAME} ${SOURCES}
+        utils/OApiClient.h
+        utils/OApiClient.cpp)
 add_library(${PROJECT_NAME}_lib STATIC ${SOURCES})
 
 
@@ -39,4 +41,7 @@ target_link_libraries(${PROJECT_NAME}_lib
         PRIVATE
         yaml-cpp
         spdlog::spdlog
-        oatpp::oatpp)
+        oatpp::oatpp
+        oatpp::oatpp-curl
+        gtest
+)

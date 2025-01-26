@@ -44,6 +44,7 @@ FetchContent_MakeAvailable(spdlog)
 
 find_package(oatpp REQUIRED)
 find_package(oatpp-curl REQUIRED)
+#find_package(gtest REQUIRED)
 
 message("oatpp_VERSION: ${oatpp_VERSION}")
 message("oatpp-curl_VERSION: ${oatpp_VERSION}")
