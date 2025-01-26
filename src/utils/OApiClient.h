@@ -33,7 +33,7 @@ public:
     API_CLIENT_INIT(OApiClient)
 
     // You can add more API calls here
-    API_CALL("POST", "/api/login", doPostLogin, BODY_DTO(Object<LoginRequestDto>, body), HEADER(Headers, headers))
+    API_CALL("POST", "/api/login", doPostLogin, BODY_DTO(Object<LoginRequestDto>, body), HEADER(String, contentType, "Content-Type"), HEADER(String, userAgent, "User-Agent"))
 
   };
 

@@ -21,7 +21,7 @@ protected:
         auto objectMapper = oatpp::parser::json::mapping::ObjectMapper::createShared();
 
         // Create a RequestExecutor using oatpp-curl
-        auto requestExecutor = oatpp::curl::RequestExecutor::createShared("http://172.31.100.33:38089");
+        auto requestExecutor = oatpp::curl::RequestExecutor::createShared("http://127.0.0.1:8088"); // "http://172.31.100.33:38089"
 
         // Initialize the API client
         m_client = OApiClient::createShared(requestExecutor, objectMapper);
@@ -38,22 +38,15 @@ protected:
 
 
 TEST_F(OApiClientTest, PostRequestTest) {
-
-    oatpp::web::protocol::http::Headers headers;
-    headers.put("Content-Type", "application/json");
-
-
     auto loginDto = LoginRequestDto::createShared();
 
     // 设置 headers
-    // loginDto->headers = oatpp::web::protocol::http::Headers::createShared();
-    // loginDto->headers = headers;
     loginDto->username = "jingwei";
     loginDto->password = "gis@123";
 
 
     // Perform the GET request
-    auto response = m_client->doPostLogin(loginDto, headers);
+    auto response = m_client->doPostLogin(loginDto, "application/json; charset=utf-8", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36");
 
     // Check that the response is not null
     ASSERT_TRUE(response);
