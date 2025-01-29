@@ -1,5 +1,5 @@
 ### POST hello
-POST http://{{host}}:{{port}}/post
+POST http://{{host}}:{{port}}/api/post
 Content-Type: application/json
 
 {

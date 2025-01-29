@@ -1,4 +1,4 @@
-//
+﻿//
 // Created by Lyndon on 2025/1/29.
 //
 
@@ -19,9 +19,9 @@
 // 定义POST接口处理函数
 class PlottingController : public oatpp::web::server::api::ApiController {
 public:
-    PlottingController(const std::shared_ptr<ObjectMapper>& objectMapper);
+    PlottingController(const std::shared_ptr<ObjectMapper>& objectMapper, const oatpp::String& routePrefix);
 
-    static std::shared_ptr<PlottingController> createShared(const std::shared_ptr<ObjectMapper>& objectMapper);
+    static std::shared_ptr<PlottingController> createShared(const std::shared_ptr<ObjectMapper>& objectMapper, const oatpp::String& routePrefix);
 
     ENDPOINT_INFO(plotting) {
         info->summary = "Plotting endpoint";
@@ -29,7 +29,7 @@ public:
         info->addResponse<Object<ResponseDto>>(Status::CODE_200, "application/json");
     }
 
-    ENDPOINT("POST", "/api/qgz", plotting,
+    ENDPOINT("POST", "/qgz", plotting,
              BODY_DTO(Object<PlottingDto>, plottingDto)) {
         // 创建响应DTO对象
         auto responseDto = ResponseDto::createShared();

@@ -1,4 +1,4 @@
-//
+﻿//
 // Created by Lyndon on 2025/1/29.
 //
 
@@ -28,9 +28,9 @@ class PostRequestDto : public oatpp::DTO {
 
 class HelloController : public oatpp::web::server::api::ApiController {
 public:
-    HelloController(const std::shared_ptr<ObjectMapper>& objectMapper);
+    HelloController(const std::shared_ptr<ObjectMapper>& objectMapper, const oatpp::String& routePrefix);
 
-    static std::shared_ptr<HelloController> createShared(const std::shared_ptr<ObjectMapper>& objectMapper);
+    static std::shared_ptr<HelloController> createShared(const std::shared_ptr<ObjectMapper>& objectMapper, const oatpp::String& routePrefix);
 
     ENDPOINT("POST", "/post", postEndpoint,
              BODY_DTO(Object<PostRequestDto>, requestDto)) {

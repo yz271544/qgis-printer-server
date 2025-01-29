@@ -70,12 +70,12 @@ void WebStarter::Setup(StarterContext& context) {
     router->route("GET", "/hello", std::make_shared<HelloHandler>());
 
     // 路由 add controller
-    auto helloController = HelloController::createShared(objectMapper);
+    auto helloController = HelloController::createShared(objectMapper, "/api");
 
     // 将控制器的端点添加到路由器
     router->addController(helloController);
 
-    auto plotting_controller = PlottingController::createShared(objectMapper);
+    auto plotting_controller = PlottingController::createShared(objectMapper, "/api");
 
     router->addController(plotting_controller);
 
