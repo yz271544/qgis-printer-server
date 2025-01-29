@@ -1,0 +1,18 @@
+### POST hello
+POST http://{{host}}:{{port}}/post
+Content-Type: application/json
+
+{
+  "message": "hello"
+}
+
+### Response
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Type: text/plain
+Server: oatpp/1.3.0
+Content-Length: 16
+
+Message received
+
+###

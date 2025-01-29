@@ -4,7 +4,13 @@ message("SOURCES: ${SOURCES}")
 
 add_executable(${PROJECT_NAME} ${SOURCES}
         utils/OApiClient.h
-        utils/OApiClient.cpp)
+        utils/OApiClient.cpp
+        core/handler/dto/plotting.cpp
+        core/handler/dto/plotting.h
+        core/controller/PlottingController.cpp
+        core/controller/PlottingController.h
+        core/controller/hellocontroller.cpp
+        core/controller/hellocontroller.h)
 add_library(${PROJECT_NAME}_lib STATIC ${SOURCES})
 
 

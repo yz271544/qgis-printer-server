@@ -4,6 +4,8 @@
 
 #include "webstarter.h"
 
+#include "controller/hellocontroller.h"
+#include "controller/PlottingController.h"
 
 
 //
@@ -53,6 +55,10 @@ void WebStarter::Init(StarterContext& context) {
 void WebStarter::Setup(StarterContext& context) {
     SPDLOG_DEBUG("WebStarter Setup start");
     SPDLOG_INFO("WebStarter Setup start");
+
+    auto objectMapper = oatpp::parser::json::mapping::ObjectMapper::createShared();
+    objectMapper->getSerializer()->getConfig()->escapeFlags = 0; // 禁用转义
+
     // 设置路由、中间件等相关配置
     auto router = oatpp::web::server::HttpRouter::createShared();
     // 这里可以添加具体的路由处理逻辑，比如：
@@ -62,6 +68,16 @@ void WebStarter::Setup(StarterContext& context) {
 
     // 路由 GET - "/hello" 请求到处理程序
     router->route("GET", "/hello", std::make_shared<HelloHandler>());
+
+    // 路由 add controller
+    auto helloController = HelloController::createShared(objectMapper);
+
+    // 将控制器的端点添加到路由器
+    router->addController(helloController);
+
+    auto plotting_controller = PlottingController::createShared(objectMapper);
+
+    router->addController(plotting_controller);
 
     // 创建 HTTP 连接处理程序
     auto connectionHandler = oatpp::web::server::HttpConnectionHandler::createShared(router);
