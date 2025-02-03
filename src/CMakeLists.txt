@@ -1,3 +1,5 @@
+include(ComponentQGIS.cmake)
+
 file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.h *.cpp)
 set(SOURCES ${SOURCES})
 message("SOURCES: ${SOURCES}")
@@ -33,7 +35,10 @@ target_link_libraries(${PROJECT_NAME}
         PRIVATE
         yaml-cpp
         spdlog::spdlog
-        oatpp::oatpp)
+        oatpp::oatpp
+        oatpp::oatpp-curl
+        ${QGIS_CORE_LIBRARY} ${QGIS_GUI_LIBRARY} ${QGIS_3D_LIBRARY} Qt5::Core Qt5::Gui Qt5::Qml Qt5::Quick Qt5::Widgets Qt5::Xml Qt5::Svg Qt5::Test ${Qt53DRender_LIBRARY} ${GDAL_LIBRARY} ${YAML_CPP_LIBRARIES}
+)
 
 target_link_libraries(${PROJECT_NAME}_lib
         PRIVATE
@@ -42,4 +47,5 @@ target_link_libraries(${PROJECT_NAME}_lib
         oatpp::oatpp
         oatpp::oatpp-curl
         gtest
+        ${QGIS_CORE_LIBRARY} ${QGIS_GUI_LIBRARY} ${QGIS_3D_LIBRARY} Qt5::Core Qt5::Gui Qt5::Qml Qt5::Quick Qt5::Widgets Qt5::Xml Qt5::Svg Qt5::Test ${Qt53DRender_LIBRARY} ${GDAL_LIBRARY} ${YAML_CPP_LIBRARIES}
 )
