@@ -10,7 +10,7 @@
 #include "oatpp/network/tcp/server/ConnectionProvider.hpp"
 #include "oatpp/web/server/HttpRouter.hpp"
 #include "oatpp/web/server/api/ApiController.hpp"
-#if OATPP_VERSION_LESS_1_3_0
+#if OATPP_VERSION_LESS_1_4_0
 #include "oatpp/core/macro/codegen.hpp"
 #include "oatpp/core/macro/component.hpp"
 #else
@@ -41,7 +41,7 @@ public:
              BODY_DTO(Object<PostRequestDto>, requestDto)) {
         if (requestDto->message) {
             auto message = requestDto->message;
-#if OATPP_VERSION_LESS_1_3_0
+#if OATPP_VERSION_LESS_1_4_0
             OATPP_LOGD("MyController", "Received message: %s", message->c_str());
 #else
             OATPP_LOGd("MyController", "Received message: %s", message->c_str());

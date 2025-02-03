@@ -8,7 +8,7 @@
 #include <oatpp/web/client/RequestExecutor.hpp>
 #include <oatpp/web/client/ApiClient.hpp>
 #include <oatpp/web/protocol/http/Http.hpp>
-#if OATPP_VERSION_LESS_1_3_0
+#if OATPP_VERSION_LESS_1_4_0
 #include <oatpp/parser/json/mapping/ObjectMapper.hpp>
 #include <oatpp/core/macro/codegen.hpp>
 #include <oatpp/core/Types.hpp>

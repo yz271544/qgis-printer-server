@@ -9,7 +9,7 @@
 #include "oatpp/network/Server.hpp"
 #include "oatpp/web/server/HttpConnectionHandler.hpp"
 #include "oatpp/web/server/HttpRouter.hpp"
-#if OATPP_VERSION_LESS_1_3_0
+#if OATPP_VERSION_LESS_1_4_0
 #include "oatpp/parser/json/mapping/ObjectMapper.hpp"
 #include "oatpp/core/macro/codegen.hpp"
 #include "oatpp/core/Types.hpp"

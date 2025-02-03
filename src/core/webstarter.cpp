@@ -55,7 +55,7 @@ void WebStarter::Init(StarterContext& context) {
 void WebStarter::Setup(StarterContext& context) {
     SPDLOG_DEBUG("WebStarter Setup start");
     SPDLOG_INFO("WebStarter Setup start");
-#if OATPP_VERSION_LESS_1_3_0
+#if OATPP_VERSION_LESS_1_4_0
     auto objectMapper = oatpp::parser::json::mapping::ObjectMapper::createShared();
     objectMapper->getSerializer()->getConfig()->escapeFlags = 0; // 禁用转义
 #else

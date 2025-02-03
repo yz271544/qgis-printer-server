@@ -4,7 +4,7 @@
 
 #ifndef PLOTTING_H
 #define PLOTTING_H
-#if OATPP_VERSION_LESS_1_3_0
+#if OATPP_VERSION_LESS_1_4_0
 #include "oatpp/core/macro/codegen.hpp"
 #include "oatpp/core/Types.hpp"
 #else
