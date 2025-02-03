@@ -3,8 +3,8 @@ project(cboot)
 
 include(FetchContent)
 
-set($ENV{proxy_http} "http://127.0.0.1:10808")
-set($ENV{proxys_http} "http://127.0.0.1:10808")
+#set($ENV{proxy_http} "http://127.0.0.1:10808")
+#set($ENV{proxys_http} "http://127.0.0.1:10808")
 
 if(NOT CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD 20)

@@ -4,9 +4,16 @@
 
 #ifndef PLOTTING_H
 #define PLOTTING_H
-
+#if OATPP_VERSION_LESS_1_3_0
 #include "oatpp/core/macro/codegen.hpp"
 #include "oatpp/core/Types.hpp"
+#else
+#include "oatpp/macro/codegen.hpp"
+#include "oatpp/macro/component.hpp"
+#include "oatpp/Environment.hpp"
+#include "oatpp/json/ObjectMapper.hpp"
+#include "oatpp/Types.hpp"
+#endif
 
 #include OATPP_CODEGEN_BEGIN(DTO)
 

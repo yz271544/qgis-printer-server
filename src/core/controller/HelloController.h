@@ -10,9 +10,14 @@
 #include "oatpp/network/tcp/server/ConnectionProvider.hpp"
 #include "oatpp/web/server/HttpRouter.hpp"
 #include "oatpp/web/server/api/ApiController.hpp"
+#if OATPP_VERSION_LESS_1_3_0
 #include "oatpp/core/macro/codegen.hpp"
 #include "oatpp/core/macro/component.hpp"
-
+#else
+#include "oatpp/macro/codegen.hpp"
+#include "oatpp/macro/component.hpp"
+#include "oatpp/Environment.hpp"
+#endif
 
 #include OATPP_CODEGEN_BEGIN(DTO)
 
@@ -36,7 +41,11 @@ public:
              BODY_DTO(Object<PostRequestDto>, requestDto)) {
         if (requestDto->message) {
             auto message = requestDto->message;
+#if OATPP_VERSION_LESS_1_3_0
             OATPP_LOGD("MyController", "Received message: %s", message->c_str());
+#else
+            OATPP_LOGd("MyController", "Received message: %s", message->c_str());
+#endif
             return createResponse(Status::CODE_200, "Message received");
         } else {
             return createResponse(Status::CODE_400, "Missing message");

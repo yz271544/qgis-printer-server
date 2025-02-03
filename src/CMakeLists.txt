@@ -2,15 +2,7 @@ file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.h *.cpp)
 set(SOURCES ${SOURCES})
 message("SOURCES: ${SOURCES}")
 
-add_executable(${PROJECT_NAME} ${SOURCES}
-        utils/OApiClient.h
-        utils/OApiClient.cpp
-        core/handler/dto/plotting.cpp
-        core/handler/dto/plotting.h
-        core/controller/PlottingController.cpp
-        core/controller/PlottingController.h
-        core/controller/hellocontroller.cpp
-        core/controller/hellocontroller.h)
+add_executable(${PROJECT_NAME} ${SOURCES})
 add_library(${PROJECT_NAME}_lib STATIC ${SOURCES})
 
 

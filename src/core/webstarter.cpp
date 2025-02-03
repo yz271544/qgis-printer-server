@@ -4,7 +4,7 @@
 
 #include "webstarter.h"
 
-#include "controller/hellocontroller.h"
+#include "controller/HelloController.h"
 #include "controller/PlottingController.h"
 
 
@@ -55,9 +55,13 @@ void WebStarter::Init(StarterContext& context) {
 void WebStarter::Setup(StarterContext& context) {
     SPDLOG_DEBUG("WebStarter Setup start");
     SPDLOG_INFO("WebStarter Setup start");
-
+#if OATPP_VERSION_LESS_1_3_0
     auto objectMapper = oatpp::parser::json::mapping::ObjectMapper::createShared();
     objectMapper->getSerializer()->getConfig()->escapeFlags = 0; // 禁用转义
+#else
+    auto objectMapper = std::make_shared<oatpp::json::ObjectMapper>();
+    objectMapper->serializerConfig().json.escapeFlags = 0;
+#endif
 
     // 设置路由、中间件等相关配置
     auto router = oatpp::web::server::HttpRouter::createShared();
