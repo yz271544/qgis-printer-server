@@ -57,6 +57,7 @@
 #include <qgssettings.h>
 #include <qgsdirectionallightsettings.h>
 #include <qgslayoutexporter.h>
+#include <qgsflatterrainsettings.h>
 
 //#include <qgis/app/3d/qgs3dmapcanvaswidget.h>
 #include "JwLegend.h"

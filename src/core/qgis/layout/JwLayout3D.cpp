@@ -480,10 +480,10 @@ Qgs3DMapSettings* JwLayout3D::get3DMapSettings(
     flatTerrain->setCrs( mapSettings3d->crs() );
 #endif
     mapSettings3d->setTerrainGenerator( flatTerrain );
-    mapSettings3d->setTerrainElevationOffset( project->elevationProperties()->terrainProvider()->offset() );
-    /*QgsAbstractTerrainSettings terrainSettings;
-    terrainSettings.setElevationOffset(project->elevationProperties()->terrainProvider()->offset());
-    mapSettings3d->setTerrainSettings(terrainSettings);*/
+    // mapSettings3d->setTerrainElevationOffset( project->elevationProperties()->terrainProvider()->offset() );
+    QgsAbstractTerrainSettings* terrainSettings = QgsFlatTerrainSettings::create();
+    terrainSettings->setElevationOffset(project->elevationProperties()->terrainProvider()->offset());
+    mapSettings3d->setTerrainSettings(terrainSettings);
     // mapSettings3d->setBackgroundColor(QColor("#ffffff"));
     qDebug() << "filtered map layers";
     const QgsReferencedRectangle projectExtent = project->viewSettings()->fullExtent();
