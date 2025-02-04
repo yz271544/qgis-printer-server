@@ -27,7 +27,7 @@ int main() {
     spdlog::debug("This message should be displayed..");
 
     // change log pattern
-    spdlog::set_pattern("[%H:%M:%S %z] [%n] [%^---%L---%$] [thread %t] %v");
+    spdlog::set_pattern("[%Y-%m-%d %H:%M:%S %z] [%^---%L---%$] [thread %t] %v");
 
     // Compile time log levels
     // define SPDLOG_ACTIVE_LEVEL to desired level
