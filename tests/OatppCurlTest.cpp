@@ -3,7 +3,11 @@
 //
 
 #include <oatpp-curl/RequestExecutor.hpp>
+#if OATPP_VERSION_LESS_1_4_0
 #include <oatpp/parser/json/mapping/ObjectMapper.hpp>
+#else
+#include <oatpp/json/ObjectMapper.hpp>
+#endif
 #include <oatpp/web/protocol/http/Http.hpp>
 #include "gtest/gtest.h"
 #include "utils/OApiClient.h"
@@ -16,10 +20,13 @@ private:
 protected:
     void SetUp() override {
         // Initialize oatpp environment
+#if OATPP_VERSION_LESS_1_4_0
         oatpp::base::Environment::init();
-
         auto objectMapper = oatpp::parser::json::mapping::ObjectMapper::createShared();
-
+#else
+        oatpp::Environment::init();
+        auto objectMapper = std::make_shared<oatpp::json::ObjectMapper>();
+#endif
         // Create a RequestExecutor using oatpp-curl
         auto requestExecutor = oatpp::curl::RequestExecutor::createShared("http://127.0.0.1:8088"); // "http://172.31.100.33:38089"
 
@@ -29,8 +36,12 @@ protected:
     }
 
     void TearDown() override {
+#if OATPP_VERSION_LESS_1_4_0
         // Destroy oatpp environment
         oatpp::base::Environment::destroy();
+#else
+        oatpp::Environment::destroy();
+#endif
     }
 
     std::shared_ptr<OApiClient> m_client;

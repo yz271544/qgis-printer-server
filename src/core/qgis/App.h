@@ -5,11 +5,16 @@
 #ifndef JINGWEIPRINTER_APP_H
 #define JINGWEIPRINTER_APP_H
 
-#include "spdlog/spdlog.h"
+#include <QString>
+#include <QFileInfo>
+#include <QDir>
+#include <QDebug>
+#include <future>
+#include <filesystem>
+#include <spdlog/spdlog.h>
 #include <yaml-cpp/yaml.h>
 #include <qgsmapcanvas.h>
 #include <qgsproject.h>
-#include <QString>
 #include <qgsapplication.h>
 #include <qgspagesizeregistry.h>
 #include <qgslayoutsize.h>
@@ -17,11 +22,15 @@
 #include <qgsrasterlayer.h>
 #include <qgstiledscenelayer.h>
 #include <qgstiledscenelayer3drenderer.h>
+#include <qgsprintlayout.h>
+#include <qgslayoutexporter.h>
 
 #include "core/enums/PaperSpecification.h"
+#include "core/handler/dto/plotting.h"
 #include "../../config.h"
 #include "utils/FileUtil.h"
 #include "utils/UrlUtil.h"
+#include "utils/JsonUtil.h"
 
 class App {
 public:
@@ -62,7 +71,45 @@ public:
     * 重置地图视口范围
     * :param geojson: 前端传输地图视口数据
     */
-    void reset_canvas();
+    void reset_canvas(oatpp::data::type::DTOWrapper<GeoJsonDto> geoJsonDto);
+
+    void reset_canvas_by_elements();
+
+    void remove_attache_files();
+
+    void refresh_canvas();
+
+    QgsPointXY transform_4326_to_3857(double x, double y);
+
+    /**
+     * 导出布局为PNG
+     * @param layoutName
+     * @param outputPath
+     * @param paperName
+     * @param dpi
+     * @return
+     */
+    bool exportLayoutAsPng(const QString& layoutName, const QString& outputPath, const QString& paperName, int dpi = 300);
+
+    /**
+     * 导出布局为PDF
+     * @param layoutName
+     * @param outputPath
+     * @param paperName
+     * @param dpi
+     * @return
+     */
+    bool exportLayoutAsPdf(const QString& layoutName, const QString& outputPath, const QString& paperName, int dpi = 300);
+
+    /**
+     * 导出布局为SVG
+     * @param layoutName
+     * @param outputPath
+     * @param paperName
+     * @param dpi
+     * @return
+     */
+    bool exportLayoutAsSvg(const QString& layoutName, const QString& outputPath, const QString& paperName, int dpi = 300);
 
 private:
 char** mArgv; // 用于存储转换后的命令行参数

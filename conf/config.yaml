@@ -1,6 +1,7 @@
 app:
   name: jingweiprinter
 web:
+  host: "0.0.0.0"
   port: 5890
   route_prefix: /
 qgis:

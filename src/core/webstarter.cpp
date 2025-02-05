@@ -87,8 +87,18 @@ void WebStarter::Setup(StarterContext& context) {
     // 创建 HTTP 连接处理程序
     auto connectionHandler = oatpp::web::server::HttpConnectionHandler::createShared(router);
 
+    v_uint16 webPort = 8080;
+    if (this->config && (*this->config)["web"]["port"]) {
+        webPort = (*this->config)["web"]["port"].as<int>();
+    }
+
+    oatpp::String pHost = "localhost";
+    if (this->config && (*this->config)["web"]["host"]) {
+        pHost = (*this->config)["web"]["host"].as<std::string>();
+    }
+
     // 创建 TCP 连接提供者
-    auto connectionProvider = oatpp::network::tcp::server::ConnectionProvider::createShared({"localhost", 8080, oatpp::network::Address::IP_4});
+    auto connectionProvider = oatpp::network::tcp::server::ConnectionProvider::createShared({pHost, webPort, oatpp::network::Address::IP_4});
 
     // 创建服务器，它接受提供的 TCP 连接并将其传递给 HTTP 连接处理程序
     server = oatpp::network::Server::createShared(connectionProvider, connectionHandler);
