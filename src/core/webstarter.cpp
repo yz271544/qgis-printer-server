@@ -79,7 +79,8 @@ void WebStarter::Setup(StarterContext& context) {
     // 将控制器的端点添加到路由器
     router->addController(helloController);
 
-    auto plotting_controller = PlottingController::createShared(objectMapper, "/api");
+    auto plottingService = std::make_shared<PlottingService>();
+    auto plotting_controller = PlottingController::createShared(objectMapper, "/api", plottingService);
 
     router->addController(plotting_controller);
 

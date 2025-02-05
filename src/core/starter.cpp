@@ -4,6 +4,11 @@
 
 #include "starter.h"
 
+StarterContext::StarterContext(int argc, char* argv[]) {
+    for (int i = 0; i < argc; i++) {
+        args_.append(argv[i]);
+    }
+}
 
 // 获取配置
 YAML::Node StarterContext::Props() const {
@@ -29,4 +34,9 @@ YAML::Node StarterContext::operator[](const std::string& key) const {
 // 添加键值对到上下文
 void StarterContext::Add(const std::string& key, const YAML::Node& value) {
     context_[key] = value;
+}
+
+// 获取命令行参数
+QList<QString> StarterContext::getArgs() {
+    return args_;
 }

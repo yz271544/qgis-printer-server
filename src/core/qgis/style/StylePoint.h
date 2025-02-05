@@ -33,7 +33,7 @@
 #endif
 
 #include "qgsstatisticalsummary.h"
-#include "../../../../config.h"
+#include "../../../config.h"
 #include "utils/QgsUtil.h"
 #include "utils/ColorTransformUtil.h"
 #if defined(_WIN32)

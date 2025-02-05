@@ -192,8 +192,8 @@ else()
 endif()
 
 # 生成 config.h 头文件
-message("CMAKE_HOME_DIRECTORY:${CMAKE_HOME_DIRECTORY}")
-configure_file(config.h.in ${CMAKE_HOME_DIRECTORY}/config.h)
+#message("CMAKE_HOME_DIRECTORY:${CMAKE_HOME_DIRECTORY}")
+#configure_file(config.h.in ${CMAKE_HOME_DIRECTORY}/config.h)
 
 message("start find qgis package")
 find_package(QGIS REQUIRED)

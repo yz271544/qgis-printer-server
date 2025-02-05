@@ -7,8 +7,8 @@
 HookStarter* HookStarter::instance = nullptr;
 
 // HookStarter 类的定义
-HookStarter::HookStarter(StarterRegister* starterRegister): starterRegister(starterRegister)
-{
+HookStarter::HookStarter(StarterRegister *starterRegister, StarterContext context)
+        : starterRegister(starterRegister), context(context) {
 
 }
 

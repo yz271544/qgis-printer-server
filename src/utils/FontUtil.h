@@ -8,7 +8,7 @@
 #include <QtMath>
 #include <QString>
 
-#include "../../config.h"
+#include "../config.h"
 
 class FontUtil {
 public:

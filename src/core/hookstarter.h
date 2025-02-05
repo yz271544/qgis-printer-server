@@ -24,11 +24,16 @@
 #endif
 
 class HookStarter : public BaseStarter {
+private:
+    static HookStarter* instance;
+    StarterContext context;
+    StarterRegister* starterRegister;
+    std::vector<std::function<void(StarterContext&)>> callbacks;
 
 public:
     static void static_sig_handler(int sig);
 
-    HookStarter(StarterRegister* starterRegister);
+    HookStarter(StarterRegister *starterRegister, StarterContext context);
 
     ~HookStarter();
 
@@ -53,12 +58,6 @@ public:
     YAML::Node GetConfig();
 
     void sig_handler(StarterContext& context);
-
-private:
-    static HookStarter* instance;
-    StarterContext context;
-    StarterRegister* starterRegister;
-    std::vector<std::function<void(StarterContext&)>> callbacks;
 };
 
 

@@ -7,9 +7,11 @@
 #define STARTER_H
 
 #include <limits>
-#include "yaml-cpp/yaml.h"
+#include <yaml-cpp/yaml.h>
 
 #include <stdexcept>
+#include <QString>
+#include <QList>
 
 #include "starter.h"
 #include "error/egonexception.h"
@@ -27,9 +29,14 @@ enum PriorityGroup {
 
 
 class StarterContext {
+private:
+    QList<QString> args_;                             // 命令行参数
+    static constexpr const char* KeyProps = "_conf"; // 配置键
+    std::map<std::string, YAML::Node> context_;       // 上下文存储
+
 public:
 
-    StarterContext() = default;
+    StarterContext(int argc, char* argv[]);
 
     // 获取配置
     YAML::Node Props() const;
@@ -43,9 +50,7 @@ public:
     // 添加键值对到上下文
     void Add(const std::string& key, const YAML::Node& value);
 
-private:
-    static constexpr const char* KeyProps = "_conf"; // 配置键
-    std::map<std::string, YAML::Node> context_;       // 上下文存储
+    QList<QString> getArgs();
 };
 
 

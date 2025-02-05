@@ -22,6 +22,7 @@ void ConfStarter::Init(StarterContext& context) {
         // 尝试从指定路径加载配置文件，路径应根据实际项目情况正确配置
         //config = YAML::LoadFile("/lyndon/iProject/cpath/cboot/conf/config.yaml");
         config = YAML::LoadFile(CONF_FILE);
+        context.SetProps(config);
         SPDLOG_INFO("CONF SERVER: {}, port: {}", config["app"]["name"].as<std::string>(), config["web"]["port"].as<int>());
     } catch (const YAML::BadFile& e) {
         std::cerr << "Error loading config file: " << e.what() << std::endl;

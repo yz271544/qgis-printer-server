@@ -6,13 +6,15 @@
 #include "core/loggerstarter.h"
 #include "core/starterregister.h"
 #include "core/webstarter.h"
+#include "core/processorstarter.h"
 
 // TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
-int main() {
+int main(int argc, char* argv[]) {
     // 创建并注册不同的Starter实例
     ConfStarter conf_starter;
     WebStarter web_starter;
+    ProcessorStarter processor_starter;
 
     spdlog::info("Welcome to spdlog!");
     spdlog::error("Some error message with arg: {}", 1);
@@ -42,15 +44,16 @@ int main() {
 
     spdlog::debug("main debug test");
 
-    StarterContext* starterContext = new StarterContext();
+    StarterContext* starterContext = new StarterContext(argc, argv);
     auto starter_register = StarterRegister::getInstance();
 
     BootApplication* boot = new BootApplication(false, *starterContext, starter_register);
 
-    HookStarter hook_starter(starter_register);
+    HookStarter hook_starter(starter_register, StarterContext(0, nullptr));
 
     starter_register->Register(&conf_starter);
     starter_register->Register(&web_starter);
+    starter_register->Register(&processor_starter);
     starter_register->Register(&hook_starter);
 
     // 获取并排序所有的Starters

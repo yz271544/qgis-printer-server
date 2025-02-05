@@ -20,6 +20,11 @@ inline const char* QGIS_LAYER_ENCODING = "UTF-8";
 inline const char* BASE_TILE_NAME = "BaseTile";
 inline const char* MAIN_TILE_NAME = "MainTile";
 inline const char* REAL3D_TILE_NAME = "Real3DTile";
+inline const char* CESIUM_TILES_PROVIDER = "cesiumtiles";
+inline const char* MAIN_CRS = "EPSG:3857";
+inline const char* REAL3D_SOURCE_CRS = "EPSG:4326";
+
+const std::vector<std::string> CIRCLE_LABELS = {"核心区", "警戒区", "控制区"};
 
 // 1 英寸 = 2.54 厘米
 const double CM2INCH = 25.4;
