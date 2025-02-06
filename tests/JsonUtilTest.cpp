@@ -172,26 +172,26 @@ TEST(dtoQJson, testDeserializerTopicFile) {
         auto data = plottingRespDto->data;
         GTEST_LOG_(INFO) << "plottingRespDto data size: " << data->size();
 
-        for (const auto &item: *data.get()) {
+        for (const auto &dataItem: *data.get()) {
             // test attachment
-            GTEST_LOG_(INFO) << "name:" << item->name->c_str() << " attach:" << item->attachment->c_str();
+            GTEST_LOG_(INFO) << "name:" << dataItem->name->c_str() << " attach:" << dataItem->attachment->c_str();
             // test fontStyle
-            auto fontStyleDto = item->getFontStyleDto();
+            auto fontStyleDto = dataItem->getFontStyleDto();
             GTEST_LOG_(INFO) << "fontSize -> x:" << fontStyleDto->x << " fontSize -> y:" << fontStyleDto->y;
             // test fontStyleJson
-            auto fontStyleJson = item->getFontStyleJson();
+            auto fontStyleJson = dataItem->getFontStyleJson();
             GTEST_LOG_(INFO) << "fontSizeJson -> x:" << fontStyleJson["x"].toInt() << " y:" << fontStyleJson["y"].toInt() << " fontColor:" << fontStyleJson["fontColor"].toString().toStdString();
             // test layerStyle
-            auto layerStyleDto = item->getLayerStyleDto();
+            auto layerStyleDto = dataItem->getLayerStyleDto();
 
             auto propList = layerStyleDto.getPropertiesList();
             for (const auto &propItem: propList) {
-                if (item->name.equalsCI_ASCII("scale")) {
+                if (propItem->name=="scale") {
                     GTEST_LOG_(INFO) << "layerStyle -> scale:" << layerStyleDto->scale;
                 }
             }
             // test layerStyleJson
-            auto layerStyleJson = item->getLayerStyleJson();
+            auto layerStyleJson = dataItem->getLayerStyleJson();
             GTEST_LOG_(INFO) << "layerStyleJson -> scale:" << layerStyleJson["scale"].toDouble();
         }
 
