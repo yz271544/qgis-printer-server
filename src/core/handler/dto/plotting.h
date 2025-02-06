@@ -1,4 +1,4 @@
-//
+﻿//
 // Created by Lyndon on 2025/1/29.
 //
 
@@ -18,21 +18,43 @@
 #include OATPP_CODEGEN_BEGIN(DTO)
 
 /**
+ * 定义Properties DTO
+ */
+class PropertiesDto : public oatpp::DTO {
+    DTO_INIT(PropertiesDto, DTO)
+};
+
+/**
+ * 定义 PointDto
+ */
+class PointDto : public oatpp::DTO {
+    DTO_INIT(PointDto, DTO)
+
+    DTO_FIELD(String, type);
+    DTO_FIELD(List<Float64>, coordinates);
+};
+
+/**
+ * 定义GeoJSON DTO
+ */
+class GeoPointJsonDto : public oatpp::DTO {
+    DTO_INIT(GeoPointJsonDto, DTO)
+
+    DTO_FIELD(String, type);
+    DTO_FIELD(Object<PointDto>, geometry);
+    DTO_FIELD(Object<PropertiesDto>, properties);
+};
+
+/**
  * 定义Geometry DTO
  */
 class GeometryDto : public oatpp::DTO {
   DTO_INIT(GeometryDto, DTO)
 
   DTO_FIELD(String, type);
-  DTO_FIELD(oatpp::Vector<oatpp::Vector<oatpp::Vector<oatpp::Float64>>>, coordinates);
+  DTO_FIELD(List<List<List<oatpp::Float64>>>, coordinates);
 };
 
-/**
- * 定义Properties DTO
- */
-class PropertiesDto : public oatpp::DTO {
-  DTO_INIT(PropertiesDto, DTO)
-};
 
 /**
  * 定义GeoJSON DTO
@@ -144,6 +166,7 @@ class PlottingDto : public oatpp::DTO {
   DTO_FIELD(String, topicCategory);
   DTO_FIELD(Object<GeoJsonDto>, geojson);
   DTO_FIELD(String, savePath);
+  DTO_FIELD(Boolean, handleFlag);
   DTO_FIELD(String, sceneType);
   DTO_FIELD(Object<LayInfoDto>, layinfo);
   DTO_FIELD(String, paper);
@@ -157,6 +180,15 @@ class ResponseDto : public oatpp::DTO {
 
     DTO_FIELD(String, project_zip_url);
     DTO_FIELD(String, image_url);
+};
+
+template<typename T>
+class XServerResponseDto : public oatpp::DTO {
+    DTO_INIT(XServerResponseDto, DTO)
+
+    DTO_FIELD(Int32, code);
+    DTO_FIELD(String, msg);
+    DTO_FIELD(Object<T&>, data);
 };
 
 

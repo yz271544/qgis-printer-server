@@ -259,7 +259,8 @@ void App::reset_canvas(oatpp::data::type::DTOWrapper<GeoJsonDto> geoJsonDto) {
 
     // 检查geojson是否包含有效的Polygon数据
     if (geoJsonDto->geometry && geoJsonDto->geometry->type == "Polygon" && geoJsonDto->geometry->coordinates) {
-        QJsonObject geometry = JsonUtil::convertDtoToQJsonObject(geoJsonDto);
+        QJsonDocument geometryJsonDoc = JsonUtil::convertDtoToQJsonObject(geoJsonDto);
+        QJsonObject geometry = geometryJsonDoc.object();
 
         if (geometry["type"].toString() == "Polygon" && geometry.contains("coordinates")) {
             QJsonArray coordinates = geometry["coordinates"].toArray()[0].toArray();

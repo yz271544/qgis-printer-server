@@ -22,7 +22,7 @@ public:
     static QVariantMap jsonObjectToVariantMap(const QJsonObject& jsonObject);
 
     template<typename T>
-    static QJsonObject convertDtoToQJsonObject(const T& dto) {
+    static QJsonDocument convertDtoToQJsonObject(const T& dto) {
         // Create a JSON ObjectMapper
 #if OATPP_VERSION_LESS_1_4_0
         auto objectMapper = oatpp::parser::json::mapping::ObjectMapper::createShared();
@@ -38,13 +38,18 @@ public:
             // Error handling can be done here as needed, such as returning an error response
         }
 
-        SPDLOG_INFO("info Processing plotting request, requestBody: {}", jsonStr->c_str());
+        SPDLOG_DEBUG("info Processing plotting request, requestBody: {}", jsonStr->c_str());
 
         QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonStr->c_str());
-        QJsonObject jsonObject = jsonDoc.object();
+        //QJsonObject jsonObject = jsonDoc.object();
 
-        return jsonObject;
+        return jsonDoc;
     }
+
+    static QJsonDocument convertStringToJsonDoc(const QString& jsonString) {
+        return QJsonDocument::fromJson(jsonString.toUtf8());
+    }
+
 };
 
 

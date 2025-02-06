@@ -30,6 +30,21 @@ class LoginRequestDto : public oatpp::DTO {
     DTO_FIELD(String, password);
 };
 
+class TopicMapData : public oatpp::DTO {
+    DTO_INIT(TopicMapData, DTO);
+
+    DTO_FIELD(String, sceneId);
+    DTO_FIELD(String, scope);
+    DTO_FIELD(String, topicCategory);
+};
+
+class ErrorResponse : public oatpp::DTO {
+    DTO_INIT(ErrorResponse, DTO)
+    DTO_FIELD(Int32, code); // 错误码
+    DTO_FIELD(String, msg); // 错误信息
+};
+
+
 #include OATPP_CODEGEN_END(DTO)
 
 /* Begin ApiClient codegen */
@@ -40,8 +55,16 @@ public:
     API_CLIENT_INIT(OApiClient)
 
     // You can add more API calls here
-    API_CALL("POST", "/api/login", doPostLogin, BODY_DTO(Object<LoginRequestDto>, body), HEADER(String, contentType, "Content-Type"), HEADER(String, userAgent, "User-Agent"))
+    API_CALL("POST", "/login", doPostLogin, BODY_DTO(Object<LoginRequestDto>, body),
+             HEADER(String, contentType, "Content-Type"),
+             HEADER(String, userAgent, "User-Agent"))
 
+    API_CALL("POST", "/guard/plotting/topicMap", doPostPlotting, BODY_DTO(Object<TopicMapData>, body),
+             HEADER(String, contentType, "Content-Type"),
+             HEADER(String, authorization, "Authorization"),
+             HEADER(String, accept, "Accept"),
+             HEADER(String, sceneType, "sceneType")
+             )
   };
 
 #include OATPP_CODEGEN_END(ApiClient)

@@ -28,7 +28,7 @@ protected:
         auto objectMapper = std::make_shared<oatpp::json::ObjectMapper>();
 #endif
         // Create a RequestExecutor using oatpp-curl
-        auto requestExecutor = oatpp::curl::RequestExecutor::createShared("http://127.0.0.1:8088"); // "http://172.31.100.33:38089"
+        auto requestExecutor = oatpp::curl::RequestExecutor::createShared("http://172.31.100.33:38089"); // "http://172.31.100.33:38089"  "http://127.0.0.1:8088"
 
         // Initialize the API client
         m_client = OApiClient::createShared(requestExecutor, objectMapper);
