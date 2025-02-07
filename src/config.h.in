@@ -36,9 +36,15 @@ const int DPI = 300;
 #if defined(_WIN32)
 // for Windows
 inline const char* CONF_FILE = "./conf/config.yaml";
+inline const char* QGIS_PREFIX_PATH = "D:/iProject/cpath/OSGeo4W/apps/qgis";
+inline const char* QGIS_PROJECT_PATH = "D:/iProject/cpath/qgis_demo1/common/project";
+inline const char* QGIS_PROJECT_FILE_NAME = "/project3d1.qgz";
 #elif defined(__linux__)
 // for Linux
 inline const char* CONF_FILE = "./conf/config.yaml";
+inline const char* QGIS_PREFIX_PATH = "/lyndon/iProject/cpath/QGIS/output";
+inline const char* QGIS_PROJECT_PATH = "/lyndon/iProject/cpath/qgis_demo1/common/project";
+inline const char* QGIS_PROJECT_FILE_NAME = "/project3d1.qgz";
 #endif
 
 // Function to get boolean value from environment variable

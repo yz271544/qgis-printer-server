@@ -71,7 +71,7 @@ public:
     * 重置地图视口范围
     * :param geojson: 前端传输地图视口数据
     */
-    void reset_canvas(oatpp::data::type::DTOWrapper<GeoJsonDto> geoJsonDto);
+    void reset_canvas(oatpp::data::type::DTOWrapper<GeoPolygonJsonDto> geoJsonDto);
 
     void reset_canvas_by_elements();
 
@@ -116,13 +116,13 @@ char** mArgv; // 用于存储转换后的命令行参数
 int mArgc;    // 参数个数
 std::shared_ptr<YAML::Node> mConfig;
 QString mSceneName;
-QgsProject* mProject;
-QgsMapCanvas* mCanvas;
-QgsMapSettings* mMapSettings;
+std::shared_ptr<QgsProject> mProject;
+std::shared_ptr<QgsMapCanvas> mCanvas;
+std::shared_ptr<QgsMapSettings> mMapSettings;
 QString mProjectDir;
 QgsCoordinateTransformContext mTransformContext;
-QgsApplication* mQgis;
-QgsPageSizeRegistry* mPageSizeRegistry;
+std::shared_ptr<QgsApplication> mQgis;
+std::shared_ptr<QgsPageSizeRegistry> mPageSizeRegistry;
 QVector<PaperSpecification> mAvailablePapers;
 };
 

@@ -16,25 +16,11 @@
 #include <QDebug>
 #include <iostream>
 
+#include "core/error/exceptions.h"
+
 #if defined(_WIN32)
 #include <windows.h>
 #endif
-
-class FileOperationError : public std::exception
-{
-private:
-    std::string message;
-
-public:
-    FileOperationError(const std::string& msg) : message(msg)
-    {
-    }
-
-    const char* what() const noexcept override
-    {
-        return message.c_str();
-    }
-};
 
 class FileUtil
 {

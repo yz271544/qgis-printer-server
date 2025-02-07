@@ -8,6 +8,8 @@
 #include <spdlog/spdlog.h>
 #include "starter.h"
 #include "core/qgis/App.h"
+#include "core/qgis/Processor.h"
+
 #if defined(_WIN32) && defined(_MSC_VER)
 #include "oatpp/core/base/Environment.hpp"
 #endif
@@ -15,7 +17,7 @@
 class ProcessorStarter : public BaseStarter  {
 private:
     std::shared_ptr<YAML::Node> config;
-    App *mApp;
+    std::unique_ptr<Processor> m_processor;
 public:
     ProcessorStarter();
 

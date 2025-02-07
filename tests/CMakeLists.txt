@@ -12,6 +12,15 @@ list(APPEND SOURCES ${UTIL_SOURCES})
 add_executable(${BINARY} ${SOURCES})
 add_test(NAME ${BINARY} COMMAND ${BINARY})
 
+# 添加自定义命令，在构建时复制 conf 目录（构建阶段）
+add_custom_command(
+        TARGET ${BINARY} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/conf
+        ${CMAKE_BINARY_DIR}/tests/conf
+        COMMENT "Copying conf directory to build directory"
+)
+
 # 链接src生成的lib库和gtest库
 target_link_libraries(${BINARY} PUBLIC ${CMAKE_PROJECT_NAME}_lib
         yaml-cpp

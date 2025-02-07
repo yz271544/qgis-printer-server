@@ -14,7 +14,7 @@
 #include <QList>
 
 #include "starter.h"
-#include "error/egonexception.h"
+#include "error/exceptions.h"
 
 
 const int INT_MAX_VALUE = std::numeric_limits<int>::max();

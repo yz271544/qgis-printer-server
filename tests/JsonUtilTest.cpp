@@ -15,9 +15,9 @@
 
 TEST(dtoQJson, test1) {
 
-    auto pGeoJsonDto = GeoJsonDto::createShared();
+    auto pGeoJsonDto = GeoPolygonJsonDto::createShared();
     pGeoJsonDto->type = "Feature";
-    pGeoJsonDto->geometry = std::make_shared<GeometryDto>();
+    pGeoJsonDto->geometry = std::make_shared<PolygonDto>();
     pGeoJsonDto->geometry->type = "Polygon";
     pGeoJsonDto->geometry->coordinates = {
         {

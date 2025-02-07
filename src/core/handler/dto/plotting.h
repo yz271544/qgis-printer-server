@@ -46,10 +46,10 @@ class GeoPointJsonDto : public oatpp::DTO {
 };
 
 /**
- * 定义Geometry DTO
+ * 定义 PolygonDto DTO
  */
-class GeometryDto : public oatpp::DTO {
-  DTO_INIT(GeometryDto, DTO)
+class PolygonDto : public oatpp::DTO {
+  DTO_INIT(PolygonDto, DTO)
 
   DTO_FIELD(String, type);
   DTO_FIELD(List<List<List<oatpp::Float64>>>, coordinates);
@@ -57,13 +57,13 @@ class GeometryDto : public oatpp::DTO {
 
 
 /**
- * 定义GeoJSON DTO
+ * 定义 GeoJSON DTO
  */
-class GeoJsonDto : public oatpp::DTO {
-  DTO_INIT(GeoJsonDto, DTO)
+class GeoPolygonJsonDto : public oatpp::DTO {
+  DTO_INIT(GeoPolygonJsonDto, DTO)
 
   DTO_FIELD(String, type);
-  DTO_FIELD(Object<GeometryDto>, geometry);
+  DTO_FIELD(Object<PolygonDto>, geometry);
   DTO_FIELD(Object<PropertiesDto>, properties);
 };
 
@@ -164,7 +164,7 @@ class PlottingDto : public oatpp::DTO {
   DTO_FIELD(String, sceneId);
   DTO_FIELD(String, sceneName);
   DTO_FIELD(String, topicCategory);
-  DTO_FIELD(Object<GeoJsonDto>, geojson);
+  DTO_FIELD(Object<GeoPolygonJsonDto>, geojson);
   DTO_FIELD(String, savePath);
   DTO_FIELD(Boolean, handleFlag);
   DTO_FIELD(String, sceneType);
@@ -180,6 +180,7 @@ class ResponseDto : public oatpp::DTO {
 
     DTO_FIELD(String, project_zip_url);
     DTO_FIELD(String, image_url);
+    DTO_FIELD(String, error);
 };
 
 template<typename T>
