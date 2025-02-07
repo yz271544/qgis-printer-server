@@ -12,6 +12,7 @@
 #include <windows.h>
 #endif
 
+#include <vector>
 #include <string>
 #include <algorithm>
 #include <cstdlib>
@@ -67,5 +68,15 @@ inline bool getEnvBool(const char* envVarName, bool defaultValue = false) {
 inline bool ENABLE_POINT_CLUSTER = getEnvBool("ENABLE_POINT_CLUSTER", false);
 
 inline bool ENABLE_3D = getEnvBool("ENABLE_3D", true);
+
+#ifdef OATPP_VERSION_LESS_1_4_0
+#define DTOWRAPPERNS oatpp::data::mapping::type
+#define OBJECTMAPPERNS oatpp::parser::json::mapping
+#define PRIMITIVENS oatpp::data::mapping::type
+#else
+#define DTOWRAPPERNS oatpp::data::type
+#define OBJECTMAPPERNS oatpp::json
+#define PRIMITIVENS oatpp::data::type
+#endif
 
 #endif //CONFIG_H

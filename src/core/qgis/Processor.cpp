@@ -46,9 +46,9 @@ Processor::~Processor() {
     SPDLOG_INFO("Processor destroyed");
 };
 
-std::future<oatpp::data::type::DTOWrapper<PlottingRespDto>>
+std::future<DTOWRAPPERNS::DTOWrapper<PlottingRespDto>>
 Processor::fetchPlotting(const std::string &token, const std::string &scene_type,
-                          oatpp::data::type::DTOWrapper<TopicMapData> &topic_map_data) {
+                          DTOWRAPPERNS::DTOWrapper<TopicMapData> &topic_map_data) {
     // 使用 std::async 来实现异步操作
     return std::async(std::launch::async, [this, token, scene_type, topic_map_data]() {
 
@@ -67,7 +67,7 @@ Processor::fetchPlotting(const std::string &token, const std::string &scene_type
                 QString jsonContent = in.readAll();
                 file.close();
 
-                auto objectMapper = std::make_shared<oatpp::json::ObjectMapper>();
+                auto objectMapper = std::make_shared<OBJECTMAPPERNS::ObjectMapper>();
 
                 try {
                     auto plottingRespDto = objectMapper->readFromString<oatpp::Object<PlottingRespDto>>(jsonContent.toStdString().c_str());
@@ -95,8 +95,8 @@ Processor::fetchPlotting(const std::string &token, const std::string &scene_type
 
 
 // 异步处理绘图数据的函数
-std::future<oatpp::data::type::DTOWrapper<ResponseDto>>
-Processor::processByPlottingWeb(const std::string& token, const oatpp::data::type::DTOWrapper<PlottingDto> &plottingWeb) {
+std::future<DTOWRAPPERNS::DTOWrapper<ResponseDto>>
+Processor::processByPlottingWeb(const std::string& token, const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb) {
     // 使用 std::async 来实现异步操作
     return std::async(std::launch::async, [this, token, plottingWeb]() {
 
@@ -125,7 +125,7 @@ Processor::processByPlottingWeb(const std::string& token, const oatpp::data::typ
 }
 
 
-void Processor::checkDealWithClosedGeometry(const oatpp::data::type::DTOWrapper<GeoPolygonJsonDto>& geojson) {
+void Processor::checkDealWithClosedGeometry(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto>& geojson) {
     // 检查geojson是否包含有效的Polygon数据
     if (geojson->geometry && geojson->geometry->type == "Polygon" && geojson->geometry->coordinates) {
         if (!geojson || !(geojson->geometry) || !geojson->geometry->coordinates

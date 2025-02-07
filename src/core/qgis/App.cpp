@@ -259,7 +259,7 @@ void App::refresh_canvas_extent() {
     mCanvas->refresh();
 }
 
-void App::reset_canvas(oatpp::data::type::DTOWrapper<GeoPolygonJsonDto> geoJsonDto) {
+void App::reset_canvas(DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto> geoJsonDto) {
     // 设置坐标系
     QgsCoordinateReferenceSystem crs(MAIN_CRS);
     // 创建地图设置对象

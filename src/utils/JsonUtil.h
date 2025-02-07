@@ -12,7 +12,7 @@
 #include <QJsonArray>
 
 #if OATPP_VERSION_LESS_1_4_0
-#include <oatpp::parser::json::mapping::ObjectMapper.hpp>
+#include <oatpp/parser/json/mapping/ObjectMapper.hpp>
 #else
 #include <oatpp/json/ObjectMapper.hpp>
 #endif

@@ -71,7 +71,7 @@ public:
     * 重置地图视口范围
     * :param geojson: 前端传输地图视口数据
     */
-    void reset_canvas(oatpp::data::type::DTOWrapper<GeoPolygonJsonDto> geoJsonDto);
+    void reset_canvas(DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto> geoJsonDto);
 
     void reset_canvas_by_elements();
 

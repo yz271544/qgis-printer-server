@@ -9,7 +9,7 @@ PlottingService::PlottingService(std::shared_ptr<Processor> processor) {
     m_processor = processor;
 }
 
-oatpp::data::type::DTOWrapper<ResponseDto::Z__CLASS> PlottingService::processPlotting(const oatpp::web::server::api::ApiController::Object<PlottingDto>& plottingDto) {
+DTOWRAPPERNS::DTOWrapper<ResponseDto::Z__CLASS> PlottingService::processPlotting(const oatpp::web::server::api::ApiController::Object<PlottingDto>& plottingDto) {
     // Implement the actual plotting logic here
     SPDLOG_DEBUG("debug Processing plotting request");
 

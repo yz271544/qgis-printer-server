@@ -11,6 +11,7 @@
 
 #include "core/handler/dto/plotting.h"
 #include "core/qgis/Processor.h"
+#include "config.h"
 
 class PlottingService {
 private:
@@ -21,7 +22,7 @@ public:
     ~PlottingService() = default;
 
     // 处理绘图逻辑
-    oatpp::data::type::DTOWrapper<ResponseDto::Z__CLASS> processPlotting(const oatpp::web::server::api::ApiController::Object<PlottingDto>& plottingDto);
+    DTOWRAPPERNS::DTOWrapper<ResponseDto::Z__CLASS> processPlotting(const oatpp::web::server::api::ApiController::Object<PlottingDto>& plottingDto);
 };
 
 #endif //JINGWEIPRINTER_PLOTTINGSERVICE_H

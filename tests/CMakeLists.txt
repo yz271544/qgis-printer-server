@@ -12,6 +12,15 @@ list(APPEND SOURCES ${UTIL_SOURCES})
 add_executable(${BINARY} ${SOURCES})
 add_test(NAME ${BINARY} COMMAND ${BINARY})
 
+# 获取 oatpp 的版本号
+if(${oatpp_VERSION} VERSION_LESS "1.4.0")
+    message("${oatpp_VERSION} < 1.4.0")
+    target_compile_definitions(${CMAKE_PROJECT_NAME}_tst PRIVATE OATPP_VERSION_LESS_1_4_0)
+else()
+    message("${oatpp_VERSION} >= 1.4.0")
+    target_compile_definitions(${CMAKE_PROJECT_NAME}_tst PRIVATE OATPP_VERSION_GREATER_EQUAL_1_4_0)
+endif()
+
 # 添加自定义命令，在构建时复制 conf 目录（构建阶段）
 add_custom_command(
         TARGET ${BINARY} POST_BUILD

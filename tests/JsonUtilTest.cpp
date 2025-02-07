@@ -65,8 +65,11 @@ TEST(dtoQJson, test1) {
 
 TEST(dtoQJson, testBasicsPropertiesJsonDTO) {
     oatpp::String json = "{\"type\":\"99\",\"typeName\":\"其他\",\"code\":\"0310\",\"layName\":\"等级域\",\"name\":\"3333\",\"size\":\"\",\"long\":0,\"width\":0,\"height\":0,\"position\":\"\",\"remark\":\"\",\"lead\":\"\",\"leadTel\":\"\",\"lngLatAlt\":\"{\\\"type\\\":\\\"Feature\\\",\\\"geometry\\\":{\\\"type\\\":\\\"Point\\\",\\\"coordinates\\\":[111.479145,40.729253,1024.724135]},\\\"properties\\\":{\\\"subType\\\":\\\"Circle\\\",\\\"radius\\\":91}}\",\"longitude\":111.479145,\"latitude\":40.729253,\"acreage\":\"26015.53\",\"acreageUnit\":\"m²\",\"radius\":0,\"prop1\":\"\",\"prop2\":\"\",\"prop3\":\"\",\"prop4\":\"\",\"prop5\":\"\",\"prop6\":\"\",\"prop7\":\"\"}";
+#if OATPP_VERSION_LESS_1_4_0
+    auto objectMapper = oatpp::parser::json::mapping::ObjectMapper::createShared();
+#else
     auto objectMapper = std::make_shared<oatpp::json::ObjectMapper>();
-
+#endif
     try {
         auto pBasicsPropertiesJsonDTO = objectMapper->readFromString<oatpp::Object<BasicsPropertiesJsonDTO>>(json);
 
@@ -121,7 +124,11 @@ TEST(dtoQJson, testBasicsPropertiesJsonDTO) {
 TEST(dtoQJson, testStyleInfoJson) {
     oatpp::String json = "{\"dxFlag\":true,\"layerStyleObj\":{\"bordercolor\":\"rgba(255,255,255,1)\",\"fillColor\":\"rgba(0,0,0,1)\",\"cs\":3,\"shapeType\":\"04\",\"djy\":[{\"color\":\"rgba(28, 106, 214, 0.4)\",\"num\":40},{\"color\":\"rgba(0,205,82,0.4)\",\"num\":30},{\"color\":\"rgba(203, 200, 41, 0.4)\",\"num\":30}]},\"bim\":\"\",\"hcFlag\":false,\"fontStyle\":{\"borderColor\":\"rgba(255,255,255,1)\",\"loadFlag\":true,\"x\":0,\"y\":35,\"fontSize\":20,\"fontColor\":\"rgba(255,255,255,1)\",\"fontFlag\":false},\"jb\":1,\"qtObj\":{\"color\":\"rgba(255, 64, 64, 0.4)\",\"loadFlag\":false,\"height\":0},\"jbList\":[{\"color\":\"rgba(255,255,255,0.8)\",\"num\":20}]}";
 
+#if OATPP_VERSION_LESS_1_4_0
+    auto objectMapper = oatpp::parser::json::mapping::ObjectMapper::createShared();
+#else
     auto objectMapper = std::make_shared<oatpp::json::ObjectMapper>();
+#endif
 
     try {
         auto pStyleInfoJsonDTO = objectMapper->readFromString<oatpp::UnorderedFields<oatpp::Any>>(json);
@@ -155,7 +162,11 @@ TEST(dtoQJson, testDeserializerTopicFile) {
     file.close();
 
 
+#if OATPP_VERSION_LESS_1_4_0
+    auto objectMapper = oatpp::parser::json::mapping::ObjectMapper::createShared();
+#else
     auto objectMapper = std::make_shared<oatpp::json::ObjectMapper>();
+#endif
 
     try {
         auto plottingRespDto = objectMapper->readFromString<oatpp::Object<PlottingRespDto>>(jsonContent.toStdString().c_str());

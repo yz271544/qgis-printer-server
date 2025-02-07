@@ -6,14 +6,21 @@
 #define JINGWEIPRINTER_LOGINFETCH_H
 
 #include <spdlog/spdlog.h>
-#include <oatpp/Types.hpp>
 #include <oatpp/web/client/ApiClient.hpp>
+#if OATPP_VERSION_LESS_1_4_0
+#include <oatpp/core/Types.hpp>
+#include <oatpp/parser/json/mapping/ObjectMapper.hpp>
+#else
+#include <oatpp/Types.hpp>
 #include <oatpp/json/ObjectMapper.hpp>
+#endif
 #include <oatpp-curl/RequestExecutor.hpp>
 #include <iostream>
 
 #include "utils/OApiClient.h"
 #include "core/handler/dto/plotting.h"
+
+#include "config.h"
 
 #include OATPP_CODEGEN_BEGIN(DTO)
 class LoginResponseDto : public oatpp::DTO {
@@ -30,7 +37,7 @@ class LoginFetch {
 private:
     std::shared_ptr<OApiClient> m_client;
     std::shared_ptr<oatpp::curl::RequestExecutor> m_requestExecutor;
-    std::shared_ptr<oatpp::json::ObjectMapper> m_objectMapper;
+    std::shared_ptr<OBJECTMAPPERNS::ObjectMapper> m_objectMapper;
 
 public:
     LoginFetch(const oatpp::String& baseUrl)
@@ -46,7 +53,7 @@ public:
         m_client = OApiClient::createShared(m_requestExecutor, m_objectMapper);
     }
 
-    oatpp::data::type::DTOWrapper<LoginResponseDto> fetch(
+    DTOWRAPPERNS::DTOWrapper<LoginResponseDto> fetch(
             const oatpp::Object<LoginRequestDto>& loginDto = nullptr)
     {
         // 发送 POST 请求
@@ -54,7 +61,7 @@ public:
 
         try {
             if (response->getStatusCode() == 200) {
-                oatpp::data::type::DTOWrapper<LoginResponseDto> loginObj = response->readBodyToDto<oatpp::Object<LoginResponseDto>>(m_objectMapper.get());
+                DTOWRAPPERNS::DTOWrapper<LoginResponseDto> loginObj = response->readBodyToDto<oatpp::Object<LoginResponseDto>>(m_objectMapper.get());
                 return loginObj;
             } else {
                 SPDLOG_ERROR("Failed to fetch login response: {}", response->getStatusCode());

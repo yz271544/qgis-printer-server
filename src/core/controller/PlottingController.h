@@ -55,7 +55,11 @@ public:
         auto responseDto = m_plottingService->processPlotting(plottingDto);
 
         // 返回响应
+#if OATPP_VERSION_LESS_1_4_0
+        return createDtoResponse(Status::CODE_200, responseDto, this->getDefaultObjectMapper());
+#else
         return createDtoResponse(Status::CODE_200, responseDto, this->getContentMappers()->getDefaultMapper());
+#endif
     }
 };
 

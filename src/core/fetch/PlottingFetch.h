@@ -6,9 +6,14 @@
 #define JINGWEIPRINTER_PLOTTINGFETCH_H
 
 #include <spdlog/spdlog.h>
-#include <oatpp/Types.hpp>
 #include <oatpp/web/client/ApiClient.hpp>
+#if OATPP_VERSION_LESS_1_4_0
+#include <oatpp/core/Types.hpp>
+#include <oatpp/parser/json/mapping/ObjectMapper.hpp>
+#else
+#include <oatpp/Types.hpp>
 #include <oatpp/json/ObjectMapper.hpp>
+#endif
 #include <oatpp-curl/RequestExecutor.hpp>
 #include <iostream>
 #include <QJsonObject>
@@ -16,6 +21,8 @@
 #include "utils/OApiClient.h"
 #include "core/handler/dto/plotting.h"
 #include "utils/JsonUtil.h"
+
+#include "config.h"
 
 #include OATPP_CODEGEN_BEGIN(DTO)
 
@@ -72,7 +79,7 @@ class BasicsPropertiesJsonDTO : public oatpp::DTO {
     DTO_FIELD(String, acreageUnit);
 
 public:
-    oatpp::data::type::DTOWrapper<GeoPointJsonDto> getLngLatAlt();
+    DTOWRAPPERNS::DTOWrapper<GeoPointJsonDto> getLngLatAlt();
     QJsonObject getLngLatAltProperties();
 };
 
@@ -123,7 +130,7 @@ class LayerStyleObjDTO : public oatpp::DTO {
 
 public:
     // safety get sale method, when the scale is null, return 1.0
-    oatpp::data::type::Float32 getScale();
+    PRIMITIVENS::Float32 getScale();
 };
 
 class StyleInfoJsonDTO : public oatpp::DTO {
@@ -219,15 +226,15 @@ class PlottingPayloadDto : public oatpp::DTO {
     DTO_FIELD(String, remark);
 
 public:
-    oatpp::data::type::DTOWrapper<BasicsPropertiesJsonDTO> getBasicsPropertiesJsonDto();
+    DTOWRAPPERNS::DTOWrapper<BasicsPropertiesJsonDTO> getBasicsPropertiesJsonDto();
     QJsonObject getBasicsPropertiesJson();
-    oatpp::data::type::DTOWrapper<ExtendPropertiesJsonDTO> getExtendPropertiesJsonDto();
+    DTOWRAPPERNS::DTOWrapper<ExtendPropertiesJsonDTO> getExtendPropertiesJsonDto();
     QJsonObject getExtendPropertiesJson();
-    oatpp::data::type::DTOWrapper<LongitudeLatitudeDTO> getLongitudeLatitude();
+    DTOWRAPPERNS::DTOWrapper<LongitudeLatitudeDTO> getLongitudeLatitude();
     QJsonObject getLongitudeLatitudeJson();
-    oatpp::data::type::DTOWrapper<ShapeDTO> getShape();
+    DTOWRAPPERNS::DTOWrapper<ShapeDTO> getShape();
     QJsonObject getShapeJson();
-    oatpp::data::type::DTOWrapper<StyleInfoJsonDTO> getStyleInfoJsonDto();
+    DTOWRAPPERNS::DTOWrapper<StyleInfoJsonDTO> getStyleInfoJsonDto();
     QJsonObject getStyleInfoJson();
 };
 
@@ -247,11 +254,11 @@ class PlottingDataDto : public oatpp::DTO {
     DTO_FIELD(List<Object<PlottingPayloadDto>>, plottings);
 
 public:
-    oatpp::data::type::DTOWrapper<SpecialDTO> getSpecialDto();
+    DTOWRAPPERNS::DTOWrapper<SpecialDTO> getSpecialDto();
     QJsonObject getSpecialJson();
-    oatpp::data::type::DTOWrapper<FontStyleDTO> getFontStyleDto();
+    DTOWRAPPERNS::DTOWrapper<FontStyleDTO> getFontStyleDto();
     QJsonObject getFontStyleJson();
-    oatpp::data::type::DTOWrapper<LayerStyleObjDTO> getLayerStyleDto();
+    DTOWRAPPERNS::DTOWrapper<LayerStyleObjDTO> getLayerStyleDto();
     QJsonObject getLayerStyleJson();
 };
 
@@ -272,7 +279,7 @@ private:
     oatpp::String m_sceneType = "01";
     std::shared_ptr<OApiClient> m_client;
     std::shared_ptr<oatpp::curl::RequestExecutor> m_requestExecutor;
-    std::shared_ptr<oatpp::json::ObjectMapper> m_objectMapper;
+    std::shared_ptr<OBJECTMAPPERNS::ObjectMapper> m_objectMapper;
 
 public:
     PlottingFetch(const oatpp::String& baseUrl)
@@ -292,7 +299,7 @@ public:
         m_token = token;
     }
 
-    oatpp::data::type::DTOWrapper<PlottingRespDto> fetch(
+    DTOWRAPPERNS::DTOWrapper<PlottingRespDto> fetch(
             const std::unordered_map<oatpp::String, oatpp::String>& additionalHeaders = {},
             const oatpp::Object<TopicMapData>& topicMapData = nullptr)
             {
@@ -312,7 +319,7 @@ public:
 
         try {
             if (response->getStatusCode() == 200) {
-                oatpp::data::type::DTOWrapper<PlottingRespDto> loginObj = response->readBodyToDto<oatpp::Object<PlottingRespDto>>(m_objectMapper.get());
+                DTOWRAPPERNS::DTOWrapper<PlottingRespDto> loginObj = response->readBodyToDto<oatpp::Object<PlottingRespDto>>(m_objectMapper.get());
                 return loginObj;
             } else {
                 SPDLOG_ERROR("Failed to fetch login response: {}", response->getStatusCode());

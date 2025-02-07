@@ -7,12 +7,14 @@ message("SOURCES: ${SOURCES}")
 add_executable(${PROJECT_NAME} ${SOURCES})
 add_library(${PROJECT_NAME}_lib STATIC ${SOURCES})
 
-
+message("set target_compile_definitions OATPP_VERSION_LESS_1_4_0 oatpp_VERSION: ${oatpp_VERSION}")
 # 获取 oatpp 的版本号
 if(${oatpp_VERSION} VERSION_LESS "1.4.0")
+    message("${oatpp_VERSION} < 1.4.0")
     target_compile_definitions(${PROJECT_NAME} PRIVATE OATPP_VERSION_LESS_1_4_0)
     target_compile_definitions(${PROJECT_NAME}_lib PRIVATE OATPP_VERSION_LESS_1_4_0)
 else()
+    message("${oatpp_VERSION} >= 1.4.0")
     target_compile_definitions(${PROJECT_NAME} PRIVATE OATPP_VERSION_GREATER_EQUAL_1_4_0)
     target_compile_definitions(${PROJECT_NAME}_lib PRIVATE OATPP_VERSION_GREATER_EQUAL_1_4_0)
 endif()

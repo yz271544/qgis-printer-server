@@ -6,9 +6,9 @@
 #include "PlottingFetch.h"
 
 
-oatpp::data::type::DTOWrapper<GeoPointJsonDto> BasicsPropertiesJsonDTO::getLngLatAlt() {
+DTOWRAPPERNS::DTOWrapper<GeoPointJsonDto> BasicsPropertiesJsonDTO::getLngLatAlt() {
 
-    auto objectMapper = std::make_shared<oatpp::json::ObjectMapper>();
+    auto objectMapper = std::make_shared<OBJECTMAPPERNS::ObjectMapper>();
 
     return objectMapper->readFromString<oatpp::Object<GeoPointJsonDto>>(lngLatAlt);
 }
@@ -19,8 +19,8 @@ QJsonObject BasicsPropertiesJsonDTO::getLngLatAltProperties() {
     return lngLatAltJson.object()["properties"].toObject();
 }
 
-oatpp::data::type::DTOWrapper<BasicsPropertiesJsonDTO> PlottingPayloadDto::getBasicsPropertiesJsonDto() {
-    auto objectMapper = std::make_shared<oatpp::json::ObjectMapper>();
+DTOWRAPPERNS::DTOWrapper<BasicsPropertiesJsonDTO> PlottingPayloadDto::getBasicsPropertiesJsonDto() {
+    auto objectMapper = std::make_shared<OBJECTMAPPERNS::ObjectMapper>();
 
     return objectMapper->readFromString<oatpp::Object<BasicsPropertiesJsonDTO>>(basicsPropertiesJson);
 }
@@ -30,8 +30,8 @@ QJsonObject PlottingPayloadDto::getBasicsPropertiesJson() {
     return basicsPropertiesJs.object();
 }
 
-oatpp::data::type::DTOWrapper<ExtendPropertiesJsonDTO> PlottingPayloadDto::getExtendPropertiesJsonDto() {
-    auto objectMapper = std::make_shared<oatpp::json::ObjectMapper>();
+DTOWRAPPERNS::DTOWrapper<ExtendPropertiesJsonDTO> PlottingPayloadDto::getExtendPropertiesJsonDto() {
+    auto objectMapper = std::make_shared<OBJECTMAPPERNS::ObjectMapper>();
 
     return objectMapper->readFromString<oatpp::Object<ExtendPropertiesJsonDTO>>(extendPropertiesJson);
 }
@@ -41,8 +41,8 @@ QJsonObject PlottingPayloadDto::getExtendPropertiesJson() {
     return extendPropertiesJs.object();
 }
 
-oatpp::data::type::DTOWrapper<LongitudeLatitudeDTO> PlottingPayloadDto::getLongitudeLatitude() {
-    auto objectMapper = std::make_shared<oatpp::json::ObjectMapper>();
+DTOWRAPPERNS::DTOWrapper<LongitudeLatitudeDTO> PlottingPayloadDto::getLongitudeLatitude() {
+    auto objectMapper = std::make_shared<OBJECTMAPPERNS::ObjectMapper>();
 
     return objectMapper->readFromString<oatpp::Object<LongitudeLatitudeDTO>>(longitudeLatitude);
 }
@@ -52,8 +52,8 @@ QJsonObject PlottingPayloadDto::getLongitudeLatitudeJson() {
     return longitudeLatitudeJs.object();
 }
 
-oatpp::data::type::DTOWrapper<ShapeDTO> PlottingPayloadDto::getShape() {
-    auto objectMapper = std::make_shared<oatpp::json::ObjectMapper>();
+DTOWRAPPERNS::DTOWrapper<ShapeDTO> PlottingPayloadDto::getShape() {
+    auto objectMapper = std::make_shared<OBJECTMAPPERNS::ObjectMapper>();
 
     return objectMapper->readFromString<oatpp::Object<ShapeDTO>>(shape);
 }
@@ -63,8 +63,8 @@ QJsonObject PlottingPayloadDto::getShapeJson() {
     return shapeJs.object();
 }
 
-oatpp::data::type::DTOWrapper<StyleInfoJsonDTO> PlottingPayloadDto::getStyleInfoJsonDto() {
-    auto objectMapper = std::make_shared<oatpp::json::ObjectMapper>();
+DTOWRAPPERNS::DTOWrapper<StyleInfoJsonDTO> PlottingPayloadDto::getStyleInfoJsonDto() {
+    auto objectMapper = std::make_shared<OBJECTMAPPERNS::ObjectMapper>();
 
     return objectMapper->readFromString<oatpp::Object<StyleInfoJsonDTO>>(styleInfoJson);
 }
@@ -74,8 +74,8 @@ QJsonObject PlottingPayloadDto::getStyleInfoJson() {
     return styleInfoJs.object();
 }
 
-oatpp::data::type::DTOWrapper<SpecialDTO> PlottingDataDto::getSpecialDto() {
-    auto objectMapper = std::make_shared<oatpp::json::ObjectMapper>();
+DTOWRAPPERNS::DTOWrapper<SpecialDTO> PlottingDataDto::getSpecialDto() {
+    auto objectMapper = std::make_shared<OBJECTMAPPERNS::ObjectMapper>();
 
     return objectMapper->readFromString<oatpp::Object<SpecialDTO>>(special);
 }
@@ -85,8 +85,8 @@ QJsonObject PlottingDataDto::getSpecialJson() {
     return specialJs.object();
 }
 
-oatpp::data::type::DTOWrapper<FontStyleDTO> PlottingDataDto::getFontStyleDto() {
-    auto objectMapper = std::make_shared<oatpp::json::ObjectMapper>();
+DTOWRAPPERNS::DTOWrapper<FontStyleDTO> PlottingDataDto::getFontStyleDto() {
+    auto objectMapper = std::make_shared<OBJECTMAPPERNS::ObjectMapper>();
 
     return objectMapper->readFromString<oatpp::Object<FontStyleDTO>>(fontStyle);
 }
@@ -96,8 +96,8 @@ QJsonObject PlottingDataDto::getFontStyleJson() {
     return fontStyleJs.object();
 }
 
-oatpp::data::type::DTOWrapper<LayerStyleObjDTO> PlottingDataDto::getLayerStyleDto() {
-    auto objectMapper = std::make_shared<oatpp::json::ObjectMapper>();
+DTOWRAPPERNS::DTOWrapper<LayerStyleObjDTO> PlottingDataDto::getLayerStyleDto() {
+    auto objectMapper = std::make_shared<OBJECTMAPPERNS::ObjectMapper>();
 
     return objectMapper->readFromString<oatpp::Object<LayerStyleObjDTO>>(layerStyle);
 }
@@ -107,7 +107,7 @@ QJsonObject PlottingDataDto::getLayerStyleJson() {
     return layerStyleJs.object();
 }
 
-oatpp::data::type::Float32 LayerStyleObjDTO::getScale() {
+PRIMITIVENS::Float32 LayerStyleObjDTO::getScale() {
     auto prop = this->Z__PROPERTY_INITIALIZER_PROXY_scale();
     if (prop.getPtr()) {
         return this->scale;
