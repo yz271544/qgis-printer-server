@@ -3,8 +3,8 @@ project(jingweiprinter)
 
 include(FetchContent)
 
-#set($ENV{proxy_http} "http://127.0.0.1:10808")
-#set($ENV{proxys_http} "http://127.0.0.1:10808")
+#set($ENV{http_proxy} "http://127.0.0.1:10808")
+#set($ENV{https_proxy} "http://127.0.0.1:10808")
 
 if(NOT CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD 20)

@@ -120,6 +120,10 @@ class LayerStyleObjDTO : public oatpp::DTO {
     DTO_FIELD(String, linetype);
     DTO_FIELD(Int32, width);
     DTO_FIELD(Float32, scale);
+
+public:
+    // safety get sale method, when the scale is null, return 1.0
+    oatpp::data::type::Float32 getScale();
 };
 
 class StyleInfoJsonDTO : public oatpp::DTO {

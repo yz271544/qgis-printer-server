@@ -184,12 +184,14 @@ TEST(dtoQJson, testDeserializerTopicFile) {
             // test layerStyle
             auto layerStyleDto = dataItem->getLayerStyleDto();
 
-            auto propList = layerStyleDto.getPropertiesList();
-            for (const auto &propItem: propList) {
-                if (propItem->name=="scale") {
-                    GTEST_LOG_(INFO) << "layerStyle -> scale:" << layerStyleDto->scale;
-                }
-            }
+//            auto propList = layerStyleDto.getPropertiesList();
+//            for (const auto &propItem: propList) {
+//                if (propItem->name=="scale") {
+//                    GTEST_LOG_(INFO) << "layerStyle -> scale:" << layerStyleDto->scale;
+//                }
+//            }
+
+            GTEST_LOG_(INFO) << "layerStyle -> scale:" << layerStyleDto->getScale();
             // test layerStyleJson
             auto layerStyleJson = dataItem->getLayerStyleJson();
             GTEST_LOG_(INFO) << "layerStyleJson -> scale:" << layerStyleJson["scale"].toDouble();

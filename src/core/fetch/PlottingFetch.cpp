@@ -106,3 +106,12 @@ QJsonObject PlottingDataDto::getLayerStyleJson() {
     QJsonDocument layerStyleJs = JsonUtil::convertStringToJsonDoc(layerStyle->c_str());
     return layerStyleJs.object();
 }
+
+oatpp::data::type::Float32 LayerStyleObjDTO::getScale() {
+    auto prop = this->Z__PROPERTY_INITIALIZER_PROXY_scale();
+    if (prop.getPtr()) {
+        return this->scale;
+    } else {
+        return 1.0;
+    }
+}
