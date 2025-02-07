@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
     SPDLOG_TRACE("Some trace message with param {}", 42);
     SPDLOG_DEBUG("Some debug message");
 
-    auto logger_starter = LoggerStarter::getInstance(spdlog::level::info);
+    auto logger_starter = LoggerStarter::getInstance(spdlog::level::debug);
     auto logger = logger_starter->getLogger();
 
     logger->getLogger()->info("This is an info log");

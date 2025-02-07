@@ -5,7 +5,7 @@ web:
   port: 5890
   route_prefix: /
 qgis:
-  gui_enabled: false
+  gui_enabled: true
   prefix_path: "/lyndon/iProject/cpath/QGIS/output"
 #  qgis_project_path: "/lyndon/iProject/cpath/qgis_demo1/common/project"
   projects_prefix: "/opt/anbao/map/qgz"

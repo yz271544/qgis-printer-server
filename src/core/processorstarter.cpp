@@ -20,7 +20,9 @@ void ProcessorStarter::Init(StarterContext& context) {
     YAML::Node conf = GetConfig();
     SPDLOG_INFO("qgis -> projects_prefix: {}", conf["qgis"]["projects_prefix"].as<std::string>());
 
-    m_processor = std::make_unique<Processor>(context.getArgs(), config);
+    m_processor = std::make_shared<Processor>(context.getArgs(), config);
+
+    context.setProcessor(m_processor);
 
     SPDLOG_INFO("ProcessorStarter Init end");
 }

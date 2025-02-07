@@ -17,7 +17,7 @@
 class ProcessorStarter : public BaseStarter  {
 private:
     std::shared_ptr<YAML::Node> config;
-    std::unique_ptr<Processor> m_processor;
+    std::shared_ptr<Processor> m_processor;
 public:
     ProcessorStarter();
 

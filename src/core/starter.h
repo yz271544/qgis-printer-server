@@ -15,6 +15,7 @@
 
 #include "starter.h"
 #include "error/exceptions.h"
+#include "core/qgis/Processor.h"
 
 
 const int INT_MAX_VALUE = std::numeric_limits<int>::max();
@@ -33,6 +34,7 @@ private:
     QList<QString> args_;                             // 命令行参数
     static constexpr const char* KeyProps = "_conf"; // 配置键
     std::map<std::string, YAML::Node> context_;       // 上下文存储
+    std::shared_ptr<Processor> processor_;
 
 public:
 
@@ -51,6 +53,12 @@ public:
     void Add(const std::string& key, const YAML::Node& value);
 
     QList<QString> getArgs();
+
+    // 获取Processor实例
+    std::shared_ptr<Processor> getProcessor() const;
+
+    // 设置Processor实例
+    void setProcessor(std::shared_ptr<Processor> processor);
 };
 
 

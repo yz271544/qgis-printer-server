@@ -10,10 +10,15 @@
 #include <oatpp/web/server/api/ApiController.hpp>
 
 #include "core/handler/dto/plotting.h"
+#include "core/qgis/Processor.h"
 
 class PlottingService {
+private:
+    std::shared_ptr<Processor> m_processor;
 public:
-    PlottingService() = default;
+    PlottingService(std::shared_ptr<Processor> processor);
+
+    ~PlottingService() = default;
 
     // 处理绘图逻辑
     oatpp::data::type::DTOWrapper<ResponseDto::Z__CLASS> processPlotting(const oatpp::web::server::api::ApiController::Object<PlottingDto>& plottingDto);

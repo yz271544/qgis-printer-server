@@ -40,3 +40,13 @@ void StarterContext::Add(const std::string& key, const YAML::Node& value) {
 QList<QString> StarterContext::getArgs() {
     return args_;
 }
+
+// 获取Processor实例
+std::shared_ptr<Processor> StarterContext::getProcessor() const {
+    return processor_;
+}
+
+// 设置Processor实例
+void StarterContext::setProcessor(std::shared_ptr<Processor> processor) {
+    processor_ = processor;
+}

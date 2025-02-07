@@ -20,6 +20,8 @@
 #include "oatpp/web/server/HttpConnectionHandler.hpp"
 #include "oatpp/network/tcp/server/ConnectionProvider.hpp"
 #include "oatpp/network/Server.hpp"
+#include "core/qgis/Processor.h"
+
 #if defined(_WIN32) && defined(_MSC_VER)
 #include "oatpp/core/base/Environment.hpp"
 #endif

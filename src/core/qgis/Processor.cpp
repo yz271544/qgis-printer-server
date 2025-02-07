@@ -35,6 +35,7 @@ Processor::Processor(QList<QString> argv_, std::shared_ptr<YAML::Node> config) {
     jingwei_server_url = jingwei_server_url.replace("{JINGWEI_SERVER_PORT}", QString::number(jingwei_server_port));
     jingwei_server_url = jingwei_server_url.replace("{JINGWEI_SERVER_API_PREFIX}", jingwei_server_api_prefix);
 
+    SPDLOG_INFO("jingwei_server_url: {}", jingwei_server_url.toStdString());
     m_plotting_fetch = std::make_unique<PlottingFetch>(jingwei_server_url.toStdString());
 
     m_app = std::make_unique<App>(argv_, m_config);
@@ -107,9 +108,18 @@ Processor::processByPlottingWeb(const std::string& token, const oatpp::data::typ
         topicMapData->sceneId = plottingWeb->sceneId;
         // check and closed the polygon
         checkDealWithClosedGeometry(plottingWeb->geojson);
+        auto scopeJson = JsonUtil::convertDtoToQJsonObject(plottingWeb->geojson);
+        topicMapData->scope = scopeJson.toJson().toStdString();
+
+        auto topicMapDataJson = JsonUtil::convertDtoToQJsonObject(topicMapData);
+        SPDLOG_INFO("topicMapData: {}", topicMapDataJson.toJson().toStdString());
+        // todo: get plotting data
+
 
         auto responseDto = ResponseDto::createShared();
-
+        responseDto->project_zip_url = "http://localhost:80/jingweipy/test.zip";
+        responseDto->image_url = "http://localhost:80/jingweipy/local/test-位置图.png";
+        responseDto->error = "";
         return responseDto;
     });
 }

@@ -22,6 +22,7 @@
 #include "core/handler/dto/plotting.h"
 #include "core/service/PlottingService.h"
 
+#include OATPP_CODEGEN_BEGIN(ApiController)
 // 定义POST接口处理函数
 class PlottingController : public oatpp::web::server::api::ApiController {
 private:
@@ -58,6 +59,6 @@ public:
     }
 };
 
-
+#include OATPP_CODEGEN_END(ApiController)
 
 #endif //PLOTTINGCONTROLLER_H
