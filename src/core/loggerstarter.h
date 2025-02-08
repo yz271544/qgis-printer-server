@@ -6,41 +6,59 @@
 #define LOGGERSTARTER_H
 
 #include "spdlog/spdlog.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
-#include "spdlog/sinks/basic_file_sink.h"
+#include "starter.h"
+#include "yaml-cpp/yaml.h"
 
-// 封装日志操作的Logger类
-class Logger {
-public:
-
-    void setLevel(spdlog::level::level_enum level);
-
-    void addSink(const std::shared_ptr<spdlog::sinks::sink>& sink);
-
-    [[nodiscard]] std::shared_ptr<spdlog::logger> getLogger() const;
-
+class LoggerStarter : public BaseStarter {
 private:
-    std::shared_ptr<spdlog::logger> logger_ = spdlog::stdout_color_mt("console");
+    // 用于存储配置相关的数据结构等，这里简单示意
+    YAML::Node config;
+
+public:
+    // 构造函数，可以在这里进行一些初始的配置或者资源准备工作，如果不需要可以保持默认实现
+    LoggerStarter();
+
+    // 析构函数，用于释放相关资源，目前示例中暂未涉及复杂资源释放，可按需完善
+    ~LoggerStarter();
+
+    BaseStarter* GetInstance();
+
+    // 获取单例实例的静态方法
+    static LoggerStarter* getInstance() {
+        static LoggerStarter instance;
+        return &instance;
+    }
+
+    // 初始化方法，从指定路径加载配置文件，若加载失败会输出错误信息
+    void Init(StarterContext& context);
+
+    // 配置相关的设置操作，留给具体业务逻辑根据需求去实现更详细的配置调整等功能
+    void Setup(StarterContext& context);
+
+    // 启动相关逻辑，根据从配置文件中解析出的配置内容做一些初始化启动相关的操作，需按实际业务需求实现
+    void Start(StarterContext& context);
+
+    // 停止相关操作，清理与配置相关的资源或者状态等，同样需按具体业务逻辑完善
+    void Stop(StarterContext& context);
+
+    // 返回该启动器所属的优先级分组，这里返回基础资源组（BasicResourcesGroup）
+    int PriorityGroup();
+
+    // 指示该启动器启动时是否阻塞，这里返回false，表示非阻塞启动
+    bool StartBlocking();
+
+    // 返回该启动器的优先级数值，使用默认优先级（DEFAULT_PRIORITY）
+    int Priority();
+
+    // 获取启动器的名称，方便在日志、调试或者管理启动器列表等场景使用
+    std::string GetName();
+
+    // 获取已加载并解析的配置内容，外部模块可以通过此方法获取配置信息用于后续操作
+    YAML::Node GetConfig();
+
+
 };
 
-// LoggerStarter类，用于启动和配置日志模块
-class LoggerStarter {
-public:
-    // 获取单例实例的方法
-    static std::shared_ptr<LoggerStarter> getInstance(spdlog::level::level_enum level);
-
-    // 获取内部封装的Logger对象的方法
-    std::shared_ptr<Logger> getLogger();
-
-    void setLevel(spdlog::level::level_enum level);
-
-    void addFileSink(const std::string& filename);
-
-private:
-    explicit LoggerStarter(spdlog::level::level_enum level);
-
-    std::shared_ptr<Logger> logger_;
-};
 
 
 #endif //LOGGERSTARTER_H

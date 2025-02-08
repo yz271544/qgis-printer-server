@@ -4,40 +4,86 @@
 
 #include "loggerstarter.h"
 
-// Logger类的成员函数实现
-void Logger::setLevel(spdlog::level::level_enum level) {
-    logger_->set_level(level);
+// ConfStarter类的构造函数，目前可保持默认实现，若后续有初始化相关成员变量等需求可在此添加代码
+LoggerStarter::LoggerStarter() = default;
+
+// ConfStarter类的析构函数，目前暂未涉及复杂资源释放，可按需完善，比如关闭相关文件流等（如果有使用的话）
+LoggerStarter::~LoggerStarter() = default;
+
+// 实现Init方法，从指定路径加载配置文件，若加载失败会输出错误信息到标准错误输出流
+void LoggerStarter::Init(StarterContext& context) {
+    spdlog::info("ConfStarter Init start");
+    try {
+        config = context.Props();
+        std::string loggerLevel = "info";
+        try{
+            loggerLevel = config["logging"]["level"].as<std::string>();
+            spdlog::warn("loggerLevel: {}", loggerLevel);
+        } catch (const std::exception& e) {
+            spdlog::warn("get logging.level error: {}", e.what());
+        }
+        auto level = spdlog::level::from_str(loggerLevel);
+        spdlog::set_level(level);
+        //spdlog::set_pattern("[%Y-%m-%d %H:%M:%S %z] [%^---%L---%$] [thread %t] %v");
+        spdlog::set_pattern("[%Y-%m-%d %H:%M:%S %z] [%^%l%$] [thread %t] %v");
+        spdlog::warn("Easy padding in numbers like {:08d}", 12);
+        spdlog::critical("Support for int: {0:d};  hex: {0:x};  oct: {0:o}; bin: {0:b}", 42);
+        spdlog::info("{:<30}", "left aligned");
+        spdlog::debug("This message should be displayed..");
+
+    } catch (const YAML::BadFile& e) {
+        std::cerr << "Error loading config file: " << e.what() << std::endl;
+    }
+    spdlog::info("ConfStarter Init end");
 }
 
-void Logger::addSink(const std::shared_ptr<spdlog::sinks::sink>& sink) {
-    logger_->sinks().push_back(sink);
+// 实现Setup方法，目前此方法只是一个占位，可根据具体业务需求实现更详细的配置调整等功能
+// 例如，根据配置内容对某些模块进行初始化设置，或者验证配置的合法性等
+void LoggerStarter::Setup(StarterContext& context) {
+    spdlog::info("ConfStarter Setup start");
+    spdlog::info("ConfStarter Setup end");
 }
 
-std::shared_ptr<spdlog::logger> Logger::getLogger() const {
-    return logger_;
+// 实现Start方法，根据从配置文件中解析出的配置内容做一些初始化启动相关的操作，需按实际业务需求实现
+// 比如，根据配置启动相应的服务、初始化数据库连接等（取决于具体应用场景）
+void LoggerStarter::Start(StarterContext& context) {
+    spdlog::info("ConfStarter Start start");
+    spdlog::info("ConfStarter Start end");
 }
 
-// LoggerStarter类的成员函数实现
-std::shared_ptr<LoggerStarter> LoggerStarter::getInstance(spdlog::level::level_enum level) {
-    static std::shared_ptr<LoggerStarter> instance(new LoggerStarter(level));
-    return instance;
+// 实现Stop方法，清理与配置相关的资源或者状态等，同样需按具体业务逻辑完善
+// 例如，关闭打开的配置文件（如果有保持打开状态的情况），释放相关内存资源等
+void LoggerStarter::Stop(StarterContext& context) {
+    spdlog::info("ConfStarter Stop start");
+    spdlog::info("ConfStarter Stop end");
 }
 
-std::shared_ptr<Logger> LoggerStarter::getLogger() {
-    return logger_;
+// 返回该启动器所属的优先级分组，这里按照定义返回基础资源组（BasicResourcesGroup）
+int LoggerStarter::PriorityGroup() {
+    return BasicResourcesGroup;
 }
 
-void LoggerStarter::setLevel(spdlog::level::level_enum level) {
-    logger_->setLevel(level);
+// 指示该启动器启动时是否阻塞，这里返回false，表示非阻塞启动
+bool LoggerStarter::StartBlocking() {
+    return false;
 }
 
-void LoggerStarter::addFileSink(const std::string& filename) {
-    auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(filename);
-    logger_->addSink(file_sink);
+// 返回该启动器的优先级数值，使用默认优先级（DEFAULT_PRIORITY）
+int LoggerStarter::Priority() {
+    return DEFAULT_PRIORITY;
 }
 
-LoggerStarter::LoggerStarter(spdlog::level::level_enum level) {
-    logger_ = std::make_shared<Logger>();
-    // 可以在这里读取配置文件，设置默认的日志级别等
-    logger_->setLevel(level);
+// 获取启动器的名称，方便在日志、调试或者管理启动器列表等场景使用
+std::string LoggerStarter::GetName() {
+    return "LoggerStarter";
+}
+
+// 获取已加载并解析的配置内容，外部模块可以通过此方法获取配置信息用于后续操作
+YAML::Node LoggerStarter::GetConfig() {
+    return config;
+}
+
+// 实现Starter基类中获取启动器实例的抽象方法
+BaseStarter* LoggerStarter::GetInstance() {
+    return getInstance();
 }
