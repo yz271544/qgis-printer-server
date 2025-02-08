@@ -10,10 +10,8 @@
 
 App::App(QList<QString> argv_, std::shared_ptr<YAML::Node> config)
 {
-    SPDLOG_INFO("app 111");
     mArgc = argv_.count();
     mArgv = reinterpret_cast<char **>(argv_.toVector().data());
-    SPDLOG_INFO("app 222");
     mConfig = config;
     mSceneName = "";
     mProject = nullptr;
@@ -27,17 +25,14 @@ App::App(QList<QString> argv_, std::shared_ptr<YAML::Node> config)
     } catch (const std::exception& e) {
         SPDLOG_ERROR("get gui_enabled error: {}", e.what());
     }
-    SPDLOG_INFO("app 333 {}", GUIenabled);
     // mQgis = new QgsApplication(mArgc, mArgv, GUIenabled);
     mQgis = std::make_shared<QgsApplication>(mArgc, mArgv, GUIenabled);
-    SPDLOG_INFO("app 444");
     QString qgis_prefix_path = "/usr";
     try {
         qgis_prefix_path = QString::fromStdString((*mConfig)["qgis"]["prefix_path"].as<std::string>());
     } catch (const std::exception& e) {
         SPDLOG_ERROR("get qgis.prefix_path error: {}", e.what());
     }
-    SPDLOG_INFO("app 555");
     mQgis->setPrefixPath(qgis_prefix_path, true);
 
     SPDLOG_INFO("init qgis app");

@@ -1,6 +1,13 @@
-# cboot
+# jingweiprinter
 
-a app framework for cpp
+with qgis for TQ application project for jingwei printer
+
+## Motivation
+
+this service can running on headless standalone mode with qgis server in docker container.
+
+![](doc/images/d3_scene.png)
+
 
 ## Development Environment
 
