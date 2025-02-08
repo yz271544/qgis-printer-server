@@ -15,9 +15,18 @@ int main(int argc, char* argv[]) {
     ConfStarter conf_starter;
     WebStarter web_starter;
     ProcessorStarter processor_starter;
-    auto logger_starter = LoggerStarter::getInstance(spdlog::level::info);
+    auto config = conf_starter.GetConfig();
+    std::string loggerLevel = "info";
+    try{
+        loggerLevel = config["logging"]["level"].as<std::string>();
+        spdlog::warn("loggerLevel: {}", loggerLevel);
+    } catch (const std::exception& e) {
+        spdlog::warn("get logging.level error: {}", e.what());
+    }
+    auto level = spdlog::level::from_str(loggerLevel);
+    auto logger_starter = LoggerStarter::getInstance(level);
     auto logger = logger_starter->getLogger();
-    spdlog::set_level(spdlog::level::info);
+    spdlog::set_level(level);
     spdlog::set_pattern("[%Y-%m-%d %H:%M:%S %z] [%^---%L---%$] [thread %t] %v");
     logger->getLogger()->info("This is an info log");
     logger->getLogger()->error("This is an error log");
