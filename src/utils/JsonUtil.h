@@ -45,7 +45,7 @@ public:
             // Error handling can be done here as needed, such as returning an error response
         }
 
-        spdlog::debug("info Processing plotting request, requestBody: {}", jsonStr->c_str());
+        spdlog::debug("JsonUtil::convertDtoToQJsonObject plotting request, requestBody: {}", QString::fromStdString(jsonStr).toUtf8());
 
         QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonStr->c_str());
         //QJsonObject jsonObject = jsonDoc.object();

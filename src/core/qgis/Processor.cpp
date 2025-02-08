@@ -4,8 +4,14 @@
 
 #include "Processor.h"
 
-Processor::Processor(QList<QString> argvList, std::shared_ptr<YAML::Node> config) {
+Processor::Processor(QList<QString> argvList, std::shared_ptr<YAML::Node>& config) {
     m_config = config;
+
+    try {
+        m_verbose = m_config->operator[]("logging")["verbose"].as<bool>();
+    } catch (const std::exception& e) {
+        spdlog::warn("get verbose error: {}", e.what());
+    }
 
     QString jingwei_server_host = "127.0.0.1";
     try{
@@ -40,6 +46,22 @@ Processor::Processor(QList<QString> argvList, std::shared_ptr<YAML::Node> config
 
     m_app = std::make_unique<App>(argvList, m_config);
 
+    // 读取图像规格
+    m_image_spec_map = std::make_unique<QVariantMap>();
+    spdlog::info("read the image spec");
+    auto specification = (*m_config)["specification"];
+    QList<QVariant> specList = NodeToMap::sequenceToVariantList(specification);
+    for (const auto &item: specList) {
+        auto itemMap = item.toMap();
+        (*m_image_spec_map)[itemMap["name"].toString()] = itemMap;
+    }
+    if (m_verbose) {
+        for (const auto &key: m_image_spec_map->keys()) {
+            spdlog::debug("image_spec: {}", key.toStdString());
+            auto value = m_image_spec_map->value(key).toMap();
+            spdlog::debug("local: {}", value["local"].toString().toStdString());
+        }
+    }
 }
 
 Processor::~Processor() {
@@ -100,8 +122,10 @@ Processor::processByPlottingWeb(const oatpp::String& token, const DTOWRAPPERNS::
     // 使用 std::async 来实现异步操作
     return std::async(std::launch::async, [this, token, plottingWeb]() {
 
-        QJsonDocument postPlottingWebBody = JsonUtil::convertDtoToQJsonObject(plottingWeb);
-        spdlog::debug("input plottingWeb: {}", postPlottingWebBody.toJson(QJsonDocument::JsonFormat::Compact).toStdString());
+        if (m_verbose) {
+            QJsonDocument postPlottingWebBody = JsonUtil::convertDtoToQJsonObject(plottingWeb);
+            spdlog::debug("input plottingWeb: {}", postPlottingWebBody.toJson(QJsonDocument::JsonFormat::Compact).toStdString());
+        }
 
         // 发送请求get绘图数据
         auto topicMapData = TopicMapData::createShared();
@@ -122,14 +146,77 @@ Processor::processByPlottingWeb(const oatpp::String& token, const DTOWRAPPERNS::
         } else {
             topicMapData->topicCategory = "";
         }
+        // show XServer Request body
+        if (m_verbose) {
+            auto topicMapDataJson = JsonUtil::convertDtoToQJsonObject(topicMapData);
+            spdlog::debug("topicMapData: {}", topicMapDataJson.toJson(QJsonDocument::JsonFormat::Compact).toStdString());
+        }
 
-        auto topicMapDataJson = JsonUtil::convertDtoToQJsonObject(topicMapData);
-        spdlog::debug("topicMapData: {}", topicMapDataJson.toJson(QJsonDocument::JsonFormat::Compact).toStdString());
-
-        // todo: get plotting data
+        // 获取 XServer 绘图数据
         auto plottingRespDto = fetchPlotting(token, plottingWeb->sceneType, topicMapData).get();
-        auto plottingRespDtoJson = JsonUtil::convertDtoToQJsonObject(plottingRespDto);
-        spdlog::debug("plottingRespDtoJson: {}", plottingRespDtoJson.toJson(QJsonDocument::JsonFormat::Compact).toStdString());
+        if (m_verbose) {
+            auto plottingRespDtoJson = JsonUtil::convertDtoToQJsonObject(plottingRespDto);
+            spdlog::debug("plottingRespDtoJson: {}", plottingRespDtoJson.toJson(QJsonDocument::JsonFormat::Compact).toStdString());
+        }
+
+        if (plottingRespDto->code >= 400) {
+            std::string errorMsg = fmt::format("fetch plotting data error: {}", plottingRespDto->msg->c_str());
+            spdlog::error(errorMsg);
+            throw XServerRequestError(errorMsg);
+        }
+
+        spdlog::debug("create qgis project");
+        QString sceneName = QString::fromStdString(*plottingWeb->sceneName);
+        QString mainCrs = QString::fromStdString(MAIN_CRS);
+        m_app->createProject(sceneName, mainCrs);
+        spdlog::debug("add map base tile layer");
+        m_app->addMapBaseTileLayer();
+
+        if (!plottingWeb->path->empty()) {
+            QString plottingWebPaths = QString::fromStdString(*plottingWeb->path);
+            QStringList orthogonal_paths = plottingWebPaths.split(",");
+            for (int i = 0; i < orthogonal_paths.size(); ++i) {
+                QString orthogonal_path = orthogonal_paths[i];
+                if (orthogonal_path.contains("/")) {
+                    orthogonal_path = orthogonal_path.split("/").last();
+                } else if (orthogonal_path.contains("\\")) {
+                    orthogonal_path = orthogonal_path.split("\\").last();
+                }
+                QString plottingWebSceneId = QString::fromStdString(*plottingWeb->sceneId);
+                orthogonal_path = plottingWebSceneId.append("-").append(orthogonal_path.trimmed());
+                spdlog::info("add map main tile layer {}", orthogonal_path.toStdString());
+                m_app->addMapMainTileLayer(i, orthogonal_path);
+            }
+        }
+
+        if (!plottingWeb->path3d->empty()) {
+            QString plottingWebPath3ds = QString::fromStdString(*plottingWeb->path3d);
+            QStringList real_3d_paths = plottingWebPath3ds.split(",");
+            for (int i = 0; i < real_3d_paths.size(); ++i) {
+                QString path3d = real_3d_paths[i].trimmed();
+                QStringList path3d_arr = path3d.split("/");
+                if (path3d_arr.last() == "tileset.json") {
+                    path3d = path3d_arr[path3d_arr.size() - 2] + "/" + path3d_arr.last();
+                }
+                QString plottingWebSceneId = QString::fromStdString(*plottingWeb->sceneId);
+                QString real_3d_path = plottingWebSceneId.append("-").append(path3d);
+                spdlog::info("add map tiled scene layer {}", real_3d_path.toStdString());
+                m_app->addMapMainTileLayer(i, real_3d_path);
+            }
+        }
+
+        // add layers
+        spdlog::debug("add map plotting layers");
+        plottingLayers(plottingRespDto);
+
+        // create 2d canvas
+        m_app->createCanvas(mainCrs);
+        m_app->resetCanvas(plottingWeb->geojson);
+
+        // add 2d layout
+        spdlog::debug("add layout");
+        m_config->operator[]("logging")["verbose"] = false;
+
 
         auto responseDto = ResponseDto::createShared();
         responseDto->project_zip_url = "http://localhost:80/jingweipy/test.zip";
@@ -164,4 +251,9 @@ void Processor::checkDealWithClosedGeometry(const DTOWRAPPERNS::DTOWrapper<GeoPo
             spdlog::info("last point x: {}, y: {}", geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() - 1][0], geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() - 1][1]);
         }
     }
+}
+
+
+void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &plotting_data) {
+
 }

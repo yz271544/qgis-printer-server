@@ -160,6 +160,7 @@ class PlottingDto : public oatpp::DTO {
 
   DTO_FIELD(Boolean, selectPath);
   DTO_FIELD(String, path);
+  DTO_FIELD(String, path3d);
   DTO_FIELD(oatpp::Vector<oatpp::Vector<oatpp::Int32>>, tileIndex);
   DTO_FIELD(String, sceneId);
   DTO_FIELD(String, sceneName);

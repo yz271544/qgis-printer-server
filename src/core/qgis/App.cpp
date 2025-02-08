@@ -54,16 +54,16 @@ App::App(const QList<QString>& argvList, std::shared_ptr<YAML::Node>& config)
 
 App::~App() {
     spdlog::info("App destroy start");
-    finish_qgis();
+    finishQgis();
     spdlog::info("App destroy finished");
 }
 
-void App::finish_qgis() {
+void App::finishQgis() {
     QgsApplication::exitQgis();
     spdlog::debug("finished qgis");
 }
 
-void App::create_project(QString& scene_name, QString& crs) {
+void App::createProject(QString& scene_name, QString& crs) {
     mSceneName = scene_name;
     mProject = std::make_shared<QgsProject>();
     mCanvas = std::make_shared<QgsMapCanvas>();
@@ -77,14 +77,14 @@ void App::create_project(QString& scene_name, QString& crs) {
         return;
     }
     mProjectDir = QString::fromStdString((*mConfig)["qgis"]["projects_prefix"].as<std::string>()) + "/" + mSceneName;
-    spdlog::debug("create_project::clear_layers()");
-    clear_layers();
-    spdlog::debug("create_project::clean_project()");
-    clean_project();
+    spdlog::debug("create_project::clearLayers()");
+    clearLayers();
+    spdlog::debug("create_project::cleanProject()");
+    cleanProject();
     spdlog::debug("create_project::create()");
     //mProject = QgsProject::instance();
     mTransformContext = mProject->transformContext();
-    clear_project();
+    clearProject();
     spdlog::debug("mProject.setCrs(QgsCoordinateReferenceSystem(qgscrs))");
     QgsCoordinateReferenceSystem qgscrs(crs);
     mProject->setCrs(qgscrs);
@@ -92,7 +92,7 @@ void App::create_project(QString& scene_name, QString& crs) {
     FileUtil::create_directory(mProjectDir.toStdString());
 }
 
-void App::clean_project() {
+void App::cleanProject() {
     try {
         FileUtil::delete_directory(mProjectDir.toStdString());
     } catch (const std::exception& e) {
@@ -100,7 +100,7 @@ void App::clean_project() {
     }
 }
 
-void App::save_project() {
+void App::saveProject() {
     try {
         QString project_file = QString().append(mProjectDir).append("/").append(mSceneName).append(".qgz");
         mProject->write(project_file);
@@ -109,7 +109,7 @@ void App::save_project() {
     }
 }
 
-void App::commit_project() {
+void App::commitProject() {
     QStringList commitErrors;
     bool success = mProject->commitChanges(commitErrors);
     if (!success) {
@@ -117,7 +117,7 @@ void App::commit_project() {
     }
 }
 
-void App::clear_layers() {
+void App::clearLayers() {
     if (mProject != nullptr) {
         // clear layouts
         QgsLayoutManager* layout_manager = mProject->layoutManager();
@@ -131,7 +131,7 @@ void App::clear_layers() {
             delete it.value();
         }
 
-        clear_project();
+        clearProject();
         //delete mProject;
         //mProject = nullptr;
         mProject.reset();
@@ -139,17 +139,17 @@ void App::clear_layers() {
     }
 }
 
-void App::clear_project() {
+void App::clearProject() {
     mProject->clear();
 }
 
-void App::create_canvas(QString& crs) {
+void App::createCanvas(QString& crs) {
     //mCanvas = new QgsMapCanvas;
     mCanvas = std::make_shared<QgsMapCanvas>();
     mCanvas->setDestinationCrs(QgsCoordinateReferenceSystem(crs));
 }
 
-void App::add_map_base_tile_layer() {
+void App::addMapBaseTileLayer() {
     QString base_tile_url = QString::fromStdString(BASE_TILE_NAME);
     QgsRasterLayer base_tile_layer(base_tile_url, BASE_TILE_NAME, "wms");
     if (base_tile_layer.isValid()) {
@@ -159,7 +159,7 @@ void App::add_map_base_tile_layer() {
     }
 }
 
-void App::add_map_main_tile_layer(int num, QString& orthogonalPath) {
+void App::addMapMainTileLayer(int num, QString& orthogonalPath) {
     if (orthogonalPath.isEmpty()) {
         spdlog::error("orthogonalPath is empty");
         return;
@@ -203,7 +203,7 @@ void App::add_map_main_tile_layer(int num, QString& orthogonalPath) {
     }
 }
 
-void App::add_map_3d_tile_layer(int num, QString& realistic3dPath) {
+void App::addMap3dTileLayer(int num, QString& realistic3dPath) {
     if (realistic3dPath.isEmpty()) {
         spdlog::error("realistic3dPath is empty");
         return;
@@ -239,7 +239,7 @@ void App::add_map_3d_tile_layer(int num, QString& realistic3dPath) {
     }
 }
 
-void App::refresh_canvas_extent() {
+void App::refreshCanvasExtent() {
     // Calculate the combined extent of all layers
     QgsRectangle extent{};
     auto projectLayers = mProject->mapLayers().values();
@@ -255,7 +255,7 @@ void App::refresh_canvas_extent() {
     mCanvas->refresh();
 }
 
-void App::reset_canvas(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto>& geoJsonDto) {
+void App::resetCanvas(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto>& geoJsonDto) {
     // 设置坐标系
     QgsCoordinateReferenceSystem crs(MAIN_CRS);
     // 创建地图设置对象
@@ -278,7 +278,7 @@ void App::reset_canvas(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto>& geoJso
                     QJsonArray coord = coordinate.toArray();
                     double x = coord[0].toDouble();
                     double y = coord[1].toDouble();
-                    QgsPointXY transformedPoint = transform_4326_to_3857(x, y);
+                    QgsPointXY transformedPoint = transform4326To3857(x, y);
                     xList.append(transformedPoint.x());
                     yList.append(transformedPoint.y());
                 }
@@ -327,7 +327,7 @@ void App::reset_canvas(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto>& geoJso
     spdlog::debug("refreshed map_settings mapSettings rotation: {}", mapSettings.rotation());
 }
 
-void App::reset_canvas_by_elements() {
+void App::resetCanvasByElements() {
     QgsCoordinateReferenceSystem crs(MAIN_CRS);
     // Calculate the combined extent of all layers
     QgsRectangle extent{};
@@ -346,7 +346,7 @@ void App::reset_canvas_by_elements() {
     mCanvas->refresh();
 }
 
-void App::remove_attache_files() {
+void App::removeAttacheFiles() {
     auto attached_files = mProject->attachedFiles();
     for (const auto &attachedFile: attached_files) {
         auto identifier = mProject->attachmentIdentifier(attachedFile);
@@ -357,11 +357,11 @@ void App::remove_attache_files() {
     }
 }
 
-void App::refresh_canvas() {
+void App::refreshCanvas() {
     mCanvas->refresh();
 }
 
-QgsPointXY App::transform_4326_to_3857(double x, double y) {
+QgsPointXY App::transform4326To3857(double x, double y) {
     QgsCoordinateReferenceSystem crs4326(REAL3D_SOURCE_CRS);
     QgsCoordinateReferenceSystem crs3857(MAIN_CRS);
     QgsCoordinateTransform transform(crs4326, crs3857, mProject.get());

@@ -20,6 +20,7 @@
 #include "core/enums/PaperSpecification.h"
 #include "core/fetch/PlottingFetch.h"
 #include "utils/Formula.h"
+#include "utils/NodeToMap.h"
 #include "App.h"
 
 // 由于 Python 中的 Dict 是一个类似字典的结构，在 C++ 中可以使用 std::unordered_map 来模拟
@@ -29,12 +30,14 @@ using Dict = std::unordered_map<K, V>;
 
 class Processor {
 private:
+    bool m_verbose = false;
     std::shared_ptr<YAML::Node> m_config;
     std::unique_ptr<PlottingFetch> m_plotting_fetch;
     std::unique_ptr<App> m_app;
+    std::unique_ptr<QVariantMap> m_image_spec_map;
 public:
     // 构造函数
-    Processor(QList<QString> argvList, std::shared_ptr<YAML::Node> config);
+    Processor(QList<QString> argvList, std::shared_ptr<YAML::Node>& config);
 
     // 析构函数
     ~Processor();
@@ -53,10 +56,7 @@ public:
             const oatpp::String &token, const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingDto);
 
     // 绘制图层的函数
-    void plotting_layers(const std::string &plotting_data) {
-        // 这里只是简单的占位实现，实际需要根据具体需求实现
-        std::cout << "Plotting layers with data: " << plotting_data << std::endl;
-    }
+    void plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &plotting_data);
 
     // 添加布局的函数
     void add_layout(const std::string &canvas, const std::string &layout_name, const std::string &plotting_web,

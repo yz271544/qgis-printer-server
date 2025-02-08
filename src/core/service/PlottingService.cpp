@@ -30,7 +30,7 @@ DTOWRAPPERNS::DTOWrapper<ResponseDto::Z__CLASS> PlottingService::processPlotting
         // 这里可以根据需要进行错误处理，例如返回错误响应
     }
 
-    spdlog::debug("info Processing plotting request, requestBody: {}", jsonStr);
+    spdlog::debug("processPlotting Processing plotting request, requestBody: {}", QString::fromStdString(jsonStr).toUtf8());
 
     auto responseDto = m_processor->processByPlottingWeb(token, plottingDto).get();
 

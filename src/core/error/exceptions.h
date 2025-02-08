@@ -99,6 +99,16 @@ private:
     std::string message_;
 };
 
+class XServerRequestError : public std::exception {
+public:
+    explicit XServerRequestError(const std::string& message) : message_(message) {}
+    const char* what() const noexcept override {
+        return message_.c_str();
+    }
+private:
+    std::string message_;
+};
+
 class SystemUnknownError : public std::exception {
 public:
     explicit SystemUnknownError(const std::string& message) : message_(message) {}
