@@ -9,7 +9,9 @@ PlottingService::PlottingService(std::shared_ptr<Processor> processor) {
     m_processor = processor;
 }
 
-DTOWRAPPERNS::DTOWrapper<ResponseDto::Z__CLASS> PlottingService::processPlotting(const oatpp::web::server::api::ApiController::Object<PlottingDto>& plottingDto) {
+DTOWRAPPERNS::DTOWrapper<ResponseDto::Z__CLASS> PlottingService::processPlotting(
+        const oatpp::String& token,
+        const oatpp::web::server::api::ApiController::Object<PlottingDto>& plottingDto) {
     // Implement the actual plotting logic here
     SPDLOG_DEBUG("debug Processing plotting request");
 
@@ -19,9 +21,6 @@ DTOWRAPPERNS::DTOWrapper<ResponseDto::Z__CLASS> PlottingService::processPlotting
 #else
     auto objectMapper = std::make_shared<oatpp::json::ObjectMapper>();
 #endif
-//    auto p = plottingDto.get();
-//    auto oGeo = p->geojson;
-//    auto geo = oGeo.get();
     // 将 plottingDto 序列化为 JSON 字符串
     std::string jsonStr;
     try {
@@ -32,12 +31,8 @@ DTOWRAPPERNS::DTOWrapper<ResponseDto::Z__CLASS> PlottingService::processPlotting
     }
 
     SPDLOG_INFO("info Processing plotting request, requestBody: {}", jsonStr);
-    // Example: Generate a response
-//    auto responseDto = ResponseDto::createShared();
-//    responseDto->project_zip_url = "http://localhost:80/jingweipy/test.zip";
-//    responseDto->image_url = "http://localhost:80/jingweipy/local/test-位置图.png";
 
-    auto responseDto = m_processor->processByPlottingWeb("token", plottingDto).get();
+    auto responseDto = m_processor->processByPlottingWeb(token, plottingDto).get();
 
 
     return responseDto;

@@ -42,18 +42,12 @@ public:
     }
 
     ENDPOINT("POST", "/qgz", plotting,
+             REQUEST(std::shared_ptr<IncomingRequest>, request),
              BODY_DTO(Object<PlottingDto>, plottingDto)) {
-//        // 创建响应DTO对象
-//        auto responseDto = ResponseDto::createShared();
-//        responseDto->project_zip_url = "http://localhost:80/jingweipy/test.zip";
-//        responseDto->image_url = "http://localhost:80/jingweipy/local/test-位置图.png";
-//
-//        // 返回响应
-//        return createDtoResponse(Status::CODE_200, responseDto);
-
+        auto token = request->getHeader("Authorization");
+        SPDLOG_INFO("Authorization header: {}", token->c_str());
         // 调用业务逻辑服务类处理请求
-        auto responseDto = m_plottingService->processPlotting(plottingDto);
-
+        auto responseDto = m_plottingService->processPlotting(token, plottingDto);
         // 返回响应
 #if OATPP_VERSION_LESS_1_4_0
         return createDtoResponse(Status::CODE_200, responseDto, this->getDefaultObjectMapper());

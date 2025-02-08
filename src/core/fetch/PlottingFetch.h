@@ -322,11 +322,11 @@ public:
                 DTOWRAPPERNS::DTOWrapper<PlottingRespDto> loginObj = response->readBodyToDto<oatpp::Object<PlottingRespDto>>(m_objectMapper.get());
                 return loginObj;
             } else {
-                SPDLOG_ERROR("Failed to fetch login response: {}", response->getStatusCode());
+                SPDLOG_ERROR("XServer Response Failed to fetch login response: {}", response->getStatusCode());
                 return nullptr;
             }
         } catch (const std::exception& e) {
-            SPDLOG_ERROR("Failed to fetch login response: {}", e.what());
+            SPDLOG_ERROR("Printer Failed to fetch login response: {}", e.what());
             return nullptr;
         }
     }

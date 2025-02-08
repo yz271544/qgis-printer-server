@@ -7,7 +7,7 @@
 
 TEST(plottingCurl, curlTest) {
 
-    auto baseUrl = oatpp::String("http://172.31.100.33:38089/api");
+    auto baseUrl = oatpp::String("http://172.31.100.34:38089/api");
 
     LoginFetch loginFetch(baseUrl);
 
@@ -32,8 +32,8 @@ TEST(plottingCurl, curlTest) {
     };
 
     auto topicMapData = TopicMapData::createShared();
-    topicMapData->sceneId = "1847168269595754497";
-    topicMapData->scope = "{\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[111.45614558807182,40.718542891344214],[111.45614558807182,40.73911269545787],[111.51314153018527,40.73911269545787],[111.51314153018527,40.718542891344214],[111.45614558807182,40.718542891344214]]]}}";
+    topicMapData->sceneId = "1881251849636462594";
+    topicMapData->scope = "{\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[112.6985860410173,37.77763191927945],[112.6985860410173,37.792934788111225],[112.73922824078208,37.792934788111225],[112.73922824078208,37.77763191927945],[112.6985860410173,37.77763191927945]]]}}";
     topicMapData->topicCategory = "";
 
     auto resp = plottingFetch.fetch(additionalHeaders, topicMapData);

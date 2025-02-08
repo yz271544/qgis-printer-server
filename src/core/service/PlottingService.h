@@ -22,7 +22,7 @@ public:
     ~PlottingService() = default;
 
     // 处理绘图逻辑
-    DTOWRAPPERNS::DTOWrapper<ResponseDto::Z__CLASS> processPlotting(const oatpp::web::server::api::ApiController::Object<PlottingDto>& plottingDto);
+    DTOWRAPPERNS::DTOWrapper<ResponseDto::Z__CLASS> processPlotting(const oatpp::String& token, const oatpp::web::server::api::ApiController::Object<PlottingDto>& plottingDto);
 };
 
 #endif //JINGWEIPRINTER_PLOTTINGSERVICE_H

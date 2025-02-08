@@ -14,6 +14,7 @@
 #include <functional>
 #include <yaml-cpp/yaml.h>
 #include <QFile>
+#include <QJsonDocument>
 
 #include "core/error/exceptions.h"
 #include "core/enums/PaperSpecification.h"
@@ -40,7 +41,7 @@ public:
 
     // 异步获取绘图数据的函数
     std::future<DTOWRAPPERNS::DTOWrapper<PlottingRespDto>>
-    fetchPlotting(const std::string& token, const std::string& scene_type,
+    fetchPlotting(const oatpp::String& token, const oatpp::String& scene_type,
                    DTOWRAPPERNS::DTOWrapper<TopicMapData>& topic_map_data);
 
 
@@ -48,7 +49,8 @@ public:
     void checkDealWithClosedGeometry(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto>& geojson);
 
     // 异步处理绘图数据的函数
-    std::future<DTOWRAPPERNS::DTOWrapper<ResponseDto>> processByPlottingWeb(const std::string& token, const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingDto);
+    std::future<DTOWRAPPERNS::DTOWrapper<ResponseDto>> processByPlottingWeb(
+            const oatpp::String& token, const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingDto);
 
     // 绘制图层的函数
     void plotting_layers(const std::string& plotting_data) {

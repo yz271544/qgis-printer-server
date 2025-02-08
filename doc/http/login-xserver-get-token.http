@@ -1,0 +1,12 @@
+### POST login
+POST http://{{host}}:{{port}}/api/login
+Content-Type: application/json
+
+{
+  "username": "jingwei",
+  "password": "gis@123"
+}
+
+> {%
+    client.global.set("token", response.body.data.token)
+%}

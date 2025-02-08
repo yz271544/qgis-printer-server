@@ -47,11 +47,11 @@ Processor::~Processor() {
 };
 
 std::future<DTOWRAPPERNS::DTOWrapper<PlottingRespDto>>
-Processor::fetchPlotting(const std::string &token, const std::string &scene_type,
+Processor::fetchPlotting(const oatpp::String& token, const oatpp::String& scene_type,
                           DTOWRAPPERNS::DTOWrapper<TopicMapData> &topic_map_data) {
     // 使用 std::async 来实现异步操作
     return std::async(std::launch::async, [this, token, scene_type, topic_map_data]() {
-
+        // 环境配置 ENV_PROFILE=test 时，使用测试数据
         const char* envProfile = getenv("ENV_PROFILE");
         if (envProfile != nullptr) {
             std::string profile(envProfile);
@@ -96,12 +96,12 @@ Processor::fetchPlotting(const std::string &token, const std::string &scene_type
 
 // 异步处理绘图数据的函数
 std::future<DTOWRAPPERNS::DTOWrapper<ResponseDto>>
-Processor::processByPlottingWeb(const std::string& token, const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb) {
+Processor::processByPlottingWeb(const oatpp::String& token, const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb) {
     // 使用 std::async 来实现异步操作
     return std::async(std::launch::async, [this, token, plottingWeb]() {
 
         QJsonDocument postPlottingWebBody = JsonUtil::convertDtoToQJsonObject(plottingWeb);
-        SPDLOG_INFO("input plottingWeb: {}", postPlottingWebBody.toJson().toStdString());
+        SPDLOG_INFO("input plottingWeb: {}", postPlottingWebBody.toJson(QJsonDocument::JsonFormat::Compact).toStdString());
 
         // 发送请求get绘图数据
         auto topicMapData = TopicMapData::createShared();
@@ -109,12 +109,27 @@ Processor::processByPlottingWeb(const std::string& token, const DTOWRAPPERNS::DT
         // check and closed the polygon
         checkDealWithClosedGeometry(plottingWeb->geojson);
         auto scopeJson = JsonUtil::convertDtoToQJsonObject(plottingWeb->geojson);
-        topicMapData->scope = scopeJson.toJson().toStdString();
+        topicMapData->scope = scopeJson.toJson(QJsonDocument::JsonFormat::Compact).toStdString();
+
+        QString layoutType = "现场位置图";
+        if (plottingWeb->topicCategory && !plottingWeb->topicCategory->empty()) {
+            topicMapData->topicCategory = plottingWeb->topicCategory->c_str();
+            if (plottingWeb->topicCategory.equalsCI_ASCII("02")) {
+                layoutType = "警力部署图";
+            } else if (plottingWeb->topicCategory.equalsCI_ASCII("03")) {
+                layoutType = "紧急疏散图";
+            }
+        } else {
+            topicMapData->topicCategory = "";
+        }
 
         auto topicMapDataJson = JsonUtil::convertDtoToQJsonObject(topicMapData);
-        SPDLOG_INFO("topicMapData: {}", topicMapDataJson.toJson().toStdString());
-        // todo: get plotting data
+        SPDLOG_INFO("topicMapData: {}", topicMapDataJson.toJson(QJsonDocument::JsonFormat::Compact).toStdString());
 
+        // todo: get plotting data
+        auto plottingRespDto = fetchPlotting(token, plottingWeb->sceneType, topicMapData).get();
+        auto plottingRespDtoJson = JsonUtil::convertDtoToQJsonObject(plottingRespDto);
+        SPDLOG_INFO("plottingRespDtoJson: {}", plottingRespDtoJson.toJson(QJsonDocument::JsonFormat::Compact).toStdString());
 
         auto responseDto = ResponseDto::createShared();
         responseDto->project_zip_url = "http://localhost:80/jingweipy/test.zip";
