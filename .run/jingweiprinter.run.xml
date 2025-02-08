@@ -3,6 +3,7 @@
     <envs>
       <env name="LD_LIBRARY_PATH" value="$PROJECT_DIR$/../QGIS/output/lib:$PROJECT_DIR$/../QGIS/output/lib/qgis/plugins:$PROJECT_DIR$/../OSGeo4W/apps/qgis/bin:${LD_LIBRARY_PATH}" />
       <env name="QT_QPA_PLATFORM" value="xcb" />
+      <env name="ENV_PROFILE" value="test" />
     </envs>
     <method v="2">
       <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />

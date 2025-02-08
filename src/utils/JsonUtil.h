@@ -11,6 +11,8 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
+#include "config.h"
+
 #if OATPP_VERSION_LESS_1_4_0
 #include <oatpp/parser/json/mapping/ObjectMapper.hpp>
 #else
@@ -21,7 +23,7 @@ class JsonUtil {
 public:
     static QVariantMap jsonObjectToVariantMap(const QJsonObject& jsonObject);
     // create singleton ObjectMapper
-    static std::shared_ptr<oatpp::json::ObjectMapper> getObjectMapper() {
+    static std::shared_ptr<OBJECTMAPPERNS::ObjectMapper> getObjectMapper() {
 #if OATPP_VERSION_LESS_1_4_0
         static std::shared_ptr<oatpp::parser::json::mapping::ObjectMapper> objectMapper = oatpp::parser::json::mapping::ObjectMapper::createShared();
 #else
