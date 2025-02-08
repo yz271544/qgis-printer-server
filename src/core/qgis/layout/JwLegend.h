@@ -5,7 +5,7 @@
 #ifndef CBOOT_JWLEGEND_H
 #define CBOOT_JWLEGEND_H
 
-
+#include <spdlog/spdlog.h>
 #include <qgslayoutitemlegend.h>
 #include <qgsvectorlayer.h>
 #include <qgsmaplayerlegend.h>

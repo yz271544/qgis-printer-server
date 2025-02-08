@@ -25,41 +25,41 @@ HookStarter::~HookStarter()
 
 void HookStarter::sig_handler(StarterContext& context)
 {
-    SPDLOG_WARN("start sig_handler");
+    spdlog::warn("start sig_handler");
     for (const auto& callback : callbacks) {
         callback(context);
     }
 }
 
 void HookStarter::Init(StarterContext& context) {
-    SPDLOG_INFO("HookStarter Init Begin");
+    spdlog::info("HookStarter Init Begin");
     std::vector<Starter*> starters = starterRegister->AllStarters();
     for (const auto& starter : starters) {
-        SPDLOG_INFO("starter name: {}", typeid(*starter).name());
+        spdlog::info("starter name: {}", typeid(*starter).name());
         callbacks.emplace_back([starter](StarterContext& ctx) { starter->Stop(ctx); });
     }
 
-    SPDLOG_INFO("HookStarter callback length: {}", callbacks.size());
-    SPDLOG_INFO("HookStarter Init End");
+    spdlog::info("HookStarter callback length: {}", callbacks.size());
+    spdlog::info("HookStarter Init End");
 }
 
 void HookStarter::Setup(StarterContext& context) {
-    SPDLOG_INFO("HookStarter Setup Begin");
+    spdlog::info("HookStarter Setup Begin");
     instance = this;
     this->context = context;
     std::signal(SIGINT, HookStarter::static_sig_handler);
     std::signal(SIGTERM, HookStarter::static_sig_handler);
-    SPDLOG_INFO("HookStarter Setup End");
+    spdlog::info("HookStarter Setup End");
 }
 
 void HookStarter::Start(StarterContext& context) {
-    SPDLOG_INFO("HookStarter Start Begin");
-    SPDLOG_INFO("HookStarter Start End");
+    spdlog::info("HookStarter Start Begin");
+    spdlog::info("HookStarter Start End");
 }
 
 void HookStarter::Stop(StarterContext& context) {
-    SPDLOG_INFO("HookStarter Stop Begin");
-    SPDLOG_INFO("HookStarter Stop End");
+    spdlog::info("HookStarter Stop Begin");
+    spdlog::info("HookStarter Stop End");
 }
 
 int HookStarter::PriorityGroup() {

@@ -8,22 +8,22 @@
 #include "App.h"
 
 
-App::App(QList<QString> argv_, std::shared_ptr<YAML::Node> config)
+App::App(const QList<QString>& argvList, std::shared_ptr<YAML::Node>& config)
 {
-    mArgc = argv_.count();
-    mArgv = reinterpret_cast<char **>(argv_.toVector().data());
+    mArgc = argvList.count();
+    mArgv = reinterpret_cast<char **>(argvList.toVector().data());
     mConfig = config;
     mSceneName = "";
     mProject = nullptr;
     mCanvas = nullptr;
     mMapSettings = nullptr;
     mProjectDir = "";
-    SPDLOG_INFO("create qgis QgsApplication");
+    spdlog::info("create qgis QgsApplication");
     bool GUIenabled = false;
     try{
         GUIenabled = (*mConfig)["qgis"]["gui_enabled"].as<bool>();
     } catch (const std::exception& e) {
-        SPDLOG_ERROR("get gui_enabled error: {}", e.what());
+        spdlog::error("get gui_enabled error: {}", e.what());
     }
     // mQgis = new QgsApplication(mArgc, mArgv, GUIenabled);
     mQgis = std::make_shared<QgsApplication>(mArgc, mArgv, GUIenabled);
@@ -31,64 +31,64 @@ App::App(QList<QString> argv_, std::shared_ptr<YAML::Node> config)
     try {
         qgis_prefix_path = QString::fromStdString((*mConfig)["qgis"]["prefix_path"].as<std::string>());
     } catch (const std::exception& e) {
-        SPDLOG_ERROR("get qgis.prefix_path error: {}", e.what());
+        spdlog::error("get qgis.prefix_path error: {}", e.what());
     }
-    mQgis->setPrefixPath(qgis_prefix_path, true);
+    QgsApplication::setPrefixPath(qgis_prefix_path, true);
 
-    SPDLOG_INFO("init qgis app");
+    spdlog::info("init qgis app");
     try {
-        mQgis->init();
-        mQgis->initQgis();
+        QgsApplication::init();
+        QgsApplication::initQgis();
     } catch (const std::exception& e) {
-        SPDLOG_ERROR("init qgis error: {}", e.what());
+        spdlog::error("init qgis error: {}", e.what());
     }
     mPageSizeRegistry = std::shared_ptr<QgsPageSizeRegistry>(QgsApplication::pageSizeRegistry());
     mAvailablePapers = PaperSpecification::getLayoutPaperList();
     for (const auto &item: mAvailablePapers) {
-        SPDLOG_DEBUG("paper: {}", item.getPaperName().toStdString());
+        spdlog::debug("paper: {}", item.getPaperName().toStdString());
         // self.qgs_page_size_registry.add(QgsPageSize(available_paper.get_name(), QgsLayoutSize(available_paper.value[0], available_paper.value[1], Qgis.LayoutUnit.Millimeters)))
-        // SPDLOG_DEBUG("QGIS_PREFIX_PATH: {}", QGIS_PREFIX_PATH);
+        // spdlog::debug("QGIS_PREFIX_PATH: {}", QGIS_PREFIX_PATH);
         mPageSizeRegistry->add(QgsPageSize(item.getPaperName(), QgsLayoutSize(item.getPaperSize().first, item.getPaperSize().second)));
     }
 }
 
 App::~App() {
-    SPDLOG_INFO("App destroy start");
+    spdlog::info("App destroy start");
     finish_qgis();
-    SPDLOG_INFO("App destroy finished");
+    spdlog::info("App destroy finished");
 }
 
 void App::finish_qgis() {
-    mQgis->exitQgis();
-    SPDLOG_DEBUG("finished qgis");
+    QgsApplication::exitQgis();
+    spdlog::debug("finished qgis");
 }
 
-void App::create_project(QString scene_name, QString crs) {
+void App::create_project(QString& scene_name, QString& crs) {
     mSceneName = scene_name;
     mProject = std::make_shared<QgsProject>();
     mCanvas = std::make_shared<QgsMapCanvas>();
     mMapSettings = std::make_shared<QgsMapSettings>();
     if (!(*mConfig)["qgis"]) {
-        SPDLOG_ERROR("qgis not found in the config.yaml");
+        spdlog::error("qgis not found in the config.yaml");
         return;
     }
     if (!(*mConfig)["qgis"]["projects_prefix"]) {
-        SPDLOG_ERROR("qgis.projects_prefix not found in the config.yaml");
+        spdlog::error("qgis.projects_prefix not found in the config.yaml");
         return;
     }
     mProjectDir = QString::fromStdString((*mConfig)["qgis"]["projects_prefix"].as<std::string>()) + "/" + mSceneName;
-    SPDLOG_DEBUG("create_project::clear_layers()");
+    spdlog::debug("create_project::clear_layers()");
     clear_layers();
-    SPDLOG_DEBUG("create_project::clean_project()");
+    spdlog::debug("create_project::clean_project()");
     clean_project();
-    SPDLOG_DEBUG("create_project::create()");
+    spdlog::debug("create_project::create()");
     //mProject = QgsProject::instance();
     mTransformContext = mProject->transformContext();
     clear_project();
-    SPDLOG_DEBUG("mProject.setCrs(QgsCoordinateReferenceSystem(qgscrs))");
+    spdlog::debug("mProject.setCrs(QgsCoordinateReferenceSystem(qgscrs))");
     QgsCoordinateReferenceSystem qgscrs(crs);
     mProject->setCrs(qgscrs);
-    SPDLOG_DEBUG("create_directory {}", mProjectDir);
+    spdlog::debug("create_directory {}", mProjectDir.toStdString());
     FileUtil::create_directory(mProjectDir.toStdString());
 }
 
@@ -96,7 +96,7 @@ void App::clean_project() {
     try {
         FileUtil::delete_directory(mProjectDir.toStdString());
     } catch (const std::exception& e) {
-        SPDLOG_ERROR("clean_project error: {}", e.what());
+        spdlog::error("clean_project error: {}", e.what());
     }
 }
 
@@ -105,7 +105,7 @@ void App::save_project() {
         QString project_file = QString().append(mProjectDir).append("/").append(mSceneName).append(".qgz");
         mProject->write(project_file);
     } catch (const std::exception& e) {
-        SPDLOG_ERROR("save_project error: {}", e.what());
+        spdlog::error("save_project error: {}", e.what());
     }
 }
 
@@ -113,7 +113,7 @@ void App::commit_project() {
     QStringList commitErrors;
     bool success = mProject->commitChanges(commitErrors);
     if (!success) {
-        SPDLOG_ERROR("commit_project error: {}", commitErrors.join(", ").toStdString());
+        spdlog::error("commit_project error: {}", commitErrors.join(", ").toStdString());
     }
 }
 
@@ -126,7 +126,7 @@ void App::clear_layers() {
         // clear layers
         auto layers = mProject->mapLayers();
         for (auto it = layers.constBegin(); it != layers.constEnd(); ++it) {
-            SPDLOG_DEBUG("Layer ID: {}, Name: {}", it.key(), it.value()->name().toStdString());
+            spdlog::debug("Layer ID: {}, Name: {}", it.key().toStdString(), it.value()->name().toStdString());
             mProject->removeMapLayer(it.key());
             delete it.value();
         }
@@ -135,7 +135,7 @@ void App::clear_layers() {
         //delete mProject;
         //mProject = nullptr;
         mProject.reset();
-        SPDLOG_DEBUG("cleared qgs project");
+        spdlog::debug("cleared qgs project");
     }
 }
 
@@ -143,7 +143,7 @@ void App::clear_project() {
     mProject->clear();
 }
 
-void App::create_canvas(QString crs) {
+void App::create_canvas(QString& crs) {
     //mCanvas = new QgsMapCanvas;
     mCanvas = std::make_shared<QgsMapCanvas>();
     mCanvas->setDestinationCrs(QgsCoordinateReferenceSystem(crs));
@@ -155,37 +155,37 @@ void App::add_map_base_tile_layer() {
     if (base_tile_layer.isValid()) {
         mProject->addMapLayer(&base_tile_layer);
     } else {
-        SPDLOG_ERROR("base_tile_layer is not valid");
+        spdlog::error("base_tile_layer is not valid");
     }
 }
 
-void App::add_map_main_tile_layer(int num, QString orthogonalPath) {
+void App::add_map_main_tile_layer(int num, QString& orthogonalPath) {
     if (orthogonalPath.isEmpty()) {
-        SPDLOG_ERROR("orthogonalPath is empty");
+        spdlog::error("orthogonalPath is empty");
         return;
     }
 
     if (!(*mConfig)["map_main_prefix"]) {
-        SPDLOG_ERROR("map_main_prefix not found in the config.yaml");
+        spdlog::error("map_main_prefix not found in the config.yaml");
         return;
     }
     QString map_main_prefix = QString::fromStdString((*mConfig)["map_main_prefix"].as<std::string>());
 
     if (!(*mConfig)["map_main_base_url"]) {
-        SPDLOG_ERROR("map_main_base_url not found in the config.yaml");
+        spdlog::error("map_main_base_url not found in the config.yaml");
         return;
     }
     QString map_main_base_url = QString::fromStdString((*mConfig)["map_main_base_url"].as<std::string>());
 
     map_main_prefix = map_main_prefix.replace("{MAP_MAIN_BASE_URL}", map_main_base_url);
     if (!(*mConfig)["map_main_suffix"]) {
-        SPDLOG_ERROR("map_main_suffix not found in the config.yaml");
+        spdlog::error("map_main_suffix not found in the config.yaml");
         return;
     }
     QString map_main_suffix = QString::fromStdString((*mConfig)["map_main_suffix"].as<std::string>());
 
     if (!(*mConfig)["map_main_middle"]) {
-        SPDLOG_ERROR("map_main_middle not found in the config.yaml");
+        spdlog::error("map_main_middle not found in the config.yaml");
         return;
     }
     QString main_tile_url = QString::fromStdString((*mConfig)["map_main_middle"].as<std::string>());
@@ -194,29 +194,29 @@ void App::add_map_main_tile_layer(int num, QString orthogonalPath) {
 
     main_tile_url = map_main_prefix + main_tile_url + map_main_suffix;
     QString main_tile_name = QString::fromStdString(MAIN_TILE_NAME).append(num);
-    SPDLOG_DEBUG("add main tile: {}, main_tile_url: {}", main_tile_name, main_tile_url);
+    spdlog::debug("add main tile: {}, main_tile_url: {}", main_tile_name.toStdString(), main_tile_url.toStdString());
     QgsRasterLayer main_tile_layer(main_tile_url, main_tile_name, "wms");
     if (main_tile_layer.isValid()) {
         mProject->addMapLayer(&main_tile_layer);
     } else {
-        SPDLOG_ERROR("main_tile_layer is not valid");
+        spdlog::error("main_tile_layer is not valid");
     }
 }
 
-void App::add_map_3d_tile_layer(int num, QString realistic3dPath) {
+void App::add_map_3d_tile_layer(int num, QString& realistic3dPath) {
     if (realistic3dPath.isEmpty()) {
-        SPDLOG_ERROR("realistic3dPath is empty");
+        spdlog::error("realistic3dPath is empty");
         return;
     }
 
     if (!(*mConfig)["map_3d_base_url"]) {
-        SPDLOG_ERROR("map_3d_base_url not found in the config.yaml");
+        spdlog::error("map_3d_base_url not found in the config.yaml");
         return;
     }
     QString map_3d_base_url = QString::fromStdString((*mConfig)["map_3d_base_url"].as<std::string>());
 
     if (!(*mConfig)["map_main_base_url"]) {
-        SPDLOG_ERROR("map_main_base_url not found in the config.yaml");
+        spdlog::error("map_main_base_url not found in the config.yaml");
         return;
     }
     QString map_main_base_url = QString::fromStdString((*mConfig)["map_main_base_url"].as<std::string>());
@@ -225,16 +225,17 @@ void App::add_map_3d_tile_layer(int num, QString realistic3dPath) {
     map_3d_base_url = map_3d_base_url.replace("{REALISTIC3D_PATH_NAME}", realistic3dPath);
 
     QString real3d_tile_name = QString::fromStdString(REAL3D_TILE_NAME).append(num);
-    SPDLOG_DEBUG("realistic3d_tile_url: {}, real3d_tile_name: {}", map_3d_base_url, real3d_tile_name);
+    spdlog::debug("realistic3d_tile_url: {}, real3d_tile_name: {}",
+                  map_3d_base_url.toStdString(), real3d_tile_name.toStdString());
 
     QgsTiledSceneLayer tiled_scene_layer(map_3d_base_url, real3d_tile_name, CESIUM_TILES_PROVIDER);
-    QgsTiledSceneLayer3DRenderer* renderer3d = new QgsTiledSceneLayer3DRenderer();
-    tiled_scene_layer.setRenderer3D(renderer3d);
+    auto renderer3d = std::make_shared<QgsTiledSceneLayer3DRenderer>();
+    tiled_scene_layer.setRenderer3D(renderer3d.get());
 
     if (tiled_scene_layer.isValid()) {
         mProject->addMapLayer(&tiled_scene_layer);
     } else {
-        SPDLOG_ERROR("tiled_scene_layer is not valid");
+        spdlog::error("tiled_scene_layer is not valid");
     }
 }
 
@@ -254,7 +255,7 @@ void App::refresh_canvas_extent() {
     mCanvas->refresh();
 }
 
-void App::reset_canvas(DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto> geoJsonDto) {
+void App::reset_canvas(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto>& geoJsonDto) {
     // 设置坐标系
     QgsCoordinateReferenceSystem crs(MAIN_CRS);
     // 创建地图设置对象
@@ -273,7 +274,7 @@ void App::reset_canvas(DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto> geoJsonDto) {
             if (coordinates.size() >= 4) {
                 // 将坐标从EPSG:4326转换为EPSG:3857
                 QVector<double> xList, yList;
-                for (const QJsonValue& coordinate : coordinates) {
+                for (const auto coordinate : coordinates) {
                     QJsonArray coord = coordinate.toArray();
                     double x = coord[0].toDouble();
                     double y = coord[1].toDouble();
@@ -288,7 +289,7 @@ void App::reset_canvas(DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto> geoJsonDto) {
                 double minY = *std::min_element(yList.begin(), yList.end());
                 double maxY = *std::max_element(yList.begin(), yList.end());
 
-                SPDLOG_INFO("web_canvas_coordinates ---> min_x: {}, min_y: {}, max_x: {}, max_y: {}", minX, minY, maxX, maxY);
+                spdlog::info("web_canvas_coordinates ---> min_x: {}, min_y: {}, max_x: {}, max_y: {}", minX, minY, maxX, maxY);
 
                 // 设置地图范围
                 QgsRectangle webCanvas(minX, minY, maxX, maxY);
@@ -316,14 +317,14 @@ void App::reset_canvas(DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto> geoJsonDto) {
     }
 
     // 输出调试信息
-    SPDLOG_DEBUG("refreshed canvas extent: {}", mCanvas->extent());
-    SPDLOG_DEBUG("refreshed canvas scale: {}", mCanvas->scale());
-    SPDLOG_DEBUG("refreshed canvas center: {}", mCanvas->center());
-    SPDLOG_DEBUG("refreshed canvas rotation: {}", mCanvas->rotation());
-    SPDLOG_DEBUG("refreshed map_settings extent: {}", mapSettings.extent());
-    SPDLOG_DEBUG("refreshed map_settings visibleExtent: {}", mapSettings.visibleExtent());
-    SPDLOG_DEBUG("refreshed map_settings mapSettings scale: {}", mapSettings.scale());
-    SPDLOG_DEBUG("refreshed map_settings mapSettings rotation: {}", mapSettings.rotation());
+    spdlog::debug("refreshed canvas extent: {}", mCanvas->extent().toString().toStdString());
+    spdlog::debug("refreshed canvas scale: {}", mCanvas->scale());
+    spdlog::debug("refreshed canvas center: {}", mCanvas->center().toString().toStdString());
+    spdlog::debug("refreshed canvas rotation: {}", mCanvas->rotation());
+    spdlog::debug("refreshed map_settings extent: {}", mapSettings.extent().toString().toStdString());
+    spdlog::debug("refreshed map_settings visibleExtent: {}", mapSettings.visibleExtent().toString().toStdString());
+    spdlog::debug("refreshed map_settings mapSettings scale: {}", mapSettings.scale());
+    spdlog::debug("refreshed map_settings mapSettings rotation: {}", mapSettings.rotation());
 }
 
 void App::reset_canvas_by_elements() {
@@ -347,12 +348,11 @@ void App::reset_canvas_by_elements() {
 
 void App::remove_attache_files() {
     auto attached_files = mProject->attachedFiles();
-    SPDLOG_DEBUG("attached_files:{}", attached_files);
     for (const auto &attachedFile: attached_files) {
         auto identifier = mProject->attachmentIdentifier(attachedFile);
-        SPDLOG_DEBUG("identifier:{}", identifier);
+        spdlog::debug("identifier:{}", identifier.toStdString());
         auto attache_file_path = mProject->resolveAttachmentIdentifier(identifier);
-        SPDLOG_DEBUG("attach_file_path:{}", attach_file_path);
+        spdlog::debug("attach_file_path:{}", attache_file_path.toStdString());
         mProject->removeAttachedFile(attache_file_path);
     }
 }
@@ -370,25 +370,25 @@ QgsPointXY App::transform_4326_to_3857(double x, double y) {
 
 // 导出布局为PNG
 bool App::exportLayoutAsPng(const QString& layoutName, const QString& outputPath, const QString& paperName, int dpi) {
-    QString specPaperLayoutName = QString("%1-%2").arg(layoutName).arg(paperName.toUpper());
-    QgsPrintLayout* layout = dynamic_cast<QgsPrintLayout *>(mProject->layoutManager()->layoutByName(
+    QString specPaperLayoutName = QString("%1-%2").arg(layoutName, paperName.toUpper());
+    auto layout = dynamic_cast<QgsPrintLayout *>(mProject->layoutManager()->layoutByName(
             specPaperLayoutName));
 
     if (!layout) {
-        SPDLOG_CRITICAL("Layout {} not found", specPaperLayoutName.toStdString());
+        spdlog::critical("Layout {} not found", specPaperLayoutName.toStdString());
         return false;
     }
 
     QgsLayoutExporter exporter(layout);
-    SPDLOG_DEBUG("Start export image, Output path: {}", outputPath);
+    spdlog::debug("Start export image, Output path: {}", outputPath.toStdString());
 
     // 检查目录是否存在，如果不存在则创建
     QFileInfo fileInfo(outputPath);
     QDir dir = fileInfo.dir();
     if (!dir.exists()) {
-        SPDLOG_CRITICAL("Directory does not exist: {}", dir.path().toStdString());
+        spdlog::critical("Directory does not exist: {}", dir.path().toStdString());
         if (!dir.mkpath(".")) {
-            SPDLOG_CRITICAL("Failed to create directory: {}", dir.path().toStdString());
+            spdlog::critical("Failed to create directory: {}", dir.path().toStdString());
             return false;
         }
     }
@@ -396,21 +396,21 @@ bool App::exportLayoutAsPng(const QString& layoutName, const QString& outputPath
     // 设置导出参数
     QgsLayoutExporter::ImageExportSettings exportSettings;
     exportSettings.dpi = dpi;
-    SPDLOG_DEBUG("Export settings: {}", exportSettings.dpi);
+    spdlog::debug("Export settings: {}", exportSettings.dpi);
 
     // 异步导出图像
     auto exportImage = [&exporter, &outputPath, &exportSettings]() -> bool {
         try {
             QgsLayoutExporter::ExportResult result = exporter.exportToImage(outputPath, exportSettings);
             if (result != QgsLayoutExporter::Success) {
-                SPDLOG_CRITICAL("Error during export: {}", result);
+                spdlog::critical("Error during export: {}", result);
                 return false;
             } else {
-                SPDLOG_DEBUG("Export to image completed");
+                spdlog::debug("Export to image completed");
                 return true;
             }
         } catch (const std::exception& e) {
-            SPDLOG_CRITICAL("Error during export: {}", e.what());
+            spdlog::critical("Error during export: {}", e.what());
             return false;
         }
     };
@@ -420,9 +420,9 @@ bool App::exportLayoutAsPng(const QString& layoutName, const QString& outputPath
     bool result = future.get();
 
     if (result) {
-        SPDLOG_DEBUG("Export successful, continue with further processing");
+        spdlog::debug("Export successful, continue with further processing");
     } else {
-        SPDLOG_CRITICAL("Export failed, handle the error accordingly");
+        spdlog::critical("Export failed, handle the error accordingly");
     }
 
     return result;
@@ -431,25 +431,25 @@ bool App::exportLayoutAsPng(const QString& layoutName, const QString& outputPath
 
 // 导出布局为PDF
 bool App::exportLayoutAsPdf(const QString& layoutName, const QString& outputPath, const QString& paperName, int dpi) {
-    QString specPaperLayoutName = QString("%1-%2").arg(layoutName).arg(paperName.toUpper());
-    QgsPrintLayout* layout = dynamic_cast<QgsPrintLayout *>(mProject->layoutManager()->layoutByName(
+    QString specPaperLayoutName = QString("%1-%2").arg(layoutName, paperName.toUpper());
+    auto layout = dynamic_cast<QgsPrintLayout *>(mProject->layoutManager()->layoutByName(
             specPaperLayoutName));
 
     if (!layout) {
-        SPDLOG_CRITICAL("Layout {} not found", specPaperLayoutName.toStdString());
+        spdlog::critical("Layout {} not found", specPaperLayoutName.toStdString());
         return false;
     }
 
     QgsLayoutExporter exporter(layout);
-    SPDLOG_DEBUG("Start export PDF, Output path: {}", outputPath);
+    spdlog::debug("Start export PDF, Output path: {}", outputPath.toStdString());
 
     // 检查目录是否存在，如果不存在则创建
     QFileInfo fileInfo(outputPath);
     QDir dir = fileInfo.dir();
     if (!dir.exists()) {
-        SPDLOG_CRITICAL("Directory does not exist: {}", dir.path().toStdString());
+        spdlog::critical("Directory does not exist: {}", dir.path().toStdString());
         if (!dir.mkpath(".")) {
-            SPDLOG_CRITICAL("Failed to create directory: {}", dir.path().toStdString());
+            spdlog::critical("Failed to create directory: {}", dir.path().toStdString());
             return false;
         }
     }
@@ -457,21 +457,21 @@ bool App::exportLayoutAsPdf(const QString& layoutName, const QString& outputPath
     // 设置导出参数
     QgsLayoutExporter::PdfExportSettings pdfSettings;
     pdfSettings.dpi = dpi;
-    SPDLOG_DEBUG("Export settings: {}", pdfSettings.dpi);
+    spdlog::debug("Export settings: {}", pdfSettings.dpi);
 
     // 异步导出PDF
     auto exportPDF = [&exporter, &outputPath, &pdfSettings]() -> bool {
         try {
             QgsLayoutExporter::ExportResult result = exporter.exportToPdf(outputPath, pdfSettings);
             if (result != QgsLayoutExporter::Success) {
-                SPDLOG_CRITICAL("Error during export: {}", result);
+                spdlog::critical("Error during export: {}", result);
                 return false;
             } else {
-                SPDLOG_DEBUG("Export to PDF completed");
+                spdlog::debug("Export to PDF completed");
                 return true;
             }
         } catch (const std::exception& e) {
-            SPDLOG_CRITICAL("Error during export: {}", e.what());
+            spdlog::critical("Error during export: {}", e.what());
             return false;
         }
     };
@@ -481,9 +481,9 @@ bool App::exportLayoutAsPdf(const QString& layoutName, const QString& outputPath
     bool result = future.get();
 
     if (result) {
-        SPDLOG_DEBUG("Export successful, continue with further processing");
+        spdlog::debug("Export successful, continue with further processing");
     } else {
-        SPDLOG_CRITICAL("Export failed, handle the error accordingly");
+        spdlog::critical("Export failed, handle the error accordingly");
     }
 
     return result;
@@ -491,25 +491,25 @@ bool App::exportLayoutAsPdf(const QString& layoutName, const QString& outputPath
 
 // 导出布局为SVG
 bool App::exportLayoutAsSvg(const QString& layoutName, const QString& outputPath, const QString& paperName, int dpi) {
-    QString specPaperLayoutName = QString("%1-%2").arg(layoutName).arg(paperName.toUpper());
-    QgsPrintLayout* layout = dynamic_cast<QgsPrintLayout *>(mProject->layoutManager()->layoutByName(
+    QString specPaperLayoutName = QString("%1-%2").arg(layoutName, paperName.toUpper());
+    auto layout = dynamic_cast<QgsPrintLayout *>(mProject->layoutManager()->layoutByName(
             specPaperLayoutName));
 
     if (!layout) {
-        SPDLOG_CRITICAL("Layout {} not found", specPaperLayoutName.toStdString());
+        spdlog::critical("Layout {} not found", specPaperLayoutName.toStdString());
         return false;
     }
 
     QgsLayoutExporter exporter(layout);
-    SPDLOG_DEBUG("Start export SVG, Output path: {}", outputPath);
+    spdlog::debug("Start export SVG, Output path: {}", outputPath.toStdString());
 
     // 检查目录是否存在，如果不存在则创建
     QFileInfo fileInfo(outputPath);
     QDir dir = fileInfo.dir();
     if (!dir.exists()) {
-        SPDLOG_CRITICAL("Directory does not exist: {}", dir.path().toStdString());
+        spdlog::critical("Directory does not exist: {}", dir.path().toStdString());
         if (!dir.mkpath(".")) {
-            SPDLOG_CRITICAL("Failed to create directory: {}", dir.path().toStdString());
+            spdlog::critical("Failed to create directory: {}", dir.path().toStdString());
             return false;
         }
     }
@@ -517,21 +517,21 @@ bool App::exportLayoutAsSvg(const QString& layoutName, const QString& outputPath
     // 设置导出参数
     QgsLayoutExporter::SvgExportSettings svgSettings;
     svgSettings.dpi = dpi;
-    SPDLOG_DEBUG("Export settings: {}", svgSettings.dpi);
+    spdlog::debug("Export settings: {}", svgSettings.dpi);
 
     // 异步导出svg
     auto exportSvg =  [&exporter, &outputPath, &svgSettings]() -> bool {
         try {
             QgsLayoutExporter::ExportResult result = exporter.exportToSvg(outputPath, svgSettings);
             if (result != QgsLayoutExporter::Success) {
-                SPDLOG_CRITICAL("Error during export: {}", result);
+                spdlog::critical("Error during export: {}", result);
                 return false;
             } else {
-                SPDLOG_DEBUG("Export to SVG completed");
+                spdlog::debug("Export to SVG completed");
                 return true;
             }
         } catch (const std::exception& e) {
-            SPDLOG_CRITICAL("Error during export: {}", e.what());
+            spdlog::critical("Error during export: {}", e.what());
             return false;
         }
     };
@@ -541,9 +541,9 @@ bool App::exportLayoutAsSvg(const QString& layoutName, const QString& outputPath
     bool result = future.get();
 
     if (result) {
-        SPDLOG_DEBUG("Export successful, continue with further processing");
+        spdlog::debug("Export successful, continue with further processing");
     } else {
-        SPDLOG_CRITICAL("Export failed, handle the error accordingly");
+        spdlog::critical("Export failed, handle the error accordingly");
     }
 
     return result;

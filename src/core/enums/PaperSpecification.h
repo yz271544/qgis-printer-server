@@ -6,7 +6,7 @@
 #define CBOOT_PAPERSPECIFICATION_H
 
 
-#include <QDebug>
+#include <spdlog/spdlog.h>
 #include <QVector>
 #include <QString>
 #include <QMap>

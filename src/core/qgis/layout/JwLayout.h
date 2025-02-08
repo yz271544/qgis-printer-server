@@ -112,16 +112,16 @@ public:
 
 
 private:
-    QgsProject* project;
-    QString projectDir;
-    QgsMapCanvas* canvas;
-    QString sceneName;
-    JwLegend* jw_legend;
-    QgsPrintLayout* layout;
-    QVariantMap imageSpec;
-    QgsLayoutItemMap* mapItem;
-    double mapWidth;
-    double mapHeight;
+    QgsProject* mProject;
+    QString mProjectDir;
+    QgsMapCanvas* mCanvas;
+    QString mSceneName;
+    JwLegend* mJwLegend;
+    QgsPrintLayout* mLayout;
+    QVariantMap mImageSpec;
+    QgsLayoutItemMap* mMapItem;
+    double mMapWidth;
+    double mMapHeight;
 };
 
 #endif //CBOOT_JWLAYOUT_H

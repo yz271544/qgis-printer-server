@@ -7,7 +7,7 @@
 
 std::tuple<int, int, int, float> ColorTransformUtil::strRgbaToTupleInt(const QString& rgba) {
     if (rgba.isEmpty()) {
-        qCritical() << "Input string is empty";
+        spdlog::critical("Input string is empty");
         return std::make_tuple(0, 0, 0, 0.0f);
     }
 
@@ -16,7 +16,7 @@ std::tuple<int, int, int, float> ColorTransformUtil::strRgbaToTupleInt(const QSt
     // qDebug() << "Cleaned rgba:" << cleanedRgba;
 
     if (!cleanedRgba.startsWith("rgba(") || !cleanedRgba.endsWith(")")) {
-        qCritical() << "Invalid rgba format: must start with 'rgba(' and end with ')'";
+        spdlog::critical("Invalid rgba format: must start with 'rgba(' and end with ')'");
         return std::make_tuple(0, 0, 0, 0.0f);
     }
 
@@ -27,7 +27,7 @@ std::tuple<int, int, int, float> ColorTransformUtil::strRgbaToTupleInt(const QSt
     // 按逗号分割
     QStringList parts = cleanedRgba.split(",");
     if (parts.size() != 4) {
-        qCritical() << "Invalid rgba format: expected 4 components, got" << parts.size();
+        spdlog::critical("Invalid rgba format: expected 4 components, got {}", parts.size());
         return std::make_tuple(0, 0, 0, 0.0f);
     }
 
@@ -35,25 +35,25 @@ std::tuple<int, int, int, float> ColorTransformUtil::strRgbaToTupleInt(const QSt
     bool ok;
     int r = parts[0].trimmed().toInt(&ok);
     if (!ok) {
-        qCritical() << "Invalid red component:" << parts[0];
+        spdlog::critical("Invalid red component: {}", parts[0].toStdString());
         return std::make_tuple(0, 0, 0, 0.0f);
     }
 
     int g = parts[1].trimmed().toInt(&ok);
     if (!ok) {
-        qCritical() << "Invalid green component:" << parts[1];
+        spdlog::critical("Invalid green component: {}", parts[1].toStdString());
         return std::make_tuple(0, 0, 0, 0.0f);
     }
 
     int b = parts[2].trimmed().toInt(&ok);
     if (!ok) {
-        qCritical() << "Invalid blue component:" << parts[2];
+        spdlog::critical("Invalid blue component: {}", parts[2].toStdString());
         return std::make_tuple(0, 0, 0, 0.0f);
     }
 
     float a = parts[3].trimmed().toFloat(&ok);
     if (!ok) {
-        qCritical() << "Invalid alpha component:" << parts[3];
+        spdlog::critical("Invalid alpha component:", parts[3].toStdString());
         return std::make_tuple(0, 0, 0, 0.0f);
     }
 

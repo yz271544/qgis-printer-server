@@ -34,12 +34,12 @@
 
 class App {
 public:
-    App(QList<QString> argv_, std::shared_ptr<YAML::Node> config);
+    App(const QList<QString>& argvList, std::shared_ptr<YAML::Node>& config);
     ~App();
 
-    void finish_qgis();
+    static void finish_qgis();
 
-    void create_project(QString scene_name, QString crs=MAIN_CRS);
+    void create_project(QString& scene_name, QString& crs);
 
     void clean_project();
 
@@ -51,11 +51,11 @@ public:
 
     void clear_project();
 
-    void create_canvas(QString crs=MAIN_CRS);
+    void create_canvas(QString& crs);
 
     void add_map_base_tile_layer();
 
-    void add_map_main_tile_layer(int num, QString orthogonalPath);
+    void add_map_main_tile_layer(int num, QString& orthogonalPath);
 
     /**
      * 添加实景3D图层
@@ -63,7 +63,7 @@ public:
      * @param num
      * @param realistic3dPath
      */
-    void add_map_3d_tile_layer(int num, QString realistic3dPath);
+    void add_map_3d_tile_layer(int num, QString& realistic3dPath);
 
     void refresh_canvas_extent();
 
@@ -71,7 +71,7 @@ public:
     * 重置地图视口范围
     * :param geojson: 前端传输地图视口数据
     */
-    void reset_canvas(DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto> geoJsonDto);
+    void reset_canvas(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto>& geoJsonDto);
 
     void reset_canvas_by_elements();
 

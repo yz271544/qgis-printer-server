@@ -13,39 +13,39 @@ BaseStarter* ProcessorStarter::GetInstance() {
 }
 
 void ProcessorStarter::Init(StarterContext& context) {
-    SPDLOG_INFO("ProcessorStarter Init start");
+    spdlog::info("ProcessorStarter Init start");
     YAML::Node props = context.Props();
-    SPDLOG_INFO("props: {}", props["app"]["name"].as<std::string>());
+    spdlog::info("props: {}", props["app"]["name"].as<std::string>());
     config = std::make_shared<YAML::Node>(props);
     YAML::Node conf = GetConfig();
-    SPDLOG_INFO("qgis -> projects_prefix: {}", conf["qgis"]["projects_prefix"].as<std::string>());
+    spdlog::info("qgis -> projects_prefix: {}", conf["qgis"]["projects_prefix"].as<std::string>());
 
     m_processor = std::make_shared<Processor>(context.getArgs(), config);
 
     context.setProcessor(m_processor);
 
-    SPDLOG_INFO("ProcessorStarter Init end");
+    spdlog::info("ProcessorStarter Init end");
 }
 
 void ProcessorStarter::Setup(StarterContext& context) {
-    SPDLOG_INFO("ProcessorStarter Setup start");
+    spdlog::info("ProcessorStarter Setup start");
 
 
-    SPDLOG_INFO("ProcessorStarter Setup end");
+    spdlog::info("ProcessorStarter Setup end");
 }
 
 void ProcessorStarter::Start(StarterContext& context) {
-    SPDLOG_INFO("ProcessorStarter Start start");
+    spdlog::info("ProcessorStarter Start start");
 
 
-    SPDLOG_INFO("ProcessorStarter Start end");
+    spdlog::info("ProcessorStarter Start end");
 }
 
 void ProcessorStarter::Stop(StarterContext& context) {
-    SPDLOG_INFO("ProcessorStarter Stop start");
+    spdlog::info("ProcessorStarter Stop start");
 
 
-    SPDLOG_INFO("ProcessorStarter Stop end");
+    spdlog::info("ProcessorStarter Stop end");
 }
 
 int ProcessorStarter::PriorityGroup() {

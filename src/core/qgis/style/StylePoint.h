@@ -8,6 +8,8 @@
 #if _MSC_VER >= 1600
 #pragma execution_character_set("utf-8")
 #endif
+
+#include <spdlog/spdlog.h>
 #include <qgsrenderer.h>
 #include <qgis.h>
 #include "qgssymbol.h"
@@ -24,6 +26,7 @@
 #include <qgsrulebased3drenderer.h>
 #include <qgsvectorlayer3drenderer.h>
 #include <qgsnullmaterialsettings.h>
+
 #ifdef min
 #undef min
 #endif

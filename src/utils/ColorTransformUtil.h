@@ -10,7 +10,7 @@
 #pragma execution_character_set("utf-8")
 #endif
 
-#include <QDebug>
+#include <spdlog/spdlog.h>
 #include <QString>
 #include <QVector>
 #include <QHash>

@@ -10,6 +10,7 @@
 #pragma execution_character_set("utf-8")
 #endif
 
+#include <spdlog/spdlog.h>
 #include <QCoreApplication>
 #include <QFont>
 #include <iostream>

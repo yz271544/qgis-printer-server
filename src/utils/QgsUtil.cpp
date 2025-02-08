@@ -14,7 +14,7 @@ QgsTextFormat* QtFontUtil::create_font(
         Qgis::TextOrientation orientation,
         double spacing)
 {
-    QgsTextFormat* text_format = new QgsTextFormat();
+    auto text_format = std::make_shared<QgsTextFormat>();
     QFont font(font_family);
     font.setPointSizeF(font_size);
     font.setBold(is_bold);
@@ -27,7 +27,7 @@ QgsTextFormat* QtFontUtil::create_font(
     buffer_settings.setEnabled(true);
     buffer_settings.setSize(spacing);
     text_format->setBuffer(buffer_settings);
-    return text_format;
+    return text_format.get();
 }
 
 void QgsUtil::show_layer_label(QgsVectorLayer* layer, const QString& style) {
@@ -46,8 +46,8 @@ void QgsUtil::show_layer_label(QgsVectorLayer* layer, const QString& style) {
     label_settings.setFormat(*text_format);
 
     // Apply label settings to the layer
-    QgsVectorLayerSimpleLabeling* labeling = new QgsVectorLayerSimpleLabeling(label_settings);
-    layer->setLabeling(labeling);
+    auto labeling = std::make_shared<QgsVectorLayerSimpleLabeling>(label_settings);
+    layer->setLabeling(labeling.get());
 }
 
 QgsVectorLayerSimpleLabeling*
@@ -74,7 +74,7 @@ float QgsUtil::d300_pixel_to_mm(float pixel_size) {
     float target_dpi = 300;
 
     // 转换为毫米
-    float font_size_mm = (pixel_size / web_dpi) * 25.4 * 2; // 先转换为毫米
+    auto font_size_mm = static_cast<float>((pixel_size / web_dpi) * 25.4 * 2); // 先转换为毫米
     // 缩小比例
     float shrink_ratio = web_dpi / target_dpi;
     return font_size_mm * shrink_ratio; // 缩小字体
@@ -95,8 +95,8 @@ QgsVectorLayer* QgsUtil::write_persisted_layer(const QString& layer_name,
                                                const QgsCoordinateTransformContext& cts,
                                                const QgsCoordinateReferenceSystem& crs) {
 
-    qDebug() << "CRS: " << crs.toWkt();
-    qDebug() << "Number of features in layer: " << layer->featureCount();
+    spdlog::debug("CRS: {}", crs.toWkt().toStdString());
+    spdlog::debug("Number of features in layer: {}", layer->featureCount());
     // QgsFeatureIterator it = layer->getFeatures();
     // QgsFeature feature;
     // while (it.nextFeature(feature)) {
@@ -109,12 +109,12 @@ QgsVectorLayer* QgsUtil::write_persisted_layer(const QString& layer_name,
     QString file_path = QString().append(file_prefix).append(".geojson");
     QString temp_file_path = QString().append(file_prefix).append(".tmp");
 
-    qDebug() << "GeoJSON file path: " << file_path;
+    spdlog::debug("GeoJSON file path: {}", file_path.toStdString());
 
     // 删除旧文件
     if (QFile::exists(file_path)) {
         if (!QFile::remove(file_path)) {
-            qDebug() << "Failed to delete existing file: " << file_path;
+            spdlog::debug("Failed to delete existing file: {}", file_path.toStdString());
             return nullptr;
         }
     }
@@ -147,7 +147,7 @@ QgsVectorLayer* QgsUtil::write_persisted_layer(const QString& layer_name,
     QgsFeature feature;
     while (it.nextFeature(feature)) {
         if (writer->addFeature(feature) != QgsVectorFileWriter::NoError) {
-            qDebug() << "Failed to write feature ID:" << feature.id();
+            spdlog::debug("Failed to write feature ID: {}", feature.id());
         }
     }
 
@@ -167,12 +167,12 @@ QgsVectorLayer* QgsUtil::write_persisted_layer(const QString& layer_name,
     // 重命名临时文件
     QString temp_real_file_path = QString(temp_file_path).append(".geojson");
     if (!QFile::rename(temp_real_file_path, file_path)) {
-        qDebug() << "Failed to rename temp file to target file.";
-        qDebug() << "Temp file path:" << temp_file_path;
-        qDebug() << "Target file path:" << file_path;
+        spdlog::debug("Failed to rename temp file to target file.");
+        spdlog::debug("Temp file path: {}", temp_file_path.toStdString());
+        spdlog::debug("Target file path: {}", file_path.toStdString());
         return nullptr;
     }
 
-    qDebug() << "Successfully wrote GeoJSON file: " << file_path << " baseName:" << layer_name;
+    spdlog::debug("Successfully wrote GeoJSON file: {}, baseName: {}", file_path.toStdString(), layer_name.toStdString());
     return new QgsVectorLayer(file_path, layer_name, "ogr");
 }

@@ -4,46 +4,46 @@
 
 #include "Processor.h"
 
-Processor::Processor(QList<QString> argv_, std::shared_ptr<YAML::Node> config) {
+Processor::Processor(QList<QString> argvList, std::shared_ptr<YAML::Node> config) {
     m_config = config;
 
     QString jingwei_server_host = "127.0.0.1";
     try{
         jingwei_server_host = QString::fromStdString((*m_config)["qgis"]["jingwei_server_host"].as<std::string>());
     } catch (const std::exception& e) {
-        SPDLOG_WARN("get jingwei_server_host error: {}", e.what());
+        spdlog::warn("get jingwei_server_host error: {}", e.what());
     }
     std::int32_t jingwei_server_port = 8080;
     try{
         jingwei_server_port = (*m_config)["qgis"]["jingwei_server_port"].as<std::int32_t>();
     } catch (const std::exception& e) {
-        SPDLOG_WARN("get jingwei_server_port error: {}", e.what());
+        spdlog::warn("get jingwei_server_port error: {}", e.what());
     }
     QString jingwei_server_api_prefix = "/api";
     try{
         jingwei_server_api_prefix = QString::fromStdString((*m_config)["qgis"]["jingwei_server_api_prefix"].as<std::string>());
     } catch (const std::exception& e) {
-        SPDLOG_WARN("get jingwei_server_api_prefix error: {}", e.what());
+        spdlog::warn("get jingwei_server_api_prefix error: {}", e.what());
     }
     QString jingwei_server_url = "";
     try{
         jingwei_server_url = QString::fromStdString((*m_config)["qgis"]["jingwei_server_url"].as<std::string>());
     } catch (const std::exception& e) {
-        SPDLOG_WARN("get jingwei_server_url error: {}", e.what());
+        spdlog::warn("get jingwei_server_url error: {}", e.what());
     }
     jingwei_server_url = jingwei_server_url.replace("{JINGWEI_SERVER_HOST}", jingwei_server_host);
     jingwei_server_url = jingwei_server_url.replace("{JINGWEI_SERVER_PORT}", QString::number(jingwei_server_port));
     jingwei_server_url = jingwei_server_url.replace("{JINGWEI_SERVER_API_PREFIX}", jingwei_server_api_prefix);
 
-    SPDLOG_INFO("jingwei_server_url: {}", jingwei_server_url.toStdString());
+    spdlog::info("jingwei_server_url: {}", jingwei_server_url.toStdString());
     m_plotting_fetch = std::make_unique<PlottingFetch>(jingwei_server_url.toStdString());
 
-    m_app = std::make_unique<App>(argv_, m_config);
+    m_app = std::make_unique<App>(argvList, m_config);
 
 }
 
 Processor::~Processor() {
-    SPDLOG_INFO("Processor destroyed");
+    spdlog::info("Processor destroyed");
 };
 
 std::future<DTOWRAPPERNS::DTOWrapper<PlottingRespDto>>
@@ -56,11 +56,11 @@ Processor::fetchPlotting(const oatpp::String& token, const oatpp::String& scene_
         if (envProfile != nullptr) {
             std::string profile(envProfile);
             if (profile == "test") {
-                SPDLOG_INFO("ENV_PROFILE: {}", profile);
+                spdlog::info("ENV_PROFILE: {}", profile);
                 // open the file and read the json
                 QFile file("/lyndon/iProject/cpath/jingweiprinter/common/input/topicMap.json");
                 if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-                    SPDLOG_ERROR("Cannot open file: {}", file.errorString().toStdString());
+                    spdlog::error("Cannot open file: {}", file.errorString().toStdString());
                 }
 
                 QTextStream in(&file);
@@ -73,11 +73,11 @@ Processor::fetchPlotting(const oatpp::String& token, const oatpp::String& scene_
                     auto plottingRespDto = objectMapper->readFromString<oatpp::Object<PlottingRespDto>>(jsonContent.toStdString().c_str());
 
                     if (!plottingRespDto) {
-                        SPDLOG_ERROR("Failed to parse JSON!");
+                        spdlog::error("Failed to parse JSON!");
                     }
                     return plottingRespDto;
                 } catch (const std::exception& e) {
-                    SPDLOG_ERROR("Failed to parse JSON: {}", e.what());
+                    spdlog::error("Failed to parse JSON: {}", e.what());
                 }
             }
         }
@@ -101,7 +101,7 @@ Processor::processByPlottingWeb(const oatpp::String& token, const DTOWRAPPERNS::
     return std::async(std::launch::async, [this, token, plottingWeb]() {
 
         QJsonDocument postPlottingWebBody = JsonUtil::convertDtoToQJsonObject(plottingWeb);
-        SPDLOG_INFO("input plottingWeb: {}", postPlottingWebBody.toJson(QJsonDocument::JsonFormat::Compact).toStdString());
+        spdlog::debug("input plottingWeb: {}", postPlottingWebBody.toJson(QJsonDocument::JsonFormat::Compact).toStdString());
 
         // 发送请求get绘图数据
         auto topicMapData = TopicMapData::createShared();
@@ -124,12 +124,12 @@ Processor::processByPlottingWeb(const oatpp::String& token, const DTOWRAPPERNS::
         }
 
         auto topicMapDataJson = JsonUtil::convertDtoToQJsonObject(topicMapData);
-        SPDLOG_INFO("topicMapData: {}", topicMapDataJson.toJson(QJsonDocument::JsonFormat::Compact).toStdString());
+        spdlog::debug("topicMapData: {}", topicMapDataJson.toJson(QJsonDocument::JsonFormat::Compact).toStdString());
 
         // todo: get plotting data
         auto plottingRespDto = fetchPlotting(token, plottingWeb->sceneType, topicMapData).get();
         auto plottingRespDtoJson = JsonUtil::convertDtoToQJsonObject(plottingRespDto);
-        SPDLOG_INFO("plottingRespDtoJson: {}", plottingRespDtoJson.toJson(QJsonDocument::JsonFormat::Compact).toStdString());
+        spdlog::debug("plottingRespDtoJson: {}", plottingRespDtoJson.toJson(QJsonDocument::JsonFormat::Compact).toStdString());
 
         auto responseDto = ResponseDto::createShared();
         responseDto->project_zip_url = "http://localhost:80/jingweipy/test.zip";
@@ -151,8 +151,8 @@ void Processor::checkDealWithClosedGeometry(const DTOWRAPPERNS::DTOWrapper<GeoPo
 
         /*auto isEqX = DOUBLECOMPARENEAR(geojson->geometry->coordinates[0][0][0], geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() - 1][0]);
         auto isEqY = DOUBLECOMPARENEAR(geojson->geometry->coordinates[0][0][1], geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() - 1][1]);
-        SPDLOG_INFO("isEqX: {}", isEqX);
-        SPDLOG_INFO("isEqY: {}", isEqY);*/
+        spdlog::info("isEqX: {}", isEqX);
+        spdlog::info("isEqY: {}", isEqY);*/
 
         auto isEq = POINTXYCOMPARENEAR(geojson->geometry->coordinates[0][0], geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() - 1]);
         //if (!isEqX || !isEqY ) {
@@ -160,8 +160,8 @@ void Processor::checkDealWithClosedGeometry(const DTOWRAPPERNS::DTOWrapper<GeoPo
             // 处理闭合几何图形
             geojson->geometry->coordinates[0]->push_back(geojson->geometry->coordinates[0][0]);
         } else {
-            SPDLOG_INFO("first point x: {}, y: {}", geojson->geometry->coordinates[0][0][0], geojson->geometry->coordinates[0][0][1]);
-            SPDLOG_INFO("last point x: {}, y: {}", geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() - 1][0], geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() - 1][1]);
+            spdlog::info("first point x: {}, y: {}", geojson->geometry->coordinates[0][0][0], geojson->geometry->coordinates[0][0][1]);
+            spdlog::info("last point x: {}, y: {}", geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() - 1][0], geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() - 1][1]);
         }
     }
 }

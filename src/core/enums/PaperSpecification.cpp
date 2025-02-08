@@ -59,7 +59,7 @@ QVector<PaperSpecification> PaperSpecification::getLayoutPaperList() {
 
             layoutPaperList.append(PaperSpecification(type));
         } catch (const std::exception& e) {
-            qWarning() << "not support paper: " << e.what();
+            spdlog::warn("not support paper: {}", e.what());
         }
     }
     return layoutPaperList;

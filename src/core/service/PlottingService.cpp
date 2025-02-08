@@ -13,7 +13,7 @@ DTOWRAPPERNS::DTOWrapper<ResponseDto::Z__CLASS> PlottingService::processPlotting
         const oatpp::String& token,
         const oatpp::web::server::api::ApiController::Object<PlottingDto>& plottingDto) {
     // Implement the actual plotting logic here
-    SPDLOG_DEBUG("debug Processing plotting request");
+    spdlog::debug("debug Processing plotting request");
 
     // 创建一个 JSON ObjectMapper
 #if OATPP_VERSION_LESS_1_4_0
@@ -26,11 +26,11 @@ DTOWRAPPERNS::DTOWrapper<ResponseDto::Z__CLASS> PlottingService::processPlotting
     try {
         jsonStr = objectMapper->writeToString(plottingDto);
     } catch (const std::exception& e) {
-        SPDLOG_ERROR("Error serializing plottingDto to JSON: {}", e.what());
+        spdlog::error("Error serializing plottingDto to JSON: {}", e.what());
         // 这里可以根据需要进行错误处理，例如返回错误响应
     }
 
-    SPDLOG_INFO("info Processing plotting request, requestBody: {}", jsonStr);
+    spdlog::debug("info Processing plotting request, requestBody: {}", jsonStr);
 
     auto responseDto = m_processor->processByPlottingWeb(token, plottingDto).get();
 

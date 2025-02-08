@@ -11,7 +11,7 @@ QPair<double, double> JwLegend::customize(
         int32_t legendHeight,
         const QSet<QString>& filteredLegendItems)
 {
-    qDebug() << "customize legend, title:" << legendTitle;
+    spdlog::debug("customize legend, title: {}", legendTitle.toStdString());
     // Set the legend title
     legend->setTitle(legendTitle);
     // Control which layers are included in the legend
@@ -48,7 +48,7 @@ QPair<double, double> JwLegend::customize(
             filtered_legend_layer_items.insert(layer);
         }
     }
-    qDebug() << "filtered_legend_layer_items size: " << filtered_legend_layer_items.size();
+    spdlog::debug("filtered_legend_layer_items size: {}", filtered_legend_layer_items.size());
     for (QgsMapLayer* layer : filtered_legend_layer_items)
     {
         if (layer->name() != BASE_TILE_NAME && layer->name() != MAIN_TILE_NAME && layer->name() != REAL3D_TILE_NAME &&
@@ -89,7 +89,7 @@ QPair<double, double> JwLegend::customize(
 
 
     // 核算图例的高度
-    qDebug() << "核算图例的高度";
+    spdlog::debug("核算图例的高度");
     int legend_height = (FontUtil::getSingleTextSize(16) + FontUtil::getSingleTextSize(3.5));
 
 
@@ -140,20 +140,20 @@ QPair<double, double> JwLegend::customize(
                                         /// 剔除掉 FontMarker 类型的 symbol
                                         if (symbol_layer->layerType()!= "FontMarker") {
                                             /// 这里避免崩溃，采用 clone() 方法
-                                            qDebug() << "这里避免崩溃，采用 clone() 方法";
+                                            spdlog::debug("这里避免崩溃，采用 clone() 方法");
                                             filtered_symbol_layers.append(symbol_layer->clone());
                                         }
                                     }
                                     /// 本项目中，点图例都采用可聚合+嵌入式规则渲染器，这里用 QgsMarkerSymbol 重新创建符号集
-                                    qDebug() << "重新创建符号集";
+                                    spdlog::debug("重新创建符号集");
                                     auto* filtered_marker_symbol = new QgsMarkerSymbol(filtered_symbol_layers);
                                     /// 重新设置符号项的符号
-                                    qDebug() << "重新设置符号项的符号";
+                                    spdlog::debug("重新设置符号项的符号");
                                     legend_symbol_item.setSymbol(filtered_marker_symbol);
                                     /// 创建一个符号节点
                                     // symbol_legend_node = QgsSymbolLegendNode(tr, legend_symbol_item);
                                     // symbol_legend_node.setCustomSymbol(filtered_marker_symbol);
-                                    qDebug() << "设置图例节点的自定义符号";
+                                    spdlog::debug("设置图例节点的自定义符号");
                                     QgsMapLayerLegendUtils::setLegendNodeCustomSymbol(tr, 0, filtered_marker_symbol);
                                 }
                             }
@@ -175,7 +175,7 @@ QPair<double, double> JwLegend::customize(
         }
     }
     legendHeight += legend_element_total_height;
-    qDebug() << "calc legend_width:" << legendWidth << ",legend_height:" << legendHeight;
+    spdlog::debug("calc legend_width: {}, legend_height: {}", legendWidth, legendHeight);
 
     return qMakePair(legendWidth, legendHeight);
 }

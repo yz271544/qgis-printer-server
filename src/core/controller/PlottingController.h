@@ -45,7 +45,7 @@ public:
              REQUEST(std::shared_ptr<IncomingRequest>, request),
              BODY_DTO(Object<PlottingDto>, plottingDto)) {
         auto token = request->getHeader("Authorization");
-        SPDLOG_INFO("Authorization header: {}", token->c_str());
+        spdlog::debug("Authorization header: {}", token->c_str());
         // 调用业务逻辑服务类处理请求
         auto responseDto = m_plottingService->processPlotting(token, plottingDto);
         // 返回响应

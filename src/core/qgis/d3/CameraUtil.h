@@ -6,8 +6,8 @@
 #define CBOOT_CAMERAUTIL_H
 
 
+#include <spdlog/spdlog.h>
 #include <qgsrectangle.h>
-#include <qlogging.h>
 #include <qgscameracontroller.h>
 
 class CameraUtil {

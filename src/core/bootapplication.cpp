@@ -10,11 +10,11 @@ BootApplication::BootApplication(bool isTest, StarterContext& starterCtx, Starte
 
 // 程序初始化
 void BootApplication::init() {
-    SPDLOG_INFO("Initializing starters...");
+    spdlog::info("Initializing starters...");
     auto starters = starterRegister->AllStarters();
-    SPDLOG_INFO("starter len: {}", starters.size());
+    spdlog::info("starter len: {}", starters.size());
     for (const auto& starter : starters) {
-        SPDLOG_INFO("Initializing: PriorityGroup={}, Priority=",
+        spdlog::info("Initializing: PriorityGroup={}, Priority=",
             starter->PriorityGroup(),
             starter->Priority());
         starter->Init(starterCtx_);
@@ -23,7 +23,7 @@ void BootApplication::init() {
 
 // 程序安装
 void BootApplication::setup() {
-    SPDLOG_INFO("Setup starters...");
+    spdlog::info("Setup starters...");
     auto starters = starterRegister->AllStarters();
     for (const auto& starter : starters) {
         starter->Setup(starterCtx_);
@@ -32,7 +32,7 @@ void BootApplication::setup() {
 
 // 程序开始运行，开始接受调用
 void BootApplication::start() {
-    SPDLOG_INFO("Starting starters...");
+    spdlog::info("Starting starters...");
     auto starters = starterRegister->AllStarters();
     for (const auto& starter : starters) {
         if (!starter->StartBlocking()) {
@@ -48,7 +48,7 @@ void BootApplication::start() {
 
 // 程序停止
 void BootApplication::stop() {
-    SPDLOG_INFO("Stopping starters...");
+    spdlog::info("Stopping starters...");
     auto starters = starterRegister->AllStarters();
     for (const auto& starter : starters) {
         starter->Stop(starterCtx_);

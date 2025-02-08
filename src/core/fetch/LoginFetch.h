@@ -64,14 +64,14 @@ public:
                 DTOWRAPPERNS::DTOWrapper<LoginResponseDto> loginObj = response->readBodyToDto<oatpp::Object<LoginResponseDto>>(m_objectMapper.get());
                 return loginObj;
             } else {
-                SPDLOG_ERROR("Failed to fetch login response: {}", response->getStatusCode());
+                spdlog::error("Failed to fetch login response: {}", response->getStatusCode());
                 auto errDTo = LoginResponseDto::createShared();
                 errDTo->code = response->getStatusCode();
                 errDTo->msg = "Failed to fetch login response";
                 return errDTo;
             }
         } catch (const std::exception& e) {
-            SPDLOG_ERROR("Failed to fetch login response: {}", e.what());
+            spdlog::error("Failed to fetch login response: {}", e.what());
             auto errDTo = LoginResponseDto::createShared();
             errDTo->code = response->getStatusCode();
             errDTo->msg = e.what();

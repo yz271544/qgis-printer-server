@@ -39,11 +39,11 @@ public:
             jsonStr = objectMapper->writeToString(dto);
 
         } catch (const std::exception& e) {
-            SPDLOG_ERROR("Error serializing plottingDto to JSON: {}", e.what());
+            spdlog::error("Error serializing plottingDto to JSON: {}", e.what());
             // Error handling can be done here as needed, such as returning an error response
         }
 
-        SPDLOG_DEBUG("info Processing plotting request, requestBody: {}", jsonStr->c_str());
+        spdlog::debug("info Processing plotting request, requestBody: {}", jsonStr->c_str());
 
         QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonStr->c_str());
         //QJsonObject jsonObject = jsonDoc.object();

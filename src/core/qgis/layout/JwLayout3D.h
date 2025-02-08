@@ -131,19 +131,19 @@ public:
 #endif
 
 private:
-    QgsProject* project;
-    QString projectDir;
-    QgsMapCanvas* canvas2d;
-    Qgs3DMapCanvas* canvas3d;
-    QString sceneName;
-    JwLegend* jw_legend;
+    QgsProject* mProject;
+    QString mProjectDir;
+    QgsMapCanvas* mCanvas2d;
+    Qgs3DMapCanvas* mCanvas3d;
+    QString mSceneName;
+    JwLegend* mJwLegend;
     // QgsLayout* layout;
-    QgsPrintLayout* layout;
-    QVariantMap imageSpec;
-    QgsLayoutItem3DMap* mapItem3d;
-    Qgs3DMapSettings* mapSettings3d;
-    double mapWidth;
-    double mapHeight;
+    QgsPrintLayout* mLayout;
+    QVariantMap mImageSpec;
+    QgsLayoutItem3DMap* mMapItem3d;
+    Qgs3DMapSettings* mMapSettings3d;
+    double mMapWidth;
+    double mMapHeight;
 };
 
 

@@ -21,8 +21,7 @@ BaseStarter* WebStarter::GetInstance() {
 }
 
 void WebStarter::Init(StarterContext& context) {
-    SPDLOG_DEBUG("WebStarter Init start");
-    SPDLOG_INFO("WebStarter Init start");
+    spdlog::info("WebStarter Init start");
 
     // 先查找ConfStarter实例，获取配置信息
     ConfStarter* confStarter = dynamic_cast<ConfStarter*>(StarterRegister::getInstance()->get_starter("ConfStarter"));
@@ -49,12 +48,11 @@ void WebStarter::Init(StarterContext& context) {
     oatpp::Environment::init();
 #endif
 
-    SPDLOG_INFO("WebStarter Init end");
+    spdlog::info("WebStarter Init end");
 }
 
 void WebStarter::Setup(StarterContext& context) {
-    SPDLOG_DEBUG("WebStarter Setup start");
-    SPDLOG_INFO("WebStarter Setup start");
+    spdlog::info("WebStarter Setup start");
 #if OATPP_VERSION_LESS_1_4_0
     auto objectMapper = oatpp::parser::json::mapping::ObjectMapper::createShared();
     objectMapper->getSerializer()->getConfig()->escapeFlags = 0; // 禁用转义
@@ -107,20 +105,18 @@ void WebStarter::Setup(StarterContext& context) {
     // 打印服务器端口
     // OATPP_LOGI("MyApp", "Server running on port {}", static_cast<const char*>(connectionProvider->getProperty("port").getData()));
     // OATPP_LOGI("MyApp", "Server running on port {}", connectionProvider->getProperty("port").getData());
-    SPDLOG_INFO("WebStarter Setup end");
+    spdlog::info("WebStarter Setup end");
 }
 
 void WebStarter::Start(StarterContext& context) {
-    SPDLOG_DEBUG("WebStarter Start start");
-    SPDLOG_INFO("WebStarter Start start");
+    spdlog::info("WebStarter Start start");
     // 启动Web服务器
     server->run();
-    SPDLOG_INFO("WebStarter Start end");
+    spdlog::info("WebStarter Start end");
 }
 
 void WebStarter::Stop(StarterContext& context) {
-    SPDLOG_DEBUG("WebStarter Stop start");
-    SPDLOG_INFO("WebStarter Stop start");
+    spdlog::info("WebStarter Stop start");
     // 停止Web服务器
     server->stop();
 #ifdef OATPP_VERSION_LESS_1_4_0
@@ -128,7 +124,7 @@ void WebStarter::Stop(StarterContext& context) {
 #else
     oatpp::Environment::destroy();
 #endif
-    SPDLOG_INFO("WebStarter Stop end");
+    spdlog::info("WebStarter Stop end");
 }
 
 int WebStarter::PriorityGroup() {
