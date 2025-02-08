@@ -215,7 +215,6 @@ Processor::processByPlottingWeb(const oatpp::String& token, const DTOWRAPPERNS::
 
         // add 2d layout
         spdlog::debug("add layout");
-        m_config->operator[]("logging")["verbose"] = false;
 
 
         auto responseDto = ResponseDto::createShared();
