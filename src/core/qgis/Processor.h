@@ -21,6 +21,9 @@
 #include "core/fetch/PlottingFetch.h"
 #include "utils/Formula.h"
 #include "utils/NodeToMap.h"
+#include "utils/CompressUtil.h"
+#include "core/qgis/layout/JwLayout.h"
+#include "core/qgis/layout/JwLayout3D.h"
 #include "App.h"
 
 // 由于 Python 中的 Dict 是一个类似字典的结构，在 C++ 中可以使用 std::unordered_map 来模拟
@@ -30,11 +33,13 @@ using Dict = std::unordered_map<K, V>;
 
 class Processor {
 private:
+    bool m_enable_3d = true;
     bool m_verbose = false;
     std::shared_ptr<YAML::Node> m_config;
     std::unique_ptr<PlottingFetch> m_plotting_fetch;
     std::unique_ptr<App> m_app;
-    std::unique_ptr<QVariantMap> m_image_spec_map;
+    std::unique_ptr<QVariantMap> m_setting_image_spec;
+    QString m_export_prefix;
 public:
     // 构造函数
     Processor(QList<QString> argvList, std::shared_ptr<YAML::Node>& config);
@@ -55,24 +60,36 @@ public:
     std::future<DTOWRAPPERNS::DTOWrapper<ResponseDto>> processByPlottingWeb(
             const oatpp::String &token, const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingDto);
 
-    // 绘制图层的函数
+    // 绘制图层
     void plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &plotting_data);
 
-    // 添加布局的函数
-    void add_layout(const std::string &canvas, const std::string &layout_name, const std::string &plotting_web,
-                    const Dict<std::string, std::string> &image_spec, PaperSpecification available_paper,
-                    bool write_qpt = false) {
-        // 这里只是简单的占位实现，实际需要根据具体需求实现
-        std::cout << "Adding layout: " << layout_name << " to canvas: " << canvas << std::endl;
-    }
+    // 添加2d布局
+    void add_layout(QgsMapCanvas *canvas,
+                    const QString &layout_name,
+                    const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
+                    const QMap<QString, QVariant> &image_spec,
+                    PaperSpecification available_paper,
+                    bool write_qpt,
+                    const QVector<QString> &removeLayerNames,
+                    const QVector<QString> &removeLayerPrefixs);
 
-    // 获取图像子目录的函数
+    // 添加3d布局
+    void add_3d_layout(QgsMapCanvas *canvas,
+                    const QString &layout_name,
+                    const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
+                    const QMap<QString, QVariant> &image_spec,
+                    PaperSpecification available_paper,
+                    bool write_qpt,
+                    const QVector<QString> &removeLayerNames,
+                    const QVector<QString> &removeLayerPrefixs);
+
+    // 获取图像子目录
     std::string get_image_sub_dir(const std::string &layout_name) {
         // 这里只是简单的占位实现，实际需要根据具体需求实现
         return "image_sub_dir_" + layout_name;
     }
 
-    // 异步导出图像的函数
+    // 异步导出图像
     std::future<void>
     export_image(const std::string &scene_name, const std::string &layout_name, const std::string &image_sub_dir,
                  const std::string &paper_name) {
@@ -84,11 +101,8 @@ public:
         });
     }
 
-    // 压缩项目的静态函数
-    static void zip_project(const std::string &scene_name) {
-        // 这里只是简单的占位实现，实际需要根据具体需求实现
-        std::cout << "Zipping project with scene_name: " << scene_name << std::endl;
-    }
+    // 压缩项目的静态方法
+    std::string zip_project(const QString &scene_name);
 
     // 按颜色分组圆的函数
     Dict<std::string, Dict<std::string, std::vector<std::vector<double>>>> _grouped_circle_by_color_grouped(

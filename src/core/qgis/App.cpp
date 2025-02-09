@@ -58,6 +58,26 @@ App::~App() {
     spdlog::info("App destroy finished");
 }
 
+QVector<PaperSpecification>& App::getAvailablePapers() {
+    return mAvailablePapers;
+}
+
+QgsMapCanvas* App::getCanvas() {
+    return mCanvas.get();
+}
+
+QgsProject* App::getProject() {
+    return mProject.get();
+}
+
+QString& App::getSceneName() {
+    return mSceneName;
+}
+
+QString& App::getProjectDir() {
+    return mProjectDir;
+}
+
 void App::finishQgis() {
     QgsApplication::exitQgis();
     spdlog::debug("finished qgis");

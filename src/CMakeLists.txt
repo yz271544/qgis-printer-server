@@ -4,7 +4,9 @@ file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.h *.cpp)
 set(SOURCES ${SOURCES})
 message("SOURCES: ${SOURCES}")
 
-add_executable(${PROJECT_NAME} ${SOURCES})
+add_executable(${PROJECT_NAME} ${SOURCES}
+        utils/CompressUtil.cpp
+        utils/CompressUtil.h)
 add_library(${PROJECT_NAME}_lib STATIC ${SOURCES})
 
 message("set target_compile_definitions OATPP_VERSION_LESS_1_4_0 oatpp_VERSION: ${oatpp_VERSION}")

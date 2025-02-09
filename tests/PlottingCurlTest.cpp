@@ -39,7 +39,7 @@ TEST(plottingCurl, curlTest) {
     auto resp = plottingFetch.fetch(additionalHeaders, topicMapData);
     GTEST_LOG_(INFO) << "size: " << resp->data->size();
 
-    auto objectMapper = std::make_shared<oatpp::json::ObjectMapper>();
+    auto objectMapper = std::make_shared<OBJECTMAPPERNS::ObjectMapper>();
 
     GTEST_LOG_(INFO) << "response json: " << objectMapper->writeToString(resp)->c_str();
 }

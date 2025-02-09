@@ -111,6 +111,17 @@ public:
      */
     bool exportLayoutAsSvg(const QString& layoutName, const QString& outputPath, const QString& paperName, int dpi = 300);
 
+    QVector<PaperSpecification>& getAvailablePapers();
+
+    QgsMapCanvas* getCanvas();
+
+    QgsProject* getProject();
+
+    QString& getSceneName();
+
+    QString& getProjectDir();
+
+
 private:
 char** mArgv; // 用于存储转换后的命令行参数
 int mArgc;    // 参数个数

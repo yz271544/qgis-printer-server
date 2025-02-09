@@ -4,6 +4,7 @@
 
 #include "gtest/gtest.h"
 #include "utils/Formula.h"
+#include <QString>
 
 TEST(blaTest, test1) {
     //arrange
@@ -28,4 +29,11 @@ TEST(blaTest, test2) {
     } else {
         std::cout << "The two double values are not considered equal." << std::endl;
     }
+}
+
+TEST(blaTest, testQStringFormat) {
+    QString export_prefix = "/opt/anbao/map/qgz";
+    QString scene_name = "test";
+    QString targetZipFile = QString("%1/%2.zip").arg(export_prefix, scene_name);
+    GTEST_LOG_(INFO) << "zip project: " << targetZipFile.toStdString();
 }
