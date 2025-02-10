@@ -15,31 +15,31 @@ App::App(const QList<QString>& argvList, std::shared_ptr<YAML::Node>& config)
     mCanvas = nullptr;
     mMapSettings = nullptr;
     mProjectDir = "";
-    spdlog::info("create qgis QgsApplication");
-    bool GUIenabled = false;
-    try{
-        GUIenabled = (*mConfig)["qgis"]["gui_enabled"].as<bool>();
-    } catch (const std::exception& e) {
-        spdlog::error("get gui_enabled error: {}", e.what());
-    }
-     mQgis = new QgsApplication(mArgc, mArgv, GUIenabled);
+//    spdlog::info("create qgis QgsApplication");
+//    bool GUIenabled = false;
+//    try{
+//        GUIenabled = (*mConfig)["qgis"]["gui_enabled"].as<bool>();
+//    } catch (const std::exception& e) {
+//        spdlog::error("get gui_enabled error: {}", e.what());
+//    }
+    //mQgis = new QgsApplication(mArgc, mArgv, GUIenabled);
     //mQgis = std::make_shared<QgsApplication>(mArgc, mArgv, GUIenabled);
-    QString qgis_prefix_path = "/usr";
-    try {
-        qgis_prefix_path = QString::fromStdString((*mConfig)["qgis"]["prefix_path"].as<std::string>());
-    } catch (const std::exception& e) {
-        spdlog::error("get qgis.prefix_path error: {}", e.what());
-    }
-    QgsApplication::setPrefixPath(qgis_prefix_path, true);
-
-    spdlog::info("init qgis app");
-    try {
-        QgsApplication::init();
-        QgsApplication::initQgis();
-    } catch (const std::exception& e) {
-        spdlog::error("init qgis error: {}", e.what());
-    }
-    spdlog::info("inited the qgs app");
+//    QString qgis_prefix_path = "/usr";
+//    try {
+//        qgis_prefix_path = QString::fromStdString((*mConfig)["qgis"]["prefix_path"].as<std::string>());
+//    } catch (const std::exception& e) {
+//        spdlog::error("get qgis.prefix_path error: {}", e.what());
+//    }
+//    QgsApplication::setPrefixPath(qgis_prefix_path, true);
+//
+//    spdlog::info("init qgis app");
+//    try {
+//        QgsApplication::init();
+//        QgsApplication::initQgis();
+//    } catch (const std::exception& e) {
+//        spdlog::error("init qgis error: {}", e.what());
+//    }
+//    spdlog::info("inited the qgs app");
     mPageSizeRegistry = std::shared_ptr<QgsPageSizeRegistry>(QgsApplication::pageSizeRegistry());
     //mPageSizeRegistry = QgsApplication::pageSizeRegistry();
     mAvailablePapers = PaperSpecification::getLayoutPaperList();

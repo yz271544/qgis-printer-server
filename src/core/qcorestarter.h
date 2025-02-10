@@ -8,6 +8,7 @@
 #include <QCoreApplication>
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
+#include <qgs3d.h>
 #include "starter.h"
 #include <spdlog/spdlog.h>
 #include "yaml-cpp/yaml.h"

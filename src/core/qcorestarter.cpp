@@ -24,7 +24,37 @@ void QCoreStarter::Init(StarterContext& context) {
     int newArgc;
     char** newArgv;
     context.getConvertedArgs(newArgc, newArgv);
-    QCoreApplication app(newArgc, newArgv);
+    //QCoreApplication app(newArgc, newArgv);
+
+
+    spdlog::info("create qgis QgsApplication");
+    bool GUIenabled = false;
+    try{
+        GUIenabled = config["qgis"]["gui_enabled"].as<bool>();
+        spdlog::info("GUIenabled: {}", GUIenabled);
+    } catch (const std::exception& e) {
+        spdlog::error("get gui_enabled error: {}", e.what());
+    }
+    QgsApplication app(newArgc, newArgv, GUIenabled);
+    QString qgis_prefix_path = "/usr";
+    try {
+        qgis_prefix_path = QString::fromStdString(config["qgis"]["prefix_path"].as<std::string>());
+        spdlog::info("qgis_prefix_path: {}", qgis_prefix_path.toStdString());
+    } catch (const std::exception& e) {
+        spdlog::error("get qgis.prefix_path error: {}", e.what());
+    }
+    QgsApplication::setPrefixPath(qgis_prefix_path, true);
+
+    spdlog::info("init qgis app");
+    try {
+        QgsApplication::init();
+        QgsApplication::initQgis();
+        Qgs3D::initialize();
+    } catch (const std::exception& e) {
+        spdlog::error("init qgis error: {}", e.what());
+    }
+    spdlog::info("inited the qgs app");
+
 
     // 设置OpenGL环境
     mQSurfaceFormat.setVersion(4, 1);
