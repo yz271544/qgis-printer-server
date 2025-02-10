@@ -31,6 +31,7 @@ private:
 //    QSurfaceFormat mQSurfaceFormat;
 //    QOffscreenSurface mQOffscreenSurface;
     std::shared_ptr<QOpenGLContext> mOpenGLContext;
+    std::unique_ptr<QCoreApplication> mApp;
 public:
     QCoreStarter();
 

@@ -34,11 +34,11 @@ void QCoreStarter::Init(StarterContext& context) {
     }
 
     // Initialize QApplication if GUI is enabled, otherwise QCoreApplication
-    std::unique_ptr<QCoreApplication> app;
+    //std::unique_ptr<QCoreApplication> app;
     if (GUIenabled) {
-        app = std::make_unique<QApplication>(newArgc, newArgv);
+        mApp = std::make_unique<QApplication>(newArgc, newArgv);
     } else {
-        app = std::make_unique<QCoreApplication>(newArgc, newArgv);
+        mApp = std::make_unique<QCoreApplication>(newArgc, newArgv);
     }
 
     spdlog::info("create qgis QgsApplication");
@@ -107,8 +107,9 @@ void QCoreStarter::Setup(StarterContext& context) {
 
 void QCoreStarter::Start(StarterContext& context) {
     spdlog::info("QCoreStarter Start start");
-
-    if (config["qgis"]["gui_enabled"].as<bool>()) {
+    auto guiEnable = config["qgis"]["gui_enabled"].as<bool>();
+    spdlog::info("start qgis app, guiEnable: {}", guiEnable);
+    if (guiEnable) {
         QApplication::exec();
     } else {
         QCoreApplication::exec();
