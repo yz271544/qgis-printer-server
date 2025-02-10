@@ -6,6 +6,8 @@
 #define JINGWEIPRINTER_QCORESTARTER_H
 
 #include <QCoreApplication>
+#include <QOffscreenSurface>
+#include <QOpenGLContext>
 #include "starter.h"
 #include <spdlog/spdlog.h>
 #include "yaml-cpp/yaml.h"
@@ -25,6 +27,7 @@ class QCoreStarter : public BaseStarter {
 private:
     YAML::Node config;
     bool mBlock;
+    QOpenGLContext mOpenGLContext;
 public:
     QCoreStarter();
 

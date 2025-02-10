@@ -26,6 +26,30 @@ void QCoreStarter::Init(StarterContext& context) {
     context.getConvertedArgs(newArgc, newArgv);
     QCoreApplication app(newArgc, newArgv);
 
+    // 设置OpenGL环境
+    QSurfaceFormat format;
+    format.setVersion(4, 1);
+    format.setProfile(QSurfaceFormat::CoreProfile);
+    QSurfaceFormat::setDefaultFormat(format);
+
+    // 创建离屏渲染环境
+    QOffscreenSurface surface;
+    surface.setFormat(format);
+    surface.create();
+
+    // 创建OpenGL上下文
+    mOpenGLContext.setFormat(format);
+    if (!mOpenGLContext.create()) {
+        spdlog::error("Failed to create OpenGL context");
+        exit(-1);
+    }
+
+    // 设置当前上下文
+    if (!mOpenGLContext.makeCurrent(&surface)) {
+        spdlog::error("Failed to make OpenGL context current");
+        exit(-1);
+    }
+
     spdlog::info("QCoreStarter Init end");
 }
 
@@ -43,13 +67,9 @@ void QCoreStarter::Start(StarterContext& context) {
 
 void QCoreStarter::Stop(StarterContext& context) {
     spdlog::info("QCoreStarter Stop start");
+    mOpenGLContext.doneCurrent();
     // 停止Web服务器
     QCoreApplication::exit();
-#ifdef OATPP_VERSION_LESS_1_4_0
-    oatpp::base::Environment::destroy();
-#else
-    oatpp::Environment::destroy();
-#endif
     spdlog::info("QCoreStarter Stop end");
 }
 
