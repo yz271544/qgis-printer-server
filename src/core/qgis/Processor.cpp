@@ -4,52 +4,95 @@
 
 #include "Processor.h"
 
-Processor::Processor(QList<QString> argvList, std::shared_ptr<YAML::Node>& config) {
+Processor::Processor(QList<QString> argvList, std::shared_ptr<YAML::Node> &config) {
     m_config = config;
     try {
         m_verbose = m_config->operator[]("logging")["verbose"].as<bool>();
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
         spdlog::warn("get verbose error: {}", e.what());
     }
     try {
         m_enable_3d = m_config->operator[]("qgis")["enable_3d"].as<bool>();
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
         spdlog::warn("get m_enable_3d error: {}", e.what());
     }
-    try{
+    try {
         m_export_prefix = QString::fromStdString((*m_config)["qgis"]["export_prefix"].as<std::string>());
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
         spdlog::warn("get qgis.export_prefix error: {}", e.what());
     }
     QString jingwei_server_host = "127.0.0.1";
-    try{
+    try {
         jingwei_server_host = QString::fromStdString((*m_config)["qgis"]["jingwei_server_host"].as<std::string>());
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
         spdlog::warn("get jingwei_server_host error: {}", e.what());
     }
     std::int32_t jingwei_server_port = 8080;
-    try{
+    try {
         jingwei_server_port = (*m_config)["qgis"]["jingwei_server_port"].as<std::int32_t>();
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
         spdlog::warn("get jingwei_server_port error: {}", e.what());
     }
     QString jingwei_server_api_prefix = "/api";
-    try{
-        jingwei_server_api_prefix = QString::fromStdString((*m_config)["qgis"]["jingwei_server_api_prefix"].as<std::string>());
-    } catch (const std::exception& e) {
+    try {
+        jingwei_server_api_prefix = QString::fromStdString(
+                (*m_config)["qgis"]["jingwei_server_api_prefix"].as<std::string>());
+    } catch (const std::exception &e) {
         spdlog::warn("get jingwei_server_api_prefix error: {}", e.what());
     }
     QString jingwei_server_url = "";
-    try{
+    try {
         jingwei_server_url = QString::fromStdString((*m_config)["qgis"]["jingwei_server_url"].as<std::string>());
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
         spdlog::warn("get jingwei_server_url error: {}", e.what());
     }
     jingwei_server_url = jingwei_server_url.replace("{JINGWEI_SERVER_HOST}", jingwei_server_host);
     jingwei_server_url = jingwei_server_url.replace("{JINGWEI_SERVER_PORT}", QString::number(jingwei_server_port));
     jingwei_server_url = jingwei_server_url.replace("{JINGWEI_SERVER_API_PREFIX}", jingwei_server_api_prefix);
-
     spdlog::info("jingwei_server_url: {}", jingwei_server_url.toStdString());
+
+    QString mapping_export_nginx_host = "localhost";
+    try {
+        auto envExportNginxHost = getEnvString("MAPPING_EXPORT_NGINX_HOST");
+        if (!envExportNginxHost.empty()) {
+            mapping_export_nginx_host = QString::fromStdString(envExportNginxHost);
+        } else {
+            auto confExportNginxHost = (*m_config)["qgis"]["mapping_export_nginx_host"];
+            if (confExportNginxHost) {
+                mapping_export_nginx_host = QString::fromStdString(confExportNginxHost.as<std::string>());
+            }
+        }
+    } catch (const std::exception &e) {
+        spdlog::warn("get mapping_export_nginx_host error: {}", e.what());
+    }
+
+    std::int32_t mapping_export_nginx_port = 80;
+    try {
+        auto envExportNginxPort = getEnvInt32("MAPPING_EXPORT_NGINX_PORT");
+        if (envExportNginxPort) {
+            mapping_export_nginx_port = envExportNginxPort;
+        } else {
+            auto confExportNginxPort = (*m_config)["qgis"]["mapping_export_nginx_port"];
+            if (confExportNginxPort) {
+                mapping_export_nginx_port = confExportNginxPort.as<std::int32_t>();
+            }
+        }
+    } catch (const std::exception &e) {
+        spdlog::warn("get mapping_export_nginx_port error: {}", e.what());
+    }
+
+    try {
+        auto confMappingExportNginxUrlPrefix = (*m_config)["qgis"]["mapping_export_nginx_url_prefix"];
+        if (confMappingExportNginxUrlPrefix) {
+            m_mapping_export_nginx_url_prefix = QString::fromStdString(confMappingExportNginxUrlPrefix.as<std::string>());
+            m_mapping_export_nginx_url_prefix = m_mapping_export_nginx_url_prefix.replace("{MAPPING_EXPORT_NGINX_HOST}", mapping_export_nginx_host);
+            m_mapping_export_nginx_url_prefix = m_mapping_export_nginx_url_prefix.replace("{MAPPING_EXPORT_NGINX_PORT}", QString::number(mapping_export_nginx_port));
+        }
+        spdlog::info("mapping_export_nginx_url_prefix: {}", m_mapping_export_nginx_url_prefix.toStdString());
+    } catch (const std::exception &e) {
+        spdlog::warn("get mapping_export_nginx_url_prefix error: {}", e.what());
+    }
+
     m_plotting_fetch = std::make_unique<PlottingFetch>(jingwei_server_url.toStdString());
 
     m_app = std::make_unique<App>(argvList, m_config);
@@ -77,12 +120,12 @@ Processor::~Processor() {
 };
 
 std::future<DTOWRAPPERNS::DTOWrapper<PlottingRespDto>>
-Processor::fetchPlotting(const oatpp::String& token, const oatpp::String& scene_type,
-                          DTOWRAPPERNS::DTOWrapper<TopicMapData> &topic_map_data) {
+Processor::fetchPlotting(const oatpp::String &token, const oatpp::String &scene_type,
+                         DTOWRAPPERNS::DTOWrapper<TopicMapData> &topic_map_data) {
     // 使用 std::async 来实现异步操作
     return std::async(std::launch::async, [this, token, scene_type, topic_map_data]() {
         // 环境配置 ENV_PROFILE=test 时，使用测试数据
-        const char* envProfile = getenv("ENV_PROFILE");
+        const char *envProfile = getenv("ENV_PROFILE");
         if (envProfile != nullptr) {
             std::string profile(envProfile);
             if (profile == "test") {
@@ -100,13 +143,14 @@ Processor::fetchPlotting(const oatpp::String& token, const oatpp::String& scene_
                 auto objectMapper = std::make_shared<OBJECTMAPPERNS::ObjectMapper>();
 
                 try {
-                    auto plottingRespDto = objectMapper->readFromString<oatpp::Object<PlottingRespDto>>(jsonContent.toStdString().c_str());
+                    auto plottingRespDto = objectMapper->readFromString<oatpp::Object<PlottingRespDto>>(
+                            jsonContent.toStdString().c_str());
 
                     if (!plottingRespDto) {
                         spdlog::error("Failed to parse JSON!");
                     }
                     return plottingRespDto;
-                } catch (const std::exception& e) {
+                } catch (const std::exception &e) {
                     spdlog::error("Failed to parse JSON: {}", e.what());
                 }
             }
@@ -126,13 +170,14 @@ Processor::fetchPlotting(const oatpp::String& token, const oatpp::String& scene_
 
 // 异步处理绘图数据的函数
 std::future<DTOWRAPPERNS::DTOWrapper<ResponseDto>>
-Processor::processByPlottingWeb(const oatpp::String& token, const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb) {
+Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb) {
     // 使用 std::async 来实现异步操作
     return std::async(std::launch::async, [this, token, plottingWeb]() {
 
         if (m_verbose) {
             QJsonDocument postPlottingWebBody = JsonUtil::convertDtoToQJsonObject(plottingWeb);
-            spdlog::debug("input plottingWeb: {}", postPlottingWebBody.toJson(QJsonDocument::JsonFormat::Compact).toStdString());
+            spdlog::debug("input plottingWeb: {}",
+                          postPlottingWebBody.toJson(QJsonDocument::JsonFormat::Compact).toStdString());
         }
 
         // 发送请求get绘图数据
@@ -157,14 +202,16 @@ Processor::processByPlottingWeb(const oatpp::String& token, const DTOWRAPPERNS::
         // show XServer Request body
         if (m_verbose) {
             auto topicMapDataJson = JsonUtil::convertDtoToQJsonObject(topicMapData);
-            spdlog::debug("topicMapData: {}", topicMapDataJson.toJson(QJsonDocument::JsonFormat::Compact).toStdString());
+            spdlog::debug("topicMapData: {}",
+                          topicMapDataJson.toJson(QJsonDocument::JsonFormat::Compact).toStdString());
         }
 
         // 获取 XServer 绘图数据
         auto plottingRespDto = fetchPlotting(token, plottingWeb->sceneType, topicMapData).get();
         if (m_verbose) {
             auto plottingRespDtoJson = JsonUtil::convertDtoToQJsonObject(plottingRespDto);
-            spdlog::debug("plottingRespDtoJson: {}", plottingRespDtoJson.toJson(QJsonDocument::JsonFormat::Compact).toStdString());
+            spdlog::debug("plottingRespDtoJson: {}",
+                          plottingRespDtoJson.toJson(QJsonDocument::JsonFormat::Compact).toStdString());
         }
 
         if (plottingRespDto->code >= 400) {
@@ -173,8 +220,8 @@ Processor::processByPlottingWeb(const oatpp::String& token, const DTOWRAPPERNS::
             throw XServerRequestError(errorMsg);
         }
 
-        spdlog::debug("create qgis project");
-        QString sceneName = QString::fromStdString(*plottingWeb->sceneName);
+        QString sceneName = QString::fromStdString(plottingWeb->sceneName);
+        spdlog::debug("create qgis project, sceneName: {}", sceneName.toStdString());
         QString mainCrs = QString::fromStdString(MAIN_CRS);
         m_app->createProject(sceneName, mainCrs);
         spdlog::debug("add map base tile layer");
@@ -231,8 +278,10 @@ Processor::processByPlottingWeb(const oatpp::String& token, const DTOWRAPPERNS::
             QVector<QString> removeLayerPrefixes = QVector<QString>();
             removeLayerPrefixes.append(REAL3D_TILE_NAME);
             for (const auto &availablePaper: appAvailablePapers) {
-                spdlog::info("image_spec_name: {}, available_paper: {}", layoutType.toStdString(), availablePaper.getPaperName().toStdString());
-                add_layout(m_app->getCanvas(), layoutType, plottingWeb, image_spec, availablePaper, false, removeLayerNames, removeLayerPrefixes);
+                spdlog::info("image_spec_name: {}, available_paper: {}", layoutType.toStdString(),
+                             availablePaper.getPaperName().toStdString());
+                add_layout(m_app->getCanvas(), layoutType, plottingWeb, image_spec, availablePaper, false,
+                           removeLayerNames, removeLayerPrefixes);
             }
             if (m_enable_3d) {
                 // add 3d layout
@@ -242,8 +291,10 @@ Processor::processByPlottingWeb(const oatpp::String& token, const DTOWRAPPERNS::
                 removeLayerNames3D.append(BASE_TILE_NAME);
                 removeLayerPrefixes3D.append(MAIN_TILE_NAME);
                 for (const auto &availablePaper: appAvailablePapers) {
-                    spdlog::info("image_spec_name: {}, available_paper: {}", layoutType.toStdString(), availablePaper.getPaperName().toStdString());
-                    add_3d_layout(m_app->getCanvas(), layoutType, plottingWeb, image_spec, availablePaper, false, removeLayerNames3D, removeLayerPrefixes3D);
+                    spdlog::info("image_spec_name: {}, available_paper: {}", layoutType.toStdString(),
+                                 availablePaper.getPaperName().toStdString());
+                    add_3d_layout(m_app->getCanvas(), layoutType, plottingWeb, image_spec, availablePaper, false,
+                                  removeLayerNames3D, removeLayerPrefixes3D);
                 }
             }
         }
@@ -253,26 +304,31 @@ Processor::processByPlottingWeb(const oatpp::String& token, const DTOWRAPPERNS::
         spdlog::info("save project");
         m_app->saveProject();
 
-        auto zip_file_name = zip_project(QString::fromStdString(plottingWeb->sceneName));
+        auto zip_file_name = zipProject(sceneName);
+        spdlog::info("zip_file_name: {}", zip_file_name.toStdString());
+        spdlog::info("export image from qgis");
 
-
+        auto imageSubDir = getImageSubDir(layoutType);
+        // 异步导出图像
+        QString paperName = QString::fromStdString(plottingWeb->paper);
+        auto imageName = exportImage(sceneName, layoutType, imageSubDir, paperName).get();
 
         // mock fake data
         auto responseDto = ResponseDto::createShared();
-        responseDto->project_zip_url = "http://localhost:80/jingweipy/test.zip";
-        responseDto->image_url = "http://localhost:80/jingweipy/local/test-位置图.png";
+        responseDto->project_zip_url = QString().append(m_mapping_export_nginx_url_prefix).append("/").append(zip_file_name).toStdString();
+        responseDto->image_url = QString().append(m_mapping_export_nginx_url_prefix).append("/").append(imageSubDir).append("/").append(imageName).toStdString();
         responseDto->error = "";
         return responseDto;
     });
 }
 
 
-void Processor::checkDealWithClosedGeometry(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto>& geojson) {
+void Processor::checkDealWithClosedGeometry(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto> &geojson) {
     // 检查geojson是否包含有效的Polygon数据
     if (geojson->geometry && geojson->geometry->type == "Polygon" && geojson->geometry->coordinates) {
         if (!geojson || !(geojson->geometry) || !geojson->geometry->coordinates
-        || !geojson->geometry->coordinates[0]
-        || geojson->geometry->coordinates[0]->size() < 4) {
+            || !geojson->geometry->coordinates[0]
+            || geojson->geometry->coordinates[0]->size() < 4) {
             throw GeometryCheckError("Invalid Polygon data");
         }
 
@@ -281,14 +337,19 @@ void Processor::checkDealWithClosedGeometry(const DTOWRAPPERNS::DTOWrapper<GeoPo
         spdlog::info("isEqX: {}", isEqX);
         spdlog::info("isEqY: {}", isEqY);*/
 
-        auto isEq = POINTXYCOMPARENEAR(geojson->geometry->coordinates[0][0], geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() - 1]);
+        auto isEq = POINTXYCOMPARENEAR(geojson->geometry->coordinates[0][0],
+                                       geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() -
+                                                                         1]);
         //if (!isEqX || !isEqY ) {
         if (!isEq) {
             // 处理闭合几何图形
             geojson->geometry->coordinates[0]->push_back(geojson->geometry->coordinates[0][0]);
         } else {
-            spdlog::info("first point x: {}, y: {}", geojson->geometry->coordinates[0][0][0], geojson->geometry->coordinates[0][0][1]);
-            spdlog::info("last point x: {}, y: {}", geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() - 1][0], geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() - 1][1]);
+            spdlog::info("first point x: {}, y: {}", geojson->geometry->coordinates[0][0][0],
+                         geojson->geometry->coordinates[0][0][1]);
+            spdlog::info("last point x: {}, y: {}",
+                         geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() - 1][0],
+                         geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() - 1][1]);
         }
     }
 }
@@ -312,12 +373,13 @@ void Processor::add_layout(
     auto joinedLayoutName = layout_name + "-" + available_paper.getPaperName();
     spdlog::info("add layout: {}", joinedLayoutName.toStdString());
 
-    JwLayout jwLayout(m_app->getProject() , canvas, m_app->getSceneName(), image_spec, m_app->getProjectDir());
+    JwLayout jwLayout(m_app->getProject(), canvas, m_app->getSceneName(), image_spec, m_app->getProjectDir());
 
     auto plottingWebJsonDoc = JsonUtil::convertDtoToQJsonObject(plottingWeb);
     auto plottingWebMap = JsonUtil::jsonObjectToVariantMap(plottingWebJsonDoc.object());
 
-    jwLayout.addPrintLayout(QString("2d"), joinedLayoutName, plottingWebMap, available_paper, write_qpt, removeLayerNames, removeLayerPrefixs);
+    jwLayout.addPrintLayout(QString("2d"), joinedLayoutName, plottingWebMap, available_paper, write_qpt,
+                            removeLayerNames, removeLayerPrefixs);
 }
 
 // 添加3d布局
@@ -330,11 +392,12 @@ void Processor::add_3d_layout(
         bool write_qpt,
         const QVector<QString> &removeLayerNames,
         const QVector<QString> &removeLayerPrefixs) {
-    auto joinedLayoutName = QString().append(layout_name).append( "-").append(available_paper.getPaperName()).append("-3D");
+    auto joinedLayoutName = QString().append(layout_name).append("-").append(available_paper.getPaperName()).append(
+            "-3D");
     spdlog::info("add layout: {}", joinedLayoutName.toStdString());
 
     auto canvas3d = std::make_shared<Qgs3DMapCanvas>();
-    JwLayout3D jwLayout3d(m_app->getProject() , canvas, canvas3d.get(),
+    JwLayout3D jwLayout3d(m_app->getProject(), canvas, canvas3d.get(),
                           m_app->getSceneName(), image_spec, m_app->getProjectDir());
 
     auto plottingWebJsonDoc = JsonUtil::convertDtoToQJsonObject(plottingWeb);
@@ -345,9 +408,35 @@ void Processor::add_3d_layout(
     jwLayout3d.addPrintLayout(QString("3d"), joinedLayoutName, plottingWebMap, available_paper, write_qpt);
 }
 
-std::string Processor::zip_project(const QString &scene_name) {
+QString Processor::zipProject(const QString &scene_name) {
     QString targetZipFile = QString("%1/%2.zip").arg(m_export_prefix, scene_name);
     spdlog::info("zip project: {}", targetZipFile.toStdString());
     CompressUtil::create_zip(m_app->getProjectDir().toStdString(), targetZipFile.toStdString());
-    return scene_name.toStdString();
+    QString zip_file_name = QString().append(scene_name).append(".zip");
+    return zip_file_name;
+}
+
+QString Processor::getImageSubDir(const QString &layout_name) {
+    auto image_spec = m_setting_image_spec->value(layout_name).toMap();
+    if (image_spec.isEmpty()) {
+        return "";
+    }
+    if (!image_spec.contains("local")) {
+        return "";
+    }
+    return image_spec["local"].toString();
+}
+
+std::future<QString>
+Processor::exportImage(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
+                       const QString &paperName) {
+    return std::async(std::launch::async, [this, sceneName, layoutName, imageSubDir, paperName]() {
+        QString imageName = QString("%1-%2-%3.png").arg(sceneName, layoutName, paperName);
+        QString outputPath = QString("%1/%2/%3.png").arg(m_export_prefix, imageSubDir, imageName);
+        FileUtil::delete_file(outputPath);
+        spdlog::info("export image -> outputPath: {}", outputPath.toStdString());
+        auto isExportStatus = m_app->exportLayoutAsPng(layoutName, outputPath, paperName);
+        spdlog::info("export status: {}", isExportStatus);
+        return imageName;
+    });
 }

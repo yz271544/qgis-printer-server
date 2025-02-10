@@ -40,6 +40,8 @@ private:
     std::unique_ptr<App> m_app;
     std::unique_ptr<QVariantMap> m_setting_image_spec;
     QString m_export_prefix;
+    QString m_mapping_export_nginx_port;
+    QString m_mapping_export_nginx_url_prefix;
 public:
     // 构造函数
     Processor(QList<QString> argvList, std::shared_ptr<YAML::Node>& config);
@@ -83,26 +85,16 @@ public:
                     const QVector<QString> &removeLayerNames,
                     const QVector<QString> &removeLayerPrefixs);
 
-    // 获取图像子目录
-    std::string get_image_sub_dir(const std::string &layout_name) {
-        // 这里只是简单的占位实现，实际需要根据具体需求实现
-        return "image_sub_dir_" + layout_name;
-    }
-
     // 异步导出图像
-    std::future<void>
-    export_image(const std::string &scene_name, const std::string &layout_name, const std::string &image_sub_dir,
-                 const std::string &paper_name) {
-        // 使用 std::async 来实现异步操作
-        return std::async(std::launch::async, [this, scene_name, layout_name, image_sub_dir, paper_name]() {
-            // 这里只是简单的占位实现，实际需要根据具体需求实现
-            std::cout << "Exporting image with scene_name: " << scene_name << ", layout_name: " << layout_name
-                      << ", image_sub_dir: " << image_sub_dir << ", paper_name: " << paper_name << std::endl;
-        });
-    }
+    std::future<QString>
+    exportImage(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
+                 const QString &paperName);
 
     // 压缩项目的静态方法
-    std::string zip_project(const QString &scene_name);
+    QString zipProject(const QString &scene_name);
+
+    // 获取图像子目录
+    QString getImageSubDir(const QString &layout_name);
 
     // 按颜色分组圆的函数
     Dict<std::string, Dict<std::string, std::vector<std::vector<double>>>> _grouped_circle_by_color_grouped(

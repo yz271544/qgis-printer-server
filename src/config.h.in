@@ -64,6 +64,29 @@ inline bool getEnvBool(const char* envVarName, bool defaultValue = false) {
     return defaultValue;
 }
 
+// Function to get boolean value from environment variable
+inline std::string getEnvString(const char* envVarName, const std::string& defaultValue = "") {
+    const char* envValue = getenv(envVarName);
+    if (envValue == nullptr) {
+        return defaultValue;
+    }
+    return std::string(envValue);
+}
+
+inline std::int32_t getEnvInt32(const char* envVarName, std::int32_t defaultValue = 0) {
+    const char* envValue = getenv(envVarName);
+    if (envValue == nullptr) {
+        return defaultValue;
+    }
+    try {
+        return std::stoi(envValue);
+    } catch (const std::invalid_argument& e) {
+        return defaultValue;
+    } catch (const std::out_of_range& e) {
+        return defaultValue;
+    }
+}
+
 // Get ENABLE_POINT_CLUSTER from environment variable, default to false
 inline bool ENABLE_POINT_CLUSTER = getEnvBool("ENABLE_POINT_CLUSTER", false);
 
