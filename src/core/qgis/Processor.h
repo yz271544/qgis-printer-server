@@ -15,6 +15,8 @@
 #include <yaml-cpp/yaml.h>
 #include <QFile>
 #include <QJsonDocument>
+#include <QCoreApplication>
+#include <QTimer>
 
 #include "core/error/exceptions.h"
 #include "core/enums/PaperSpecification.h"

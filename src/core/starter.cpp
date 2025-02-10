@@ -10,6 +10,16 @@ StarterContext::StarterContext(int argc, char* argv[]) {
     }
 }
 
+void StarterContext::getConvertedArgs(int& argc, char**& argv) {
+    argc = args_.size();
+    argv = new char*[argc];
+    for (int i = 0; i < argc; ++i) {
+        QByteArray byteArray = args_[i].toLocal8Bit();
+        argv[i] = new char[byteArray.size() + 1];
+        std::strcpy(argv[i], byteArray.data());
+    }
+}
+
 // 获取配置
 YAML::Node StarterContext::Props() const {
     if (context_.find(KeyProps) == context_.end()) {

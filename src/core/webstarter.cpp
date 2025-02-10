@@ -111,7 +111,17 @@ void WebStarter::Setup(StarterContext& context) {
 void WebStarter::Start(StarterContext& context) {
     spdlog::info("WebStarter Start start");
     // 启动Web服务器
-    server->run();
+    if (mBlock) {
+        server->run();
+    } else {
+        // **新开线程运行 Web 服务器**
+        std::thread webServerThread([this]() {
+            server->run();
+        });
+
+        // **让 Web 服务器线程独立运行**
+        webServerThread.detach();
+    }
     spdlog::info("WebStarter Start end");
 }
 
@@ -132,7 +142,7 @@ int WebStarter::PriorityGroup() {
 }
 
 bool WebStarter::StartBlocking() {
-    return true;  // 通常Web服务器启动会阻塞当前线程，可根据实际调整
+    return mBlock;  // 通常Web服务器启动会阻塞当前线程，可根据实际调整
 }
 
 int WebStarter::Priority() {
@@ -148,3 +158,6 @@ YAML::Node WebStarter::GetConfig() {
 }
 
 
+void WebStarter::SetBlocking(bool isBlock) {
+    mBlock = isBlock;
+}

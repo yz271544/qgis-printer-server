@@ -31,8 +31,13 @@ JwLayout3D::~JwLayout3D() {
 void JwLayout3D::filterMapLayers(const QVector<QString> &removeLayerNames,
                                  const QVector<QString> &removeLayerPrefixes,
                                  Qgs3DMapSettings *mapSettings3d) {
-    spdlog::debug("filterMapLayers -> removeLayerNames: {}", removeLayerNames.data()->toStdString());
-    spdlog::debug("filterMapLayers -> removeLayerPrefixes: {}", removeLayerPrefixes.data()->toStdString());
+    for (const auto &item: removeLayerNames) {
+        spdlog::debug("remove layer name: {}", item.toStdString());
+    }
+
+    for (const auto &item: removeLayerPrefixes) {
+        spdlog::debug("remove layer prefix: {}", item.toStdString());
+    }
 
     QMap<QString, QgsMapLayer *> layers = mProject->mapLayers();
     QList<QgsMapLayer *> filteredLayers;
@@ -75,7 +80,7 @@ void JwLayout3D::setPageOrientation(const PaperSpecification availablePaper, int
 void JwLayout3D::setTitle(const QVariantMap &titleOfLayinfo) {
 
     // 添加标题
-    QgsLayoutItemLabel *title = new QgsLayoutItemLabel(mLayout);
+    auto title = std::make_unique<QgsLayoutItemLabel>(mLayout);
     title->setText(titleOfLayinfo["text"].toString());
 
     // 设置标题字号
@@ -98,7 +103,7 @@ void JwLayout3D::setTitle(const QVariantMap &titleOfLayinfo) {
     }
 
     // set the font
-    QgsTextFormat *text_format = QtFontUtil::create_font(
+    QgsTextFormat text_format = *QtFontUtil::create_font(
             fontFamily,
             titleFontSize,
             fontColor,
@@ -109,15 +114,17 @@ void JwLayout3D::setTitle(const QVariantMap &titleOfLayinfo) {
 
     title->setVAlign(Qt::AlignBottom);
     title->setHAlign(Qt::AlignHCenter);
+    title->setTextFormat(text_format);
+    spdlog::debug("setTextFormat done");
     title->adjustSizeToText();
-    title->setTextFormat(*text_format);
+
     spdlog::debug("title_font_size: {}, title_font_family: {}, title_font_color: {}, title_letter_spacing: {}",
                   titleFontSize, fontFamily.toStdString(), fontColor.toStdString(), mImageSpec["title_letter_spacing"].toDouble());
     title->attemptSetSceneRect(
             QRectF(mImageSpec["main_left_margin"].toDouble(), 0.0,
                    mMapWidth,
                    mImageSpec["main_top_margin"].toDouble() - 10));
-    mLayout->addLayoutItem(title);
+    mLayout->addLayoutItem(title.get());
 }
 
 // 添加图例

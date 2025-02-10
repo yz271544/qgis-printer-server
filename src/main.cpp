@@ -2,7 +2,6 @@
 // Created by Lyndon on 2025/1/20.
 //
 
-
 #include <iostream>
 
 #include "core/bootapplication.h"
@@ -12,13 +11,19 @@
 #include "core/starterregister.h"
 #include "core/webstarter.h"
 #include "core/processorstarter.h"
+#include "core/qcorestarter.h"
 
 int main(int argc, char* argv[]) {
+    // 启动 Qt 事件循环
+    // QCoreApplication app(argc, argv);
     // 创建并注册不同的Starter实例
     ConfStarter confStarter;
     LoggerStarter loggerStarter;
     WebStarter webStarter;
+    webStarter.SetBlocking(false);
     ProcessorStarter processorStarter;
+    QCoreStarter qCoreStarter;
+    qCoreStarter.SetBlocking(true);
     // 创建StarterContext实例
     StarterContext* starterContext = new StarterContext(argc, argv);
     auto starter_register = StarterRegister::getInstance();
@@ -31,9 +36,14 @@ int main(int argc, char* argv[]) {
     starter_register->Register(&loggerStarter);
     starter_register->Register(&webStarter);
     starter_register->Register(&processorStarter);
+    starter_register->Register(&qCoreStarter);
+
     starter_register->Register(&hookStarter);
     // 启动程序
     boot->Start();
+
+    // **确保事件循环运行**
+    //spdlog::info("确保事件循环运行");
     return 0;
 
 }

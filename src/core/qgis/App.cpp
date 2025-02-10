@@ -2,9 +2,6 @@
 // Created by etl on 2/4/25.
 //
 
-
-
-
 #include "App.h"
 
 
@@ -25,8 +22,8 @@ App::App(const QList<QString>& argvList, std::shared_ptr<YAML::Node>& config)
     } catch (const std::exception& e) {
         spdlog::error("get gui_enabled error: {}", e.what());
     }
-    // mQgis = new QgsApplication(mArgc, mArgv, GUIenabled);
-    mQgis = std::make_shared<QgsApplication>(mArgc, mArgv, GUIenabled);
+     mQgis = new QgsApplication(mArgc, mArgv, GUIenabled);
+    //mQgis = std::make_shared<QgsApplication>(mArgc, mArgv, GUIenabled);
     QString qgis_prefix_path = "/usr";
     try {
         qgis_prefix_path = QString::fromStdString((*mConfig)["qgis"]["prefix_path"].as<std::string>());
@@ -42,7 +39,9 @@ App::App(const QList<QString>& argvList, std::shared_ptr<YAML::Node>& config)
     } catch (const std::exception& e) {
         spdlog::error("init qgis error: {}", e.what());
     }
+    spdlog::info("inited the qgs app");
     mPageSizeRegistry = std::shared_ptr<QgsPageSizeRegistry>(QgsApplication::pageSizeRegistry());
+    //mPageSizeRegistry = QgsApplication::pageSizeRegistry();
     mAvailablePapers = PaperSpecification::getLayoutPaperList();
     for (const auto &item: mAvailablePapers) {
         spdlog::debug("paper: {}", item.getPaperName().toStdString());
@@ -50,6 +49,9 @@ App::App(const QList<QString>& argvList, std::shared_ptr<YAML::Node>& config)
         // spdlog::debug("QGIS_PREFIX_PATH: {}", QGIS_PREFIX_PATH);
         mPageSizeRegistry->add(QgsPageSize(item.getPaperName(), QgsLayoutSize(item.getPaperSize().first, item.getPaperSize().second)));
     }
+
+    //this->moveToThread(QCoreApplication::instance()->thread());
+
 }
 
 App::~App() {
@@ -57,6 +59,16 @@ App::~App() {
     finishQgis();
     spdlog::info("App destroy finished");
 }
+
+//// 实现槽函数
+//void App::createProjectSlot(QString scene_name, QString crs) {
+//    createProject(scene_name, crs);
+//}
+
+
+//void App::projectCreated(const oatpp::data::type::DTOWrapper<ResponseDto>& responseDto) {
+//    spdlog::debug("app projectCreated");
+//}
 
 QVector<PaperSpecification>& App::getAvailablePapers() {
     return mAvailablePapers;
@@ -84,10 +96,29 @@ void App::finishQgis() {
 }
 
 void App::createProject(QString& scene_name, QString& crs) {
+    spdlog::info("Starting createProject for scene: {}", scene_name.toStdString());
     mSceneName = scene_name;
-    mProject = std::make_shared<QgsProject>();
+    spdlog::debug("scene_name: {}", mSceneName.toStdString());
+    /*mProject = std::make_shared<QgsProject>();
     mCanvas = std::make_shared<QgsMapCanvas>();
+    mMapSettings = std::make_shared<QgsMapSettings>();*/
+    mProjectDir = QString::fromStdString((*mConfig)["qgis"]["projects_prefix"].as<std::string>()) + "/" + mSceneName;
+    spdlog::debug("create_project::clearLayers()");
+    clearLayers();
+    spdlog::debug("create_project::cleanProject()");
+    cleanProject();
+    spdlog::debug("create_project::create()");
+    auto project = QgsProject::instance();
+    mProject.reset(project);
+    if (!mProject) {
+        spdlog::error("QgsProject::instance() is nullptr! QGIS 未正确初始化！");
+        return;
+    }
+    spdlog::debug("get QgsProject instance");
+    mCanvas = std::make_shared<QgsMapCanvas>();
+    spdlog::debug("create_canvas");
     mMapSettings = std::make_shared<QgsMapSettings>();
+    spdlog::debug("create_map_settings");
     if (!(*mConfig)["qgis"]) {
         spdlog::error("qgis not found in the config.yaml");
         return;
@@ -96,15 +127,10 @@ void App::createProject(QString& scene_name, QString& crs) {
         spdlog::error("qgis.projects_prefix not found in the config.yaml");
         return;
     }
-    mProjectDir = QString::fromStdString((*mConfig)["qgis"]["projects_prefix"].as<std::string>()) + "/" + mSceneName;
-    spdlog::debug("create_project::clearLayers()");
-    clearLayers();
-    spdlog::debug("create_project::cleanProject()");
-    cleanProject();
-    spdlog::debug("create_project::create()");
-    //mProject = QgsProject::instance();
+    QgsCoordinateTransformContext rhs;
+    mProject->setTransformContext(rhs);
     mTransformContext = mProject->transformContext();
-    clearProject();
+    spdlog::debug("get TransformContext");
     spdlog::debug("mProject.setCrs(QgsCoordinateReferenceSystem(qgscrs))");
     QgsCoordinateReferenceSystem qgscrs(crs);
     mProject->setCrs(qgscrs);
@@ -152,15 +178,17 @@ void App::clearLayers() {
         }
 
         clearProject();
-        //delete mProject;
-        //mProject = nullptr;
+        /*delete mProject;
+        mProject = nullptr;*/
         mProject.reset();
         spdlog::debug("cleared qgs project");
     }
 }
 
 void App::clearProject() {
-    mProject->clear();
+    if (mProject != nullptr) {
+        mProject->clear();
+    }
 }
 
 void App::createCanvas(QString& crs) {
@@ -170,7 +198,38 @@ void App::createCanvas(QString& crs) {
 }
 
 void App::addMapBaseTileLayer() {
-    QString base_tile_url = QString::fromStdString(BASE_TILE_NAME);
+    spdlog::debug("App::addMapBaseTileLayer");
+
+    QString map_base_url;
+    try {
+        auto mapBaseUrlStdString = (*mConfig)["qgis"]["map_base_url"].as<std::string>();
+        map_base_url = QString::fromStdString(mapBaseUrlStdString);
+    } catch (const std::exception& e) {
+        spdlog::error("get qgis.map_base_url error: {}", e.what());
+    }
+    spdlog::debug("map_base_url: {}", map_base_url.toStdString());
+
+    QString map_base_prefix;
+    try {
+        auto mapBasePrefixStdString = (*mConfig)["qgis"]["map_base_prefix"].as<std::string>();
+        map_base_prefix = QString::fromStdString(mapBasePrefixStdString);
+        map_base_prefix = map_base_prefix.replace("{MAP_BASE_URL}", map_base_url);
+    } catch (const std::exception& e) {
+        spdlog::error("get qgis.map_base_prefix error: {}", e.what());
+    }
+    spdlog::debug("map_base_prefix: {}", map_base_prefix.toStdString());
+
+    QString map_base_suffix;
+    try {
+        auto mapBaseSuffixStdString = (*mConfig)["qgis"]["map_base_suffix"].as<std::string>();
+        map_base_suffix = QString::fromStdString(mapBaseSuffixStdString);
+    } catch (const std::exception& e) {
+        spdlog::error("get qgis.map_base_suffix error: {}", e.what());
+    }
+    spdlog::debug("map_base_suffix: {}", map_base_suffix.toStdString());
+
+    QString base_tile_url = QString().append(map_base_prefix).append(map_base_suffix);
+    spdlog::info("add base tile: {}, base_tile_url: {}", BASE_TILE_NAME, base_tile_url.toStdString());
     QgsRasterLayer base_tile_layer(base_tile_url, BASE_TILE_NAME, "wms");
     if (base_tile_layer.isValid()) {
         mProject->addMapLayer(&base_tile_layer);
@@ -185,34 +244,48 @@ void App::addMapMainTileLayer(int num, QString& orthogonalPath) {
         return;
     }
 
-    if (!(*mConfig)["map_main_prefix"]) {
-        spdlog::error("map_main_prefix not found in the config.yaml");
-        return;
+    QString map_main_base_url;
+    try {
+        auto mapMainPrefixStdString = (*mConfig)["qgis"]["map_main_base_url"].as<std::string>();
+        map_main_base_url = QString::fromStdString(mapMainPrefixStdString);
+    } catch (const std::exception& e) {
+        spdlog::error("get qgis.map_main_base_url error: {}", e.what());
     }
-    QString map_main_prefix = QString::fromStdString((*mConfig)["map_main_prefix"].as<std::string>());
+    spdlog::debug("map_main_base_url: {}", map_main_base_url.toStdString());
 
-    if (!(*mConfig)["map_main_base_url"]) {
-        spdlog::error("map_main_base_url not found in the config.yaml");
-        return;
+    QString map_main_prefix;
+    try {
+        auto mapMainPrefixStdString = (*mConfig)["qgis"]["map_main_prefix"].as<std::string>();
+        map_main_prefix = QString::fromStdString(mapMainPrefixStdString);
+        map_main_prefix = map_main_prefix.replace("{MAP_MAIN_BASE_URL}", map_main_base_url);
+    } catch (const std::exception& e) {
+        spdlog::error("get qgis.map_main_prefix error: {}", e.what());
     }
-    QString map_main_base_url = QString::fromStdString((*mConfig)["map_main_base_url"].as<std::string>());
+    spdlog::debug("map_main_prefix: {}", map_main_prefix.toStdString());
 
-    map_main_prefix = map_main_prefix.replace("{MAP_MAIN_BASE_URL}", map_main_base_url);
-    if (!(*mConfig)["map_main_suffix"]) {
-        spdlog::error("map_main_suffix not found in the config.yaml");
-        return;
+    QString map_main_suffix;
+    try {
+        auto mapMainSuffixStdString = (*mConfig)["qgis"]["map_main_suffix"].as<std::string>();
+        map_main_suffix = QString::fromStdString(mapMainSuffixStdString);
+    } catch (const std::exception& e) {
+        spdlog::error("get qgis.map_main_suffix error: {}", e.what());
     }
-    QString map_main_suffix = QString::fromStdString((*mConfig)["map_main_suffix"].as<std::string>());
+    spdlog::debug("map_main_suffix: {}", map_main_suffix.toStdString());
 
-    if (!(*mConfig)["map_main_middle"]) {
-        spdlog::error("map_main_middle not found in the config.yaml");
-        return;
+
+    QString map_main_middle;
+    try {
+        auto mapMainMiddleStdString = (*mConfig)["qgis"]["map_main_middle"].as<std::string>();
+        map_main_middle = QString::fromStdString(mapMainMiddleStdString);
+    } catch (const std::exception& e) {
+        spdlog::error("get qgis.map_main_middle error: {}", e.what());
     }
-    QString main_tile_url = QString::fromStdString((*mConfig)["map_main_middle"].as<std::string>());
-    main_tile_url = main_tile_url.replace("{ORTHOGONAL_PATH_NAME}", orthogonalPath);
-    UrlUtil::urlEncode(main_tile_url);
+    spdlog::debug("map_main_middle: {}", map_main_middle.toStdString());
 
-    main_tile_url = map_main_prefix + main_tile_url + map_main_suffix;
+    map_main_middle = map_main_middle.replace("{ORTHOGONAL_PATH_NAME}", orthogonalPath);
+    UrlUtil::urlEncode(map_main_middle);
+
+    QString main_tile_url = QString().append(map_main_prefix).append(map_main_middle).append(map_main_suffix);
     QString main_tile_name = QString::fromStdString(MAIN_TILE_NAME).append(num);
     spdlog::debug("add main tile: {}, main_tile_url: {}", main_tile_name.toStdString(), main_tile_url.toStdString());
     QgsRasterLayer main_tile_layer(main_tile_url, main_tile_name, "wms");
@@ -229,17 +302,23 @@ void App::addMap3dTileLayer(int num, QString& realistic3dPath) {
         return;
     }
 
-    if (!(*mConfig)["map_3d_base_url"]) {
-        spdlog::error("map_3d_base_url not found in the config.yaml");
-        return;
+    QString map_3d_base_url;
+    try {
+        auto map3dBaseUrlStdString = (*mConfig)["qgis"]["map_3d_base_url"].as<std::string>();
+        map_3d_base_url = QString::fromStdString(map3dBaseUrlStdString);
+    } catch (const std::exception& e) {
+        spdlog::error("get qgis.map_3d_base_url error: {}", e.what());
     }
-    QString map_3d_base_url = QString::fromStdString((*mConfig)["map_3d_base_url"].as<std::string>());
+    spdlog::debug("map_3d_base_url: {}", map_3d_base_url.toStdString());
 
-    if (!(*mConfig)["map_main_base_url"]) {
-        spdlog::error("map_main_base_url not found in the config.yaml");
-        return;
+    QString map_main_base_url;
+    try {
+        auto mapMainBaseUrlStdString = (*mConfig)["qgis"]["map_main_base_url"].as<std::string>();
+        map_main_base_url = QString::fromStdString(mapMainBaseUrlStdString);
+    } catch (const std::exception& e) {
+        spdlog::error("get qgis.map_main_base_url error: {}", e.what());
     }
-    QString map_main_base_url = QString::fromStdString((*mConfig)["map_main_base_url"].as<std::string>());
+    spdlog::debug("map_main_base_url: {}", map_main_base_url.toStdString());
 
     map_3d_base_url = map_3d_base_url.replace("{MAP_MAIN_BASE_URL}", map_main_base_url);
     map_3d_base_url = map_3d_base_url.replace("{REALISTIC3D_PATH_NAME}", realistic3dPath);
@@ -385,6 +464,7 @@ QgsPointXY App::transform4326To3857(double x, double y) {
     QgsCoordinateReferenceSystem crs4326(REAL3D_SOURCE_CRS);
     QgsCoordinateReferenceSystem crs3857(MAIN_CRS);
     QgsCoordinateTransform transform(crs4326, crs3857, mProject.get());
+    // QgsCoordinateTransform transform(crs4326, crs3857, mProject);
     return transform.transform(QgsPointXY(x, y));
 }
 

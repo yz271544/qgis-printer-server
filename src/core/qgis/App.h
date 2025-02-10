@@ -5,6 +5,7 @@
 #ifndef JINGWEIPRINTER_APP_H
 #define JINGWEIPRINTER_APP_H
 
+#include <QCoreApplication>
 #include <QString>
 #include <QFileInfo>
 #include <QDir>
@@ -31,6 +32,7 @@
 #include "utils/FileUtil.h"
 #include "utils/UrlUtil.h"
 #include "utils/JsonUtil.h"
+
 
 class App {
 public:
@@ -122,6 +124,14 @@ public:
     QString& getProjectDir();
 
 
+//    void projectCreated(const oatpp::data::type::DTOWrapper<ResponseDto>& responseDto);
+//
+//    // 定义一个公共槽函数来调用 createProject
+//public slots:
+//    void createProjectSlot(QString scene_name, QString crs);
+/*signals:
+     void projectCreated(const DTOWRAPPERNS::DTOWrapper<ResponseDto>& response);*/
+
 private:
 char** mArgv; // 用于存储转换后的命令行参数
 int mArgc;    // 参数个数
@@ -132,7 +142,7 @@ std::shared_ptr<QgsMapCanvas> mCanvas;
 std::shared_ptr<QgsMapSettings> mMapSettings;
 QString mProjectDir;
 QgsCoordinateTransformContext mTransformContext;
-std::shared_ptr<QgsApplication> mQgis;
+QgsApplication* mQgis;
 std::shared_ptr<QgsPageSizeRegistry> mPageSizeRegistry;
 QVector<PaperSpecification> mAvailablePapers;
 };

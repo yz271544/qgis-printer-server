@@ -5,7 +5,7 @@
 #ifndef WEBSTARTER_H
 #define WEBSTARTER_H
 
-
+#include <thread>
 #include "starter.h"
 #include "handler/hellohandler.h"
 #include "oatpp/web/server/HttpConnectionHandler.hpp"
@@ -28,6 +28,7 @@
 
 class WebStarter : public BaseStarter {
 private:
+    bool mBlock;
     std::shared_ptr<oatpp::web::server::HttpConnectionHandler> connectionHandler;
     std::shared_ptr<oatpp::network::Server> server;
     std::shared_ptr<YAML::Node> config;
@@ -56,6 +57,8 @@ public:
     std::string GetName();
 
     YAML::Node GetConfig();
+
+    void SetBlocking(bool isBlock);
 };
 
 

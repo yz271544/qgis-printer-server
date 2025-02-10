@@ -84,9 +84,13 @@ Processor::Processor(QList<QString> argvList, std::shared_ptr<YAML::Node> &confi
     try {
         auto confMappingExportNginxUrlPrefix = (*m_config)["qgis"]["mapping_export_nginx_url_prefix"];
         if (confMappingExportNginxUrlPrefix) {
-            m_mapping_export_nginx_url_prefix = QString::fromStdString(confMappingExportNginxUrlPrefix.as<std::string>());
-            m_mapping_export_nginx_url_prefix = m_mapping_export_nginx_url_prefix.replace("{MAPPING_EXPORT_NGINX_HOST}", mapping_export_nginx_host);
-            m_mapping_export_nginx_url_prefix = m_mapping_export_nginx_url_prefix.replace("{MAPPING_EXPORT_NGINX_PORT}", QString::number(mapping_export_nginx_port));
+            m_mapping_export_nginx_url_prefix = QString::fromStdString(
+                    confMappingExportNginxUrlPrefix.as<std::string>());
+            m_mapping_export_nginx_url_prefix = m_mapping_export_nginx_url_prefix.replace("{MAPPING_EXPORT_NGINX_HOST}",
+                                                                                          mapping_export_nginx_host);
+            m_mapping_export_nginx_url_prefix = m_mapping_export_nginx_url_prefix.replace("{MAPPING_EXPORT_NGINX_PORT}",
+                                                                                          QString::number(
+                                                                                                  mapping_export_nginx_port));
         }
         spdlog::info("mapping_export_nginx_url_prefix: {}", m_mapping_export_nginx_url_prefix.toStdString());
     } catch (const std::exception &e) {
@@ -96,6 +100,9 @@ Processor::Processor(QList<QString> argvList, std::shared_ptr<YAML::Node> &confi
     m_plotting_fetch = std::make_unique<PlottingFetch>(jingwei_server_url.toStdString());
 
     m_app = std::make_unique<App>(argvList, m_config);
+    if (!m_app) {
+        spdlog::error("m_app is nullptr!");
+    }
 
     // 读取图像规格
     m_setting_image_spec = std::make_unique<QVariantMap>();
@@ -171,8 +178,15 @@ Processor::fetchPlotting(const oatpp::String &token, const oatpp::String &scene_
 // 异步处理绘图数据的函数
 std::future<DTOWRAPPERNS::DTOWrapper<ResponseDto>>
 Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb) {
+
+    // 创建一个 std::promise 用于存储返回值
+    auto promise = std::make_shared<std::promise<DTOWRAPPERNS::DTOWrapper<ResponseDto>>>();
+
     // 使用 std::async 来实现异步操作
-    return std::async(std::launch::async, [this, token, plottingWeb]() {
+    return std::async(std::launch::async, [this, token, plottingWeb, promise]() {
+
+        // 创建事件循环
+        //QEventLoop eventLoop;
 
         if (m_verbose) {
             QJsonDocument postPlottingWebBody = JsonUtil::convertDtoToQJsonObject(plottingWeb);
@@ -219,106 +233,131 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
             spdlog::error(errorMsg);
             throw XServerRequestError(errorMsg);
         }
+        spdlog::info("invoke method to create project");
+        //QMetaObject::invokeMethod(qApp, [this, plottingWeb, plottingRespDto, layoutType, promise]() {
+        QTimer::singleShot(0, qApp, [this, plottingWeb, plottingRespDto, layoutType, promise]() {
+            spdlog::info("Inside invokeMethod lambda: start");
+            try {
+                QString sceneName = QString::fromStdString(plottingWeb->sceneName);
+                spdlog::debug("create qgis project, sceneName: {}", sceneName.toStdString());
+                QString mainCrs = QString::fromStdString(MAIN_CRS);
+                spdlog::debug("mainCrs: {}", mainCrs.toStdString());
 
-        QString sceneName = QString::fromStdString(plottingWeb->sceneName);
-        spdlog::debug("create qgis project, sceneName: {}", sceneName.toStdString());
-        QString mainCrs = QString::fromStdString(MAIN_CRS);
-        m_app->createProject(sceneName, mainCrs);
-        spdlog::debug("add map base tile layer");
-        m_app->addMapBaseTileLayer();
+                // 使用 QMetaObject::invokeMethod 来确保在 App 对象所在的线程中调用 createProjectSlot
+                /*QMetaObject::invokeMethod(m_app.get(), "createProjectSlot", Qt::QueuedConnection,
+                                          Q_ARG(QString, sceneName), Q_ARG(QString, mainCrs));*/
 
-        if (!plottingWeb->path->empty()) {
-            QString plottingWebPaths = QString::fromStdString(*plottingWeb->path);
-            QStringList orthogonal_paths = plottingWebPaths.split(",");
-            for (int i = 0; i < orthogonal_paths.size(); ++i) {
-                QString orthogonal_path = orthogonal_paths[i];
-                if (orthogonal_path.contains("/")) {
-                    orthogonal_path = orthogonal_path.split("/").last();
-                } else if (orthogonal_path.contains("\\")) {
-                    orthogonal_path = orthogonal_path.split("\\").last();
+                m_app->createProject(sceneName, mainCrs);
+                spdlog::debug("add map base tile layer");
+                m_app->addMapBaseTileLayer();
+
+                if (!plottingWeb->path->empty()) {
+                    QString plottingWebPaths = QString::fromStdString(*plottingWeb->path);
+                    QStringList orthogonal_paths = plottingWebPaths.split(",");
+                    for (int i = 0; i < orthogonal_paths.size(); ++i) {
+                        QString orthogonal_path = orthogonal_paths[i];
+                        if (orthogonal_path.contains("/")) {
+                            orthogonal_path = orthogonal_path.split("/").last();
+                        } else if (orthogonal_path.contains("\\")) {
+                            orthogonal_path = orthogonal_path.split("\\").last();
+                        }
+                        QString plottingWebSceneId = QString::fromStdString(*plottingWeb->sceneId);
+                        orthogonal_path = plottingWebSceneId.append("-").append(orthogonal_path.trimmed());
+                        spdlog::info("add map main tile layer {}", orthogonal_path.toStdString());
+                        m_app->addMapMainTileLayer(i, orthogonal_path);
+                    }
                 }
-                QString plottingWebSceneId = QString::fromStdString(*plottingWeb->sceneId);
-                orthogonal_path = plottingWebSceneId.append("-").append(orthogonal_path.trimmed());
-                spdlog::info("add map main tile layer {}", orthogonal_path.toStdString());
-                m_app->addMapMainTileLayer(i, orthogonal_path);
-            }
-        }
 
-        if (!plottingWeb->path3d->empty()) {
-            QString plottingWebPath3ds = QString::fromStdString(*plottingWeb->path3d);
-            QStringList real_3d_paths = plottingWebPath3ds.split(",");
-            for (int i = 0; i < real_3d_paths.size(); ++i) {
-                QString path3d = real_3d_paths[i].trimmed();
-                QStringList path3d_arr = path3d.split("/");
-                if (path3d_arr.last() == "tileset.json") {
-                    path3d = path3d_arr[path3d_arr.size() - 2] + "/" + path3d_arr.last();
+                auto path3dProp = plottingWeb->Z__PROPERTY_INITIALIZER_PROXY_path3d();
+                if (path3dProp.getPtr() && !plottingWeb->path3d->empty()) {
+                    QString plottingWebPath3ds = QString::fromStdString(*plottingWeb->path3d);
+                    QStringList real_3d_paths = plottingWebPath3ds.split(",");
+                    for (int i = 0; i < real_3d_paths.size(); ++i) {
+                        QString path3d = real_3d_paths[i].trimmed();
+                        QStringList path3d_arr = path3d.split("/");
+                        if (path3d_arr.last() == "tileset.json") {
+                            path3d = path3d_arr[path3d_arr.size() - 2] + "/" + path3d_arr.last();
+                        }
+                        QString plottingWebSceneId = QString::fromStdString(*plottingWeb->sceneId);
+                        QString real_3d_path = plottingWebSceneId.append("-").append(path3d);
+                        spdlog::info("add map tiled scene layer {}", real_3d_path.toStdString());
+                        m_app->addMapMainTileLayer(i, real_3d_path);
+                    }
                 }
-                QString plottingWebSceneId = QString::fromStdString(*plottingWeb->sceneId);
-                QString real_3d_path = plottingWebSceneId.append("-").append(path3d);
-                spdlog::info("add map tiled scene layer {}", real_3d_path.toStdString());
-                m_app->addMapMainTileLayer(i, real_3d_path);
-            }
-        }
 
-        // add layers
-        spdlog::debug("add map plotting layers");
-        plottingLayers(plottingRespDto);
+                // add layers
+                spdlog::debug("add map plotting layers");
+                plottingLayers(plottingRespDto);
 
-        // create 2d canvas
-        m_app->createCanvas(mainCrs);
-        m_app->resetCanvas(plottingWeb->geojson);
+                // create 2d canvas
+                m_app->createCanvas(mainCrs);
+                m_app->resetCanvas(plottingWeb->geojson);
 
-        // add 2d layout
-        spdlog::debug("add 2d layout");
-        auto image_spec = m_setting_image_spec->value(layoutType).toMap();
+                // add 2d layout
+                spdlog::debug("add 2d layout");
+                auto image_spec = m_setting_image_spec->value(layoutType).toMap();
 
-        if (!image_spec.isEmpty()) {
-            auto appAvailablePapers = m_app->getAvailablePapers();
-            QVector<QString> removeLayerNames = QVector<QString>();
-            QVector<QString> removeLayerPrefixes = QVector<QString>();
-            removeLayerPrefixes.append(REAL3D_TILE_NAME);
-            for (const auto &availablePaper: appAvailablePapers) {
-                spdlog::info("image_spec_name: {}, available_paper: {}", layoutType.toStdString(),
-                             availablePaper.getPaperName().toStdString());
-                add_layout(m_app->getCanvas(), layoutType, plottingWeb, image_spec, availablePaper, false,
-                           removeLayerNames, removeLayerPrefixes);
-            }
-            if (m_enable_3d) {
-                // add 3d layout
-                spdlog::debug("add 3d layout");
-                QVector<QString> removeLayerNames3D = QVector<QString>();
-                QVector<QString> removeLayerPrefixes3D = QVector<QString>();
-                removeLayerNames3D.append(BASE_TILE_NAME);
-                removeLayerPrefixes3D.append(MAIN_TILE_NAME);
-                for (const auto &availablePaper: appAvailablePapers) {
-                    spdlog::info("image_spec_name: {}, available_paper: {}", layoutType.toStdString(),
-                                 availablePaper.getPaperName().toStdString());
-                    add_3d_layout(m_app->getCanvas(), layoutType, plottingWeb, image_spec, availablePaper, false,
-                                  removeLayerNames3D, removeLayerPrefixes3D);
+                if (!image_spec.isEmpty()) {
+                    auto appAvailablePapers = m_app->getAvailablePapers();
+                    QVector<QString> removeLayerNames = QVector<QString>();
+                    QVector<QString> removeLayerPrefixes = QVector<QString>();
+                    removeLayerPrefixes.append(REAL3D_TILE_NAME);
+                    for (const auto &availablePaper: appAvailablePapers) {
+                        spdlog::info("image_spec_name: {}, available_paper: {}", layoutType.toStdString(),
+                                     availablePaper.getPaperName().toStdString());
+                        add_layout(m_app->getCanvas(), layoutType, plottingWeb, image_spec, availablePaper, false,
+                                   removeLayerNames, removeLayerPrefixes);
+                    }
+                    if (m_enable_3d) {
+                        // add 3d layout
+                        spdlog::debug("add 3d layout");
+                        QVector<QString> removeLayerNames3D = QVector<QString>();
+                        QVector<QString> removeLayerPrefixes3D = QVector<QString>();
+                        removeLayerNames3D.append(BASE_TILE_NAME);
+                        removeLayerPrefixes3D.append(MAIN_TILE_NAME);
+                        for (const auto &availablePaper: appAvailablePapers) {
+                            spdlog::info("image_spec_name: {}, available_paper: {}", layoutType.toStdString(),
+                                         availablePaper.getPaperName().toStdString());
+                            add_3d_layout(m_app->getCanvas(), layoutType, plottingWeb, image_spec, availablePaper,
+                                          false,
+                                          removeLayerNames3D, removeLayerPrefixes3D);
+                        }
+                    }
                 }
+
+                spdlog::info("canvas extent after add layout: {}",
+                             m_app->getCanvas()->extent().toString().toStdString());
+
+                spdlog::info("save project");
+                m_app->saveProject();
+
+                auto zip_file_name = zipProject(sceneName);
+                spdlog::info("zip_file_name: {}", zip_file_name.toStdString());
+                spdlog::info("export image from qgis");
+
+                auto imageSubDir = getImageSubDir(layoutType);
+                // 异步导出图像
+                QString paperName = QString::fromStdString(plottingWeb->paper);
+                auto imageName = exportImage(sceneName, layoutType, imageSubDir, paperName).get();
+
+                auto responseDto = ResponseDto::createShared();
+                responseDto->project_zip_url = QString().append(m_mapping_export_nginx_url_prefix).append("/").append(
+                        zip_file_name).toStdString();
+                responseDto->image_url = QString().append(m_mapping_export_nginx_url_prefix).append("/").append(
+                        imageSubDir).append("/").append(imageName).toStdString();
+                responseDto->error = "";
+
+                promise->set_value(responseDto);
+            } catch (const std::exception& e) {
+                spdlog::error("Exception in invokeMethod lambda: {}", e.what());
+                promise->set_exception(std::make_exception_ptr(e));
             }
-        }
+        });
 
-        spdlog::info("canvas extent after add layout: {}", m_app->getCanvas()->extent().toString().toStdString());
+        // 启动事件循环，直到 lambda 执行完成
+        //eventLoop.exec();
 
-        spdlog::info("save project");
-        m_app->saveProject();
-
-        auto zip_file_name = zipProject(sceneName);
-        spdlog::info("zip_file_name: {}", zip_file_name.toStdString());
-        spdlog::info("export image from qgis");
-
-        auto imageSubDir = getImageSubDir(layoutType);
-        // 异步导出图像
-        QString paperName = QString::fromStdString(plottingWeb->paper);
-        auto imageName = exportImage(sceneName, layoutType, imageSubDir, paperName).get();
-
-        // mock fake data
-        auto responseDto = ResponseDto::createShared();
-        responseDto->project_zip_url = QString().append(m_mapping_export_nginx_url_prefix).append("/").append(zip_file_name).toStdString();
-        responseDto->image_url = QString().append(m_mapping_export_nginx_url_prefix).append("/").append(imageSubDir).append("/").append(imageName).toStdString();
-        responseDto->error = "";
-        return responseDto;
+        return promise->get_future().get();
     });
 }
 

@@ -40,6 +40,9 @@ public:
 
     StarterContext(int argc, char* argv[]);
 
+    // 添加一个方法，用于获取转换后的参数
+    void getConvertedArgs(int& argc, char**& argv);
+
     // 获取配置
     YAML::Node Props() const;
 

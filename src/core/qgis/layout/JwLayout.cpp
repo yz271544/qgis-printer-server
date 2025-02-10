@@ -30,8 +30,13 @@ JwLayout::~JwLayout() {
 void JwLayout::filterMapLayers(const QVector<QString>& removeLayerNames,
                                const QVector<QString>& removeLayerPrefixes,
                                Qgs3DMapSettings* mapSettings3d) {
-    spdlog::debug("filterMapLayers -> removeLayerNames: {}", removeLayerNames.data()->toStdString());
-    spdlog::debug("filterMapLayers -> removeLayerPrefixes: {}", removeLayerPrefixes.data()->toStdString());
+    for (const auto &item: removeLayerNames) {
+        spdlog::debug("remove layer name: {}", item.toStdString());
+    }
+
+    for (const auto &item: removeLayerPrefixes) {
+        spdlog::debug("remove layer prefix: {}", item.toStdString());
+    }
 
     QMap<QString, QgsMapLayer*> layers = mProject->mapLayers();
     QList<QgsMapLayer*> filteredLayers;
@@ -82,21 +87,22 @@ void JwLayout::setPageOrientation(const PaperSpecification availablePaper, int p
 void JwLayout::setTitle(const QVariantMap& titleOfLayinfo) {
 
     // 添加标题
-    QgsLayoutItemLabel* title = new QgsLayoutItemLabel(mLayout);
+    auto title = std::make_unique<QgsLayoutItemLabel>(mLayout);
     title->setText(titleOfLayinfo["text"].toString());
+    spdlog::debug("title text {}", title->text().toStdString());
 
     // 设置标题字号
     int8_t titleFontSize = mImageSpec["title_font_size"].toInt();
     if (titleOfLayinfo.contains("fontSize")) {
         titleFontSize = titleOfLayinfo["fontSize"].toInt();
     }
-
+    spdlog::debug("title titleFontSize {}", titleFontSize);
     // 字体
     QString fontFamily = mImageSpec["title_font_family"].toString();
     if (titleOfLayinfo.contains("fontFamily")) {
         fontFamily = titleOfLayinfo["fontFamily"].toString();
     }
-
+    spdlog::debug("title fontFamily {}", fontFamily.toStdString());
     // 字体颜色
     QString fontColor = mImageSpec["title_font_color"].toString();
     if (titleOfLayinfo.contains("color"))
@@ -104,9 +110,9 @@ void JwLayout::setTitle(const QVariantMap& titleOfLayinfo) {
         fontColor = titleOfLayinfo["color"].toString();
         fontColor = ColorTransformUtil::strRgbaToHex(fontColor).first;
     }
-
+    spdlog::debug("title fontColor {}", fontColor.toStdString());
     // set the font
-    QgsTextFormat* text_format = QtFontUtil::create_font(
+    QgsTextFormat text_format = *QtFontUtil::create_font(
             fontFamily,
             titleFontSize,
             fontColor,
@@ -115,10 +121,26 @@ void JwLayout::setTitle(const QVariantMap& titleOfLayinfo) {
             Qgis::TextOrientation::Horizontal,
             mImageSpec["title_letter_spacing"].toDouble());
 
-    title->setVAlign(Qt::AlignBottom);
-    title->setHAlign(Qt::AlignHCenter);
+    auto font = text_format.font();
+    spdlog::debug("font 111");
+    auto family = font.family();
+    spdlog::debug("font 222");
+    spdlog::debug("font family: {}", family.toStdString());
+    spdlog::debug("text_format -> size: {}", text_format.size());
+    spdlog::debug("text_format -> color: {}", text_format.color().name().toStdString());
+    spdlog::debug("text_format -> bold: {}", text_format.forcedBold());
+    spdlog::debug("text_format -> italic: {}", text_format.forcedItalic());
+    spdlog::debug("text_format -> orientation: {}", text_format.orientation());
+    //spdlog::debug("text_format -> spacing: {}", text_format.buffer().size());
+
+    title->setVAlign(Qt::AlignmentFlag::AlignBottom);
+    spdlog::debug("setVAlign AlignBottom");
+    title->setHAlign(Qt::AlignmentFlag::AlignHCenter);
+    spdlog::debug("setHAlign AlignHCenter");
+    title->setTextFormat(text_format);
+    spdlog::debug("setTextFormat done");
     title->adjustSizeToText();
-    title->setTextFormat(*text_format);
+
     spdlog::debug("title_font_size: {},  title_font_family: {},  title_font_color: {},  title_letter_spacing: {}",
                   titleFontSize,
                   fontFamily.toStdString(),
@@ -128,17 +150,17 @@ void JwLayout::setTitle(const QVariantMap& titleOfLayinfo) {
             QRectF(mImageSpec["main_left_margin"].toDouble(), 0.0,
                    mMapWidth,
                    mImageSpec["main_top_margin"].toDouble() - 10));
-    mLayout->addLayoutItem(title);
+    mLayout->addLayoutItem(title.get());
 }
 
 // 添加图例
 void JwLayout::setLegend(const QVariantMap& imageSpec, int legendWidth, int legendHeight,
                          const QString& borderColor , const QSet<QString>& filteredLegendItems)
 {
-    QgsLayoutItemLegend* legend = new QgsLayoutItemLegend(mLayout);
+    auto legend = std::make_unique<QgsLayoutItemLegend>(mLayout);
     spdlog::debug("ready to custom legend");
     QPair<double, double> legendWidthHeight =
-            mJwLegend->customize(legend, imageSpec, legendWidth, legendHeight, filteredLegendItems);
+            mJwLegend->customize(legend.get(), imageSpec, legendWidth, legendHeight, filteredLegendItems);
     spdlog::debug("custom legend done");
     legendWidth = legendWidthHeight.first;
     legendHeight = legendWidthHeight.second;
@@ -163,7 +185,7 @@ void JwLayout::setLegend(const QVariantMap& imageSpec, int legendWidth, int lege
     legend->setFrameEnabled(true);
     legend->setFrameStrokeWidth(QgsLayoutMeasurement(0.5, Qgis::LayoutUnit::Millimeters));
     legend->setFrameStrokeColor(QColor(borderColor));
-    mLayout->addLayoutItem(legend);
+    mLayout->addLayoutItem(legend.get());
 }
 
 void JwLayout::setRemarks(const QVariantMap& remarkOfLayinfo, const bool writeQpt)

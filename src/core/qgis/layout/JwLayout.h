@@ -5,7 +5,7 @@
 #ifndef CBOOT_JWLAYOUT_H
 #define CBOOT_JWLAYOUT_H
 
-
+#include <spdlog/spdlog.h>
 #include <qgis.h>
 #include <QDebug>
 #include <QVector>

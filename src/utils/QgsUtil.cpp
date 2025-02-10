@@ -15,18 +15,17 @@ QgsTextFormat* QtFontUtil::create_font(
         double spacing)
 {
     auto text_format = std::make_shared<QgsTextFormat>();
-    QFont font(font_family);
-    font.setPointSizeF(font_size);
-    font.setBold(is_bold);
-    font.setItalic(is_italic);
+    //auto font = std::make_unique<QFont>(font_family);
+    auto font = text_format->font();
+    font.setFamily(font_family);
+    font.setLetterSpacing(QFont::AbsoluteSpacing, spacing);
     text_format->setFont(font);
-    text_format->setSize(font_size);
     text_format->setColor(QColor(font_color));
+    text_format->setForcedBold(is_bold);
+    text_format->setForcedItalic(is_italic);
     text_format->setOrientation(orientation);
-    QgsTextBufferSettings buffer_settings;
-    buffer_settings.setEnabled(true);
-    buffer_settings.setSize(spacing);
-    text_format->setBuffer(buffer_settings);
+    text_format->setSizeUnit(Qgis::RenderUnit::Points);
+    text_format->setSize(font_size);
     return text_format.get();
 }
 
