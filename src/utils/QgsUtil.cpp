@@ -14,7 +14,7 @@ QgsTextFormat* QtFontUtil::create_font(
         Qgis::TextOrientation orientation,
         double spacing)
 {
-    auto text_format = std::make_shared<QgsTextFormat>();
+    auto text_format = std::make_unique<QgsTextFormat>();
     //auto font = std::make_unique<QFont>(font_family);
     auto font = text_format->font();
     font.setFamily(font_family);
@@ -26,7 +26,7 @@ QgsTextFormat* QtFontUtil::create_font(
     text_format->setOrientation(orientation);
     text_format->setSizeUnit(Qgis::RenderUnit::Points);
     text_format->setSize(font_size);
-    return text_format.get();
+    return text_format.release();
 }
 
 void QgsUtil::show_layer_label(QgsVectorLayer* layer, const QString& style) {
