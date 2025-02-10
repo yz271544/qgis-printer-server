@@ -156,6 +156,11 @@ elseif(UNIX)
         message("QGIS_APP_LIBRARY: ${QGIS_APP_LIBRARY}")
     endif()
 
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(LIBARCHIVE REQUIRED libarchive)
+    pkg_check_modules(LIBZIP REQUIRED libzip)
+
+
     # 检查 CMAKE_BUILD_TYPE 的值
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
         set(QGIS_PREFIX_PATH "/lyndon/iProject/cpath/QGIS/output")
@@ -226,6 +231,9 @@ message("Qt5PrintSupport_INCLUDE_DIRS: ${Qt5PrintSupport_INCLUDE_DIRS}")
 include_directories(${Qt5PrintSupport_INCLUDE_DIRS})
 message("Qt53DCore_INCLUDE_DIRS: ${Qt53DCore_INCLUDE_DIRS}")
 include_directories(${Qt53DCore_INCLUDE_DIRS})
+message("LIBARCHIVE_INCLUDE_DIRS: ${LIBARCHIVE_INCLUDE_DIRS}")
+message("LIBZIP_INCLUDE_DIRS: ${LIBZIP_INCLUDE_DIRS}")
+include_directories(${LIBARCHIVE_INCLUDE_DIRS} ${LIBZIP_INCLUDE_DIRS})
 
 find_path(Qt53DRender_INCLUDE_DIRS
         NAMES qt3drender_global.h
