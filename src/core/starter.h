@@ -9,6 +9,7 @@
 #include <limits>
 #include <yaml-cpp/yaml.h>
 
+#include <array>
 #include <stdexcept>
 #include <QString>
 #include <QList>
@@ -75,7 +76,7 @@ public:
     virtual void Stop(StarterContext& context) = 0;
     virtual int PriorityGroup() = 0;
     virtual bool StartBlocking() = 0;
-    virtual int Priority() = 0;
+    virtual std::array<int, 4> Priority() = 0;
     virtual std::string GetName() = 0;
     virtual YAML::Node GetConfig() = 0;
     // 添加获取启动器实例的抽象方法，方便后续在其他启动器中查找特定启动器实例
@@ -92,7 +93,7 @@ public:
     void Stop(StarterContext& context) override {}
     int PriorityGroup() override { return PriorityGroup::BasicResourcesGroup; }
     bool StartBlocking() override { return false; }
-    int Priority() override { return DEFAULT_PRIORITY; }
+    std::array<int, 4> Priority() override { return {DEFAULT_PRIORITY,DEFAULT_PRIORITY,DEFAULT_PRIORITY,DEFAULT_PRIORITY}; }
     virtual std::string GetName() = 0;
     virtual YAML::Node GetConfig() = 0;
     virtual Starter* GetInstance() = 0;

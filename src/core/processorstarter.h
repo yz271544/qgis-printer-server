@@ -37,7 +37,7 @@ public:
 
     bool StartBlocking();
 
-    int Priority();
+    std::array<int, 4> Priority();
 
     std::string GetName();
 

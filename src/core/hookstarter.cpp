@@ -70,8 +70,8 @@ bool HookStarter::StartBlocking() {
     return false;
 }
 
-int HookStarter::Priority() {
-    return DEFAULT_PRIORITY;
+std::array<int, 4> HookStarter::Priority() {
+    return {20, 20, 20, DEFAULT_PRIORITY - 1};
 }
 
 std::string HookStarter::GetName() {

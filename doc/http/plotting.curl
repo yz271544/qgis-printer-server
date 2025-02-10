@@ -1,0 +1,5 @@
+curl -X POST \
+-H "Content-Type: application/json" \
+-H "Authorization: Bearer testtoken" \
+-d '{"selectPath":true,"path":"/map/test_data/正射/瑞光电厂-DOM","tileIndex":[[0,0],[1048576,-5821555]],"sceneId":"1881251849636462594","sceneName":"寿阳高速铁路","geojson":{"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[112.6985860410173,37.77763191927945],[112.6985860410173,37.792934788111225],[112.73922824078208,37.792934788111225],[112.73922824078208,37.77763191927945]]]},"properties":{}},"handleFlag":false,"sceneType":"02","layinfo":{"title":{"text":"标题","position":[],"borderColor":"","fillColor":"","fontSize":28,"color":"rgba(0,0,0,1)","fontBorderColor":""},"subTitle":{"text":"","fontSize":16,"color":"rgba(0,0,0,1)"},"legend":{"position":[84,39,16,61]},"bgPic":{"borderColor":"#FF0000","doubleFrame":true,"borderWidth":3},"remark":[{"text":"备注","position":[0,80,28,10],"borderColor":"","fillColor":"rgba(255,255,255,1)","fontSize":18,"color":"rgba(0,0,0,1)","url":""}],"arrows":[],"north":{"position":[97,1,2,8],"rotate":0},"scaleBar":false},"paper":"a3","pictureUnit":"制图单位：    时间：","mapType":{"map":true,"electron":false}}' \
+http://127.0.0.1:5890/api/qgz

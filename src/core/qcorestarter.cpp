@@ -61,8 +61,8 @@ bool QCoreStarter::StartBlocking() {
     return mBlock;  // 通常Web服务器启动会阻塞当前线程，可根据实际调整
 }
 
-int QCoreStarter::Priority() {
-    return DEFAULT_PRIORITY;
+std::array<int, 4> QCoreStarter::Priority() {
+    return {1, 2, DEFAULT_PRIORITY, DEFAULT_PRIORITY};
 }
 
 std::string QCoreStarter::GetName() {

@@ -12,11 +12,14 @@ BootApplication::BootApplication(bool isTest, StarterContext& starterCtx, Starte
 void BootApplication::init() {
     spdlog::info("Initializing starters...");
     auto starters = starterRegister->AllStarters();
-    spdlog::info("starter len: {}", starters.size());
+    std::sort(starters.begin(), starters.end(), [](Starter* a, Starter* b) {
+        return a->Priority()[0] < b->Priority()[0];
+    });
     for (const auto& starter : starters) {
-        spdlog::info("Initializing: PriorityGroup={}, Priority=",
+        spdlog::info("Initializing: name={} PriorityGroup={}, Priority={}",
+            starter->GetName(),
             starter->PriorityGroup(),
-            starter->Priority());
+            starter->Priority()[0]);
         starter->Init(starterCtx_);
     }
 }
@@ -25,7 +28,14 @@ void BootApplication::init() {
 void BootApplication::setup() {
     spdlog::info("Setup starters...");
     auto starters = starterRegister->AllStarters();
+    std::sort(starters.begin(), starters.end(), [](Starter* a, Starter* b) {
+        return a->Priority()[1] < b->Priority()[1];
+    });
     for (const auto& starter : starters) {
+        spdlog::info("Setup: name={} PriorityGroup={}, Priority={}",
+                     starter->GetName(),
+                     starter->PriorityGroup(),
+                     starter->Priority()[1]);
         starter->Setup(starterCtx_);
     }
 }
@@ -34,13 +44,24 @@ void BootApplication::setup() {
 void BootApplication::start() {
     spdlog::info("Starting starters...");
     auto starters = starterRegister->AllStarters();
+    std::sort(starters.begin(), starters.end(), [](Starter* a, Starter* b) {
+        return a->Priority()[2] < b->Priority()[2];
+    });
     for (const auto& starter : starters) {
         if (!starter->StartBlocking()) {
+            spdlog::info("Start: name={} PriorityGroup={}, Priority={}",
+                         starter->GetName(),
+                         starter->PriorityGroup(),
+                         starter->Priority()[2]);
             starter->Start(starterCtx_);
         }
     }
     for (const auto& starter : starters) {
         if (starter->StartBlocking()) {
+            spdlog::info("Start: name={} PriorityGroup={}, Priority={}",
+                         starter->GetName(),
+                         starter->PriorityGroup(),
+                         starter->Priority()[2]);
             starter->Start(starterCtx_);
         }
     }
@@ -50,7 +71,14 @@ void BootApplication::start() {
 void BootApplication::stop() {
     spdlog::info("Stopping starters...");
     auto starters = starterRegister->AllStarters();
+    std::sort(starters.begin(), starters.end(), [](Starter* a, Starter* b) {
+        return a->Priority()[3] < b->Priority()[3];
+    });
     for (const auto& starter : starters) {
+        spdlog::info("Stop: name={} PriorityGroup={}, Priority={}",
+                     starter->GetName(),
+                     starter->PriorityGroup(),
+                     starter->Priority()[3]);
         starter->Stop(starterCtx_);
     }
 }

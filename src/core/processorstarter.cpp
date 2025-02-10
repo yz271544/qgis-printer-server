@@ -56,8 +56,8 @@ bool ProcessorStarter::StartBlocking() {
     return false;
 }
 
-int ProcessorStarter::Priority() {
-    return DEFAULT_PRIORITY;
+std::array<int, 4> ProcessorStarter::Priority() {
+    return {3, 3, 3, 1};
 }
 
 std::string ProcessorStarter::GetName() {

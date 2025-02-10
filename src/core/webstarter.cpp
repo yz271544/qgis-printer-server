@@ -145,8 +145,8 @@ bool WebStarter::StartBlocking() {
     return mBlock;  // 通常Web服务器启动会阻塞当前线程，可根据实际调整
 }
 
-int WebStarter::Priority() {
-    return DEFAULT_PRIORITY;
+std::array<int, 4> WebStarter::Priority() {
+    return {4, 4, 4, 0};
 }
 
 std::string WebStarter::GetName() {

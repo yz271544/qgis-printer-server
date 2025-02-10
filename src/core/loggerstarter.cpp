@@ -69,8 +69,8 @@ bool LoggerStarter::StartBlocking() {
 }
 
 // 返回该启动器的优先级数值，使用默认优先级（DEFAULT_PRIORITY）
-int LoggerStarter::Priority() {
-    return DEFAULT_PRIORITY;
+std::array<int, 4> LoggerStarter::Priority() {
+    return {2, 1, 1, 2};
 }
 
 // 获取启动器的名称，方便在日志、调试或者管理启动器列表等场景使用
