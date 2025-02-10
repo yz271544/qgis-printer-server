@@ -27,25 +27,23 @@ void QCoreStarter::Init(StarterContext& context) {
     QCoreApplication app(newArgc, newArgv);
 
     // 设置OpenGL环境
-    QSurfaceFormat format;
-    format.setVersion(4, 1);
-    format.setProfile(QSurfaceFormat::CoreProfile);
-    QSurfaceFormat::setDefaultFormat(format);
+    mQSurfaceFormat.setVersion(4, 1);
+    mQSurfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
+    QSurfaceFormat::setDefaultFormat(mQSurfaceFormat);
 
     // 创建离屏渲染环境
-    QOffscreenSurface surface;
-    surface.setFormat(format);
-    surface.create();
+    mQOffscreenSurface.setFormat(mQSurfaceFormat);
+    mQOffscreenSurface.create();
 
     // 创建OpenGL上下文
-    mOpenGLContext.setFormat(format);
+    mOpenGLContext.setFormat(mQSurfaceFormat);
     if (!mOpenGLContext.create()) {
         spdlog::error("Failed to create OpenGL context");
         exit(-1);
     }
 
     // 设置当前上下文
-    if (!mOpenGLContext.makeCurrent(&surface)) {
+    if (!mOpenGLContext.makeCurrent(&mQOffscreenSurface)) {
         spdlog::error("Failed to make OpenGL context current");
         exit(-1);
     }
