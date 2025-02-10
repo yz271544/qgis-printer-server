@@ -28,9 +28,9 @@ class QCoreStarter : public BaseStarter {
 private:
     YAML::Node config;
     bool mBlock;
-    QSurfaceFormat mQSurfaceFormat;
-    QOffscreenSurface mQOffscreenSurface;
-    QOpenGLContext mOpenGLContext;
+//    QSurfaceFormat mQSurfaceFormat;
+//    QOffscreenSurface mQOffscreenSurface;
+    std::shared_ptr<QOpenGLContext> mOpenGLContext;
 public:
     QCoreStarter();
 

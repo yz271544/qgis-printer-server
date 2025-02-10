@@ -24,8 +24,7 @@ void QCoreStarter::Init(StarterContext& context) {
     int newArgc;
     char** newArgv;
     context.getConvertedArgs(newArgc, newArgv);
-    //QCoreApplication app(newArgc, newArgv);
-
+    QCoreApplication app(newArgc, newArgv);
 
     spdlog::info("create qgis QgsApplication");
     bool GUIenabled = false;
@@ -35,7 +34,7 @@ void QCoreStarter::Init(StarterContext& context) {
     } catch (const std::exception& e) {
         spdlog::error("get gui_enabled error: {}", e.what());
     }
-    QgsApplication app(newArgc, newArgv, GUIenabled);
+    QgsApplication qgsApp(newArgc, newArgv, GUIenabled);
     QString qgis_prefix_path = "/usr";
     try {
         qgis_prefix_path = QString::fromStdString(config["qgis"]["prefix_path"].as<std::string>());
@@ -55,28 +54,40 @@ void QCoreStarter::Init(StarterContext& context) {
     }
     spdlog::info("inited the qgs app");
 
-
+    auto ogt = QOpenGLContext::openGLModuleType();
+    spdlog::info("QOpenGLContext::openGLModuleType: {}", ogt);
     // 设置OpenGL环境
+    spdlog::info("设置OpenGL环境");
+    QSurfaceFormat mQSurfaceFormat;
     mQSurfaceFormat.setVersion(4, 1);
     mQSurfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
     QSurfaceFormat::setDefaultFormat(mQSurfaceFormat);
 
     // 创建离屏渲染环境
+    spdlog::info("创建离屏渲染环境");
+    QOffscreenSurface mQOffscreenSurface;
     mQOffscreenSurface.setFormat(mQSurfaceFormat);
+    spdlog::info("create offscreen surface");
     mQOffscreenSurface.create();
 
+
     // 创建OpenGL上下文
-    mOpenGLContext.setFormat(mQSurfaceFormat);
-    if (!mOpenGLContext.create()) {
+    spdlog::info("创建OpenGL上下文");
+    QOpenGLContext openGLContext;
+    openGLContext.setFormat(mQSurfaceFormat);
+    if (!openGLContext.create()) {
         spdlog::error("Failed to create OpenGL context");
         exit(-1);
     }
 
     // 设置当前上下文
-    if (!mOpenGLContext.makeCurrent(&mQOffscreenSurface)) {
+    spdlog::info("设置当前上下文");
+    if (!openGLContext.makeCurrent(&mQOffscreenSurface)) {
         spdlog::error("Failed to make OpenGL context current");
         exit(-1);
     }
+
+    mOpenGLContext.reset(&openGLContext);
 
     spdlog::info("QCoreStarter Init end");
 }
@@ -89,13 +100,14 @@ void QCoreStarter::Setup(StarterContext& context) {
 void QCoreStarter::Start(StarterContext& context) {
     spdlog::info("QCoreStarter Start start");
 
-    QCoreApplication::exec();
+    //QCoreApplication::exec();
+    QgsApplication::exec();
     spdlog::info("QCoreStarter Start end");
 }
 
 void QCoreStarter::Stop(StarterContext& context) {
     spdlog::info("QCoreStarter Stop start");
-    mOpenGLContext.doneCurrent();
+    mOpenGLContext->doneCurrent();
     // 停止Web服务器
     QCoreApplication::exit();
     spdlog::info("QCoreStarter Stop end");
