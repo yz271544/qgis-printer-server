@@ -24,7 +24,11 @@ QgsFeatureRenderer* StylePoint::get2d_single_symbol_renderer()
     return rule_renderer.release();
 }
 
-QgsFeatureRenderer* StylePoint::get2d_rule_based_renderer(QJsonObject& font_style, QJsonObject& layer_style, QString& icon_path, qreal point_size = 5.0) {
+QgsFeatureRenderer* StylePoint::get2d_rule_based_renderer(
+        const QJsonObject& font_style,
+        const QJsonObject& layer_style,
+        QString& icon_path,
+        qreal point_size = 5.0) {
     auto label_style = std::make_unique<QMap<QString, QVariant>>();
     if (font_style.contains("fontColor")) {
         QString font_color = font_style["fontColor"].toString();
@@ -124,8 +128,8 @@ QgsFeatureRenderer* StylePoint::get2d_rule_based_renderer(QJsonObject& font_styl
 
 QgsAbstract3DRenderer* StylePoint::get3d_single_symbol_renderer(
         QgsVectorLayer& point_layer,
-        QJsonObject& font_style,
-        QJsonObject& layer_style,
+        const QJsonObject& font_style,
+        const QJsonObject& layer_style,
         QString& icon_path,
         qreal point_size) {
     auto symbol = std::make_unique<QgsPoint3DSymbol>();
@@ -157,8 +161,8 @@ QgsAbstract3DRenderer* StylePoint::get3d_single_symbol_renderer(
 
 QgsAbstract3DRenderer* StylePoint::get3d_single_raster_symbol_renderer(
         QgsVectorLayer& point_layer,
-        QJsonObject& font_style,
-        QJsonObject& layer_style,
+        const QJsonObject& font_style,
+        const QJsonObject& layer_style,
         QString& icon_path,
         qreal point_size) {
     auto label_style = std::make_unique<QMap<QString, QVariant>>();
@@ -215,8 +219,8 @@ QgsAbstract3DRenderer* StylePoint::get3d_single_raster_symbol_renderer(
 
 QgsRuleBased3DRenderer* StylePoint::get3d_rule_renderer(
         QgsVectorLayer& point_layer,
-        QJsonObject& font_style,
-        QJsonObject& layer_style,
+        const QJsonObject& font_style,
+        const QJsonObject& layer_style,
         QString& icon_path,
         qreal point_size) {
     // Create the root rule

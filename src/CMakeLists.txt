@@ -6,7 +6,12 @@ message("SOURCES: ${SOURCES}")
 
 add_executable(${PROJECT_NAME} ${SOURCES}
         utils/CompressUtil.cpp
-        utils/CompressUtil.h)
+        utils/CompressUtil.h
+        core/qgis/layer/BaseLayer.cpp
+        core/qgis/layer/BaseLayer.h
+        core/qgis/layer/JwPoint.cpp
+        core/qgis/layer/JwPoint.h
+)
 add_library(${PROJECT_NAME}_lib STATIC ${SOURCES})
 
 message("set target_compile_definitions OATPP_VERSION_LESS_1_4_0 oatpp_VERSION: ${oatpp_VERSION}")

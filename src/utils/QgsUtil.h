@@ -44,7 +44,7 @@ public:
     static float d300_pixel_to_mm(float pixel_size);
 
 
-    static QgsCoordinateTransform coordinate_transformer_4326_to_3857(QgsProject* project);
+    static QgsCoordinateTransform* coordinate_transformer_4326_to_3857(QgsProject* project);
 
 
     static QgsVectorLayer* write_persisted_layer(const QString& layer_name, QgsVectorLayer* layer,

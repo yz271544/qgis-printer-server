@@ -87,6 +87,20 @@ inline std::int32_t getEnvInt32(const char* envVarName, std::int32_t defaultValu
     }
 }
 
+inline double getEnvDouble(const char* envVarName, double defaultValue = 0.0) {
+    const char* envValue = getenv(envVarName);
+    if (envValue == nullptr) {
+        return defaultValue;
+    }
+    try {
+        return std::stod(envValue);
+    } catch (const std::invalid_argument& e) {
+        return defaultValue;
+    } catch (const std::out_of_range& e) {
+        return defaultValue;
+    }
+}
+
 // Get ENABLE_POINT_CLUSTER from environment variable, default to false
 inline bool ENABLE_POINT_CLUSTER = getEnvBool("ENABLE_POINT_CLUSTER", false);
 
@@ -101,5 +115,9 @@ inline bool ENABLE_3D = getEnvBool("ENABLE_3D", true);
 #define OBJECTMAPPERNS oatpp::json
 #define PRIMITIVENS oatpp::data::type
 #endif
+
+
+double CIRCLE_RADIUS_COEFFICIENT = getEnvDouble("CIRCLE_RADIUS_COEFFICIENT", 2.0);
+
 
 #endif //CONFIG_H
