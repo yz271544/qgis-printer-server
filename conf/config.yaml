@@ -9,7 +9,7 @@ web:
   route_prefix: /
 qgis:
   enable_3d: true
-  gui_enabled: true
+  gui_enabled: false
   prefix_path: "/lyndon/iProject/cpath/QGIS/output"
 #  qgis_project_path: "/lyndon/iProject/cpath/qgis_demo1/common/project"
   projects_prefix: "/opt/anbao/map/qgz"

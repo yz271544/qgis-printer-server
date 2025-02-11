@@ -14,6 +14,7 @@
 #include <filesystem>
 #include <spdlog/spdlog.h>
 #include <yaml-cpp/yaml.h>
+#include <qgs3d.h>
 #include <qgsmapcanvas.h>
 #include <qgsproject.h>
 #include <qgsapplication.h>

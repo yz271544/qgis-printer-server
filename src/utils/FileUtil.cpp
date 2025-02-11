@@ -2,8 +2,8 @@
 // Created by etl on 2/3/25.
 //
 
+#include "spdlog/fmt/bundled/format.h"
 #include "FileUtil.h"
-#include <fmt/format.h>
 
 void FileUtil::create_directory(const std::string& directory_path)
 {

@@ -36,9 +36,9 @@ void QCoreStarter::Init(StarterContext& context) {
     // Initialize QApplication if GUI is enabled, otherwise QCoreApplication
     //std::unique_ptr<QCoreApplication> app;
     if (GUIenabled) {
-        mApp = std::make_unique<QApplication>(newArgc, newArgv);
+        QApplication app(newArgc, newArgv);
     } else {
-        mApp = std::make_unique<QCoreApplication>(newArgc, newArgv);
+        QCoreApplication app(newArgc, newArgv);
     }
 
     spdlog::info("create qgis QgsApplication");
@@ -61,7 +61,6 @@ void QCoreStarter::Init(StarterContext& context) {
         spdlog::error("init qgis error: {}", e.what());
     }
     spdlog::info("inited the qgs app");
-
     auto ogt = QOpenGLContext::openGLModuleType();
     spdlog::info("QOpenGLContext::openGLModuleType: {}", ogt);
     // 设置OpenGL环境
@@ -110,8 +109,10 @@ void QCoreStarter::Start(StarterContext& context) {
     auto guiEnable = config["qgis"]["gui_enabled"].as<bool>();
     spdlog::info("start qgis app, guiEnable: {}", guiEnable);
     if (guiEnable) {
+        spdlog::info("enable gui, start gui application");
         QApplication::exec();
     } else {
+        spdlog::info("not enable gui, start core application");
         QCoreApplication::exec();
     }
 
@@ -120,9 +121,10 @@ void QCoreStarter::Start(StarterContext& context) {
 
 void QCoreStarter::Stop(StarterContext& context) {
     spdlog::info("QCoreStarter Stop start");
-    mOpenGLContext->doneCurrent();
+//    mOpenGLContext->doneCurrent();
+//    spdlog::info("done current openGL context");
     // 停止Web服务器
-    QCoreApplication::exit();
+    QCoreApplication::quit();
     spdlog::info("QCoreStarter Stop end");
 }
 
