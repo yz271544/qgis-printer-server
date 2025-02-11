@@ -338,17 +338,28 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                 auto imageSubDir = getImageSubDir(layoutType);
                 // 异步导出图像
                 QString paperName = QString::fromStdString(plottingWeb->paper);
-                auto imageName = exportImage(sceneName, layoutType, imageSubDir, paperName).get();
-
+                auto imageName = exportImage(sceneName, layoutType, imageSubDir, paperName);
+                spdlog::info("export image name: {}", imageName.toStdString());
                 auto responseDto = ResponseDto::createShared();
-                responseDto->project_zip_url = QString().append(m_mapping_export_nginx_url_prefix).append("/").append(
-                        zip_file_name).toStdString();
-                responseDto->image_url = QString().append(m_mapping_export_nginx_url_prefix).append("/").append(
-                        imageSubDir).append("/").append(imageName).toStdString();
+                spdlog::info("responseDto created");
+                QString project_zip_url = QString(m_mapping_export_nginx_url_prefix)
+                        .append("/").append(zip_file_name);
+                spdlog::info("project_zip_url: {}", project_zip_url.toStdString());
+                responseDto->project_zip_url = project_zip_url.toStdString();
+                QString image_url = QString(m_mapping_export_nginx_url_prefix)
+                        .append("/").append(imageSubDir).append("/").append(imageName);
+                spdlog::info("image_url: {}", image_url.toStdString());
+                responseDto->image_url = image_url.toStdString();
                 responseDto->error = "";
-
+                spdlog::info("set value responseDto to promise");
                 promise->set_value(responseDto);
-            } catch (const std::exception& e) {
+                spdlog::info("set value responseDto to promise done");
+
+                spdlog::info("clear project");
+                m_app->clearLayers();
+                spdlog::info("clean project");
+                m_app->cleanProject();
+            } catch (const std::exception &e) {
                 spdlog::error("Exception in invokeMethod lambda: {}", e.what());
                 promise->set_exception(std::make_exception_ptr(e));
             }
@@ -356,6 +367,7 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
 
         // 启动事件循环，直到 lambda 执行完成
         //eventLoop.exec();
+        spdlog::info("Inside fetchPlotting lambda: wait");
 
         return promise->get_future().get();
     });
@@ -466,16 +478,13 @@ QString Processor::getImageSubDir(const QString &layout_name) {
     return image_spec["local"].toString();
 }
 
-std::future<QString>
-Processor::exportImage(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
-                       const QString &paperName) {
-    return std::async(std::launch::async, [this, sceneName, layoutName, imageSubDir, paperName]() {
-        QString imageName = QString("%1-%2-%3.png").arg(sceneName, layoutName, paperName);
-        QString outputPath = QString("%1/%2/%3.png").arg(m_export_prefix, imageSubDir, imageName);
-        FileUtil::delete_file(outputPath);
-        spdlog::info("export image -> outputPath: {}", outputPath.toStdString());
-        auto isExportStatus = m_app->exportLayoutAsPng(layoutName, outputPath, paperName);
-        spdlog::info("export status: {}", isExportStatus);
-        return imageName;
-    });
+QString Processor::exportImage(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
+                               const QString &paperName) {
+    QString imageName = QString("%1-%2-%3.png").arg(sceneName, layoutName, paperName);
+    QString outputPath = QString("%1/%2/%3.png").arg(m_export_prefix, imageSubDir, imageName);
+    FileUtil::delete_file(outputPath);
+    spdlog::info("export image -> outputPath: {}", outputPath.toStdString());
+    auto isExportStatus = m_app->exportLayoutAsPng(layoutName, outputPath, paperName);
+    spdlog::info("export status: {}", isExportStatus);
+    return imageName;
 }

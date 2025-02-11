@@ -88,8 +88,7 @@ public:
                     const QVector<QString> &removeLayerPrefixs);
 
     // 异步导出图像
-    std::future<QString>
-    exportImage(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
+    QString exportImage(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
                  const QString &paperName);
 
     // 压缩项目的静态方法

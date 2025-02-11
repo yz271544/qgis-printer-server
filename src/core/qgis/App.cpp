@@ -498,34 +498,20 @@ bool App::exportLayoutAsPng(const QString& layoutName, const QString& outputPath
     exportSettings.dpi = dpi;
     spdlog::debug("Export settings: {}", exportSettings.dpi);
 
-    // 异步导出图像
-    auto exportImage = [&exporter, &outputPath, &exportSettings]() -> bool {
-        try {
-            QgsLayoutExporter::ExportResult result = exporter.exportToImage(outputPath, exportSettings);
-            if (result != QgsLayoutExporter::Success) {
-                spdlog::critical("Error during export: {}", result);
-                return false;
-            } else {
-                spdlog::debug("Export to image completed");
-                return true;
-            }
-        } catch (const std::exception& e) {
-            spdlog::critical("Error during export: {}", e.what());
+    // 导出图像
+    try {
+        QgsLayoutExporter::ExportResult result = exporter.exportToImage(outputPath, exportSettings);
+        if (result != QgsLayoutExporter::Success) {
+            spdlog::critical("Error during export: {}", result);
             return false;
+        } else {
+            spdlog::debug("Export to image completed");
+            return true;
         }
-    };
-
-    // 使用std::async异步执行导出任务
-    std::future<bool> future = std::async(std::launch::async, exportImage);
-    bool result = future.get();
-
-    if (result) {
-        spdlog::debug("Export successful, continue with further processing");
-    } else {
-        spdlog::critical("Export failed, handle the error accordingly");
+    } catch (const std::exception& e) {
+        spdlog::critical("Error during export: {}", e.what());
+        return false;
     }
-
-    return result;
 }
 
 

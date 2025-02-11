@@ -25,10 +25,31 @@ HookStarter::~HookStarter()
 
 void HookStarter::sig_handler(StarterContext& context)
 {
-    spdlog::warn("start sig_handler");
-    for (const auto& callback : callbacks) {
-        callback(context);
+//    spdlog::warn("start sig_handler");
+//    for (const auto& callback : callbacks) {
+//        callback(context);
+//    }
+
+    static std::atomic<bool> isHandlingSignal{false};
+
+    if (isHandlingSignal.exchange(true)) {
+        return;  // 避免重复处理信号
     }
+
+    spdlog::warn("start sig_handler");
+
+    // 确保事件循环退出后再调用 Stop
+    QCoreApplication::quit();
+
+    for (const auto& callback : callbacks) {
+        try {
+            callback(context);
+        } catch (const std::exception& e) {
+            spdlog::error("Error in sig_handler callback: {}", e.what());
+        }
+    }
+
+    isHandlingSignal.store(false);
 }
 
 void HookStarter::Init(StarterContext& context) {
@@ -59,6 +80,21 @@ void HookStarter::Start(StarterContext& context) {
 
 void HookStarter::Stop(StarterContext& context) {
     spdlog::info("HookStarter Stop Begin");
+    // 确保事件循环退出后再调用 Stop
+    /*QCoreApplication::quit();
+
+    for (const auto& callback : callbacks) {
+        callback(context);
+    }*/
+    // 确保所有回调都能正常执行
+    for (const auto& callback : callbacks) {
+        try {
+            callback(context);
+        } catch (const std::exception& e) {
+            spdlog::error("Error in HookStarter callback: {}", e.what());
+        }
+    }
+
     spdlog::info("HookStarter Stop End");
 }
 
