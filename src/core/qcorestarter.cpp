@@ -115,27 +115,11 @@ void QCoreStarter::Start(StarterContext& context) {
 
 void QCoreStarter::Stop(StarterContext& context) {
     spdlog::info("QCoreStarter Stop start");
-//    // 释放 OpenGL 上下文
-//    if (mOpenGLContext) {
-//        mOpenGLContext->doneCurrent();
-//        mOpenGLContext.reset();
-//    }
-//
-//    // 释放离屏表面
-//    if (mQOffscreenSurface) {
-//        mQOffscreenSurface->destroy();
-//        mQOffscreenSurface.reset();
-//    }
-//
-//    // 停止事件循环
-//    QCoreApplication::quit();
-
     // 停止事件循环
     // 使用 QTimer 强制退出事件循环
     QTimer::singleShot(0, []() {
         QCoreApplication::quit();
     });
-    //QCoreApplication::quit();
 
     // 释放 OpenGL 上下文
     if (mOpenGLContext) {

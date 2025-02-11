@@ -146,15 +146,15 @@ QPair<double, double> JwLegend::customize(
                                     }
                                     /// 本项目中，点图例都采用可聚合+嵌入式规则渲染器，这里用 QgsMarkerSymbol 重新创建符号集
                                     spdlog::debug("重新创建符号集");
-                                    auto* filtered_marker_symbol = new QgsMarkerSymbol(filtered_symbol_layers);
+                                    auto filtered_marker_symbol = std::make_unique<QgsMarkerSymbol>(filtered_symbol_layers);
                                     /// 重新设置符号项的符号
                                     spdlog::debug("重新设置符号项的符号");
-                                    legend_symbol_item.setSymbol(filtered_marker_symbol);
+                                    legend_symbol_item.setSymbol(filtered_marker_symbol.get());
                                     /// 创建一个符号节点
                                     // symbol_legend_node = QgsSymbolLegendNode(tr, legend_symbol_item);
                                     // symbol_legend_node.setCustomSymbol(filtered_marker_symbol);
                                     spdlog::debug("设置图例节点的自定义符号");
-                                    QgsMapLayerLegendUtils::setLegendNodeCustomSymbol(tr, 0, filtered_marker_symbol);
+                                    QgsMapLayerLegendUtils::setLegendNodeCustomSymbol(tr, 0, filtered_marker_symbol.release());
                                 }
                             }
                         }

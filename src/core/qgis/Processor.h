@@ -68,7 +68,7 @@ public:
     void plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &plotting_data);
 
     // 添加2d布局
-    void add_layout(QgsMapCanvas *canvas,
+    void add_layout(std::shared_ptr<QgsMapCanvas>& canvas,
                     const QString &layout_name,
                     const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
                     const QMap<QString, QVariant> &image_spec,
@@ -78,7 +78,7 @@ public:
                     const QVector<QString> &removeLayerPrefixs);
 
     // 添加3d布局
-    void add_3d_layout(QgsMapCanvas *canvas,
+    void add_3d_layout(std::shared_ptr<QgsMapCanvas>& canvas,
                     const QString &layout_name,
                     const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
                     const QMap<QString, QVariant> &image_spec,

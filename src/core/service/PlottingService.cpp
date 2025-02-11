@@ -34,6 +34,7 @@ DTOWRAPPERNS::DTOWrapper<ResponseDto::Z__CLASS> PlottingService::processPlotting
 
     auto responseDto = m_processor->processByPlottingWeb(token, plottingDto).get();
 
+    spdlog::debug("processPlotting Processing plotting response, responseDto -> msg: {}", responseDto->error->c_str());
 
     return responseDto;
 }

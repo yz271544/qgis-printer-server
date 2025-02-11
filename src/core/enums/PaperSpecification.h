@@ -14,7 +14,7 @@
 #include <utility>
 
 // 假设这是从配置文件中获取的纸张列表
-inline QVector<QString> LAYOUT_PAPER_LIST = {"A3", "A4", "A5", "B4", "B5", "A900", "Letter", "Legal", "Executive", "Folio", "Custom"};
+inline QVector<QString> LAYOUT_PAPER_LIST = {"A3", "A900"};
 
 // 自定义异常类，继承自 QException
 class PaperSpecificationException : public QException {

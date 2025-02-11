@@ -20,14 +20,16 @@ qgis:
   jingwei_server_api_prefix: "/api"
   jingwei_server_url: "http://{JINGWEI_SERVER_HOST}:{JINGWEI_SERVER_PORT}{JINGWEI_SERVER_API_PREFIX}"
   layout_dir: "/opt/anbao/map/qgz/layout"
-  map_base_url: "http://172.31.100.34:38083"
+  map_base_url: "http://47.94.145.6:80"
   map_base_prefix: "type=xyz&url={MAP_BASE_URL}"
-  map_base_suffix: "/map/lx/{z}/{x}/{y}.png"
-  map_main_base_url: "http://172.31.100.34:38083"
+  map_base_suffix: "/map/lx/{z}/{x}/{y}.png&zmax={BASE_TILE_LAYER_MAX_LEVEL}&zmin={BASE_TILE_LAYER_MIN_LEVEL}"
+  base_tile_layer_max_level: 17
+  base_tile_layer_min_level: 0
+  map_main_base_url: "http://47.94.145.6:80"
   map_main_prefix: "type=xyz&url={MAP_MAIN_BASE_URL}"
   map_main_middle: "/map/orthogonal/{ORTHOGONAL_PATH_NAME}"
   map_main_suffix: "/{z}/{x}/{y}.png"
-  map_3d_base_url: "url={MAP_MAIN_BASE_URL}/map/realistic3d/{REALISTIC3D_PATH_NAME}&http-header:referer="
+  map_3d_base_url: "url={MAP_MAIN_BASE_URL}/map/realistic3d/{REALISTIC3D_PATH_NAME}/tileset.json&http-header:referer="
   export_prefix: "/opt/anbao/map/qgz"
   mapping_export_nginx_host: "localhost"
   mapping_export_nginx_port: 80
@@ -321,4 +323,4 @@ specification:
     north_base64: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAABECAMAAADa37fNAAAA81BMVEUAAAAsLCwFAQEmGhkEAQEFAQEFAQEjGhYkGxsEAQEEAQEkGhYXEhIFAgIIBAQSDw4jIBsFAQEjGRYFAQEGAwMIBAQPDAwJCQkGAQEGAQERDwwGAQEFAgIFAgIGAgIGAgIMCAcFAQEFAQEGAgIHAgIHAwMMCgocFhMFAQEFAQEFAQEFAQEGAQEFAQEGAgIGAgIHAgIHAgIGAgIVFRUFAQEFAQEGAQEGAgIFAwMFAwMGAwMGAwMHBAQjGRYjGRcFAgIkGRcHAgImGhcFAQEjGRYkGhckGhckGRckGRckGRcjGRcjGhcjGhgkGhoGBgYFAQEjGRZXOu2gAAAAT3RSTlMABfs76vbw2Rzt6H8RlToWCdzuy1FDJBrnuB/lpaGcfjXIxIVyTC0o4dXTz66piYFua2cNwbyxeWFeWVVH/J6NhXVY161sZNXJv7WRdEYpLZbk2gAAAtZJREFUSMfNlGl3ojAUhi8ppEIBRREV932tVavVVrsvs0/6/3/NEEIIOLbDOTNnTp8PPSU+JDfvTYA9Uq9HAMcn+8N/raWkJNqP7M0byk3Wg2nS3fXX9Bva0cPDw7OvPX3KviSo7fqbDgm0u38cyPsc3Qjt+/lhxzk5vv4Sahn63wEy2eydKxZ1XvtwkJ4U1Pb5yU2lTrLSH7bw/Ep5bx+ZF9ojvd/v6/ABIdUkVho3k2g2lpNsskqwnUAbkATF9TaYEDXfe0eRdkZxaCFClNywbOzeaOnlYHnvwIoQgtbQv18OLg9I+WHLpD3ViIcfidka5fetTrnLbJlqMruj3XInbhlKAXymiGp4y54K49imK80MMEbEp8LPVW4irHWOWwWZaWWJe+V12B4r7M4VZprW4CO6ZQdxWXmxOmGguojAYjPPSiLgMgnIQUhpRv+eyw5wGhrX5IK4vjK911sxGdwjruGryHRbWs5CDLRIyKkYXVQAJMwSZ+sLrShFzrMEvTGEdFWhaaYYH/dgt4q0jAjQWaS4HWwiXbNIhMgq1Q3UxVsOj2M/krM6zA3gbJSohi9FMXOwL4BzQWJMxA82NMK2SEWhxCPJNUDH/MnU4pps8vfVNMCyC4w6imuozeNc0gNS41Pzn61gKyNg1GZ+DBJrCe/UoNBCbFWXrak5vswmt9WwJJcdO4VF0mbLFVTXt4O4OqK5flauGuR86x+aAZuBpWX45fnlnE75hlcGwE8Wx1APLh6i6+e9OVZhfDpZw0LxI+Wfoj7NGk2hQ29d6MntErVUcbSvaHmPpyQd++C2FFqYAYKqQr9gOsTIe4OomQHB+dAbWUCcNqJ32BUD7qzovVna08ZeYZ2aNmrPbdO052cjrWYuVKIF84tPDKbH2Kwbk2ZzYtRNoJEpNJIIW4xKEuyjP6Lb2ECFWGn4nYZqxZ6LagMO0VGc6Ft4DodpTUEwrcD/5BfGeJjAKlqg2AAAAABJRU5ErkJggg=="
     north_rotate: 0.0
     north_width: 20
-    north_height: 20,
+    north_height: 20

@@ -74,12 +74,12 @@ QVector<PaperSpecification>& App::getAvailablePapers() {
     return mAvailablePapers;
 }
 
-QgsMapCanvas* App::getCanvas() {
-    return mCanvas.get();
+std::shared_ptr<QgsMapCanvas> App::getCanvas() {
+    return mCanvas;
 }
 
-QgsProject* App::getProject() {
-    return mProject.get();
+std::shared_ptr<QgsProject> App::getProject() {
+    return mProject;
 }
 
 QString& App::getSceneName() {
@@ -174,12 +174,8 @@ void App::clearLayers() {
         for (auto it = layers.constBegin(); it != layers.constEnd(); ++it) {
             spdlog::debug("Layer ID: {}, Name: {}", it.key().toStdString(), it.value()->name().toStdString());
             mProject->removeMapLayer(it.key());
-            delete it.value();
         }
-
         clearProject();
-        /*delete mProject;
-        mProject = nullptr;*/
         mProject.reset();
         spdlog::debug("cleared qgs project");
     }
@@ -199,6 +195,22 @@ void App::createCanvas(QString& crs) {
 
 void App::addMapBaseTileLayer() {
     spdlog::debug("App::addMapBaseTileLayer");
+
+    int32_t base_tile_layer_max_level = 18;
+    try {
+        base_tile_layer_max_level = (*mConfig)["qgis"]["base_tile_layer_max_level"].as<std::int32_t>();
+    } catch (const std::exception& e) {
+        spdlog::error("get qgis.base_tile_layer_max_level error: {}", e.what());
+    }
+    spdlog::debug("base_tile_layer_max_level: {}", base_tile_layer_max_level);
+
+    int32_t base_tile_layer_min_level = 0;
+    try {
+        base_tile_layer_min_level = (*mConfig)["qgis"]["base_tile_layer_min_level"].as<std::int32_t>();
+    } catch (const std::exception& e) {
+        spdlog::error("get qgis.base_tile_layer_min_level error: {}", e.what());
+    }
+    spdlog::debug("base_tile_layer_min_level: {}", base_tile_layer_min_level);
 
     QString map_base_url;
     try {
@@ -223,6 +235,8 @@ void App::addMapBaseTileLayer() {
     try {
         auto mapBaseSuffixStdString = (*mConfig)["qgis"]["map_base_suffix"].as<std::string>();
         map_base_suffix = QString::fromStdString(mapBaseSuffixStdString);
+        map_base_suffix = map_base_suffix.replace("{BASE_TILE_LAYER_MAX_LEVEL}", QString::number(base_tile_layer_max_level));
+        map_base_suffix = map_base_suffix.replace("{BASE_TILE_LAYER_MIN_LEVEL}", QString::number(base_tile_layer_min_level));
     } catch (const std::exception& e) {
         spdlog::error("get qgis.map_base_suffix error: {}", e.what());
     }
@@ -230,9 +244,9 @@ void App::addMapBaseTileLayer() {
 
     QString base_tile_url = QString().append(map_base_prefix).append(map_base_suffix);
     spdlog::info("add base tile: {}, base_tile_url: {}", BASE_TILE_NAME, base_tile_url.toStdString());
-    QgsRasterLayer base_tile_layer(base_tile_url, BASE_TILE_NAME, "wms");
-    if (base_tile_layer.isValid()) {
-        mProject->addMapLayer(&base_tile_layer);
+    auto base_tile_layer = std::make_unique<QgsRasterLayer>(base_tile_url, BASE_TILE_NAME, "wms");
+    if (base_tile_layer->isValid()) {
+        mProject->addMapLayer(base_tile_layer.release());
     } else {
         spdlog::error("base_tile_layer is not valid");
     }
@@ -286,11 +300,11 @@ void App::addMapMainTileLayer(int num, QString& orthogonalPath) {
     UrlUtil::urlEncode(map_main_middle);
 
     QString main_tile_url = QString().append(map_main_prefix).append(map_main_middle).append(map_main_suffix);
-    QString main_tile_name = QString::fromStdString(MAIN_TILE_NAME).append(num);
+    QString main_tile_name = QString::fromStdString(MAIN_TILE_NAME).append(QString::number(num));
     spdlog::debug("add main tile: {}, main_tile_url: {}", main_tile_name.toStdString(), main_tile_url.toStdString());
-    QgsRasterLayer main_tile_layer(main_tile_url, main_tile_name, "wms");
-    if (main_tile_layer.isValid()) {
-        mProject->addMapLayer(&main_tile_layer);
+    auto main_tile_layer = std::make_unique<QgsRasterLayer>(main_tile_url, main_tile_name, "wms");
+    if (main_tile_layer->isValid()) {
+        mProject->addMapLayer(main_tile_layer.release());
     } else {
         spdlog::error("main_tile_layer is not valid");
     }
@@ -323,16 +337,16 @@ void App::addMap3dTileLayer(int num, QString& realistic3dPath) {
     map_3d_base_url = map_3d_base_url.replace("{MAP_MAIN_BASE_URL}", map_main_base_url);
     map_3d_base_url = map_3d_base_url.replace("{REALISTIC3D_PATH_NAME}", realistic3dPath);
 
-    QString real3d_tile_name = QString::fromStdString(REAL3D_TILE_NAME).append(num);
+    QString real3d_tile_name = QString::fromStdString(REAL3D_TILE_NAME).append(QString::number(num));
     spdlog::debug("realistic3d_tile_url: {}, real3d_tile_name: {}",
                   map_3d_base_url.toStdString(), real3d_tile_name.toStdString());
 
-    QgsTiledSceneLayer tiled_scene_layer(map_3d_base_url, real3d_tile_name, CESIUM_TILES_PROVIDER);
-    auto renderer3d = std::make_shared<QgsTiledSceneLayer3DRenderer>();
-    tiled_scene_layer.setRenderer3D(renderer3d.get());
+    auto tiled_scene_layer = std::make_unique<QgsTiledSceneLayer>(map_3d_base_url, real3d_tile_name, CESIUM_TILES_PROVIDER);
+    auto renderer3d = std::make_unique<QgsTiledSceneLayer3DRenderer>();
+    tiled_scene_layer->setRenderer3D(renderer3d.release());
 
-    if (tiled_scene_layer.isValid()) {
-        mProject->addMapLayer(&tiled_scene_layer);
+    if (tiled_scene_layer->isValid()) {
+        mProject->addMapLayer(tiled_scene_layer.release());
     } else {
         spdlog::error("tiled_scene_layer is not valid");
     }
@@ -500,6 +514,7 @@ bool App::exportLayoutAsPng(const QString& layoutName, const QString& outputPath
 
     // 导出图像
     try {
+        spdlog::info("export.exportToImage -> outputPath: {}", outputPath.toStdString());
         QgsLayoutExporter::ExportResult result = exporter.exportToImage(outputPath, exportSettings);
         if (result != QgsLayoutExporter::Success) {
             spdlog::critical("Error during export: {}", result);

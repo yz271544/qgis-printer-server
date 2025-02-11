@@ -116,9 +116,9 @@ public:
 
     QVector<PaperSpecification>& getAvailablePapers();
 
-    QgsMapCanvas* getCanvas();
+    std::shared_ptr<QgsMapCanvas> getCanvas();
 
-    QgsProject* getProject();
+    std::shared_ptr<QgsProject> getProject();
 
     QString& getSceneName();
 

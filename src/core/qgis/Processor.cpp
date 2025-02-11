@@ -234,8 +234,8 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
             throw XServerRequestError(errorMsg);
         }
         spdlog::info("invoke method to create project");
-        //QMetaObject::invokeMethod(qApp, [this, plottingWeb, plottingRespDto, layoutType, promise]() {
-        QTimer::singleShot(0, qApp, [this, plottingWeb, plottingRespDto, layoutType, promise]() {
+        QMetaObject::invokeMethod(qApp, [this, plottingWeb, plottingRespDto, layoutType, promise]() {
+        //QTimer::invokeMethod(0, qApp, [this, plottingWeb, plottingRespDto, layoutType, promise]() {
             spdlog::info("Inside invokeMethod lambda: start");
             try {
                 QString sceneName = QString::fromStdString(plottingWeb->sceneName);
@@ -268,8 +268,9 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                     }
                 }
 
-                auto path3dProp = plottingWeb->Z__PROPERTY_INITIALIZER_PROXY_path3d();
-                if (path3dProp.getPtr() && !plottingWeb->path3d->empty()) {
+                //auto path3dProp = plottingWeb->Z__PROPERTY_INITIALIZER_PROXY_path3d();
+                //if (path3dProp.getPtr() && !plottingWeb->path3d->empty()) {
+                if (!plottingWeb->path3d->empty()) {
                     QString plottingWebPath3ds = QString::fromStdString(*plottingWeb->path3d);
                     QStringList real_3d_paths = plottingWebPath3ds.split(",");
                     for (int i = 0; i < real_3d_paths.size(); ++i) {
@@ -281,7 +282,7 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                         QString plottingWebSceneId = QString::fromStdString(*plottingWeb->sceneId);
                         QString real_3d_path = plottingWebSceneId.append("-").append(path3d);
                         spdlog::info("add map tiled scene layer {}", real_3d_path.toStdString());
-                        m_app->addMapMainTileLayer(i, real_3d_path);
+                        m_app->addMap3dTileLayer(i, real_3d_path);
                     }
                 }
 
@@ -305,7 +306,8 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                     for (const auto &availablePaper: appAvailablePapers) {
                         spdlog::info("image_spec_name: {}, available_paper: {}", layoutType.toStdString(),
                                      availablePaper.getPaperName().toStdString());
-                        add_layout(m_app->getCanvas(), layoutType, plottingWeb, image_spec, availablePaper, false,
+                        auto canvas2d = m_app->getCanvas();
+                        add_layout(canvas2d, layoutType, plottingWeb, image_spec, availablePaper, false,
                                    removeLayerNames, removeLayerPrefixes);
                     }
                     if (m_enable_3d) {
@@ -318,7 +320,8 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                         for (const auto &availablePaper: appAvailablePapers) {
                             spdlog::info("image_spec_name: {}, available_paper: {}", layoutType.toStdString(),
                                          availablePaper.getPaperName().toStdString());
-                            add_3d_layout(m_app->getCanvas(), layoutType, plottingWeb, image_spec, availablePaper,
+                            auto canvas2d = m_app->getCanvas();
+                            add_3d_layout(canvas2d, layoutType, plottingWeb, image_spec, availablePaper,
                                           false,
                                           removeLayerNames3D, removeLayerPrefixes3D);
                         }
@@ -359,11 +362,13 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                 m_app->clearLayers();
                 spdlog::info("clean project");
                 m_app->cleanProject();
+                spdlog::info("clean project done");
             } catch (const std::exception &e) {
                 spdlog::error("Exception in invokeMethod lambda: {}", e.what());
                 promise->set_exception(std::make_exception_ptr(e));
             }
-        });
+        //});
+        }, Qt::QueuedConnection);
 
         // 启动事件循环，直到 lambda 执行完成
         //eventLoop.exec();
@@ -413,7 +418,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
 
 // 添加2d布局
 void Processor::add_layout(
-        QgsMapCanvas *canvas,
+        std::shared_ptr<QgsMapCanvas>& canvas,
         const QString &layout_name,
         const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
         const QMap<QString, QVariant> &image_spec,
@@ -424,18 +429,22 @@ void Processor::add_layout(
     auto joinedLayoutName = layout_name + "-" + available_paper.getPaperName();
     spdlog::info("add layout: {}", joinedLayoutName.toStdString());
 
-    JwLayout jwLayout(m_app->getProject(), canvas, m_app->getSceneName(), image_spec, m_app->getProjectDir());
+    auto project = m_app->getProject();
+    auto sceneName = m_app->getSceneName();
+    auto projectDir = m_app->getProjectDir();
+    JwLayout jwLayout(project, canvas, sceneName, image_spec, projectDir, joinedLayoutName);
 
     auto plottingWebJsonDoc = JsonUtil::convertDtoToQJsonObject(plottingWeb);
     auto plottingWebMap = JsonUtil::jsonObjectToVariantMap(plottingWebJsonDoc.object());
 
     jwLayout.addPrintLayout(QString("2d"), joinedLayoutName, plottingWebMap, available_paper, write_qpt,
                             removeLayerNames, removeLayerPrefixs);
+    spdlog::debug("add_2d_layout done");
 }
 
 // 添加3d布局
 void Processor::add_3d_layout(
-        QgsMapCanvas *canvas,
+        std::shared_ptr<QgsMapCanvas>& canvas,
         const QString &layout_name,
         const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
         const QMap<QString, QVariant> &image_spec,
@@ -448,13 +457,16 @@ void Processor::add_3d_layout(
     spdlog::info("add layout: {}", joinedLayoutName.toStdString());
 
     auto canvas3d = std::make_shared<Qgs3DMapCanvas>();
-    JwLayout3D jwLayout3d(m_app->getProject(), canvas, canvas3d.get(),
-                          m_app->getSceneName(), image_spec, m_app->getProjectDir());
+    auto project = m_app->getProject();
+    auto sceneName = m_app->getSceneName();
+    auto projectDir = m_app->getProjectDir();
+    JwLayout3D jwLayout3d(project, canvas, canvas3d,
+                          sceneName, image_spec, projectDir, joinedLayoutName);
 
     auto plottingWebJsonDoc = JsonUtil::convertDtoToQJsonObject(plottingWeb);
     auto plottingWebMap = JsonUtil::jsonObjectToVariantMap(plottingWebJsonDoc.object());
 
-    jwLayout3d.get3DMapSettings(removeLayerNames, removeLayerPrefixs);
+    jwLayout3d.init3DMapSettings(removeLayerNames, removeLayerPrefixs);
     jwLayout3d.set3DCanvas();
     jwLayout3d.addPrintLayout(QString("3d"), joinedLayoutName, plottingWebMap, available_paper, write_qpt);
 }
@@ -481,7 +493,7 @@ QString Processor::getImageSubDir(const QString &layout_name) {
 QString Processor::exportImage(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
                                const QString &paperName) {
     QString imageName = QString("%1-%2-%3.png").arg(sceneName, layoutName, paperName);
-    QString outputPath = QString("%1/%2/%3.png").arg(m_export_prefix, imageSubDir, imageName);
+    QString outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, imageName);
     FileUtil::delete_file(outputPath);
     spdlog::info("export image -> outputPath: {}", outputPath.toStdString());
     auto isExportStatus = m_app->exportLayoutAsPng(layoutName, outputPath, paperName);

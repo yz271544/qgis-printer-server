@@ -7,7 +7,7 @@
 QgsFeatureRenderer* StylePoint::get2d_single_symbol_renderer()
 {
     QgsSymbol* rule_symbol = QgsSymbol::defaultSymbol(Qgis::GeometryType::Point);
-    auto* rule_font_marker = new QgsFontMarkerSymbolLayer("SimSun");
+    auto rule_font_marker = std::make_unique<QgsFontMarkerSymbolLayer>("SimSun");
 
     rule_font_marker->setSizeUnit(Qgis::RenderUnit::Millimeters);
     rule_font_marker->setSize(3);
@@ -17,11 +17,11 @@ QgsFeatureRenderer* StylePoint::get2d_single_symbol_renderer()
     // rule_font_marker->setDataDefinedProperty(QgsSymbolLayer::Property::Character, QgsProperty::fromExpression("name"));
     // rule_font_marker->setOffset(QPointF(0, -5));
 
-    const bool is_compatible = rule_symbol->changeSymbolLayer(0, rule_font_marker);
+    const bool is_compatible = rule_symbol->changeSymbolLayer(0, rule_font_marker.release());
     spdlog::debug("is_compatible: {}", is_compatible);
-    auto* rule = new QgsRuleBasedRenderer::Rule(rule_symbol);
-    auto* rule_renderer = new QgsRuleBasedRenderer(rule);
-    return rule_renderer;
+    auto rule = std::make_unique<QgsRuleBasedRenderer::Rule>(rule_symbol);
+    auto rule_renderer = std::make_unique<QgsRuleBasedRenderer>(rule.release());
+    return rule_renderer.release();
 }
 
 QgsFeatureRenderer* StylePoint::get2d_rule_based_renderer(QJsonObject& font_style, QJsonObject& layer_style, QString& icon_path, qreal point_size = 5.0) {
@@ -61,7 +61,7 @@ QgsFeatureRenderer* StylePoint::get2d_rule_based_renderer(QJsonObject& font_styl
 
     QgsSymbol* rule_symbol = QgsSymbol::defaultSymbol(Qgis::GeometryType::Point);
     spdlog::debug("set rule_font_marker fontFamily: {}", (*label_style)["fontFamily"].toString().toStdString());
-    auto rule_font_marker = std::make_shared<QgsFontMarkerSymbolLayer>((*label_style)["fontFamily"].toString());
+    auto rule_font_marker = std::make_unique<QgsFontMarkerSymbolLayer>((*label_style)["fontFamily"].toString());
 
     spdlog::debug("set rule_font_marker fontSize: {}", (*label_style)["fontSize"].toInt());
     rule_font_marker->setSizeUnit(Qgis::RenderUnit::Millimeters);
@@ -80,46 +80,46 @@ QgsFeatureRenderer* StylePoint::get2d_rule_based_renderer(QJsonObject& font_styl
     rule_font_marker->setDataDefinedProperty(QgsSymbolLayer::Property::Character, QgsProperty::fromExpression("name"));
     rule_font_marker->setOffset(QPointF(0, -5));
 
-    auto rule_raster_marker = std::make_shared<QgsRasterMarkerSymbolLayer>(icon_path);
+    auto rule_raster_marker = std::make_unique<QgsRasterMarkerSymbolLayer>(icon_path);
     rule_raster_marker->setSizeUnit(Qgis::RenderUnit::Millimeters);
 
     float raster_marker_size = QgsUtil::d300_pixel_to_mm(static_cast<float>(point_size));
     spdlog::debug("point_size: {} -> raster_marker_size: ", point_size, raster_marker_size);
     rule_raster_marker->setSize(raster_marker_size);
-    rule_symbol->changeSymbolLayer(0, rule_raster_marker.get());
+    rule_symbol->changeSymbolLayer(0, rule_raster_marker.release());
     if (ENABLE_POINT_CLUSTER)
     {
-        rule_symbol->appendSymbolLayer(rule_font_marker.get());
+        rule_symbol->appendSymbolLayer(rule_font_marker.release());
     }
-    auto root_rule = std::make_shared<QgsRuleBasedRenderer::Rule>(nullptr);
-    auto rule = std::make_shared<QgsRuleBasedRenderer::Rule>(rule_symbol);
+    auto root_rule = std::make_unique<QgsRuleBasedRenderer::Rule>(nullptr);
+    auto rule = std::make_unique<QgsRuleBasedRenderer::Rule>(rule_symbol);
     rule->setFilterExpression("ELSE");
-    root_rule->appendChild(rule.get());
-    auto rule_renderer = std::make_shared<QgsRuleBasedRenderer>(root_rule.get());
+    root_rule->appendChild(rule.release());
+    auto rule_renderer = std::make_unique<QgsRuleBasedRenderer>(root_rule.release());
 
     if (!ENABLE_POINT_CLUSTER) {
-        return rule_renderer.get();
+        return rule_renderer.release();
     }
     //QgsSymbol* cluster_symbol = QgsSymbol::defaultSymbol(Qgis::GeometryType::Point);
-    auto cluster_symbol = std::make_shared<QgsMarkerSymbol>();
-    auto font_marker = std::make_shared<QgsFontMarkerSymbolLayer>((*label_style)["fontFamily"].toString());
+    auto cluster_symbol = std::make_unique<QgsMarkerSymbol>();
+    auto font_marker = std::make_unique<QgsFontMarkerSymbolLayer>((*label_style)["fontFamily"].toString());
     font_marker->setSize(QgsUtil::d300_pixel_to_mm((*label_style)["fontSize"].toFloat()));
     font_marker->setColor(QColor((*label_style)["fontColor"].toString()));
     font_marker->setDataDefinedProperty(QgsSymbolLayer::Property::Character, QgsProperty::fromExpression("concat('(', @cluster_size, ')')"));
     font_marker->setOffset(QPointF(0, -5));
 
-    auto raster_marker = std::make_shared<QgsRasterMarkerSymbolLayer>(icon_path);
+    auto raster_marker = std::make_unique<QgsRasterMarkerSymbolLayer>(icon_path);
     raster_marker->setSize(QgsUtil::d300_pixel_to_mm(static_cast<float>(point_size)));
-    cluster_symbol->changeSymbolLayer(0, raster_marker.get());
-    cluster_symbol->appendSymbolLayer(font_marker.get());
+    cluster_symbol->changeSymbolLayer(0, raster_marker.release());
+    cluster_symbol->appendSymbolLayer(font_marker.release());
 
-    auto cluster_renderer = std::make_shared<QgsPointClusterRenderer>();
+    auto cluster_renderer = std::make_unique<QgsPointClusterRenderer>();
     cluster_renderer->setTolerance(10);
     cluster_renderer->setToleranceUnit(Qgis::RenderUnit::Millimeters);
-    cluster_renderer->setClusterSymbol(cluster_symbol.get());
-    cluster_renderer->setEmbeddedRenderer(rule_renderer.get());
+    cluster_renderer->setClusterSymbol(cluster_symbol.release());
+    cluster_renderer->setEmbeddedRenderer(rule_renderer.release());
 
-    return cluster_renderer.get();
+    return cluster_renderer.release();
 }
 
 QgsAbstract3DRenderer* StylePoint::get3d_single_symbol_renderer(
@@ -128,8 +128,8 @@ QgsAbstract3DRenderer* StylePoint::get3d_single_symbol_renderer(
         QJsonObject& layer_style,
         QString& icon_path,
         qreal point_size) {
-    auto symbol = std::make_shared<QgsPoint3DSymbol>();
-    auto material_settings = std::make_shared<QgsPhongMaterialSettings>();
+    auto symbol = std::make_unique<QgsPoint3DSymbol>();
+    auto material_settings = std::make_unique<QgsPhongMaterialSettings>();
 
     QString font_color;
     if (font_style.contains("fontColor")) {
@@ -147,12 +147,12 @@ QgsAbstract3DRenderer* StylePoint::get3d_single_symbol_renderer(
 
     material_settings->setDiffuse(QColor(font_color));
     material_settings->setAmbient(QColor(font_color));
-    symbol->setMaterialSettings(material_settings.get());
+    symbol->setMaterialSettings(material_settings.release());
 
-    auto renderer = std::make_shared<QgsVectorLayer3DRenderer>();
+    auto renderer = std::make_unique<QgsVectorLayer3DRenderer>();
     renderer->setLayer(&point_layer);
-    renderer->setSymbol(symbol.get());
-    return renderer.get();
+    renderer->setSymbol(symbol.release());
+    return renderer.release();
 }
 
 QgsAbstract3DRenderer* StylePoint::get3d_single_raster_symbol_renderer(
@@ -161,7 +161,7 @@ QgsAbstract3DRenderer* StylePoint::get3d_single_raster_symbol_renderer(
         QJsonObject& layer_style,
         QString& icon_path,
         qreal point_size) {
-    auto label_style = std::make_shared<QMap<QString, QVariant>>();
+    auto label_style = std::make_unique<QMap<QString, QVariant>>();
 
     if (font_style.contains("fontColor")) {
         QString font_color = font_style["fontColor"].toString();
@@ -193,7 +193,7 @@ QgsAbstract3DRenderer* StylePoint::get3d_single_raster_symbol_renderer(
 
     float point_size_mm = QgsUtil::d300_pixel_to_mm(static_cast<float>(point_size));
     // 创建一个嵌入式规则渲染器
-    auto raster_marker = std::make_shared<QgsRasterMarkerSymbolLayer>(icon_path);
+    auto raster_marker = std::make_unique<QgsRasterMarkerSymbolLayer>(icon_path);
 
     raster_marker->setSize(point_size_mm);
     raster_marker->setSizeUnit(Qgis::RenderUnit::Millimeters);
@@ -203,14 +203,14 @@ QgsAbstract3DRenderer* StylePoint::get3d_single_raster_symbol_renderer(
     raster_marker->setVerticalAnchorPoint(QgsMarkerSymbolLayer::VerticalAnchorPoint::VCenter);
     raster_marker->setHorizontalAnchorPoint(QgsMarkerSymbolLayer::HorizontalAnchorPoint::HCenter);
 
-    auto symbol = std::make_shared<QgsPoint3DSymbol>();
+    auto symbol = std::make_unique<QgsPoint3DSymbol>();
     symbol->setShape(Qgis::Point3DShape::Billboard);
     QgsMarkerSymbol* marker_symbol = symbol->billboardSymbol();
-    marker_symbol->changeSymbolLayer(0, raster_marker.get());
+    marker_symbol->changeSymbolLayer(0, raster_marker.release());
 
-    auto renderer = std::make_shared<QgsVectorLayer3DRenderer>();
-    renderer->setSymbol(symbol.get());
-    return renderer.get();
+    auto renderer = std::make_unique<QgsVectorLayer3DRenderer>();
+    renderer->setSymbol(symbol.release());
+    return renderer.release();
 }
 
 QgsRuleBased3DRenderer* StylePoint::get3d_rule_renderer(
@@ -220,7 +220,7 @@ QgsRuleBased3DRenderer* StylePoint::get3d_rule_renderer(
         QString& icon_path,
         qreal point_size) {
     // Create the root rule
-    auto root_rule = std::make_shared<QgsRuleBased3DRenderer::Rule>(nullptr);
+    auto root_rule = std::make_unique<QgsRuleBased3DRenderer::Rule>(nullptr);
 
     QMap<QString, QVariant> label_style;
 
@@ -254,13 +254,13 @@ QgsRuleBased3DRenderer* StylePoint::get3d_rule_renderer(
 
     float point_size_mm = QgsUtil::d300_pixel_to_mm(static_cast<float>(point_size));
     // 创建一个嵌入式规则渲染器
-    auto mark_symbol = std::make_shared<QgsMarkerSymbol>();
+    auto mark_symbol = std::make_unique<QgsMarkerSymbol>();
     mark_symbol->setSize(point_size_mm);
     mark_symbol->setSizeUnit(Qgis::RenderUnit::Millimeters);
     mark_symbol->setOpacity(1.0);
     mark_symbol->setAngle(0.0);
 
-    auto raster_marker = std::make_shared<QgsRasterMarkerSymbolLayer>(icon_path);
+    auto raster_marker = std::make_unique<QgsRasterMarkerSymbolLayer>(icon_path);
     raster_marker->setSize(point_size_mm);
     raster_marker->setSizeUnit(Qgis::RenderUnit::Millimeters);
     raster_marker->setOpacity(1.0);
@@ -269,20 +269,20 @@ QgsRuleBased3DRenderer* StylePoint::get3d_rule_renderer(
     raster_marker->setVerticalAnchorPoint(QgsMarkerSymbolLayer::VerticalAnchorPoint::VCenter);
     raster_marker->setHorizontalAnchorPoint(QgsMarkerSymbolLayer::HorizontalAnchorPoint::HCenter);
 
-    mark_symbol->changeSymbolLayer(0, raster_marker.get());
+    mark_symbol->changeSymbolLayer(0, raster_marker.release());
     mark_symbol->setFlags(Qgis::SymbolFlag::AffectsLabeling);
 
-    auto symbol = std::make_shared<QgsPoint3DSymbol>();
-    auto null_material_settings = std::make_shared<QgsNullMaterialSettings>();
-    symbol->setMaterialSettings(null_material_settings.get());
+    auto symbol = std::make_unique<QgsPoint3DSymbol>();
+    auto null_material_settings = std::make_unique<QgsNullMaterialSettings>();
+    symbol->setMaterialSettings(null_material_settings.release());
     symbol->setShape(Qgis::Point3DShape::Billboard);
 
-    auto rule = std::make_shared<QgsRuleBased3DRenderer::Rule>(nullptr);
+    auto rule = std::make_unique<QgsRuleBased3DRenderer::Rule>(nullptr);
 
-    rule->setSymbol(symbol.get());
-    root_rule->appendChild(rule.get());
+    rule->setSymbol(symbol.release());
+    root_rule->appendChild(rule.release());
 
-    auto renderer3d = std::make_shared<QgsRuleBased3DRenderer>(root_rule.get());
+    auto renderer3d = std::make_unique<QgsRuleBased3DRenderer>(root_rule.release());
 
-    return renderer3d.get();
+    return renderer3d.release();
 }
