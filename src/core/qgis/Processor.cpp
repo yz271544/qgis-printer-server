@@ -186,7 +186,7 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
     return std::async(std::launch::async, [this, token, plottingWeb, promise]() {
 
         // 创建事件循环
-        //QEventLoop eventLoop;
+        QEventLoop eventLoop;
 
         if (m_verbose) {
             QJsonDocument postPlottingWebBody = JsonUtil::convertDtoToQJsonObject(plottingWeb);
@@ -234,8 +234,9 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
             throw XServerRequestError(errorMsg);
         }
         spdlog::info("invoke method to create project");
-        QMetaObject::invokeMethod(qApp, [this, plottingWeb, plottingRespDto, layoutType, promise]() {
-        //QTimer::invokeMethod(0, qApp, [this, plottingWeb, plottingRespDto, layoutType, promise]() {
+        // Qt::TimerType tempReceiver;
+        QMetaObject::invokeMethod(qApp, [this, plottingWeb, plottingRespDto, layoutType, promise, &eventLoop]() {
+        //QTimer::singleShot(0, tempReceiver, [this, plottingWeb, plottingRespDto, layoutType, promise, &eventLoop]() {
             spdlog::info("Inside invokeMethod lambda: start");
             try {
                 QString sceneName = QString::fromStdString(plottingWeb->sceneName);
@@ -363,15 +364,17 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                 spdlog::info("clean project");
                 m_app->cleanProject();
                 spdlog::info("clean project done");
+                eventLoop.quit(); // 退出事件循环
             } catch (const std::exception &e) {
                 spdlog::error("Exception in invokeMethod lambda: {}", e.what());
                 promise->set_exception(std::make_exception_ptr(e));
+                eventLoop.quit(); // 退出事件循环
             }
         //});
         }, Qt::QueuedConnection);
 
         // 启动事件循环，直到 lambda 执行完成
-        //eventLoop.exec();
+        eventLoop.exec();
         spdlog::info("Inside fetchPlotting lambda: wait");
 
         return promise->get_future().get();
