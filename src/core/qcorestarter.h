@@ -29,10 +29,10 @@ private:
     YAML::Node config;
     bool mBlock;
 //    QSurfaceFormat mQSurfaceFormat;
-//    QOffscreenSurface mQOffscreenSurface;
+    std::shared_ptr<QOffscreenSurface> mQOffscreenSurface;
     std::shared_ptr<QOpenGLContext> mOpenGLContext;
-    /*std::unique_ptr<QCoreApplication> mApp;
-    std::unique_ptr<QgsApplication> mQgsApp;*/
+    std::unique_ptr<QCoreApplication> mApp;
+    std::unique_ptr<QgsApplication> mQgsApp;
 public:
     QCoreStarter();
 

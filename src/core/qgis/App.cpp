@@ -15,7 +15,7 @@ App::App(const QList<QString>& argvList, std::shared_ptr<YAML::Node>& config)
     mCanvas = nullptr;
     mMapSettings = nullptr;
     mProjectDir = "";
-    spdlog::info("create qgis QgsApplication");
+    /*spdlog::info("create qgis QgsApplication");
     bool GUIenabled = false;
     try{
         GUIenabled = (*mConfig)["qgis"]["gui_enabled"].as<bool>();
@@ -39,7 +39,7 @@ App::App(const QList<QString>& argvList, std::shared_ptr<YAML::Node>& config)
     } catch (const std::exception& e) {
         spdlog::error("init qgis error: {}", e.what());
     }
-    spdlog::info("inited the qgs app");
+    spdlog::info("inited the qgs app");*/
     mPageSizeRegistry = std::shared_ptr<QgsPageSizeRegistry>(QgsApplication::pageSizeRegistry());
     //mPageSizeRegistry = QgsApplication::pageSizeRegistry();
     mAvailablePapers = PaperSpecification::getLayoutPaperList();

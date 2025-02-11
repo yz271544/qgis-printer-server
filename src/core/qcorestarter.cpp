@@ -20,13 +20,12 @@ BaseStarter* QCoreStarter::GetInstance() {
 void QCoreStarter::Init(StarterContext& context) {
     spdlog::info("QCoreStarter Init start");
     config = context.Props();
-    // 获取转换后的参数
     int newArgc;
     char** newArgv;
     context.getConvertedArgs(newArgc, newArgv);
 
     bool GUIenabled = false;
-    try{
+    try {
         GUIenabled = config["qgis"]["gui_enabled"].as<bool>();
         spdlog::info("GUIenabled: {}", GUIenabled);
     } catch (const std::exception& e) {
@@ -34,15 +33,14 @@ void QCoreStarter::Init(StarterContext& context) {
     }
 
     // Initialize QApplication if GUI is enabled, otherwise QCoreApplication
-    //std::unique_ptr<QCoreApplication> app;
     if (GUIenabled) {
-        QApplication app(newArgc, newArgv);
+        mApp = std::make_unique<QApplication>(newArgc, newArgv);  // 使用成员变量
     } else {
-        QCoreApplication app(newArgc, newArgv);
+        mApp = std::make_unique<QCoreApplication>(newArgc, newArgv);  // 使用成员变量
     }
 
     spdlog::info("create qgis QgsApplication");
-    QgsApplication qgsApp(newArgc, newArgv, GUIenabled);
+    mQgsApp = std::make_unique<QgsApplication>(newArgc, newArgv, GUIenabled);  // 使用成员变量
     QString qgis_prefix_path = "/usr";
     try {
         qgis_prefix_path = QString::fromStdString(config["qgis"]["prefix_path"].as<std::string>());
@@ -61,8 +59,7 @@ void QCoreStarter::Init(StarterContext& context) {
         spdlog::error("init qgis error: {}", e.what());
     }
     spdlog::info("inited the qgs app");
-    auto ogt = QOpenGLContext::openGLModuleType();
-    spdlog::info("QOpenGLContext::openGLModuleType: {}", ogt);
+
     // 设置OpenGL环境
     spdlog::info("设置OpenGL环境");
     QSurfaceFormat mQSurfaceFormat;
@@ -72,29 +69,26 @@ void QCoreStarter::Init(StarterContext& context) {
 
     // 创建离屏渲染环境
     spdlog::info("创建离屏渲染环境");
-    QOffscreenSurface mQOffscreenSurface;
-    mQOffscreenSurface.setFormat(mQSurfaceFormat);
+    mQOffscreenSurface = std::make_unique<QOffscreenSurface>();  // 使用成员变量
+    mQOffscreenSurface->setFormat(mQSurfaceFormat);
     spdlog::info("create offscreen surface");
-    mQOffscreenSurface.create();
-
+    mQOffscreenSurface->create();
 
     // 创建OpenGL上下文
     spdlog::info("创建OpenGL上下文");
-    QOpenGLContext openGLContext;
-    openGLContext.setFormat(mQSurfaceFormat);
-    if (!openGLContext.create()) {
+    mOpenGLContext = std::make_unique<QOpenGLContext>();  // 使用成员变量
+    mOpenGLContext->setFormat(mQSurfaceFormat);
+    if (!mOpenGLContext->create()) {
         spdlog::error("Failed to create OpenGL context");
         exit(-1);
     }
 
     // 设置当前上下文
     spdlog::info("设置当前上下文");
-    if (!openGLContext.makeCurrent(&mQOffscreenSurface)) {
+    if (!mOpenGLContext->makeCurrent(mQOffscreenSurface.get())) {
         spdlog::error("Failed to make OpenGL context current");
         exit(-1);
     }
-
-    mOpenGLContext.reset(&openGLContext);
 
     spdlog::info("QCoreStarter Init end");
 }
