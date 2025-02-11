@@ -69,8 +69,7 @@ public:
     void filterMapLayers(
             QgsLayoutItemMap* mapItem,
             const QVector<QString>& removeLayerNames = QVector<QString>(),
-            const QVector<QString>& removeLayerPrefixes = QVector<QString>(),
-            Qgs3DMapSettings* mapSettings3d = nullptr);
+            const QVector<QString>& removeLayerPrefixes = QVector<QString>());
 
     void setPageOrientation(QgsPrintLayout* layout, const PaperSpecification availablePaper, int pageNum,
                             QgsLayoutItemPage::Orientation orientation = QgsLayoutItemPage::Landscape);

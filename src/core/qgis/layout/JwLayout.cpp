@@ -18,8 +18,7 @@ JwLayout::JwLayout(std::shared_ptr<QgsProject>& project, std::shared_ptr<QgsMapC
 void JwLayout::filterMapLayers(
         QgsLayoutItemMap* mapItem,
         const QVector<QString>& removeLayerNames,
-        const QVector<QString>& removeLayerPrefixes,
-        Qgs3DMapSettings* mapSettings3d) {
+        const QVector<QString>& removeLayerPrefixes) {
     for (const auto &item: removeLayerNames) {
         spdlog::debug("remove layer name: {}", item.toStdString());
     }
@@ -47,16 +46,7 @@ void JwLayout::filterMapLayers(
             filteredLayers.append(layer);
         }
     }
-    if (mapSettings3d) {
-        spdlog::debug("set layers to 3d map settings");
-        std::reverse(filteredLayers.begin(), filteredLayers.end());
-        for (QgsMapLayer* filtered_layer : filteredLayers)
-        {
-            spdlog::debug("add layer to layout map: {}", filtered_layer->name().toStdString());
-        }
-        mapSettings3d->setLayers(filteredLayers);
-        spdlog::debug("set layers to 3d map settings done");
-    } else if (mapItem) {
+    if (mapItem) {
         std::reverse(filteredLayers.begin(), filteredLayers.end());
         for (QgsMapLayer* filtered_layer : filteredLayers)
         {
