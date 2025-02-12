@@ -26,11 +26,6 @@ void LoggerStarter::Init(StarterContext& context) {
         spdlog::set_level(level);
         //spdlog::set_pattern("[%Y-%m-%d %H:%M:%S %z] [%^---%L---%$] [thread %t] %v");
         spdlog::set_pattern("[%Y-%m-%d %H:%M:%S %z] [%^%l%$] [thread %t] %v");
-        spdlog::warn("Easy padding in numbers like {:08d}", 12);
-        spdlog::critical("Support for int: {0:d};  hex: {0:x};  oct: {0:o}; bin: {0:b}", 42);
-        spdlog::info("{:<30}", "left aligned");
-        spdlog::debug("This message should be displayed..");
-
     } catch (const YAML::BadFile& e) {
         std::cerr << "Error loading config file: " << e.what() << std::endl;
     }
