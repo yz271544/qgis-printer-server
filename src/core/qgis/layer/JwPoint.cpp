@@ -7,10 +7,17 @@
 
 JwPoint::JwPoint(const QString& sceneName, QgsProject* project,
                  const QString& projectDir,
-                 QgsCoordinateTransformContext& transformContext,
-                 QObject* parent)
-        : QObject(parent), mSceneName(sceneName), mProject(project),
-          mProjectDir(projectDir), mTransformContext(transformContext) {}
+                 QgsCoordinateTransformContext& transformContext)
+        : mSceneName(sceneName),
+          mProject(project),
+          mProjectDir(projectDir),
+          mTransformContext(transformContext) {
+    // Constructor implementation
+}
+
+JwPoint::~JwPoint() {
+    // Destructor implementation
+}
 
 void JwPoint::addPoints(const QString& iconName,
                const QVector<QString>& pointNameList,

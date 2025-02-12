@@ -4,15 +4,12 @@ file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.h *.cpp)
 set(SOURCES ${SOURCES})
 message("SOURCES: ${SOURCES}")
 
-add_executable(${PROJECT_NAME} ${SOURCES}
-        utils/CompressUtil.cpp
-        utils/CompressUtil.h
-        core/qgis/layer/BaseLayer.cpp
-        core/qgis/layer/BaseLayer.h
-        core/qgis/layer/JwPoint.cpp
-        core/qgis/layer/JwPoint.h
-)
+add_executable(${PROJECT_NAME} ${SOURCES})
 add_library(${PROJECT_NAME}_lib STATIC ${SOURCES})
+
+# 为 jingweiprinter 启用 AUTOMOC
+set_target_properties(${PROJECT_NAME} PROPERTIES AUTOMOC ON)
+set_target_properties(${PROJECT_NAME}_lib PROPERTIES AUTOMOC ON)
 
 message("set target_compile_definitions OATPP_VERSION_LESS_1_4_0 oatpp_VERSION: ${oatpp_VERSION}")
 # 获取 oatpp 的版本号

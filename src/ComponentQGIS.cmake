@@ -188,6 +188,10 @@ elseif(UNIX)
     )
     find_package(Qt5Keychain CONFIG REQUIRED)
 
+    set(CMAKE_AUTOMOC ON)
+    set(CMAKE_AUTOUIC ON)
+    set(CMAKE_AUTORCC ON)
+
     find_path(GDAL_INCLUDE_DIR NAMES gdal.h ogr_api.h gdalwarper.h cpl_conv.h cpl_string.h HINTS /usr/include/gdal)
     find_library(GDAL_LIBRARY NAMES gdal HINTS /usr/lib /usr/lib/x86_64-linux-gnu)
 

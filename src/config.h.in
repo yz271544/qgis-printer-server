@@ -106,6 +106,8 @@ inline bool ENABLE_POINT_CLUSTER = getEnvBool("ENABLE_POINT_CLUSTER", false);
 
 inline bool ENABLE_3D = getEnvBool("ENABLE_3D", true);
 
+inline double CIRCLE_RADIUS_COEFFICIENT = getEnvDouble("CIRCLE_RADIUS_COEFFICIENT", 2.0);
+
 #ifdef OATPP_VERSION_LESS_1_4_0
 #define DTOWRAPPERNS oatpp::data::mapping::type
 #define OBJECTMAPPERNS oatpp::parser::json::mapping
@@ -115,9 +117,6 @@ inline bool ENABLE_3D = getEnvBool("ENABLE_3D", true);
 #define OBJECTMAPPERNS oatpp::json
 #define PRIMITIVENS oatpp::data::type
 #endif
-
-
-double CIRCLE_RADIUS_COEFFICIENT = getEnvDouble("CIRCLE_RADIUS_COEFFICIENT", 2.0);
 
 
 #endif //CONFIG_H

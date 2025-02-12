@@ -36,10 +36,9 @@ Q_OBJECT
 public:
     JwPoint(const QString& sceneName, QgsProject* project,
             const QString& projectDir,
-            QgsCoordinateTransformContext& transformContext,
-            QObject* parent = nullptr);
+            QgsCoordinateTransformContext& transformContext);
 
-
+    virtual ~JwPoint();
 
     void addPoints(const QString& iconName,
                    const QVector<QString>& pointNameList,
@@ -50,7 +49,7 @@ public:
                    int point_size = 5,
                    const QString& iconBase64 = "");
 
-    void createLayer(const QString& layerName,
+    /*void createLayer(const QString& layerName,
                      const QString& layerType,
                      const QString& sceneName,
                      const QString& projectDir,
@@ -82,7 +81,7 @@ public:
             jwPoint.addPoints("test_icon", point_name_list.toVector(), points, font_style, layer_style, style_list);
         });
         create_point_layer(layerName);
-    }
+    }*/
 
 private:
     QString mSceneName;

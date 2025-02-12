@@ -147,7 +147,7 @@ bool QCoreStarter::StartBlocking() {
 }
 
 std::array<int, 4> QCoreStarter::Priority() {
-    return {1, 2, DEFAULT_PRIORITY, DEFAULT_PRIORITY};
+    return {2, 2, DEFAULT_PRIORITY, DEFAULT_PRIORITY};
 }
 
 std::string QCoreStarter::GetName() {

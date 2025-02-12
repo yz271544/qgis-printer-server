@@ -27,7 +27,7 @@
 #include "core/error/exceptions.h"
 
 // 图层类型映射
-QMap<QString, std::function<QgsVectorLayer *(const QString &)>> layer_type_mapping = {
+/*QMap<QString, std::function<QgsVectorLayer *(const QString &)>> layer_type_mapping = {
         {"point",   [](const QString &name) {
             return new QgsVectorLayer(QString("PointZ?crs=%1").arg(MAIN_CRS), name, "memory");
         }},
@@ -40,10 +40,10 @@ QMap<QString, std::function<QgsVectorLayer *(const QString &)>> layer_type_mappi
         {"circle",  [](const QString &name) {
             return new QgsVectorLayer(QString("PolygonZ?crs=%1").arg(MAIN_CRS), name, "memory");
         }}
-};
+};*/
 
 
-// 创建图层的装饰器
+/*// 创建图层的装饰器
 template<typename Func>
 auto create_layer(const QString &layerType, QgsFields &fields, Func func) {
     return [layerType, fields, func](const QString &layerName, auto &&... args) {
@@ -71,7 +71,7 @@ auto create_layer(const QString &layerType, QgsFields &fields, Func func) {
             throw UnknownArgNum("Unsupported layer type: " + layerType.toStdString());
         }
     };
-}
+}*/
 
 
 class JwGeometry {
