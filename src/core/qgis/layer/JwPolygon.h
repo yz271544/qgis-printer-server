@@ -26,98 +26,128 @@
 
 #include "config.h"
 #include "utils/QgsUtil.h"
-#include "core/qgis/style/StyleLine.h"
+#include "core/qgis/style/StylePolygon.h"
 #include "JwGeometry.h"
 #include "utils/ImageUtil.h"
 
 
 
-class JwCircle : public JwGeometry {
+class JwPolygon : public QObject, public JwGeometry {
+Q_OBJECT
 public:
-    JwCircle(const QString& sceneName,
-            // 这里的 project, projectDir, projectTransformContext 需要根据实际类型替换
-             void* project,
-             const QString& projectDir,
-             void* projectTransformContext) {
-        // 函数体省略
+    JwPolygon(QString &sceneName,
+              QString &layerName,
+              QString &projectDir,
+              QgsProject *project,
+              QgsCoordinateTransformContext &transformContext)
+            : mSceneName(sceneName),
+              mLayerName(layerName),
+              mProject(project),
+              mProjectDir(projectDir),
+              mTransformContext(transformContext) {}
+
+    ~JwPolygon();
+
+    QgsPoint transformFunction(const QgsPoint& point) {
+        QgsCoordinateTransform* transformer = QgsUtil::coordinateTransformer4326To3857(mProject);
+        auto transformedPoint = std::make_unique<QgsPoint>(point);
+        transformedPoint->transform(*transformer);
+        return *transformedPoint;
     }
 
-    /**
-     * 增加图层：圆形  核心区/警戒区/控制区
-     * @param centerPoint 圆心坐标
-     * @param radius 半径
-     * @param color 颜色
-     * @param opacity 透明度
-     * @param numSegments 用于近似圆形的线段数量，数值越大越接近圆形
-     */
-    void addCircle(const QVector<double>& centerPoint,
-                   double radius,
-                   const QColor& color,
-                   double opacity = 0.5,
-                   int numSegments = 36) {
-        // 函数体省略
+    void addPolygon(const QList<QString>& nameList,
+                    const QList<QgsPolygon>& polygons,
+                    const QJsonObject& fontStyle,
+                    const QJsonObject& layerStyle,
+                    const QList<QVariant>& styleList) {
+        auto memPolygonVectorLayer = std::make_unique<QgsVectorLayer>(
+                QString("PolygonZ?crs=%1").arg(MAIN_CRS), mLayerName, QStringLiteral("memory"));
+        if (!memPolygonVectorLayer->isValid()) {
+            spdlog::error("Failed to create memory polygon layer: {}", mLayerName.toStdString());
+            return;
+        }
+
+        // 添加属性
+        QgsVectorDataProvider *polygonProvider = memPolygonVectorLayer->dataProvider();
+
+        QList<QgsField> fields;
+        fields.append(QgsField(QStringLiteral("name"), QMetaType::Type::QString, "varchar", 256));
+        fields.append(QgsField("type", QMetaType::Type::QString, "varchar", 256));
+        fields.append(QgsField("vertex_count", QMetaType::Type::UInt));
+
+        polygonProvider->addAttributes(fields);
+        memPolygonVectorLayer->updatedFields();
+
+        // Set coordinate transform
+        // QgsCoordinateTransform* transformer = QgsUtil::coordinateTransformer4326To3857(mProject);
+
+        // Add features to the writer
+        memPolygonVectorLayer->startEditing();
+
+        for (int i=0; i < polygons.size(); ++i) {
+            QgsPolygon transformedPolygon;
+            auto polygon = polygons.at(i);
+            auto vertexCount = polygon.vertexCount();
+            std::function<QgsPoint(const QgsPoint&)> transform = [this](const QgsPoint& point) { return this->transformFunction(point); };
+            polygon.transformVertices(transform);
+            QgsGeometry qgsPolygon = transformPolygon2(polygon);
+            QgsFeature feature(fields);
+            feature.setGeometry(qgsPolygon);
+
+            QgsAttributes attribute;
+            attribute.append(nameList[i]);
+            attribute.append("polygon");
+            attribute.append(vertexCount);
+
+            feature.setAttributes(attribute);
+            polygonProvider->addFeature(feature);
+        }
+
+        if (memPolygonVectorLayer->commitChanges()) {
+            spdlog::debug("Data successfully committed to layer.");
+        } else {
+            spdlog::warn("Failed to commit data to layer: {}", polygonProvider->error().message().toStdString());
+        }
+
+        // 持久化图层
+        auto persistPointVectorLayer = QgsUtil::writePersistedLayer(
+                this->mLayerName,
+                memPolygonVectorLayer.release(),
+                this->mProjectDir,
+                fields,
+                Qgis::WkbType::PointZ,
+                this->mTransformContext,
+                this->mProject->crs());
+
+
+        // 设置2D渲染器
+        auto renderer = StylePolygon::get2dRuleBasedRenderer(fontStyle, layerStyle);
+        persistPointVectorLayer->setRenderer(renderer);
+
+        // Set label style
+        auto layerSimpleLabeling = StylePolygon::getLabelStyle(fontStyle, "name");
+        persistPointVectorLayer->setLabelsEnabled(true);
+        persistPointVectorLayer->setDisplayExpression("name");
+        persistPointVectorLayer->setLabeling(layerSimpleLabeling);
+        // 设置3D渲染器
+        if (ENABLE_3D) {
+            auto renderer3d =
+                    StylePolygon::get3dSingleSymbolRenderer(fontStyle, layerStyle);
+            persistPointVectorLayer->setRenderer3D(renderer3d);
+        }
+        // 触发重绘
+        persistPointVectorLayer->triggerRepaint();
+        // 添加到项目
+        mProject->addMapLayer(persistPointVectorLayer.release());
     }
 
-    /**
-     * 增加图层：圆形  核心区/警戒区/控制区
-     * @param iconName 图标名称
-     * @param nameList 名称列表
-     * @param centerPoints 圆心坐标
-     * @param radii 半径列表
-     * @param layerStyle 图层样式
-     * @param styleList 样式列表
-     * @param numSegments 用于近似圆形的线段数量，数值越大越接近圆形
-     */
-    void addCircles(const QString& iconName,
-                    const QList<QString>& nameList,
-                    const QList<QVector<double>>& centerPoints,
-                    const QList<double>& radii,
-            // 这里的 layerStyle 和 styleList 需要根据实际类型替换
-                    void* layerStyle,
-                    void* styleList,
-                    int numSegments = 72) {
-        // 函数体省略
-    }
+private:
+    QString mSceneName;
+    QString mLayerName;
+    QString mProjectDir;
+    QgsCoordinateTransformContext mTransformContext;
+    QgsProject* mProject;
 
-    /**
-     * 增加重点区域图层：三个同心圆
-     * @param centerPoint 圆心坐标
-     * @param radius  三个圆的半径
-     * @param percent 三个园的占比
-     * @param colors 三个圆的颜色
-     * @param opacities 三个圆的透明度
-     * @param numSegments 用于近似圆形的线段数量，数值越大越接近圆形
-     * @return QgsVectorLayer 指针，如果失败返回 nullptr
-     */
-    QgsVectorLayer* addCircleKeyAreas(const QVector<double>& centerPoint,
-                                      double radius,
-                                      const QVector<double>& percent,
-                                      const QList<QColor>& colors,
-                                      const QVector<double>& opacities,
-                                      int numSegments = 36) {
-        // 函数体省略
-        return nullptr;
-    }
-
-    /**
-     * 增加重点区域图层：三个同心圆
-     * @param areasCenterPointList 多个等级域圆心坐标 list
-     * @param areasRadii  多个等级域中三个圆的半径 list
-     * @param areasPercent 多个等级域中三个园的占比 list
-     * @param areasColorList 多个等级域中三个圆的颜色 list
-     * @param areasOpacityList 多个等级域中三个圆的透明度 list
-     * @param numSegments 用于近似圆形的线段数量，数值越大越接近圆形
-     * @return QgsVectorLayer 指针，如果失败返回 nullptr
-     */
-    QgsVectorLayer* addLevelKeyAreas(const QList<QVector<double>>& areasCenterPointList,
-                                     const QList<double>& areasRadii,
-                                     const QList<QVector<double>>& areasPercent,
-                                     const QList<QColor>& areasColorList,
-                                     const QList<double>& areasOpacityList,
-                                     int numSegments = 36) {
-        // 函数体省略
-        return nullptr;
-    }
 };
 
 #endif //JINGWEIPRINTER_JWPOLYGON_H

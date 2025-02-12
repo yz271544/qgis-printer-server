@@ -6,8 +6,8 @@
 
 
 QgsFeatureRenderer *StylePolygon::get2dRuleBasedRenderer(
-        QJsonObject &fontStyle,
-        QJsonObject &layerStyle) {
+        const QJsonObject &fontStyle,
+        const QJsonObject &layerStyle) {
     // set layer style
     auto root_rule = std::make_unique<QgsRuleBasedRenderer::Rule>(nullptr);
     QgsSymbol *base_symbol = QgsSymbol::defaultSymbol(Qgis::GeometryType::Polygon);

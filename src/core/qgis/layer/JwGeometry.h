@@ -16,6 +16,7 @@
 #include <qgsfeature.h>
 #include <qgspoint.h>
 #include <qgspointxy.h>
+#include <qgspolygon.h>
 #include <qgswkbtypes.h>
 #include <qgslogger.h>
 #include <QString>
@@ -61,6 +62,7 @@ public:
      */
     static QgsGeometry transformPolygon(const QList<QList<QgsPoint>> &transformedPolygon);
 
+    QgsGeometry transformPolygon2(const QgsPolygon& transformedPolygon);
     /**
      * 绘制3D圆形几何图形 static
      * @param num_segments 用于近似圆形的线段数量，数值越大越接近圆形

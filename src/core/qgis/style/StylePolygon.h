@@ -41,8 +41,8 @@ class StylePolygon
 {
 public:
     static QgsFeatureRenderer* get2dRuleBasedRenderer(
-            QJsonObject& fontStyle,
-            QJsonObject& layerStyle);
+            const QJsonObject& fontStyle,
+            const QJsonObject& layerStyle);
 
     static QgsVectorLayerSimpleLabeling* getLabelStyle(
             const QJsonObject& fontStyle, 

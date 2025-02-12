@@ -63,3 +63,21 @@ TEST(blaTest, testArea) {
     spdlog::info("reverse area_name detail: {}", ShowDataUtil::formatQListToString(area_name));
 
 }
+
+TEST(blaTest, testExtraElement) {
+
+    QList<QString> area_render_names = {"a", "b" };
+    QList<QString> area_name = {"a", "b", "c", "d" };
+
+    int sizeOfAreaRenderName = area_render_names.size();
+    int sizeOfAreaName = area_name.size();
+    int extra = sizeOfAreaName - sizeOfAreaRenderName;
+    if (extra > 0) {
+        for (int i = extra; i < sizeOfAreaName; ++i) {
+            area_render_names.append(area_name[i]);
+        }
+    }
+    spdlog::info("area_name: {}", ShowDataUtil::formatQListToString(area_name));
+    spdlog::info("area_render_names: {}", ShowDataUtil::formatQListToString(area_render_names));
+
+}

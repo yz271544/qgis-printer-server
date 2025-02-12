@@ -105,7 +105,7 @@ public:
             const QList<double>& areasRadii,
             const QList<QVector<double>>& areasPercent,
             const QList<QColor>& areasColorList,
-            const QList<double>& areasOpacityList,
+            const QList<float>& areasOpacityList,
             int numSegments = 36);
 private:
     QString mSceneName;

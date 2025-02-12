@@ -41,6 +41,11 @@ QgsGeometry JwGeometry::transformPolygon(const QList<QList<QgsPoint>>& transform
     return QgsGeometry::fromWkt(wkt_polygon);
 }
 
+QgsGeometry JwGeometry::transformPolygon2(const QgsPolygon& transformedPolygon) {
+    auto wkt_polygon = transformedPolygon.asWkt();
+    return QgsGeometry::fromWkt(wkt_polygon);
+}
+
 /**
  * 绘制3D圆形几何图形 static
  * @param num_segments 用于近似圆形的线段数量，数值越大越接近圆形

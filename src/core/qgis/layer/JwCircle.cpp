@@ -352,5 +352,157 @@ void JwCircle::addLevelKeyAreas(
         const QList<double>& areasRadii,
         const QList<QVector<double>>& areasPercent,
         const QList<QColor>& areasColorList,
-        const QList<double>& areasOpacityList,
-        int numSegments) {}
+        const QList<float>& areasOpacityList,
+        int numSegments) {
+    auto memCircleVectorLayer = std::make_unique<QgsVectorLayer>(
+            QString("PolygonZ?crs=%1").arg(MAIN_CRS), mLayerName, QStringLiteral("memory"));
+    if (!memCircleVectorLayer->isValid()) {
+        spdlog::error("Failed to create memory circle layer: {}", mLayerName.toStdString());
+        return;
+    }
+
+    // 添加属性
+    QgsVectorDataProvider *circleProvider = memCircleVectorLayer->dataProvider();
+
+    QList<QgsField> fields;
+    fields.append(QgsField(QStringLiteral("name"), QMetaType::Type::QString, "varchar", 256));
+    fields.append(QgsField("type", QMetaType::Type::QString, "varchar", 256));
+    fields.append(QgsField("x", QMetaType::Type::Double));
+    fields.append(QgsField("y", QMetaType::Type::Double));
+    fields.append(QgsField("z", QMetaType::Type::Double));
+    fields.append(QgsField("radius", QMetaType::Type::Double));
+
+    circleProvider->addAttributes(fields);
+    memCircleVectorLayer->updatedFields();
+
+    // get 坐标转换 transformer worker
+    auto transformer = QgsUtil::coordinateTransformer4326To3857(mProject);
+
+    // 添加要素
+    spdlog::info("JwCircle addLevelKeyAreas layer:{}", this->mLayerName.toStdString());
+
+    memCircleVectorLayer->startEditing();
+
+    QList<QString> area_render_names;
+    // 为每个等级域创建三个同心圆
+    zip3(areasCenterPointList, areasRadii, areasPercent, [&](const QgsPoint &centerPoint, double radius, const QVector<double> &percent) {
+        auto percentList = percent.toList();
+        spdlog::debug("centerPoint: {}-{}-{}, radius: {}, percent: {}",
+                      centerPoint.x(), centerPoint.y(), centerPoint.z(), radius,
+                      ShowDataUtil::formatQListDoubleToString(percentList));
+        if (percent.size() < 3) {
+            spdlog::error("percent should have 3 elements");
+            return;
+        }
+        std::reverse(percentList.begin(), percentList.end());
+        spdlog::debug("reverse percent is {}", ShowDataUtil::formatQListDoubleToString(percentList));
+
+        QList<double> radii = {};
+        for (int i = 0; i < percentList.size(); ++i) {
+            spdlog::debug("enumerate i: {} -> percent: {}", i, percentList[i]);
+            double csum_per = std::accumulate(percentList.begin() + i, percentList.end(), 0.0);
+            spdlog::debug("csum_per: {}", csum_per);
+            radii.append(radius * csum_per / 100.00);
+        }
+
+
+        QList<QString> circleLabels;
+        for (const auto &item_label: CIRCLE_LABELS) {
+            circleLabels.append(QString::fromStdString(item_label));
+        }
+
+        auto ddd = circleLabels.mid(0, radii.size());
+
+        QList<QString> area_name;
+        area_name.append(circleLabels.mid(0, radii.size()));
+
+        if (radii.size() > 3) {
+            int more_radii = radii.size() - 3;
+            for (int k = 0; k < more_radii; ++k) {
+                QString new_name = "控制区" + QString::number(k + 2);
+                area_name.append(new_name);
+            }
+        }
+
+        //area_render_names.clear();
+        if (area_render_names.isEmpty()) {
+            area_render_names = area_name;
+        } else {
+            int sizeOfAreaRenderName = area_render_names.size();
+            int sizeOfAreaName = area_name.size();
+            int extra = sizeOfAreaName - sizeOfAreaRenderName;
+            if (extra > 0) {
+                for (int i = extra; i < sizeOfAreaName; ++i) {
+                    area_render_names.append(area_name[i]);
+                }
+            }
+        }
+        std::reverse(area_render_names.begin(), area_render_names.end());
+
+        auto center_transformed = transformPoint(centerPoint, *transformer);
+        // 分别建三个同心圆并添加到图层
+        int level = 0;
+        for (const auto &radius_: radii) {
+            try {
+                auto circle_geometry = paintCircleGeometry3d(numSegments, *center_transformed, radius);
+                QgsFeature feature(fields);
+                auto name = area_render_names[level];
+                QgsAttributes attribute;
+                attribute.append(name);
+                attribute.append("leveled-circle");
+                attribute.append(center_transformed->x());
+                attribute.append(center_transformed->y());
+                attribute.append(center_transformed->z());
+                attribute.append(radius_);
+                feature.setAttributes(attribute);
+                circleProvider->addFeature(feature);
+                spdlog::debug("added circle feature {}: {}-{}-{} {}",
+                              name.toStdString(),
+                              center_transformed->x(),
+                              center_transformed->y(),
+                              center_transformed->z(),
+                              radius_);
+            } catch (const std::exception &e) {
+                spdlog::error("add circle {}-{}-{} {} feature error: {}",
+                              centerPoint.x(), centerPoint.y(), centerPoint.z(),
+                              radius_, e.what());
+            }
+            level += 1;
+        }
+    });
+
+
+    if (memCircleVectorLayer->commitChanges()) {
+        spdlog::debug("Data successfully committed to layer.");
+    } else {
+        spdlog::warn("Failed to commit data to layer: {}",
+                     circleProvider->error().message().toStdString());
+    }
+
+    // 持久化图层
+    auto persistCircleVectorLayer = QgsUtil::writePersistedLayer(
+            this->mLayerName,
+            memCircleVectorLayer.release(),
+            this->mProjectDir,
+            fields,
+            Qgis::WkbType::PolygonZ,
+            this->mTransformContext,
+            this->mProject->crs());
+
+    // 设置2D渲染器
+    QStringList areaRenderNames = {};
+    areaRenderNames.append(area_render_names);
+    auto renderer = StyleCircle::get2dCategoriesRenderer("name", areasColorList, areasOpacityList, area_render_names);
+    persistCircleVectorLayer->setRenderer(renderer);
+
+    // 设置3D渲染器
+    if (ENABLE_3D) {
+        auto renderer3d = StyleCircle::get3dRuleRenderer("name", areasColorList, areasOpacityList, area_render_names);
+        persistCircleVectorLayer->setRenderer3D(renderer3d);
+    }
+    // 触发重绘
+    persistCircleVectorLayer->triggerRepaint();
+    //persistCircleVectorLayer->trigger3DUpdate();
+    // 添加到项目
+    mProject->addMapLayer(persistCircleVectorLayer.release());
+}
