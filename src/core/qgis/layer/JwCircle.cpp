@@ -228,7 +228,7 @@ void JwCircle::addCircleKeyAreas(
         double radius,
         const QList<double> &percent,
         const QList<QColor> &colors,
-        const QList<double> &opacities,
+        const QList<float> &opacities,
         int numSegments) {
     QList<double> radii = {radius};
     if (percent.size() < 3) {
@@ -266,31 +266,85 @@ void JwCircle::addCircleKeyAreas(
     spdlog::info("JwCircle addCircleKeyAreas layer:{}", this->mLayerName.toStdString());
 
     // 分别创建三个同心圆并添加到图层
-    QList<QString> area_name;
+    QList<QString> areaNames;
     for (const auto &item: CIRCLE_LABELS) {
-        area_name.append(QString::fromStdString(item));
+        areaNames.append(QString::fromStdString(item));
     }
 
     if (radii.size() > 3) {
         auto more_radii = radii.size() - 3;
         for (int i = 0; i < more_radii; ++i) {
-            area_name.append(QString("控制区%1").arg(QString::number(i + 1)));
+            areaNames.append(QString("控制区%1").arg(QString::number(i + 1)));
         }
 
-        /*std::string showAreaNames = fmt::format("{}", std::for_each(area_name.begin(), area_name.end(), [&](const QString& name) {
-            return fmt::format("{},", name.toStdString());
-        }));
+        spdlog::debug("more areaNames: {}", ShowDataUtil::formatQListToString(areaNames));
+    }
 
-        spdlog::debug("more area_name: {}", showAreaNames);*/
+    std::reverse(areaNames.begin(), areaNames.end());
+
+    memCircleVectorLayer->startEditing();
+    int level = 0;
+    for (const auto &radius: radii) {
+        try {
+            auto center_transformed = transformPoint(centerPoint, *transformer);
+            auto circle_geometry = paintCircleGeometry3d(numSegments, *center_transformed, radius);
+            QgsFeature feature(fields);
+            auto name = areaNames[level];
+            QgsAttributes attribute;
+            attribute.append(name);
+            attribute.append("leveled-circle");
+            attribute.append(center_transformed->x());
+            attribute.append(center_transformed->y());
+            attribute.append(center_transformed->z());
+            attribute.append(radius);
+            feature.setAttributes(attribute);
+            circleProvider->addFeature(feature);
+            spdlog::debug("added circle feature {}: {}-{}-{} {}",
+                          name.toStdString(),
+                          center_transformed->x(),
+                          center_transformed->y(),
+                          center_transformed->z(),
+                          radius);
+        } catch (const std::exception &e) {
+            spdlog::error("add circle {}-{}-{} {} feature error: {}",
+                          centerPoint.x(), centerPoint.y(), centerPoint.z(),
+                          radius, e.what());
+        }
+        level += 1;
     }
 
 
-    /*for i in range(more_radii):
-    area_name.append('控制区' + str(i+1))
-    log.debug(f"more area_name:{area_name}")
-    area_render_names = list(reversed(area_name))
-    circle_layer.startEditing()*/
+    if (memCircleVectorLayer->commitChanges()) {
+        spdlog::debug("Data successfully committed to layer.");
+    } else {
+        spdlog::warn("Failed to commit data to layer: {}",
+                     circleProvider->error().message().toStdString());
+    }
 
+    // 持久化图层
+    auto persistCircleVectorLayer = QgsUtil::writePersistedLayer(
+            this->mLayerName,
+            memCircleVectorLayer.release(),
+            this->mProjectDir,
+            fields,
+            Qgis::WkbType::PolygonZ,
+            this->mTransformContext,
+            this->mProject->crs());
+
+    // 设置2D渲染器
+    auto renderer = StyleCircle::get2dCategoriesRenderer("name", colors, opacities, areaNames);
+    persistCircleVectorLayer->setRenderer(renderer);
+
+    // 设置3D渲染器
+    if (ENABLE_3D) {
+        auto renderer3d = StyleCircle::get3dRuleRenderer("name", colors, opacities, areaNames);
+        persistCircleVectorLayer->setRenderer3D(renderer3d);
+    }
+    // 触发重绘
+    persistCircleVectorLayer->triggerRepaint();
+    //persistCircleVectorLayer->trigger3DUpdate();
+    // 添加到项目
+    mProject->addMapLayer(persistCircleVectorLayer.release());
 }
 
 void JwCircle::addLevelKeyAreas(

@@ -58,4 +58,8 @@ TEST(blaTest, testArea) {
 
     spdlog::info("area_name detail: {}", ShowDataUtil::formatQListToString(area_name));
 
+    std::reverse(area_name.begin(), area_name.end());
+
+    spdlog::info("reverse area_name detail: {}", ShowDataUtil::formatQListToString(area_name));
+
 }

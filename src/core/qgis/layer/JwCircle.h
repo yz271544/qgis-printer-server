@@ -29,6 +29,7 @@
 #include "core/qgis/style/StyleCircle.h"
 #include "JwGeometry.h"
 #include "utils/ImageUtil.h"
+#include "utils/ShowDataUtil.h"
 
 
 class JwCircle : public QObject, public JwGeometry {
@@ -87,7 +88,7 @@ public:
             double radius,
             const QList<double>& percent,
             const QList<QColor>& colors,
-            const QList<double>& opacities,
+            const QList<float>& opacities,
             int numSegments = 36);
 
     /**
