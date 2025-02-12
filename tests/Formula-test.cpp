@@ -5,6 +5,11 @@
 #include "gtest/gtest.h"
 #include "utils/Formula.h"
 #include <QString>
+#include <QList>
+#include "config.h"
+#include <spdlog/spdlog.h>
+#include <spdlog/fmt/bundled/format.h>
+#include <utils/ShowDataUtil.h>
 
 TEST(blaTest, test1) {
     //arrange
@@ -36,4 +41,21 @@ TEST(blaTest, testQStringFormat) {
     QString scene_name = "test";
     QString targetZipFile = QString("%1/%2.zip").arg(export_prefix, scene_name);
     GTEST_LOG_(INFO) << "zip project: " << targetZipFile.toStdString();
+}
+
+TEST(blaTest, testArea) {
+    QList<QString> area_name = {};
+    for (const auto &item: CIRCLE_LABELS) {
+        area_name.append(QString::fromStdString(item));
+    }
+
+    spdlog::info("area_name size: {}", area_name.size());
+
+    spdlog::info("area_name -> {}", std::for_each(area_name.begin(), area_name.end(), [](const QString& name) {
+        return fmt::format("({},)", name.toStdString());
+    }));
+
+
+    spdlog::info("area_name detail: {}", ShowDataUtil::formatQListToString(area_name));
+
 }

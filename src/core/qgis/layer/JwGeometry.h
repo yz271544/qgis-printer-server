@@ -2,8 +2,8 @@
 // Created by etl on 2025/2/11.
 //
 
-#ifndef JINGWEIPRINTER_BASELAYER_H
-#define JINGWEIPRINTER_BASELAYER_H
+#ifndef JINGWEIPRINTER_JWGEOMETRY_H
+#define JINGWEIPRINTER_JWGEOMETRY_H
 
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/bundled/format.h>
@@ -43,37 +43,6 @@
 };*/
 
 
-/*// 创建图层的装饰器
-template<typename Func>
-auto create_layer(const QString &layerType, QgsFields &fields, Func func) {
-    return [layerType, fields, func](const QString &layerName, auto &&... args) {
-        auto create_layer_func = layer_type_mapping.value(layerType);
-        if (create_layer_func) {
-            try {
-                auto layer = create_layer_func(layerName);
-                if (!layer->isValid()) {
-                    throw InvalidOperationException("Failed to create layer: " + layerName.toStdString());
-                }
-                auto provider = layer->dataProvider();
-                if (!provider->addAttributes(fields.toList())) {
-                    throw InvalidOperationException(fmt::format("为 type:{} name {} 图层添加属性失败 ",
-                                                                layerType.toStdString(), layerName.toStdString()));
-                }
-                layer->updateFields();
-                func(layerName, layer, provider, std::forward<decltype(args)>(args)...);
-                delete layer;
-            } catch (const std::exception &e) {
-                spdlog::error("Error creating layer: {}", e.what());
-                throw SystemUnknownError(fmt::format("Error creating layer: {}, error",
-                                                     layerName.toStdString(), e.what()));
-            }
-        } else {
-            throw UnknownArgNum("Unsupported layer type: " + layerType.toStdString());
-        }
-    };
-}*/
-
-
 class JwGeometry {
 public:
     /**
@@ -83,7 +52,7 @@ public:
      * @return
      */
     static QgsPoint *
-    transformPoint(const std::tuple<double, double, double> &point, const QgsCoordinateTransform &transformer);
+    transformPoint(const QgsPoint &point, const QgsCoordinateTransform &transformer);
 
     /**
      * 将多边形坐标转换为QgsGeometry: PolygonZ对象
@@ -109,7 +78,26 @@ public:
      * @return 圆形几何图形
      */
     static QgsGeometry paintCircleGeometry2d(int num_segments, const QgsPoint &center_transformed, double radius);
+
+    // 模拟 Python 中的 zip 功能
+    template<typename T1, typename T2>
+    void zip2(const QList<T1>& vec1, const QList<T2>& vec2, auto func) {
+        size_t min_size = std::min(vec1.size(), vec2.size());
+        for (size_t i = 0; i < min_size; ++i) {
+            func(vec1[i], vec2[i]);
+        }
+    }
+
+    // 模拟 Python 中的 zip 功能
+    template<typename T1, typename T2, typename T3>
+    void zip3(const QList<T1>& vec1, const QList<T2>& vec2, const QList<T3>& vec3, auto func) {
+        size_t min_size = std::min(vec1.size(), std::min(vec2.size(), vec3.size()));
+        for (size_t i = 0; i < min_size; ++i) {
+            func(vec1[i], vec2[i], vec3[i]);
+        }
+    }
+
 };
 
 
-#endif //JINGWEIPRINTER_BASELAYER_H
+#endif //JINGWEIPRINTER_JWGEOMETRY_H

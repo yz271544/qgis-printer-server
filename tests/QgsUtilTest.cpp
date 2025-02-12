@@ -51,7 +51,8 @@ TEST(QgsUtilTest, qgsTextFormat1) {
 }
 
 TEST(QgsUtilTest, QtFontUtil_CreateFont) {
-    auto text_format = QtFontUtil::create_font("黑体", 12, "#000000", false, false, Qgis::TextOrientation::Horizontal, 0.0);
+    auto text_format = QtFontUtil::createFont("黑体", 12, "#000000", false, false, Qgis::TextOrientation::Horizontal,
+                                              0.0);
 
     GTEST_LOG_(INFO) << "Font family: " << text_format->font().family().toStdString();
     GTEST_LOG_(INFO) << "Font size: " << text_format->size();

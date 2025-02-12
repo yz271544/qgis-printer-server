@@ -1,0 +1,116 @@
+//
+// Created by etl on 2/12/25.
+//
+
+#include "JwLine.h"
+
+
+JwLine::JwLine(
+        QString &sceneName,
+        QString &layerName,
+        QString &projectDir,
+        QgsProject *project,
+        QgsCoordinateTransformContext &transformContext)
+        : mSceneName(sceneName),
+          mLayerName(layerName),
+          mProject(project),
+          mProjectDir(projectDir),
+          mTransformContext(transformContext) {}
+
+JwLine::~JwLine() = default;
+
+void JwLine::addLines(
+        const QList<QString>& lineNameList,
+        const QList<QList<QgsPoint>>& lines,
+        const QJsonObject& fontStyle,
+        const QJsonObject& layerStyle,
+        const QList<QString>& styleList,
+        int line_width) {
+
+    auto memLineVectorLayer = std::make_unique<QgsVectorLayer>(
+            QString("LineStringZ?crs=%1").arg(MAIN_CRS), mLayerName, QStringLiteral("memory"));
+    if (!memLineVectorLayer->isValid()) {
+        spdlog::error("Failed to create memory line layer: {}", mLayerName.toStdString());
+        return;
+    }
+
+    // 添加属性
+    QgsVectorDataProvider *lineProvider = memLineVectorLayer->dataProvider();
+
+    QList<QgsField> fields;
+    fields.append(QgsField(QStringLiteral("name"), QMetaType::Type::QString, "varchar", 256));
+    fields.append(QgsField("type", QMetaType::Type::QString, "varchar", 256));
+
+    lineProvider->addAttributes(fields);
+    memLineVectorLayer->updatedFields();
+
+    // get 坐标转换 transformer worker
+    auto transformer = QgsUtil::coordinateTransformer4326To3857(mProject);
+
+    // 添加要素
+    spdlog::info("Adding line layer: {}", this->mLayerName.toStdString());
+
+    memLineVectorLayer->startEditing();
+
+    for (int i=0; i < lines.size(); ++i) {
+        auto line = lines[i];
+        try {
+            QgsPolyline polyline;
+            for (const auto& point :line) {
+                auto qgsPointOfLine = transformPoint(point, *transformer);
+                polyline.append(*qgsPointOfLine);
+            }
+            QgsGeometry lineString = QgsGeometry::fromPolyline(polyline);
+            QgsFeature feature(fields);
+            feature.setGeometry(lineString);
+
+            QgsAttributes attribute;
+            attribute.append(lineNameList[i]);
+            attribute.append("line");
+            feature.setAttributes(attribute);
+            lineProvider->addFeature(feature);
+        } catch (const std::exception& e) {
+            std::string lineString = fmt::format("{}", std::for_each(line.begin(), line.end(), [](const QgsPoint& point) {
+                return fmt::format("({}, {}, {})", point.x(), point.y(), point.z());
+            }));
+            spdlog::error("add line feature error: {}, polygon:", e.what(), lineString);
+        }
+    }
+
+    if (memLineVectorLayer->commitChanges()) {
+        spdlog::debug("Data successfully committed to layer.");
+    } else {
+        spdlog::warn("Failed to commit data to layer: {}", lineProvider->error().message().toStdString());
+    }
+
+    // 持久化图层
+    auto persistPointVectorLayer = QgsUtil::writePersistedLayer(
+            this->mLayerName,
+            memLineVectorLayer.release(),
+            this->mProjectDir,
+            fields,
+            Qgis::WkbType::PointZ,
+            this->mTransformContext,
+            this->mProject->crs());
+
+
+    // 设置2D渲染器
+    auto renderer = StyleLine::get2dRuleBasedRenderer(fontStyle, layerStyle);
+    persistPointVectorLayer->setRenderer(renderer);
+
+    // Set label style
+    auto layerSimpleLabeling = StyleLine::getLabelStyle(fontStyle, "name");
+    persistPointVectorLayer->setLabelsEnabled(true);
+    persistPointVectorLayer->setDisplayExpression("name");
+    persistPointVectorLayer->setLabeling(layerSimpleLabeling);
+    // 设置3D渲染器
+    if (ENABLE_3D) {
+        auto renderer3d =
+                StyleLine::get3dSingleSymbolRenderer(fontStyle, layerStyle);
+        persistPointVectorLayer->setRenderer3D(renderer3d);
+    }
+    // 触发重绘
+    persistPointVectorLayer->triggerRepaint();
+    // 添加到项目
+    mProject->addMapLayer(persistPointVectorLayer.release());
+}

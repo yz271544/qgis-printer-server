@@ -5,7 +5,7 @@
 #include "QgsUtil.h"
 #include "FileUtil.h"
 
-QgsTextFormat* QtFontUtil::create_font(
+QgsTextFormat* QtFontUtil::createFont(
         const QString& font_family,
         int8_t font_size,
         const QString& font_color,
@@ -29,7 +29,7 @@ QgsTextFormat* QtFontUtil::create_font(
     return text_format.release();
 }
 
-void QgsUtil::show_layer_label(QgsVectorLayer* layer, const QString& style) {
+void QgsUtil::showLayerLabel(QgsVectorLayer* layer, const QString& style) {
     layer->setLabelsEnabled(true);
     layer->setDisplayExpression("name");
     // Create label settings
@@ -38,8 +38,8 @@ void QgsUtil::show_layer_label(QgsVectorLayer* layer, const QString& style) {
     // label_settings.placement = QgsPalLayerSettings::OverPoint;
 
     // Create text format for the labels
-    QgsTextFormat* text_format = QtFontUtil::create_font(style, 12, QString("#000000"), false, false,
-                                                         Qgis::TextOrientation::Horizontal, 0.0);
+    QgsTextFormat* text_format = QtFontUtil::createFont(style, 12, QString("#000000"), false, false,
+                                                        Qgis::TextOrientation::Horizontal, 0.0);
 
     // Apply text format to label settings
     label_settings.setFormat(*text_format);
@@ -50,14 +50,15 @@ void QgsUtil::show_layer_label(QgsVectorLayer* layer, const QString& style) {
 }
 
 QgsVectorLayerSimpleLabeling*
-QgsUtil::get_layer_label(const QString& style, const std::string& label_of_field_name) {
+QgsUtil::getLayerLabel(QVariantMap& style, const std::string& label_of_field_name) {
     QgsPalLayerSettings label_settings;
     label_settings.fieldName = label_of_field_name.c_str();
     // label_settings.placement = QgsPalLayerSettings::OverPoint;
 
     // Create text format for the labels
-    QgsTextFormat* text_format = QtFontUtil::create_font(style, 12, QString("#000000"), false, false,
-                                                         Qgis::TextOrientation::Horizontal, 0.0);
+    QString font_family = style.value("font_family").toString();
+    QgsTextFormat* text_format = QtFontUtil::createFont(font_family, 12, QString("#000000"), false, false,
+                                                        Qgis::TextOrientation::Horizontal, 0.0);
 
     // Apply text format to label settings
     label_settings.setFormat(*text_format);
@@ -67,7 +68,7 @@ QgsUtil::get_layer_label(const QString& style, const std::string& label_of_field
     return vectorLayerSimpleLabeling.release();
 }
 
-float QgsUtil::d300_pixel_to_mm(float pixel_size) {
+float QgsUtil::d300PixelToMm(float pixel_size) {
     // 假设Web页面上的字体大小是10像素
     // pixel_size = 10
     float web_dpi = 96;
@@ -80,7 +81,7 @@ float QgsUtil::d300_pixel_to_mm(float pixel_size) {
     return font_size_mm * shrink_ratio; // 缩小字体
 }
 
-QgsCoordinateTransform* QgsUtil::coordinate_transformer_4326_to_3857(QgsProject* project) {
+QgsCoordinateTransform* QgsUtil::coordinateTransformer4326To3857(QgsProject* project) {
     // Set coordinate transform
     QgsCoordinateReferenceSystem crs_4326("EPSG:4326"); // 假设 4326 是对应的EPSG代码
     QgsCoordinateReferenceSystem crs_3857("EPSG:3857"); // 假设 3857 是对应的EPSG代码
@@ -88,13 +89,14 @@ QgsCoordinateTransform* QgsUtil::coordinate_transformer_4326_to_3857(QgsProject*
     return transformer.release();
 }
 
-QgsVectorLayer* QgsUtil::write_persisted_layer(const QString& layer_name,
-                                               QgsVectorLayer* layer,
-                                               const QString& project_dir,
-                                               const QgsFields& fields,
-                                               Qgis::WkbType qgs_wkb_type,
-                                               const QgsCoordinateTransformContext& cts,
-                                               const QgsCoordinateReferenceSystem& crs) {
+std::unique_ptr<QgsVectorLayer> QgsUtil::writePersistedLayer(
+        const QString& layer_name,
+        QgsVectorLayer* layer,
+        const QString& project_dir,
+        const QgsFields& fields,
+        Qgis::WkbType qgs_wkb_type,
+        const QgsCoordinateTransformContext& cts,
+        const QgsCoordinateReferenceSystem& crs) {
 
     spdlog::debug("CRS: {}", crs.toWkt().toStdString());
     spdlog::debug("Number of features in layer: {}", layer->featureCount());
@@ -176,5 +178,5 @@ QgsVectorLayer* QgsUtil::write_persisted_layer(const QString& layer_name,
 
     spdlog::debug("Successfully wrote GeoJSON file: {}, baseName: {}", file_path.toStdString(), layer_name.toStdString());
     auto qgsVectorLayer = std::make_unique<QgsVectorLayer>(file_path, layer_name, "ogr");
-    return qgsVectorLayer.release();
+    return qgsVectorLayer;
 }

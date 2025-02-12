@@ -91,7 +91,7 @@ void JwLayout::setTitle(QgsPrintLayout* layout, const QVariantMap& titleOfLayinf
     }
     spdlog::debug("title fontColor {}", fontColor.toStdString());
     // set the font
-    QgsTextFormat text_format = *QtFontUtil::create_font(
+    QgsTextFormat text_format = *QtFontUtil::createFont(
             fontFamily,
             titleFontSize,
             fontColor,
@@ -231,10 +231,11 @@ void JwLayout::setRemarks(QgsPrintLayout* layout, const QVariantMap& remarkOfLay
     remarks->setText(remarkText);
 
     // 设置字体格式
-    QgsTextFormat* remarksFont = QtFontUtil::create_font(
+    QgsTextFormat* remarksFont = QtFontUtil::createFont(
             mImageSpec["remark_font_family"].toString(),
             remarkFontSize,
-            ColorTransformUtil::strRgbaToHex(remarkOfLayinfo.contains("color") ? remarkOfLayinfo["color"].toString() : mImageSpec["remark_font_color"].toString()).first,
+            ColorTransformUtil::strRgbaToHex(remarkOfLayinfo.contains("color") ? remarkOfLayinfo["color"].toString()
+                                                                               : mImageSpec["remark_font_color"].toString()).first,
             mImageSpec["remark_is_bold"].toBool(),
             mImageSpec["remark_is_italic"].toBool(),
             Qgis::TextOrientation::Horizontal,  // static_cast<Qt::Orientation>(imageSpec["remarkOrientation"].toInt()),

@@ -2,7 +2,7 @@
 // Created by etl on 2025/2/11.
 //
 
-#include "BaseLayer.h"
+#include "JwGeometry.h"
 
 
 /**
@@ -11,10 +11,10 @@
     * @param transformer 坐标转换器
     * @return
     */
-QgsPoint* JwGeometry::transformPoint(const std::tuple<double, double, double>& point, const QgsCoordinateTransform& transformer) {
-    QgsPointXY pointXY(std::get<0>(point), std::get<1>(point));
+QgsPoint* JwGeometry::transformPoint(const QgsPoint& point, const QgsCoordinateTransform& transformer) {
+    QgsPointXY pointXY(point.x(), point.y());
     QgsPointXY transformedPointXY = transformer.transform(pointXY);
-    auto qgsPoint = std::make_unique<QgsPoint>(transformedPointXY.x(), transformedPointXY.y(), std::get<2>(point));
+    auto qgsPoint = std::make_unique<QgsPoint>(transformedPointXY.x(), transformedPointXY.y(), point.z());
     return qgsPoint.release();
 }
 
