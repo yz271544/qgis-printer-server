@@ -560,42 +560,89 @@ QVariantMap* Processor::_grouped_circle_by_color_grouped(
         auto colors = areas_color_list[i];
         QString merged_areas_color = ColorTransformUtil::mergeColor(colors);
         if (style_grouped->contains(merged_areas_color)) {
-            QVariantMap merged = (*style_grouped)[merged_areas_color].toMap();
-            //spdlog::debug("merged: {}", merged);
-            qDebug() << "111 merged: " << merged;
+            auto mergedAreaColorDict = style_grouped->value(merged_areas_color);
+            auto mergedMap = mergedAreaColorDict.toMap();
+
             // 更新 polygon_geometry_coordinates_list
-            QVariantList coordinatesList = merged["polygon_geometry_coordinates_list"].toList();
-            coordinatesList.append(QVariant::fromValue(polygon_geometry_coordinates_list[i]));
-            merged["polygon_geometry_coordinates_list"] = coordinatesList;
+            QVariantList coordinatesList = mergedMap["polygon_geometry_coordinates_list"].toList();
+            QVariantList nestedList;
+            for (const auto& coord : polygon_geometry_coordinates_list[i]) {
+                nestedList.append(coord);
+            }
+            coordinatesList.append(nestedList);
+            mergedMap["polygon_geometry_coordinates_list"] = coordinatesList;
 
             // 更新 polygon_geometry_properties_radius
-            QVariantList radiusList = merged["polygon_geometry_properties_radius"].toList();
+            QVariantList radiusList = mergedMap["polygon_geometry_properties_radius"].toList();
             radiusList.append(polygon_geometry_properties_radius[i]);
-            merged["polygon_geometry_properties_radius"] = radiusList;
+            mergedMap["polygon_geometry_properties_radius"] = radiusList;
 
             // 更新 style_percents
-            QVariantList percentsList = merged["style_percents"].toList();
-            percentsList.append(QVariant::fromValue(style_percents[i]));
-            merged["style_percents"] = percentsList;
+            QVariantList percentsList = mergedMap["style_percents"].toList();
+            QVariantList percents;
+            for (const auto& percent : style_percents[i]) {
+                percents.append(percent);
+            }
+            percentsList.append(percents);
+            mergedMap["style_percents"] = percentsList;
 
             // 更新 areas_color_list
-            QVariantList colorList = merged["areas_color_list"].toList();
-            colorList.append(QVariant::fromValue(areas_color_list[i]));
-            merged["areas_color_list"] = colorList;
+            QVariantList colorList = mergedMap["areas_color_list"].toList();
+            QVariantList colors_;
+            for (const auto& color : areas_color_list[i]) {
+                colors_.append(color);
+            }
+            colorList.append(colors_);
+            mergedMap["areas_color_list"] = colorList;
 
             // 更新 areas_opacity_list
-            QVariantList opacityList = merged["areas_opacity_list"].toList();
-            opacityList.append(QVariant::fromValue(areas_opacity_list[i]));
-            merged["areas_opacity_list"] = opacityList;
-
-            qDebug() << "222: " << merged;
+            QVariantList opacityList = mergedMap["areas_opacity_list"].toList();
+            QVariantList opacities_;
+            for (const auto& opacity : areas_opacity_list[i]) {
+                opacities_.append(opacity);
+            }
+            opacityList.append(opacities_);
+            mergedMap["areas_opacity_list"] = opacityList;
+            style_grouped->insert(merged_areas_color, mergedMap);
         } else {
             QVariantMap data;
-            data.insert("polygon_geometry_coordinates_list", QVariant::fromValue(QList<QList<double>>{polygon_geometry_coordinates_list[i]}));
-            data.insert("polygon_geometry_properties_radius", QVariant::fromValue(QList<int>{polygon_geometry_properties_radius[i]}));
-            data.insert("style_percents", QVariant::fromValue(QList<QList<int>>{style_percents[i]}));
-            data.insert("areas_color_list", QVariant::fromValue(QList<QList<QString>>{areas_color_list[i]}));
-            data.insert("areas_opacity_list", QVariant::fromValue(QList<QList<double>>{areas_opacity_list[i]}));
+
+            QVariantList geometryList;
+            QVariantList coordinatesList;
+            for (const auto& coord : polygon_geometry_coordinates_list[i]) {
+                coordinatesList.append(coord);
+            }
+            geometryList.append(coordinatesList);
+            data.insert("polygon_geometry_coordinates_list", geometryList);
+
+            QVariantList radiusList;
+            radiusList.append(polygon_geometry_properties_radius[i]);
+            data.insert("polygon_geometry_properties_radius", radiusList);
+
+            QVariantList stylePercentsList;
+            QVariantList percentsList;
+            for (const auto& percent : style_percents[i]) {
+                percentsList.append(percent);
+            }
+            stylePercentsList.append(percentsList);
+            data.insert("style_percents", stylePercentsList);
+
+            QVariantList areasColorList;
+            QVariantList colorList;
+            for (const auto& color : areas_color_list[i]) {
+                colorList.append(color);
+            }
+            areasColorList.append(colorList);
+            data.insert("areas_color_list", areasColorList);
+
+            QVariantList areasOpacityList;
+            QVariantList opacityList;
+            for (const auto& opacity : areas_opacity_list[i]) {
+                opacityList.append(opacity);
+            }
+            areasOpacityList.append(opacityList);
+            data.insert("areas_opacity_list", areasOpacityList);
+
             style_grouped->insert(merged_areas_color, data);
         }
     }
