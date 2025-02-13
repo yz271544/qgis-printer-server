@@ -161,11 +161,6 @@ std::string QCoreStarter::GetName() {
     return "QCoreStarter";
 }
 
-YAML::Node* QCoreStarter::GetConfig() {
-    return mConfig;
-}
-
-
 void QCoreStarter::SetBlocking(bool isBlock) {
     mBlock = isBlock;
 }

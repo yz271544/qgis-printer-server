@@ -26,15 +26,15 @@
 // 定义POST接口处理函数
 class PlottingController : public oatpp::web::server::api::ApiController {
 private:
-    std::shared_ptr<PlottingService> m_plottingService; // 业务逻辑服务类
+    PlottingService* m_plottingService; // 业务逻辑服务类
 public:
-    PlottingController(const std::shared_ptr<ObjectMapper>& objectMapper,
-                       const oatpp::String& routePrefix,
-                       const std::shared_ptr<PlottingService>& plottingService);
+    PlottingController(std::shared_ptr<OBJECTMAPPERNS::ObjectMapper>& objectMapper,
+                       oatpp::String& routePrefix,
+                       PlottingService* plottingService);
 
-    static std::shared_ptr<PlottingController> createShared(const std::shared_ptr<ObjectMapper>& objectMapper,
-                                                            const oatpp::String& routePrefix,
-                                                            const std::shared_ptr<PlottingService>& plottingService);
+    static std::shared_ptr<PlottingController> createShared(std::shared_ptr<OBJECTMAPPERNS::ObjectMapper>& objectMapper,
+                                                            oatpp::String& routePrefix,
+                                                            PlottingService* plottingService);
     ENDPOINT_INFO(plotting) {
         info->summary = "Plotting endpoint";
         info->addConsumes<Object<PlottingDto>>("application/json");

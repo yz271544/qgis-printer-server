@@ -5,7 +5,7 @@
 
 #include "PlottingService.h"
 
-PlottingService::PlottingService(std::shared_ptr<Processor> processor) {
+PlottingService::PlottingService(Processor* processor) {
     m_processor = processor;
 }
 

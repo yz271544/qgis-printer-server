@@ -25,7 +25,6 @@
 
 class HookStarter : public BaseStarter {
 private:
-    YAML::Node *mConfig;
     static HookStarter* instance;
     StarterContext context;
     StarterRegister* starterRegister;
@@ -55,8 +54,6 @@ public:
     std::array<int, 4> Priority();
 
     std::string GetName();
-
-    YAML::Node* GetConfig();
 
     void sig_handler(StarterContext& context);
 };

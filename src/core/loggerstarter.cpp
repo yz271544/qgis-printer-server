@@ -84,11 +84,6 @@ std::string LoggerStarter::GetName() {
     return "LoggerStarter";
 }
 
-// 获取已加载并解析的配置内容，外部模块可以通过此方法获取配置信息用于后续操作
-YAML::Node* LoggerStarter::GetConfig() {
-    return mConfig;
-}
-
 // 实现Starter基类中获取启动器实例的抽象方法
 BaseStarter* LoggerStarter::GetInstance() {
     return getInstance();

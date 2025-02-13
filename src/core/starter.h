@@ -78,7 +78,6 @@ public:
     virtual bool StartBlocking() = 0;
     virtual std::array<int, 4> Priority() = 0;
     virtual std::string GetName() = 0;
-    virtual YAML::Node* GetConfig() = 0;
     // 添加获取启动器实例的抽象方法，方便后续在其他启动器中查找特定启动器实例
     virtual Starter* GetInstance() = 0;
 };
@@ -95,7 +94,6 @@ public:
     bool StartBlocking() override { return false; }
     std::array<int, 4> Priority() override { return {DEFAULT_PRIORITY,DEFAULT_PRIORITY,DEFAULT_PRIORITY,DEFAULT_PRIORITY}; }
     virtual std::string GetName() = 0;
-    YAML::Node * GetConfig() override { return mConfig; };
     virtual Starter* GetInstance() = 0;
 private:
     YAML::Node* mConfig;

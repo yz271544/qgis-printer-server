@@ -5,17 +5,17 @@
 #include "PlottingController.h"
 
 
-PlottingController::PlottingController(const std::shared_ptr<ObjectMapper>& objectMapper,
-                                       const oatpp::String& routePrefix,
-                                       const std::shared_ptr<PlottingService>& plottingService)
+PlottingController::PlottingController(std::shared_ptr<OBJECTMAPPERNS::ObjectMapper>& objectMapper,
+                                       oatpp::String& routePrefix,
+                                       PlottingService* plottingService)
         : oatpp::web::server::api::ApiController(objectMapper, routePrefix),
           m_plottingService(plottingService){
     spdlog::debug("PlottingController constructor");
 }
 
-std::shared_ptr<PlottingController> PlottingController::createShared(const std::shared_ptr<ObjectMapper>& objectMapper,
-                                                                     const oatpp::String& routePrefix,
-                                                                     const std::shared_ptr<PlottingService>& plottingServic) {
+std::shared_ptr<PlottingController> PlottingController::createShared(std::shared_ptr<OBJECTMAPPERNS::ObjectMapper>& objectMapper,
+                                                                     oatpp::String& routePrefix,
+                                                                     PlottingService* plottingServic) {
     spdlog::debug("PlottingController createShared");
     return std::make_shared<PlottingController>(objectMapper, routePrefix, plottingServic);
 }

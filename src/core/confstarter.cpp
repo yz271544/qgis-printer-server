@@ -80,11 +80,6 @@ std::string ConfStarter::GetName() {
     return "ConfStarter";
 }
 
-// 获取已加载并解析的配置内容，外部模块可以通过此方法获取配置信息用于后续操作
-YAML::Node* ConfStarter::GetConfig() {
-    return mConfig.get();
-}
-
 // 实现Starter基类中获取启动器实例的抽象方法
 BaseStarter* ConfStarter::GetInstance() {
     return getInstance();

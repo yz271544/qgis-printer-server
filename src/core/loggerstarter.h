@@ -13,8 +13,6 @@
 
 class LoggerStarter : public BaseStarter {
 private:
-    // 用于存储配置相关的数据结构等，这里简单示意
-    YAML::Node* mConfig;
 
 public:
     // 构造函数，可以在这里进行一些初始的配置或者资源准备工作，如果不需要可以保持默认实现
@@ -54,10 +52,6 @@ public:
 
     // 获取启动器的名称，方便在日志、调试或者管理启动器列表等场景使用
     std::string GetName();
-
-    // 获取已加载并解析的配置内容，外部模块可以通过此方法获取配置信息用于后续操作
-    YAML::Node* GetConfig();
-
 private:
     void setQLoggerLevel(std::string& level);
 

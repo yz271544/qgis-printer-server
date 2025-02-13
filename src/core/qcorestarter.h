@@ -26,7 +26,6 @@
 
 class QCoreStarter : public BaseStarter {
 private:
-    YAML::Node* mConfig;
     bool mBlock;
     std::unique_ptr<QOffscreenSurface> mQOffscreenSurface;
     std::unique_ptr<QOpenGLContext> mOpenGLContext;
@@ -55,8 +54,6 @@ public:
     std::array<int, 4> Priority();
 
     std::string GetName();
-
-    YAML::Node* GetConfig();
 
     void SetBlocking(bool isBlock);
 };

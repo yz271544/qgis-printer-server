@@ -15,9 +15,9 @@
 
 class PlottingService {
 private:
-    std::shared_ptr<Processor> m_processor;
+    Processor* m_processor;
 public:
-    PlottingService(std::shared_ptr<Processor> processor);
+    PlottingService(Processor* processor);
 
     ~PlottingService() = default;
 

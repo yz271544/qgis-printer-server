@@ -16,7 +16,6 @@
 
 class ProcessorStarter : public BaseStarter  {
 private:
-    YAML::Node *mConfig;
     std::unique_ptr<Processor> m_processor;
 public:
     ProcessorStarter();
@@ -41,7 +40,6 @@ public:
 
     std::string GetName();
 
-    YAML::Node* GetConfig();
 };
 
 
