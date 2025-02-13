@@ -149,7 +149,7 @@ public:
             }
         }
      */
-    static QVariantMap _grouped_color_line(
+    static QVariantMap* _grouped_color_line(
             QList<QString> &name_list,
             QList<QList<double>> &geometry_coordinates_list,
             QList<QJsonObject> &style_list);

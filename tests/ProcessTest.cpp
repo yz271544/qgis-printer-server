@@ -350,5 +350,16 @@ TEST_F(ProcessTest, test_grouped_color_line) {
             name_list, geometry_coordinates_list, style_list
     );
 
-    GTEST_LOG_(INFO) << "style_grouped: " << JsonUtil::variantMapToJson(color_grouped).toJson().toStdString();
+    GTEST_LOG_(INFO) << "style_grouped: " << JsonUtil::variantMapToJson(*color_grouped).toJson().toStdString();
+
+    // 检查 geometry_coordinates_list 的值
+    for (const auto& key : color_grouped->keys()) {
+        auto colorMap = color_grouped->value(key).toMap();
+        auto geometryList = colorMap["geometry_coordinates_list"].toList();
+        for (const auto& geometry : geometryList) {
+            GTEST_LOG_(INFO) << "geometry: " << geometry.toString().toStdString();
+        }
+    }
+
+    delete color_grouped;
 }

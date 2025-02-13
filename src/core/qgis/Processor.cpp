@@ -602,44 +602,70 @@ QVariantMap* Processor::_grouped_circle_by_color_grouped(
     return style_grouped.release();
 }
 
-QVariantMap Processor::_grouped_color_line(
+QVariantMap* Processor::_grouped_color_line(
         QList<QString> &name_list,
         QList<QList<double>> &geometry_coordinates_list,
         QList<QJsonObject> &style_list) {
-//    auto color_dict = std::make_unique<QVariantMap>();
-    QVariantMap color_dict;
+    auto color_dict = std::make_unique<QVariantMap>();
     for (int i = 0; i < style_list.size(); ++i) {
         QString style_color;
         auto style = style_list[i];
         if (style.contains("layerStyle") && style["layerStyle"].isObject()) {
             auto layerStyle = style["layerStyle"].toObject();
             if (layerStyle.contains("color")) {
-                style_color = ColorTransformUtil::strRgbaToHex(layerStyle["color"].toString()).first;
+                style_color = layerStyle["color"].toString();
             }
         }
         if (style_color.isEmpty()) {
-            style_color = ColorTransformUtil::strRgbaToHex("rgba(0, 153, 68, 1)").first;
+            style_color = "#000000"; // 默认颜色
         }
 
-        if (color_dict.contains(style_color)) {
-            auto colorDict = color_dict.value(style_color);
+        if (color_dict->contains(style_color)) {
+            auto colorDict = color_dict->value(style_color);
             auto colorMap = colorDict.toMap();
-            colorMap["name_list"].toList().append(name_list[i]);
-            auto in_list = colorMap["geometry_coordinates_list"].toList();
-            auto ele = QVariant::fromValue(geometry_coordinates_list[i]);
-            in_list.append(ele);
-            colorMap["style_list"].toList().append(style_list[i]);
+
+            // 修改 name_list 的处理方式，保证是一个列表
+            QVariantList nameList = colorMap["name_list"].toList();
+            nameList.append(name_list[i]);
+            colorMap["name_list"] = nameList;
+
+            // 修改 geometry_coordinates_list 的处理方式，保证是一个列表
+            QVariantList geometryList = colorMap["geometry_coordinates_list"].toList();
+            QVariantList nestedList;
+            for (const auto& coord : geometry_coordinates_list[i]) {
+                nestedList.append(coord);
+            }
+            geometryList.append(nestedList);
+            colorMap["geometry_coordinates_list"] = geometryList;
+
+            // 修改 style_list 的处理方式，保证是一个列表
+            QVariantList styleList = colorMap["style_list"].toList();
+            styleList.append(style_list[i]);
+            colorMap["style_list"] = styleList;
+
+            color_dict->insert(style_color, colorMap);
         } else {
             QVariantMap data;
-            data.insert("name_list", name_list[i]);
-            QVector<QList<double>> grouped_geometry_coordinates_list;
-            grouped_geometry_coordinates_list.append(geometry_coordinates_list[i]);
-            data.insert("geometry_coordinates_list", QVariant::fromValue(grouped_geometry_coordinates_list));
-            data.insert("style_list", style_list[i]);
-            color_dict.insert(style_color, data);
+            QVariantList nameList;
+            nameList.append(name_list[i]);
+            data.insert("name_list", nameList);
+
+            QVariantList geometryList;
+            QVariantList nestedList;
+            for (const auto& coord : geometry_coordinates_list[i]) {
+                nestedList.append(coord);
+            }
+            geometryList.append(nestedList);
+            data.insert("geometry_coordinates_list", geometryList);
+
+            QVariantList styleList;
+            styleList.append(style_list[i]);
+            data.insert("style_list", styleList);
+
+            color_dict->insert(style_color, data);
         }
     }
-    return color_dict;
+    return color_dict.release();
 }
 
 QVariantMap* Processor::_grouped_color_polygon(

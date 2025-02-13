@@ -36,7 +36,6 @@ QVariantMap JsonUtil::jsonObjectToVariantMap(const QJsonObject& jsonObject) {
     return variantMap;
 }
 
-
 QJsonDocument JsonUtil::variantMapToJson(QVariantMap& variantMap) {
     // 创建一个 QJsonObject 对象
     QJsonObject jsonObject;
@@ -58,18 +57,31 @@ QJsonDocument JsonUtil::variantMapToJson(QVariantMap& variantMap) {
                     // 如果列表元素是 QVariantMap，递归调用 variantMapToJson 函数
                     auto map2 = item.toMap();
                     jsonArray.append(variantMapToJson(map2).object());
+                } else if (item.type() == QVariant::List) {
+                    // 如果列表元素是 QVariantList，递归处理
+                    QJsonArray subArray;
+                    const QVariantList& subList = item.toList();
+                    for (const auto& subItem : subList) {
+                        if (subItem.type() == QVariant::Double) {
+                            subArray.append(subItem.toDouble());
+                        }
+                    }
+                    jsonArray.append(subArray);
+                } else if (item.type() == QVariant::Double) {
+                    jsonArray.append(item.toDouble());
                 } else {
-                    // 其他类型的值，直接转换为 QJsonValue
+                    // 其他类型，直接添加到数组中
                     jsonArray.append(QJsonValue::fromVariant(item));
                 }
             }
             jsonObject[key] = jsonArray;
-        } else {
-            // 其他类型的值，直接转换为 QJsonValue
-            jsonObject[key] = QJsonValue::fromVariant(value);
+        } else if (value.type() == QVariant::Double) {
+            jsonObject[key] = value.toDouble();
+        } else if (value.type() == QVariant::String) {
+            jsonObject[key] = value.toString();
+        } else if (value.type() == QVariant::Bool) {
+            jsonObject[key] = value.toBool();
         }
     }
-    // 创建 QJsonDocument 对象并传入 QJsonObject
-    QJsonDocument jsonDoc(jsonObject);
-    return jsonDoc;
+    return QJsonDocument(jsonObject);
 }
