@@ -29,6 +29,10 @@
 #include "core/qgis/layout/JwLayout3D.h"
 #include "App.h"
 
+/*#include <QMetaType>
+Q_DECLARE_METATYPE(QgsPoint)*/
+
+
 class Processor {
 private:
     bool m_enable_3d = true;
@@ -119,12 +123,12 @@ public:
         }
      */
     static QVariantMap* _grouped_circle_by_color_grouped(
-            const QMap<QString, int>& grouped_color,
-            const QList<QgsPoint>& polygon_geometry_coordinates_list,
-            const QList<int>& polygon_geometry_properties_radius,
-            const QList<QList<int>>& style_percents,
-            const QList<QList<QString>>& areas_color_list,
-            const QList<QList<double>>& areas_opacity_list);
+            QMap<QString, int>& grouped_color,
+            QList<QList<double>>& polygon_geometry_coordinates_list,
+            QList<int>& polygon_geometry_properties_radius,
+            QList<QList<int>>& style_percents,
+            QList<QList<QString>>& areas_color_list,
+            QList<QList<double>>& areas_opacity_list);
 
     // 按相同颜色分组的函数
     /**
@@ -145,16 +149,16 @@ public:
             }
         }
      */
-    static QVariantMap* _grouped_color_line(
-            const QList<QString> &name_list,
-            const QList<QList<double>> &geometry_coordinates_list,
-            const QList<QJsonObject> &style_list);
+    static QVariantMap _grouped_color_line(
+            QList<QString> &name_list,
+            QList<QList<double>> &geometry_coordinates_list,
+            QList<QJsonObject> &style_list);
 
 
     static QVariantMap* _grouped_color_polygon(
-            const QList<QString> &name_list,
-            const QList<QList<QList<double>>> &geometry_coordinates_list,
-            const QList<QJsonObject> &style_list);
+            QList<QString> &name_list,
+            QList<QList<QList<double>>> &geometry_coordinates_list,
+            QList<QJsonObject> &style_list);
 };
 
 

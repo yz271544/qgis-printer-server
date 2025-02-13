@@ -246,12 +246,16 @@ TEST_F(ProcessTest, test_5_ne_points) {
 }
 
 TEST_F(ProcessTest, test_grouped_circle_by_color_grouped) {
+
+    /*qRegisterMetaType<QgsPoint>("QgsPoint");
+    qRegisterMetaType<QList<int>>("QList<int>");*/
+
     QMap<QString, int> grouped_color = {
             {"#ff4040-#00cd52-#2f99f3", 2},
             {"#1c6ad6-#00cd52-#cbc829", 1}
     };
 
-    QList<QgsPoint> polygon_geometry_coordinates_list = {
+    QList<QList<double>> polygon_geometry_coordinates_list = {
             {111.477486, 40.724372},
             {111.478305, 40.723215},
             {111.479145, 40.729253}
@@ -346,5 +350,5 @@ TEST_F(ProcessTest, test_grouped_color_line) {
             name_list, geometry_coordinates_list, style_list
     );
 
-    GTEST_LOG_(INFO) << "style_grouped: " << JsonUtil::variantMapToJson(*color_grouped).toJson().toStdString();
+    GTEST_LOG_(INFO) << "style_grouped: " << JsonUtil::variantMapToJson(color_grouped).toJson().toStdString();
 }
