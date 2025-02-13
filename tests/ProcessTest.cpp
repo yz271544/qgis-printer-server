@@ -321,10 +321,10 @@ TEST_F(ProcessTest, test_grouped_color_line) {
     QList<QList<double>> geometry_coordinates_list = {
             {111.477486, 40.724372},
             {111.478305, 40.723215},
-            { 112.477486, 42.724372 },
-            { 112.478305, 42.723215 },
-            { 113.477486, 43.724372 },
-            { 113.478305, 43.723215 }
+            {112.477486, 42.724372},
+            {112.478305, 42.723215},
+            {113.477486, 43.724372},
+            {113.478305, 43.723215}
     };
 
     QJsonObject j1;
@@ -353,10 +353,68 @@ TEST_F(ProcessTest, test_grouped_color_line) {
     GTEST_LOG_(INFO) << "style_grouped: " << JsonUtil::variantMapToJson(*color_grouped).toJson().toStdString();
 
     // 检查 geometry_coordinates_list 的值
-    for (const auto& key : color_grouped->keys()) {
+    for (const auto &key: color_grouped->keys()) {
         auto colorMap = color_grouped->value(key).toMap();
         auto geometryList = colorMap["geometry_coordinates_list"].toList();
-        for (const auto& geometry : geometryList) {
+        for (const auto &geometry: geometryList) {
+            GTEST_LOG_(INFO) << "geometry: " << geometry.toString().toStdString();
+        }
+    }
+
+    delete color_grouped;
+}
+
+
+TEST_F(ProcessTest, test_grouped_color_polygon) {
+    QList<QString> name_list = {
+            "line1", "line2", "line3"
+    };
+
+    QList<QList<QList<double>>> geometry_coordinates_list = {
+            {
+                    {111.477486, 40.724372},
+                    {111.478305, 40.723215},
+            },
+            {
+                    {112.477486, 42.724372},
+                    {112.478305, 42.723215},
+            },
+            {
+                    {113.477486, 43.724372},
+                    {113.478305, 43.723215},
+            },
+    };
+
+    QJsonObject j1;
+    QJsonObject js1;
+    js1["color"] = "#ff4040";
+    j1["layerStyle"] = js1;
+
+    QJsonObject j2;
+    QJsonObject js2;
+    js2["color"] = "#00cd52";
+    j2["layerStyle"] = js2;
+
+    QJsonObject j3;
+    QJsonObject js3;
+    js3["color"] = "#2f99f3";
+    j3["layerStyle"] = js3;
+
+    QList<QJsonObject> style_list = {
+            j1, j2, j3
+    };
+
+    auto color_grouped = Processor::_grouped_color_polygon(
+            name_list, geometry_coordinates_list, style_list
+    );
+
+    GTEST_LOG_(INFO) << "style_grouped: " << JsonUtil::variantMapToJson(*color_grouped).toJson().toStdString();
+
+    // 检查 geometry_coordinates_list 的值
+    for (const auto &key: color_grouped->keys()) {
+        auto colorMap = color_grouped->value(key).toMap();
+        auto geometryList = colorMap["geometry_coordinates_list"].toList();
+        for (const auto &geometry: geometryList) {
             GTEST_LOG_(INFO) << "geometry: " << geometry.toString().toStdString();
         }
     }
