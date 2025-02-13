@@ -35,3 +35,39 @@ QVariantMap JsonUtil::jsonObjectToVariantMap(const QJsonObject& jsonObject) {
     }
     return variantMap;
 }
+
+
+QJsonDocument JsonUtil::variantMapToJson(QVariantMap variantMap) {
+    // 创建一个 QJsonObject 对象
+    QJsonObject jsonObject;
+    // 遍历 QVariantMap 中的键值对
+    for (auto it = variantMap.begin(); it != variantMap.end(); ++it) {
+        const QString& key = it.key();
+        const QVariant& value = it.value();
+        // 根据值的类型进行不同处理
+        if (value.type() == QVariant::Map) {
+            // 如果值是另一个 QVariantMap，递归调用 variantMapToJson 函数
+            jsonObject[key] = variantMapToJson(value.toMap()).object();
+        } else if (value.type() == QVariant::List) {
+            // 如果值是 QVariantList，创建一个 QJsonArray 来存储列表元素
+            QJsonArray jsonArray;
+            const QVariantList& list = value.toList();
+            for (const auto& item : list) {
+                if (item.type() == QVariant::Map) {
+                    // 如果列表元素是 QVariantMap，递归调用 variantMapToJson 函数
+                    jsonArray.append(variantMapToJson(item.toMap()).object());
+                } else {
+                    // 其他类型的值，直接转换为 QJsonValue
+                    jsonArray.append(QJsonValue::fromVariant(item));
+                }
+            }
+            jsonObject[key] = jsonArray;
+        } else {
+            // 其他类型的值，直接转换为 QJsonValue
+            jsonObject[key] = QJsonValue::fromVariant(value);
+        }
+    }
+    // 创建 QJsonDocument 对象并传入 QJsonObject
+    QJsonDocument jsonDoc(jsonObject);
+    return jsonDoc;
+}

@@ -17,6 +17,7 @@
 #include <QJsonDocument>
 #include <QCoreApplication>
 #include <QTimer>
+#include <qgsabstractgeometry.h>
 
 #include "core/error/exceptions.h"
 #include "core/enums/PaperSpecification.h"
@@ -27,11 +28,6 @@
 #include "core/qgis/layout/JwLayout.h"
 #include "core/qgis/layout/JwLayout3D.h"
 #include "App.h"
-
-// 由于 Python 中的 Dict 是一个类似字典的结构，在 C++ 中可以使用 std::unordered_map 来模拟
-// 这里简单定义一个别名方便使用
-template<typename K, typename V>
-using Dict = std::unordered_map<K, V>;
 
 class Processor {
 private:
@@ -98,27 +94,67 @@ public:
     QString getImageSubDir(const QString &layout_name);
 
     // 按颜色分组圆的函数
-    Dict<std::string, Dict<std::string, std::vector<std::vector<double>>>> _grouped_circle_by_color_grouped(
-            const Dict<std::string, int> &grouped_color,
-            const std::vector<std::vector<double>> &polygon_geometry_coordinates_list,
-            const std::vector<int> &polygon_geometry_properties_radius,
-            const std::vector<std::vector<int>> &style_percents,
-            const std::vector<std::vector<std::string>> &areas_color_list,
-            const std::vector<std::vector<double>> &areas_opacity_list) {
-        Dict<std::string, Dict<std::string, std::vector<std::vector<double>>>> result;
-        // 这里只是简单的占位实现，实际需要根据具体需求实现
-        return result;
-    }
+    /**
+     * Grouped circle by color grouped
+     * @param grouped_color { '#ff4040-#00cd52-#2f99f3': 2, '#1c6ad6-#00cd52-#cbc829': 1 }
+     * @param polygon_geometry_coordinates_list 多个等级域圆心坐标list  exp: [[111.477486, 40.724372], [111.478305, 40.723215], [111.479145, 40.729253]]
+     * @param polygon_geometry_properties_radius  exp: [41, 34, 91]
+     * @param style_percents exp: [[40, 30, 30], [40, 30, 30], [40, 30, 30]]
+     * @param areas_color_list [['#ff4040', '#00cd52', '#2f99f3'], ['#ff4040', '#00cd52', '#2f99f3'], ['#1c6ad6', '#00cd52', '#cbc829']]
+     * @param areas_opacity_list [[0.4, 0.4, 0.4], [0.4, 0.4, 0.4], [0.6, 0.4, 0.5]]
+     * @return {
+            '#ff4040-#00cd52-#2f99f3': {
+                "polygon_geometry_coordinates_list": [[111.477486, 40.724372], [111.478305, 40.723215]],
+                "polygon_geometry_properties_radius": [41, 34],
+                "style_percents": [[40, 30, 30], [40, 30, 30]],
+                "areas_color_list": ['#ff4040', '#00cd52', '#2f99f3']
+                "areas_opacity_list": [0.4, 0.4, 0.4]
+            },
+            '#1c6ad6-#00cd52-#cbc829': {
+                "polygon_geometry_coordinates_list":  [[111.479145, 40.729253]],
+                "polygon_geometry_properties_radius": [91],
+                "style_percents": [[40, 30, 30]],
+                "areas_color_list": ['#1c6ad6', '#00cd52', '#cbc829']
+                "areas_opacity_list": [0.6, 0.4, 0.5]
+        }
+     */
+    static QVariantMap* _grouped_circle_by_color_grouped(
+            const QMap<QString, int>& grouped_color,
+            const QList<QgsPoint>& polygon_geometry_coordinates_list,
+            const QList<int>& polygon_geometry_properties_radius,
+            const QList<QList<int>>& style_percents,
+            const QList<QList<QString>>& areas_color_list,
+            const QList<QList<double>>& areas_opacity_list);
 
     // 按相同颜色分组的函数
-    Dict<std::string, Dict<std::string, std::vector<std::string>>>
-    _single_color_group(const std::vector<std::string> &name_list,
-                        const std::vector<std::string> &geometry_coordinates_list,
-                        const std::vector<std::string> &style_list) {
-        Dict<std::string, Dict<std::string, std::vector<std::string>>> result;
-        // 这里只是简单的占位实现，实际需要根据具体需求实现
-        return result;
-    }
+    /**
+     * Group colors by the same color
+     * @param name_list ['line1', 'line2', 'line3']
+     * @param geometry_coordinates_list ['#ff4040', '#00cd52', '#2f99f3']
+     * @param style_list [style1, style2, style3]
+     * @return {
+            '#ff4040': {
+                "name_list": ['line1', 'line2'],
+                "line_geometry_coordinates_list": [[111.477486, 40.724372], [111.478305, 40.723215]],
+                "style_list": [style1, style2]
+            },
+            '#00cd52': {
+                "name_list": ['line3', 'line4'],
+                "line_geometry_coordinates_list": [[112.477486, 42.724372], [112.478305, 42.723215]],
+                "style_list": [style3, style4]
+            }
+        }
+     */
+    static QVariantMap* _grouped_color_line(
+            const QList<QString> &name_list,
+            const QList<QList<double>> &geometry_coordinates_list,
+            const QList<QJsonObject> &style_list);
+
+
+    static QVariantMap* _grouped_color_polygon(
+            const QList<QString> &name_list,
+            const QList<QList<QList<double>>> &geometry_coordinates_list,
+            const QList<QJsonObject> &style_list);
 };
 
 

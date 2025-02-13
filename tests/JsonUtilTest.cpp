@@ -8,6 +8,7 @@
 #include <QJsonArray>
 #include <QFile>
 #include <QTextStream>
+#include <qgspoint.h>
 
 #include "core/handler/dto/plotting.h"
 #include "core/fetch/PlottingFetch.h"

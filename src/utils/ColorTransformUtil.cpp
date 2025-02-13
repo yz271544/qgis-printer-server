@@ -69,6 +69,9 @@ QString ColorTransformUtil::rgbToHex(const std::tuple<int, int, int>& rgb) {
 }
 
 std::pair<QString, float> ColorTransformUtil::strRgbaToHex(const QString& rgba) {
+    if (rgba.startsWith("#")) {
+        return std::make_pair(rgba, 1.0f);
+    }
     auto rgb = strRgbaToTupleInt(rgba);
     float capacity = std::get<3>(rgb);
     QString hex = rgbToHex(std::make_tuple(std::get<0>(rgb), std::get<1>(rgb), std::get<2>(rgb)));
@@ -93,11 +96,11 @@ bool ColorTransformUtil::compareColor(const QVector<QString>& color1, const QVec
 }
 
 // 合并颜色
-QString ColorTransformUtil::mergeColor(const QVector<QString>& color) {
+QString ColorTransformUtil::mergeColor(const QList<QString>& colors) {
     QString result;
-    for (int i = 0; i < color.size(); ++i) {
-        result += color[i];
-        if (i < color.size() - 1) {
+    for (int i = 0; i < colors.size(); ++i) {
+        result += colors[i];
+        if (i < colors.size() - 1) {
             result += "-";
         }
     }
@@ -119,7 +122,7 @@ QVector<QString> ColorTransformUtil::splitColor(const QString& merged_color) {
 
 
 // 对颜色进行分组统计
-QHash<QString, int> ColorTransformUtil::multiColorGroup(const QVector<QVector<QString>>& style_colors) {
+QHash<QString, int> ColorTransformUtil::multiColorGroup(const QList<QList<QString>>& style_colors) {
     QHash<QString, int> color_dict;
     for (const auto& style_color : style_colors) {
         QString style_color_merged = mergeColor(style_color);

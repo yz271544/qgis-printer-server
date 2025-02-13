@@ -131,7 +131,7 @@ void JwCircle::addCircles(
         const QList<QgsPoint> &centerPoints,
         const QList<double> &radii,
         const QJsonObject &layerStyle,
-        const QJsonObject &styleList,
+        const QList<QJsonObject> &styleList,
         int numSegments) {
     auto memCircleVectorLayer = std::make_unique<QgsVectorLayer>(
             QString("PolygonZ?crs=%1").arg(MAIN_CRS), mLayerName, QStringLiteral("memory"));

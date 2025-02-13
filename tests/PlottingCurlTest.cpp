@@ -5,6 +5,8 @@
 #include "core/fetch/LoginFetch.h"
 #include "core/fetch/PlottingFetch.h"
 
+#include <QJsonDocument>
+
 TEST(plottingCurl, curlTest) {
 
     auto baseUrl = oatpp::String("http://172.31.100.34:38089/api");
@@ -42,4 +44,27 @@ TEST(plottingCurl, curlTest) {
     auto objectMapper = std::make_shared<OBJECTMAPPERNS::ObjectMapper>();
 
     GTEST_LOG_(INFO) << "response json: " << objectMapper->writeToString(resp)->c_str();
+
+    auto map_plot_payloads = resp->data;
+
+    for (const auto &payloads : *map_plot_payloads) {
+        auto plottings = payloads->plottings;
+        for (const auto &plotting : *plottings) {
+            //GTEST_LOG_(INFO) << "shape json: " << plotting->shape->c_str();
+            auto shapeJson = plotting->getShapeJson();
+            auto geometry = shapeJson["geometry"].toObject();
+            auto type = geometry["type"].toString();
+            auto coord = geometry["coordinates"].toArray();
+
+            // 步骤 2: 使用 QJsonDocument 包装 QJsonObject
+            QJsonDocument jsonDoc(coord);
+
+            GTEST_LOG_(INFO) << "type: " << type.toStdString() << ", coord: " << jsonDoc.toJson().toStdString();
+
+
+//            for (const auto &item: coord) {
+//
+//            }
+        }
+    }
 }

@@ -32,6 +32,8 @@ public:
         return objectMapper;
     }
 
+    static QJsonDocument variantMapToJson(QVariantMap map);
+
     template<typename T>
     static QJsonDocument convertDtoToQJsonObject(const T& dto) {
         auto objectMapper = getObjectMapper();

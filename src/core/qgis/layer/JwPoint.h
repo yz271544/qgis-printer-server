@@ -48,7 +48,7 @@ public:
                    const QList<QgsPoint>& points,
                    const QJsonObject& fontStyle,
                    const QJsonObject& layerStyle,
-                   const QList<QString>& styleList,
+                   const QJsonArray& styleList,
                    int point_size = 5,
                    const QString& iconBase64 = "");
 

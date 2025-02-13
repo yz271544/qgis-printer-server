@@ -28,7 +28,7 @@ void JwPoint::addPoints(
         const QList<QgsPoint> &points,
         const QJsonObject &fontStyle,
         const QJsonObject &layerStyle,
-        const QList<QString> &styleList,
+        const QJsonArray &styleList,
         int point_size,
         const QString &iconBase64) {
 

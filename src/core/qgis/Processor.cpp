@@ -415,7 +415,50 @@ void Processor::checkDealWithClosedGeometry(const DTOWRAPPERNS::DTOWrapper<GeoPo
 
 
 void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &plotting_data) {
+    auto map_plot_payloads = plotting_data->data;
 
+    // 遍历每个 payload
+    for (const auto& payloads : *map_plot_payloads) {
+
+        auto plottings = payloads->plottings;
+        QList<QString> name_list;
+        QList<QJsonObject> style_list;
+        QList<QJsonObject> shape_list;
+        QJsonObject layer_style = payloads->getLayerStyleJson();
+        QJsonObject font_style = payloads->getFontStyleJson();
+        for (const auto &plotting: *plottings) {
+            auto name = plotting->name;
+            name_list.append(QString::fromStdString(name));
+            style_list.append(plotting->getStyleInfoJson());
+            shape_list.append(plotting->getShapeJson());
+        }
+
+        spdlog::info("plotting pcode:{} code:{}", payloads->pcode->c_str(), payloads->code->c_str());
+
+        auto shapeType = layer_style.contains("shapeType") ? layer_style["shapeType"].toString() : "";
+
+        if (shapeType == "04") {
+            // 等级域 特殊处理 同心圆
+            QList<QgsPoint> circle_geometry_coordinates_list;
+            for (const auto &shape: shape_list) {
+                if (shape.contains("geometry")) {
+                    auto geometry = shape["geometry"].toObject();
+                    if (geometry.contains("type")) {
+                        auto type = geometry["type"].toString();
+                        if (type == "Point") {
+                            auto coordinates = geometry["coordinates"].toArray();
+                            auto coord = coordinates[0].toDouble();
+//                            circle_geometry_coordinates_list.append(QgsPoint(coord[0], coord[1]));
+                        }
+                    }
+                }
+            }
+        } else {
+            // not 等级域, others
+        }
+
+
+    }
 }
 
 
@@ -502,4 +545,109 @@ QString Processor::exportImage(const QString &sceneName, const QString &layoutNa
     auto isExportStatus = m_app->exportLayoutAsPng(layoutName, outputPath, paperName);
     spdlog::info("export status: {}", isExportStatus);
     return imageName;
+}
+
+
+QVariantMap* Processor::_grouped_circle_by_color_grouped(
+        const QMap<QString, int>& grouped_color,
+        const QList<QgsPoint>& polygon_geometry_coordinates_list,
+        const QList<int>& polygon_geometry_properties_radius,
+        const QList<QList<int>>& style_percents,
+        const QList<QList<QString>>& areas_color_list,
+        const QList<QList<double>>& areas_opacity_list
+) {
+    auto style_grouped = std::make_unique<QVariantMap>();
+    for (int i = 0; i < areas_color_list.size(); ++i) {
+        auto colors = areas_color_list[i];
+        QString merged_areas_color = ColorTransformUtil::mergeColor(colors);
+        if (style_grouped->contains(merged_areas_color)) {
+            auto merged = style_grouped->value(merged_areas_color).toMap();
+            merged.value("polygon_geometry_coordinates_list").toList().append(QVariant::fromValue(polygon_geometry_coordinates_list[i]));
+            merged.value("polygon_geometry_properties_radius").toList().append(polygon_geometry_properties_radius[i]);
+            merged.value("style_percents").toList().append(QVariant::fromValue(style_percents[i]));
+        } else {
+            QVariantMap data;
+            data.insert("polygon_geometry_coordinates_list", QVariant::fromValue(polygon_geometry_coordinates_list[i]));
+            data.insert("polygon_geometry_properties_radius", QVariant::fromValue(polygon_geometry_properties_radius[i]));
+            data.insert("style_percents", QVariant::fromValue(style_percents[i]));
+            data.insert("areas_color_list", QVariant::fromValue(areas_color_list[i]));
+            data.insert("areas_opacity_list", QVariant::fromValue(areas_opacity_list[i]));
+            style_grouped->insert(merged_areas_color, data);
+        }
+    }
+    return style_grouped.release();
+}
+
+QVariantMap* Processor::_grouped_color_line(const QList<QString> &name_list,
+                    const QList<QList<double>> &geometry_coordinates_list,
+                    const QList<QJsonObject> &style_list) {
+    auto color_dict = std::make_unique<QVariantMap>();
+    for (int i = 0; i < style_list.size(); ++i) {
+        QString style_color;
+        auto style = style_list[i];
+        if (style.contains("layerStyle") && style["layerStyle"].isObject()) {
+            auto layerStyle = style["layerStyle"].toObject();
+            if (layerStyle.contains("color")) {
+                style_color = ColorTransformUtil::strRgbaToHex(layerStyle["color"].toString()).first;
+            }
+        }
+        if (style_color.isEmpty()) {
+            style_color = ColorTransformUtil::strRgbaToHex("rgba(0, 153, 68, 1)").first;
+        }
+
+        if (color_dict->contains(style_color)) {
+            auto colorDict = color_dict->value(style_color);
+            auto colorMap = colorDict.toMap();
+            colorMap["name_list"].toList().append(name_list[i]);
+            auto in_list = colorMap["geometry_coordinates_list"].toList();
+            auto ele = QVariant::fromValue(geometry_coordinates_list[i]);
+            in_list.append(ele);
+            colorMap["style_list"].toList().append(style_list[i]);
+        } else {
+            QVariantMap data;
+            data.insert("name_list", name_list[i]);
+            QVector<QList<double>> grouped_geometry_coordinates_list;
+            grouped_geometry_coordinates_list.append(geometry_coordinates_list[i]);
+            data.insert("geometry_coordinates_list", QVariant::fromValue(grouped_geometry_coordinates_list));
+            data.insert("style_list", style_list[i]);
+            color_dict->insert(style_color, data);
+        }
+    }
+    return color_dict.release();
+}
+
+QVariantMap* Processor::_grouped_color_polygon(const QList<QString> &name_list,
+                                            const QList<QList<QList<double>>> &geometry_coordinates_list,
+                                            const QList<QJsonObject> &style_list) {
+    auto color_dict = std::make_unique<QVariantMap>();
+    for (int i = 0; i < style_list.size(); ++i) {
+        QString style_color;
+        auto style = style_list[i];
+        if (style.contains("layerStyle") && style["layerStyle"].isObject()) {
+            auto layerStyle = style["layerStyle"].toObject();
+            if (layerStyle.contains("color")) {
+                style_color = ColorTransformUtil::strRgbaToHex(layerStyle["color"].toString()).first;
+            }
+        }
+        if (style_color.isEmpty()) {
+            style_color = ColorTransformUtil::strRgbaToHex("rgba(0, 153, 68, 1)").first;
+        }
+
+        if (color_dict->contains(style_color)) {
+            auto colorDict = color_dict->value(style_color);
+            auto colorMap = colorDict.toMap();
+            colorMap["name_list"].toList().append(name_list[i]);
+            colorMap["geometry_coordinates_list"].toList().append(QVariant::fromValue(geometry_coordinates_list[i]));
+            colorMap["style_list"].toList().append(style_list[i]);
+        } else {
+            QVariantMap data;
+            data.insert("name_list", name_list[i]);
+            QVector<QList<QList<double>>> grouped_geometry_coordinates_list;
+            grouped_geometry_coordinates_list.append(geometry_coordinates_list[i]);
+            data.insert("geometry_coordinates_list", QVariant::fromValue(grouped_geometry_coordinates_list));
+            data.insert("style_list", style_list[i]);
+            color_dict->insert(style_color, data);
+        }
+    }
+    return color_dict.release();
 }

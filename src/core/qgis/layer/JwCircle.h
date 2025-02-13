@@ -71,7 +71,7 @@ public:
                     const QList<QgsPoint>& centerPoints,
                     const QList<double>& radii,
                     const QJsonObject& layerStyle,
-                    const QJsonObject& styleList,
+                    const QList<QJsonObject>& styleList,
                     int numSegments = 72);
 
     /**

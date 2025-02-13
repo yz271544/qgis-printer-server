@@ -73,7 +73,7 @@ public:
     * \param color 颜色 ['#ff4040', '#00cd52', '#2f99f3']
     * \returns 合并后的颜色 '#ff4040-#00cd52-#2f99f3'
     */
-    static QString mergeColor(const QVector<QString>& color);
+    static QString mergeColor(const QList<QString>& color);
 
     /**
     * 拆分颜色
@@ -88,7 +88,7 @@ public:
     * \param style_colors 颜色列表 [['#ff4040', '#00cd52', '#2f99f3'], ['#ff4040', '#00cd52', '#2f99f3'], ['#1c6ad6', '#00cd52', '#cbc829']]
     * \returns 分组统计结果 { '#ff4040-#00cd52-#2f99f3': 2, '#1c6ad6-#00cd52-#cbc829': 1 }
     */
-    static QHash<QString, int> multiColorGroup(const QVector<QVector<QString>>& style_colors);
+    static QHash<QString, int> multiColorGroup(const QList<QList<QString>>& style_colors);
 };
 
 
