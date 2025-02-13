@@ -25,6 +25,7 @@
 
 class HookStarter : public BaseStarter {
 private:
+    YAML::Node *mConfig;
     static HookStarter* instance;
     StarterContext context;
     StarterRegister* starterRegister;
@@ -55,7 +56,7 @@ public:
 
     std::string GetName();
 
-    YAML::Node GetConfig();
+    YAML::Node* GetConfig();
 
     void sig_handler(StarterContext& context);
 };

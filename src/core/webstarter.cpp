@@ -27,8 +27,8 @@ void WebStarter::Init(StarterContext& context) {
     ConfStarter* confStarter = dynamic_cast<ConfStarter*>(StarterRegister::getInstance()->get_starter("ConfStarter"));
     if (confStarter) {
         YAML::Node configOfStart = confStarter->GetConfig();
-        this->config = std::make_shared<YAML::Node>(configOfStart);
-        YAML::Node * values = this->config.get();
+        mConfig = std::make_shared<YAML::Node>(configOfStart);
+        YAML::Node * values = mConfig.get();
 
         // 根据获取到的配置信息来初始化Web相关配置，比如端口号、路由等设置
         std::string app_name = (*values)["app"]["name"].as<std::string>();
@@ -173,8 +173,8 @@ std::string WebStarter::GetName() {
     return "WebStarter";
 }
 
-YAML::Node WebStarter::GetConfig() {
-    return *(config);
+YAML::Node* WebStarter::GetConfig() {
+    return mConfig;
 }
 
 

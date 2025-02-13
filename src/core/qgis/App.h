@@ -37,7 +37,7 @@
 
 class App {
 public:
-    App(const QList<QString>& argvList, std::shared_ptr<YAML::Node>& config);
+    App(const QList<QString>& argvList, YAML::Node *config);
     ~App();
 
     static void finishQgis();
@@ -116,13 +116,15 @@ public:
 
     QVector<PaperSpecification>& getAvailablePapers();
 
-    std::shared_ptr<QgsMapCanvas> getCanvas();
+    QgsMapCanvas* getCanvas();
 
-    std::shared_ptr<QgsProject> getProject();
+    QgsProject* getProject();
 
     QString& getSceneName();
 
     QString& getProjectDir();
+
+    QgsCoordinateTransformContext& getTransformContext();
 
 
 //    void projectCreated(const oatpp::data::type::DTOWrapper<ResponseDto>& responseDto);
@@ -136,15 +138,15 @@ public:
 private:
 char** mArgv; // 用于存储转换后的命令行参数
 int mArgc;    // 参数个数
-std::shared_ptr<YAML::Node> mConfig;
+YAML::Node *mConfig;
 QString mSceneName;
-std::shared_ptr<QgsProject> mProject;
-std::shared_ptr<QgsMapCanvas> mCanvas;
-std::shared_ptr<QgsMapSettings> mMapSettings;
+std::unique_ptr<QgsProject> mProject;
+std::unique_ptr<QgsMapCanvas> mCanvas;
+std::unique_ptr<QgsMapSettings> mMapSettings;
 QString mProjectDir;
 QgsCoordinateTransformContext mTransformContext;
 QgsApplication* mQgis;
-std::shared_ptr<QgsPageSizeRegistry> mPageSizeRegistry;
+std::unique_ptr<QgsPageSizeRegistry> mPageSizeRegistry;
 QVector<PaperSpecification> mAvailablePapers;
 };
 

@@ -14,15 +14,14 @@ BaseStarter* ProcessorStarter::GetInstance() {
 
 void ProcessorStarter::Init(StarterContext& context) {
     spdlog::info("ProcessorStarter Init start");
-    YAML::Node props = context.Props();
-    spdlog::info("props: {}", props["app"]["name"].as<std::string>());
-    config = std::make_shared<YAML::Node>(props);
-    YAML::Node conf = GetConfig();
-    spdlog::info("qgis -> projects_prefix: {}", conf["qgis"]["projects_prefix"].as<std::string>());
+    mConfig = context.Props();
+    spdlog::info("props: {}", (*mConfig)["app"]["name"].as<std::string>());
 
-    m_processor = std::make_shared<Processor>(context.getArgs(), config);
+    spdlog::info("qgis -> projects_prefix: {}", (*mConfig)["qgis"]["projects_prefix"].as<std::string>());
 
-    context.setProcessor(m_processor);
+    m_processor = std::make_unique<Processor>(context.getArgs(), mConfig);
+
+    context.setProcessor(m_processor.get());
 
     spdlog::info("ProcessorStarter Init end");
 }
@@ -64,6 +63,6 @@ std::string ProcessorStarter::GetName() {
     return "ProcessorStarter";
 }
 
-YAML::Node ProcessorStarter::GetConfig() {
-    return *(config);
+YAML::Node* ProcessorStarter::GetConfig() {
+    return mConfig;
 }

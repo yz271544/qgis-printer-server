@@ -21,7 +21,7 @@ void StarterContext::getConvertedArgs(int& argc, char**& argv) {
 }
 
 // 获取配置
-YAML::Node StarterContext::Props() const {
+YAML::Node* StarterContext::Props() const {
     if (context_.find(KeyProps) == context_.end()) {
         throw EgonException("配置还没有被初始化");
     }
@@ -29,12 +29,12 @@ YAML::Node StarterContext::Props() const {
 }
 
 // 设置配置
-void StarterContext::SetProps(const YAML::Node& conf) {
+void StarterContext::SetProps(YAML::Node *conf) {
     context_[KeyProps] = conf;
 }
 
 // 重载 [] 运算符，用于访问上下文
-YAML::Node StarterContext::operator[](const std::string& key) const {
+YAML::Node * StarterContext::operator[](const std::string& key) const {
     if (context_.find(key) != context_.end()) {
         return context_.at(key);
     }
@@ -42,7 +42,7 @@ YAML::Node StarterContext::operator[](const std::string& key) const {
 }
 
 // 添加键值对到上下文
-void StarterContext::Add(const std::string& key, const YAML::Node& value) {
+void StarterContext::Add(const std::string& key, YAML::Node* value) {
     context_[key] = value;
 }
 
@@ -52,11 +52,11 @@ QList<QString> StarterContext::getArgs() {
 }
 
 // 获取Processor实例
-std::shared_ptr<Processor> StarterContext::getProcessor() const {
+Processor* StarterContext::getProcessor() const {
     return processor_;
 }
 
 // 设置Processor实例
-void StarterContext::setProcessor(std::shared_ptr<Processor> processor) {
+void StarterContext::setProcessor(Processor* processor) {
     processor_ = processor;
 }

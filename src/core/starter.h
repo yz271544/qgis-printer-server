@@ -34,8 +34,8 @@ class StarterContext {
 private:
     QList<QString> args_;                             // 命令行参数
     static constexpr const char* KeyProps = "_conf"; // 配置键
-    std::map<std::string, YAML::Node> context_;       // 上下文存储
-    std::shared_ptr<Processor> processor_;
+    std::map<std::string, YAML::Node*> context_;       // 上下文存储
+    Processor* processor_;
 
 public:
 
@@ -45,24 +45,24 @@ public:
     void getConvertedArgs(int& argc, char**& argv);
 
     // 获取配置
-    YAML::Node Props() const;
+    YAML::Node* Props() const;
 
     // 设置配置
-    void SetProps(const YAML::Node& conf);
+    void SetProps(YAML::Node *conf);
 
     // 重载 [] 运算符，用于访问上下文
-    YAML::Node operator[](const std::string& key) const;
+    YAML::Node * operator[](const std::string& key) const;
 
     // 添加键值对到上下文
-    void Add(const std::string& key, const YAML::Node& value);
+    void Add(const std::string& key, YAML::Node* value);
 
     QList<QString> getArgs();
 
     // 获取Processor实例
-    std::shared_ptr<Processor> getProcessor() const;
+    Processor* getProcessor() const;
 
     // 设置Processor实例
-    void setProcessor(std::shared_ptr<Processor> processor);
+    void setProcessor(Processor* processor);
 };
 
 
@@ -78,7 +78,7 @@ public:
     virtual bool StartBlocking() = 0;
     virtual std::array<int, 4> Priority() = 0;
     virtual std::string GetName() = 0;
-    virtual YAML::Node GetConfig() = 0;
+    virtual YAML::Node* GetConfig() = 0;
     // 添加获取启动器实例的抽象方法，方便后续在其他启动器中查找特定启动器实例
     virtual Starter* GetInstance() = 0;
 };
@@ -95,8 +95,10 @@ public:
     bool StartBlocking() override { return false; }
     std::array<int, 4> Priority() override { return {DEFAULT_PRIORITY,DEFAULT_PRIORITY,DEFAULT_PRIORITY,DEFAULT_PRIORITY}; }
     virtual std::string GetName() = 0;
-    virtual YAML::Node GetConfig() = 0;
+    YAML::Node * GetConfig() override { return mConfig; };
     virtual Starter* GetInstance() = 0;
+private:
+    YAML::Node* mConfig;
 };
 
 

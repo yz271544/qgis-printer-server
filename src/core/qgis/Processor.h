@@ -28,6 +28,8 @@
 #include "core/qgis/layout/JwLayout.h"
 #include "core/qgis/layout/JwLayout3D.h"
 #include "App.h"
+#include "utils/ShowDataUtil.h"
+#include "layer/JwCircle.h"
 
 /*#include <QMetaType>
 Q_DECLARE_METATYPE(QgsPoint)*/
@@ -37,7 +39,7 @@ class Processor {
 private:
     bool m_enable_3d = true;
     bool m_verbose = false;
-    std::shared_ptr<YAML::Node> m_config;
+    YAML::Node *m_config;
     std::unique_ptr<PlottingFetch> m_plotting_fetch;
     std::unique_ptr<App> m_app;
     std::unique_ptr<QVariantMap> m_setting_image_spec;
@@ -46,7 +48,7 @@ private:
     QString m_mapping_export_nginx_url_prefix;
 public:
     // 构造函数
-    Processor(QList<QString> argvList, std::shared_ptr<YAML::Node>& config);
+    Processor(QList<QString> argvList, YAML::Node* config);
 
     // 析构函数
     ~Processor();
@@ -68,7 +70,7 @@ public:
     void plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &plotting_data);
 
     // 添加2d布局
-    void add_layout(std::shared_ptr<QgsMapCanvas>& canvas,
+    void add_layout(QgsMapCanvas *canvas,
                     const QString &layout_name,
                     const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
                     const QMap<QString, QVariant> &image_spec,
@@ -78,7 +80,7 @@ public:
                     const QVector<QString> &removeLayerPrefixs);
 
     // 添加3d布局
-    void add_3d_layout(std::shared_ptr<QgsMapCanvas>& canvas,
+    void add_3d_layout(QgsMapCanvas* canvas,
                     const QString &layout_name,
                     const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
                     const QMap<QString, QVariant> &image_spec,
@@ -122,7 +124,7 @@ public:
                 "areas_opacity_list": [0.6, 0.4, 0.5]
         }
      */
-    static QVariantMap* _grouped_circle_by_color_grouped(
+    static QVariantMap _grouped_circle_by_color_grouped(
             QMap<QString, int>& grouped_color,
             QList<QList<double>>& polygon_geometry_coordinates_list,
             QList<int>& polygon_geometry_properties_radius,
@@ -149,13 +151,13 @@ public:
             }
         }
      */
-    static QVariantMap* _grouped_color_line(
+    static QVariantMap _grouped_color_line(
             QList<QString> &name_list,
             QList<QList<double>> &geometry_coordinates_list,
             QList<QJsonObject> &style_list);
 
 
-    static QVariantMap* _grouped_color_polygon(
+    static QVariantMap _grouped_color_polygon(
             QList<QString> &name_list,
             QList<QList<QList<double>>> &geometry_coordinates_list,
             QList<QJsonObject> &style_list);

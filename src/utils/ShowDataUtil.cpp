@@ -27,3 +27,20 @@ std::string ShowDataUtil::formatQListDoubleToString(const QList<double>& list) {
     result += "]";
     return result;
 }
+
+std::string ShowDataUtil::formatQListDoubleToString(const QList<QList<double>>& list) {
+    std::string result = "[";
+    for (int i = 0; i < list.size(); ++i) {
+        result += "[";
+        auto subList = list[i];
+        for (int j=0; j < subList.size(); j++) {
+            if (i > 0) {
+                result += ",";
+            }
+            result += std::to_string(subList[i]);
+        }
+        result += "]";
+    }
+    result += "]";
+    return result;
+}

@@ -2,6 +2,7 @@
 // Created by etl on 2/3/25.
 //
 
+
 #include "ColorTransformUtil.h"
 
 
@@ -122,8 +123,8 @@ QVector<QString> ColorTransformUtil::splitColor(const QString& merged_color) {
 
 
 // 对颜色进行分组统计
-QHash<QString, int> ColorTransformUtil::multiColorGroup(const QList<QList<QString>>& style_colors) {
-    QHash<QString, int> color_dict;
+QMap<QString, int> ColorTransformUtil::multiColorGroup(const QList<QList<QString>>& style_colors) {
+    QMap<QString, int> color_dict;
     for (const auto& style_color : style_colors) {
         QString style_color_merged = mergeColor(style_color);
         if (color_dict.contains(style_color_merged)) {

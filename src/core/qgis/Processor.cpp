@@ -4,7 +4,7 @@
 
 #include "Processor.h"
 
-Processor::Processor(QList<QString> argvList, std::shared_ptr<YAML::Node> &config) {
+Processor::Processor(QList<QString> argvList, YAML::Node *config) {
     m_config = config;
     try {
         m_verbose = m_config->operator[]("logging")["verbose"].as<bool>();
@@ -439,7 +439,8 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
 
         if (shapeType == "04") {
             // 等级域 特殊处理 同心圆
-            QList<QgsPoint> circle_geometry_coordinates_list;
+            QList<QList<double>> circle_geometry_coordinates_list;
+            QList<int> polygon_geometry_properties_radius;
             for (const auto &shape: shape_list) {
                 if (shape.contains("geometry")) {
                     auto geometry = shape["geometry"].toObject();
@@ -448,11 +449,89 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                         if (type == "Point") {
                             auto coordinates = geometry["coordinates"].toArray();
                             auto coord = coordinates[0].toDouble();
-//                            circle_geometry_coordinates_list.append(QgsPoint(coord[0], coord[1]));
+                            QList <double> circle_geometry_coordinates = {coordinates[0].toDouble(),
+                                                                          coordinates[1].toDouble(),
+                                                                          coordinates[2].toDouble()};
+                            circle_geometry_coordinates_list.append(circle_geometry_coordinates);
                         }
                     }
                 }
+                if (shape.contains("properties")) {
+                    auto properties = shape["properties"].toObject();
+                    if (properties.contains("radius")) {
+                        auto radius = properties["radius"].toDouble();
+                        polygon_geometry_properties_radius.append(radius);
+                    }
+                }
             }
+            qDebug() << "circle_geometry_coordinates_list: " << circle_geometry_coordinates_list;
+            qDebug() << "polygon_geometry_properties_radius: " << polygon_geometry_properties_radius;
+
+            QList<QList<int>> style_percents;
+            QList<QList<QString>> style_color_list;
+            QList<QList<double>> style_color_opacity_list;
+            for (const auto &item: style_list) {
+                auto style = item;
+                if (style.contains("layerStyleObj")) {
+                    auto layerStyleObj = style["layerStyleObj"].toObject();
+                    if (layerStyleObj.contains("djy")) {
+                        auto djy = layerStyleObj["djy"].toArray();
+                        QList<int> djyPercentList;
+                        QList<QString> djyColorList;
+                        QList<double> djyOpacityList;
+                        for (const auto &itemDjy: djy) {
+                            auto djyItem = itemDjy.toObject();
+                            if (djyItem.contains("num")) {
+                                auto percent = djyItem["num"].toInt();
+                                djyPercentList.append(percent);
+                            }
+                            if (djyItem.contains("color")) {
+                                auto color = djyItem["color"].toString();
+                                auto qColor = ColorTransformUtil::strRgbaToHex(color);
+                                djyColorList.append(qColor.first);
+                                djyOpacityList.append(qColor.second);
+                            }
+                        }
+                        style_percents.append(djyPercentList);
+                        style_color_list.append(djyColorList);
+                        style_color_opacity_list.append(djyOpacityList);
+                    }
+                }
+            }
+            qDebug() << "style_percents: " << style_percents;
+            qDebug() << "style_color_list: " << style_color_list;
+            qDebug() << "style_color_opacity_list: ", style_color_opacity_list;
+
+            auto grouped_color = ColorTransformUtil::multiColorGroup(style_color_list);
+
+            auto style_grouped = _grouped_circle_by_color_grouped(
+                    grouped_color,
+                    circle_geometry_coordinates_list,
+                    polygon_geometry_properties_radius,
+                    style_percents,
+                    style_color_list,
+                    style_color_opacity_list);
+
+            qDebug() << "style_grouped: " << style_grouped;
+
+            int circle_num = 0;
+            for (const auto &color_style: style_grouped.keys()) {
+                auto color_style_dict = style_grouped.value(color_style).toMap();
+                qDebug() << "color_style: " << color_style << " --> " << color_style_dict;
+                QString layerPrefix = QString::fromStdString(payloads->name);
+                QString layerName = QString("%1%2").arg(layerPrefix, QString::number(circle_num));
+                auto jw_circle = std::make_unique<JwCircle>(
+                        m_app->getSceneName(),
+                        layerName,
+                        m_app->getProjectDir(),
+                        m_app->getProject(),
+                        m_app->getTransformContext()
+                        );
+
+
+
+            }
+
         } else {
             // not 等级域, others
         }
@@ -464,7 +543,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
 
 // 添加2d布局
 void Processor::add_layout(
-        std::shared_ptr<QgsMapCanvas>& canvas,
+        QgsMapCanvas *canvas,
         const QString &layout_name,
         const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
         const QMap<QString, QVariant> &image_spec,
@@ -490,7 +569,7 @@ void Processor::add_layout(
 
 // 添加3d布局
 void Processor::add_3d_layout(
-        std::shared_ptr<QgsMapCanvas>& canvas,
+        QgsMapCanvas* canvas,
         const QString &layout_name,
         const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
         const QMap<QString, QVariant> &image_spec,
@@ -502,11 +581,11 @@ void Processor::add_3d_layout(
             "-3D");
     spdlog::info("add layout: {}", joinedLayoutName.toStdString());
 
-    auto canvas3d = std::make_shared<Qgs3DMapCanvas>();
+    auto canvas3d = std::make_unique<Qgs3DMapCanvas>();
     auto project = m_app->getProject();
     auto sceneName = m_app->getSceneName();
     auto projectDir = m_app->getProjectDir();
-    JwLayout3D jwLayout3d(project, canvas, canvas3d,
+    JwLayout3D jwLayout3d(project, canvas, canvas3d.get(),
                           sceneName, image_spec, projectDir, joinedLayoutName);
 
     auto plottingWebJsonDoc = JsonUtil::convertDtoToQJsonObject(plottingWeb);
@@ -547,7 +626,7 @@ QString Processor::exportImage(const QString &sceneName, const QString &layoutNa
     return imageName;
 }
 
-QVariantMap* Processor::_grouped_circle_by_color_grouped(
+QVariantMap Processor::_grouped_circle_by_color_grouped(
         QMap<QString, int>& grouped_color,
         QList<QList<double>>& polygon_geometry_coordinates_list,
         QList<int>& polygon_geometry_properties_radius,
@@ -555,12 +634,12 @@ QVariantMap* Processor::_grouped_circle_by_color_grouped(
         QList<QList<QString>>& areas_color_list,
         QList<QList<double>>& areas_opacity_list
 )  {
-    auto style_grouped = std::make_unique<QVariantMap>();
+    QVariantMap style_grouped;
     for (int i = 0; i < areas_color_list.size(); ++i) {
         auto colors = areas_color_list[i];
         QString merged_areas_color = ColorTransformUtil::mergeColor(colors);
-        if (style_grouped->contains(merged_areas_color)) {
-            auto mergedAreaColorDict = style_grouped->value(merged_areas_color);
+        if (style_grouped.contains(merged_areas_color)) {
+            auto mergedAreaColorDict = style_grouped.value(merged_areas_color);
             auto mergedMap = mergedAreaColorDict.toMap();
 
             // 更新 polygon_geometry_coordinates_list
@@ -603,7 +682,7 @@ QVariantMap* Processor::_grouped_circle_by_color_grouped(
             }
             opacityList.append(opacities_);
             mergedMap["areas_opacity_list"] = opacityList;
-            style_grouped->insert(merged_areas_color, mergedMap);
+            style_grouped.insert(merged_areas_color, mergedMap);
         } else {
             QVariantMap data;
 
@@ -643,17 +722,17 @@ QVariantMap* Processor::_grouped_circle_by_color_grouped(
             areasOpacityList.append(opacityList);
             data.insert("areas_opacity_list", areasOpacityList);
 
-            style_grouped->insert(merged_areas_color, data);
+            style_grouped.insert(merged_areas_color, data);
         }
     }
-    return style_grouped.release();
+    return style_grouped;
 }
 
-QVariantMap* Processor::_grouped_color_line(
+QVariantMap Processor::_grouped_color_line(
         QList<QString> &name_list,
         QList<QList<double>> &geometry_coordinates_list,
         QList<QJsonObject> &style_list) {
-    auto color_dict = std::make_unique<QVariantMap>();
+    QVariantMap color_dict;
     for (int i = 0; i < style_list.size(); ++i) {
         QString style_color;
         auto style = style_list[i];
@@ -669,8 +748,8 @@ QVariantMap* Processor::_grouped_color_line(
             style_color = ColorTransformUtil::strRgbaToHex("rgba(0, 153, 68, 1)").first;
         }
 
-        if (color_dict->contains(style_color)) {
-            auto colorDict = color_dict->value(style_color);
+        if (color_dict.contains(style_color)) {
+            auto colorDict = color_dict.value(style_color);
             auto colorMap = colorDict.toMap();
 
             // 修改 name_list 的处理方式，保证是一个列表
@@ -692,7 +771,7 @@ QVariantMap* Processor::_grouped_color_line(
             styleList.append(style_list[i]);
             colorMap["style_list"] = styleList;
 
-            color_dict->insert(style_color, colorMap);
+            color_dict.insert(style_color, colorMap);
         } else {
             QVariantMap data;
             QVariantList nameList;
@@ -711,17 +790,17 @@ QVariantMap* Processor::_grouped_color_line(
             styleList.append(style_list[i]);
             data.insert("style_list", styleList);
 
-            color_dict->insert(style_color, data);
+            color_dict.insert(style_color, data);
         }
     }
-    return color_dict.release();
+    return color_dict;
 }
 
-QVariantMap* Processor::_grouped_color_polygon(
+QVariantMap Processor::_grouped_color_polygon(
          QList<QString> &name_list,
          QList<QList<QList<double>>> &geometry_coordinates_list,
          QList<QJsonObject> &style_list) {
-    auto color_dict = std::make_unique<QVariantMap>();
+    QVariantMap color_dict;
     for (int i = 0; i < style_list.size(); ++i) {
         QString style_color;
         auto style = style_list[i];
@@ -735,8 +814,8 @@ QVariantMap* Processor::_grouped_color_polygon(
             style_color = ColorTransformUtil::strRgbaToHex("rgba(0, 153, 68, 1)").first;
         }
 
-        if (color_dict->contains(style_color)) {
-            auto colorDict = color_dict->value(style_color);
+        if (color_dict.contains(style_color)) {
+            auto colorDict = color_dict.value(style_color);
             auto colorMap = colorDict.toMap();
 
             // 修改 name_list 的处理方式，保证是一个列表
@@ -760,7 +839,7 @@ QVariantMap* Processor::_grouped_color_polygon(
             styleList.append(style_list[i]);
             colorMap["style_list"] = styleList;
 
-            color_dict->insert(style_color, colorMap);
+            color_dict.insert(style_color, colorMap);
         } else {
             QVariantMap data;
             QVariantList nameList;
@@ -781,8 +860,8 @@ QVariantMap* Processor::_grouped_color_polygon(
             styleList.append(style_list[i]);
             data.insert("style_list", styleList);
 
-            color_dict->insert(style_color, data);
+            color_dict.insert(style_color, data);
         }
     }
-    return color_dict.release();
+    return color_dict;
 }

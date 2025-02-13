@@ -13,12 +13,23 @@ LoggerStarter::~LoggerStarter() = default;
 // 实现Init方法，从指定路径加载配置文件，若加载失败会输出错误信息到标准错误输出流
 void LoggerStarter::Init(StarterContext& context) {
     spdlog::info("ConfStarter Init start");
+    bool qtLogEnable = false;
     try {
-        config = context.Props();
+        mConfig = context.Props();
         std::string loggerLevel = "info";
         try{
-            loggerLevel = config["logging"]["level"].as<std::string>();
+            loggerLevel = (*mConfig)["logging"]["level"].as<std::string>();
             spdlog::warn("loggerLevel: {}", loggerLevel);
+
+            qtLogEnable = (*mConfig)["logging"]["qt_log_enable"].as<bool>();
+            if (qtLogEnable) {
+                setQLoggerLevel(loggerLevel);
+                qDebug() << "qDebug qDebug qDebug qDebug";
+                qInfo() << "qInfo qInfo qInfo qInfo";
+                qWarning() << "qWarning qWarning qWarning qWarning";
+                qCritical() << "qCritical qCritical qCritical qCritical";
+                //qFatal("qFatal qFatal qFatal qFatal");
+            }
         } catch (const std::exception& e) {
             spdlog::warn("get logging.level error: {}", e.what());
         }
@@ -74,11 +85,86 @@ std::string LoggerStarter::GetName() {
 }
 
 // 获取已加载并解析的配置内容，外部模块可以通过此方法获取配置信息用于后续操作
-YAML::Node LoggerStarter::GetConfig() {
-    return config;
+YAML::Node* LoggerStarter::GetConfig() {
+    return mConfig;
 }
 
 // 实现Starter基类中获取启动器实例的抽象方法
 BaseStarter* LoggerStarter::GetInstance() {
     return getInstance();
+}
+
+void LoggerStarter::setQLoggerLevel(std::string& level) {
+    bool debug = false;
+    bool info = false;
+    bool warn = false;
+    bool error = false;
+    bool critical = false;
+    bool fatal = false;
+
+    // 根据输入的日志级别设置对应的标志
+    if (level == "debug") {
+        debug = true;
+        info = true;
+        warn = true;
+        error = true;
+        critical = true;
+        fatal = true;
+    } else if (level == "info") {
+        info = true;
+        warn = true;
+        error = true;
+        critical = true;
+        fatal = true;
+    } else if (level == "warn") {
+        warn = true;
+        error = true;
+        critical = true;
+        fatal = true;
+    } else if (level == "error") {
+        error = true;
+        critical = true;
+        fatal = true;
+    } else if (level == "critical") {
+        critical = true;
+        fatal = true;
+    } else if (level == "fatal") {
+        fatal = true;
+    } else {
+        // 默认情况下，禁用所有日志
+        debug = false;
+        info = false;
+        warn = false;
+        error = false;
+        critical = false;
+        fatal = false;
+    }
+
+    // 构建 QLoggingCategory 的过滤规则
+    QString qLoggerRule = QString("*.debug=%1\n"
+                                  "*.info=%2\n"
+                                  "*.warning=%3\n"
+                                  "*.error=%4\n"
+                                  "*.critical=%5\n"
+                                  "*.fatal=%6\n")
+            .arg(debug ? "true" : "false")
+            .arg(info ? "true" : "false")
+            .arg(warn ? "true" : "false")
+            .arg(error ? "true" : "false")
+            .arg(critical ? "true" : "false")
+            .arg(fatal ? "true" : "false");
+    QLoggingCategory::setFilterRules(qLoggerRule);
+}
+
+// 全局关闭所有日志
+static void disableAllQtLogs() {
+    // 设置所有日志级别为 false
+    QString qLoggerRule = QString("*.debug=false\n"
+                                  "*.info=false\n"
+                                  "*.warning=false\n"
+                                  "*.error=false\n"
+                                  "*.critical=false\n"
+                                  "*.fatal=false\n");
+    // 设置日志过滤规则
+    QLoggingCategory::setFilterRules(qLoggerRule);
 }

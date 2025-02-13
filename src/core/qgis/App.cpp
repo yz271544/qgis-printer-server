@@ -5,7 +5,7 @@
 #include "App.h"
 
 
-App::App(const QList<QString>& argvList, std::shared_ptr<YAML::Node>& config)
+App::App(const QList<QString>& argvList, YAML::Node *config)
 {
     mArgc = argvList.count();
     mArgv = reinterpret_cast<char **>(argvList.toVector().data());
@@ -40,7 +40,7 @@ App::App(const QList<QString>& argvList, std::shared_ptr<YAML::Node>& config)
         spdlog::error("init qgis error: {}", e.what());
     }
     spdlog::info("inited the qgs app");*/
-    mPageSizeRegistry = std::shared_ptr<QgsPageSizeRegistry>(QgsApplication::pageSizeRegistry());
+    mPageSizeRegistry = std::unique_ptr<QgsPageSizeRegistry>(QgsApplication::pageSizeRegistry());
     //mPageSizeRegistry = QgsApplication::pageSizeRegistry();
     mAvailablePapers = PaperSpecification::getLayoutPaperList();
     for (const auto &item: mAvailablePapers) {
@@ -74,12 +74,12 @@ QVector<PaperSpecification>& App::getAvailablePapers() {
     return mAvailablePapers;
 }
 
-std::shared_ptr<QgsMapCanvas> App::getCanvas() {
-    return mCanvas;
+QgsMapCanvas* App::getCanvas() {
+    return mCanvas.get();
 }
 
-std::shared_ptr<QgsProject> App::getProject() {
-    return mProject;
+QgsProject* App::getProject() {
+    return mProject.get();
 }
 
 QString& App::getSceneName() {
@@ -88,6 +88,10 @@ QString& App::getSceneName() {
 
 QString& App::getProjectDir() {
     return mProjectDir;
+}
+
+QgsCoordinateTransformContext& App::getTransformContext() {
+    return mTransformContext;
 }
 
 void App::finishQgis() {
@@ -115,9 +119,9 @@ void App::createProject(QString& scene_name, QString& crs) {
         return;
     }
     spdlog::debug("get QgsProject instance");
-    mCanvas = std::make_shared<QgsMapCanvas>();
+    mCanvas = std::make_unique<QgsMapCanvas>();
     spdlog::debug("create_canvas");
-    mMapSettings = std::make_shared<QgsMapSettings>();
+    mMapSettings = std::make_unique<QgsMapSettings>();
     spdlog::debug("create_map_settings");
     if (!(*mConfig)["qgis"]) {
         spdlog::error("qgis not found in the config.yaml");
@@ -189,7 +193,7 @@ void App::clearProject() {
 
 void App::createCanvas(QString& crs) {
     //mCanvas = new QgsMapCanvas;
-    mCanvas = std::make_shared<QgsMapCanvas>();
+    mCanvas = std::make_unique<QgsMapCanvas>();
     mCanvas->setDestinationCrs(QgsCoordinateReferenceSystem(crs));
 }
 

@@ -31,7 +31,7 @@ private:
     bool mBlock;
     std::shared_ptr<oatpp::web::server::HttpConnectionHandler> connectionHandler;
     std::shared_ptr<oatpp::network::Server> server;
-    std::shared_ptr<YAML::Node> config;
+    YAML::Node* mConfig;
     std::jthread mWebServerThread;
 public:
     WebStarter();
@@ -56,7 +56,7 @@ public:
 
     std::string GetName();
 
-    YAML::Node GetConfig();
+    YAML::Node* GetConfig();
 
     void SetBlocking(bool isBlock);
 

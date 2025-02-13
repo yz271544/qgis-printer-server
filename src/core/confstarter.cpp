@@ -20,8 +20,9 @@ void ConfStarter::Init(StarterContext& context) {
     try {
         // 尝试从指定路径加载配置文件，路径应根据实际项目情况正确配置
         //config = YAML::LoadFile("/lyndon/iProject/cpath/cboot/conf/config.yaml");
-        config = YAML::LoadFile(CONF_FILE);
-        context.SetProps(config);
+        auto config = YAML::LoadFile(CONF_FILE);
+        mConfig = std::make_unique<YAML::Node>(config);
+        context.SetProps(mConfig.get());
         spdlog::info("CONF SERVER: {}, port: {}", config["app"]["name"].as<std::string>(), config["web"]["port"].as<int>());
     } catch (const YAML::BadFile& e) {
         std::cerr << "Error loading config file: " << e.what() << std::endl;
@@ -80,8 +81,8 @@ std::string ConfStarter::GetName() {
 }
 
 // 获取已加载并解析的配置内容，外部模块可以通过此方法获取配置信息用于后续操作
-YAML::Node ConfStarter::GetConfig() {
-    return config;
+YAML::Node* ConfStarter::GetConfig() {
+    return mConfig.get();
 }
 
 // 实现Starter基类中获取启动器实例的抽象方法

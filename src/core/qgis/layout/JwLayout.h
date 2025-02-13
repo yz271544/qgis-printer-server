@@ -57,8 +57,8 @@
 class JwLayout {
 public:
 
-    JwLayout(std::shared_ptr<QgsProject> &project,
-             std::shared_ptr<QgsMapCanvas> &canvas,
+    JwLayout(QgsProject* project,
+             QgsMapCanvas* canvas,
              const QString &sceneName,
              const QVariantMap &imageSpec,
              const QString &projectDir,

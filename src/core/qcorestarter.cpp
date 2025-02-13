@@ -19,14 +19,14 @@ BaseStarter* QCoreStarter::GetInstance() {
 
 void QCoreStarter::Init(StarterContext& context) {
     spdlog::info("QCoreStarter Init start");
-    config = context.Props();
+    mConfig = context.Props();
     int newArgc;
     char** newArgv;
     context.getConvertedArgs(newArgc, newArgv);
 
     bool GUIenabled = false;
     try {
-        GUIenabled = config["qgis"]["gui_enabled"].as<bool>();
+        GUIenabled = (*mConfig)["qgis"]["gui_enabled"].as<bool>();
         spdlog::info("GUIenabled: {}", GUIenabled);
     } catch (const std::exception& e) {
         spdlog::error("get gui_enabled error: {}", e.what());
@@ -43,7 +43,7 @@ void QCoreStarter::Init(StarterContext& context) {
     mQgsApp = std::make_unique<QgsApplication>(newArgc, newArgv, GUIenabled);
     QString qgis_prefix_path = "/usr";
     try {
-        qgis_prefix_path = QString::fromStdString(config["qgis"]["prefix_path"].as<std::string>());
+        qgis_prefix_path = QString::fromStdString((*mConfig)["qgis"]["prefix_path"].as<std::string>());
         spdlog::info("qgis_prefix_path: {}", qgis_prefix_path.toStdString());
     } catch (const std::exception& e) {
         spdlog::error("get qgis.prefix_path error: {}", e.what());
@@ -101,7 +101,7 @@ void QCoreStarter::Setup(StarterContext& context) {
 
 void QCoreStarter::Start(StarterContext& context) {
     spdlog::info("QCoreStarter Start start");
-    auto guiEnable = config["qgis"]["gui_enabled"].as<bool>();
+    auto guiEnable = (*mConfig)["qgis"]["gui_enabled"].as<bool>();
     spdlog::info("start qgis app, guiEnable: {}", guiEnable);
     if (guiEnable) {
         spdlog::info("enable gui, start gui application");
@@ -161,8 +161,8 @@ std::string QCoreStarter::GetName() {
     return "QCoreStarter";
 }
 
-YAML::Node QCoreStarter::GetConfig() {
-    return config;
+YAML::Node* QCoreStarter::GetConfig() {
+    return mConfig;
 }
 
 

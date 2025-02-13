@@ -13,6 +13,7 @@
 #include <spdlog/spdlog.h>
 #include <QString>
 #include <QVector>
+#include <QMap>
 #include <QHash>
 #include <tuple>
 #include <string>
@@ -88,7 +89,7 @@ public:
     * \param style_colors 颜色列表 [['#ff4040', '#00cd52', '#2f99f3'], ['#ff4040', '#00cd52', '#2f99f3'], ['#1c6ad6', '#00cd52', '#cbc829']]
     * \returns 分组统计结果 { '#ff4040-#00cd52-#2f99f3': 2, '#1c6ad6-#00cd52-#cbc829': 1 }
     */
-    static QHash<QString, int> multiColorGroup(const QList<QList<QString>>& style_colors);
+    static QMap<QString, int> multiColorGroup(const QList<QList<QString>>& style_colors);
 };
 
 

@@ -5,7 +5,7 @@
 #include "JwLayout.h"
 
 // 构造函数
-JwLayout::JwLayout(std::shared_ptr<QgsProject>& project, std::shared_ptr<QgsMapCanvas>& canvas, const QString& sceneName,
+JwLayout::JwLayout(QgsProject* project, QgsMapCanvas* canvas, const QString& sceneName,
                    const QVariantMap& imageSpec, const QString& projectDir, const QString& layoutName)
         : mProject(project), mCanvas(canvas), mSceneName(sceneName), mImageSpec(imageSpec), mProjectDir(projectDir),
           mLayoutName(layoutName), mMapWidth(0), mMapHeight(0)

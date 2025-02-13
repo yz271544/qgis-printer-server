@@ -68,9 +68,9 @@
 
 class JwLayout3D {
 public:
-    JwLayout3D(std::shared_ptr<QgsProject>& project,
-               std::shared_ptr<QgsMapCanvas>& canvas2d,
-               std::shared_ptr<Qgs3DMapCanvas>& canvas3d,
+    JwLayout3D(QgsProject* project,
+               QgsMapCanvas* canvas2d,
+               Qgs3DMapCanvas* canvas3d,
                const QString& sceneName,
                const QVariantMap& imageSpec,
                const QString& projectDir,

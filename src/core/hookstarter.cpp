@@ -114,8 +114,8 @@ std::string HookStarter::GetName() {
     return "HookStarter";
 }
 
-YAML::Node HookStarter::GetConfig() {
-    return YAML::Node();
+YAML::Node* HookStarter::GetConfig() {
+    return mConfig;
 }
 
 Starter* HookStarter::GetInstance() {

@@ -15,6 +15,8 @@ public:
     static std::string formatQListToString(const QList<QString>& list);
 
     static std::string formatQListDoubleToString(const QList<double>& list);
+
+    static std::string formatQListDoubleToString(const QList<QList<double>>& list);
 };
 
 
