@@ -10,10 +10,15 @@
 #include "oatpp/network/tcp/server/ConnectionProvider.hpp"
 #include "oatpp/web/server/HttpRouter.hpp"
 #include "oatpp/web/server/api/ApiController.hpp"
+#include "config.h"
 #if OATPP_VERSION_LESS_1_4_0
+#include <oatpp/parser/json/mapping/ObjectMapper.hpp>
+#include <oatpp/core/Types.hpp>
 #include "oatpp/core/macro/codegen.hpp"
 #include "oatpp/core/macro/component.hpp"
 #else
+#include <oatpp/json/ObjectMapper.hpp>
+#include <oatpp/Types.hpp>
 #include "oatpp/macro/codegen.hpp"
 #include "oatpp/macro/component.hpp"
 #include "oatpp/Environment.hpp"
@@ -33,9 +38,9 @@ class PostRequestDto : public oatpp::DTO {
 
 class HelloController : public oatpp::web::server::api::ApiController {
 public:
-    HelloController(const std::shared_ptr<ObjectMapper>& objectMapper, const oatpp::String& routePrefix);
+    HelloController(const std::shared_ptr<OBJECTMAPPERNS::ObjectMapper>& objectMapper, const oatpp::String& routePrefix);
 
-    static std::shared_ptr<HelloController> createShared(const std::shared_ptr<ObjectMapper>& objectMapper, const oatpp::String& routePrefix);
+    static std::shared_ptr<HelloController> createShared(const std::shared_ptr<OBJECTMAPPERNS::ObjectMapper>& objectMapper, const oatpp::String& routePrefix);
 
     ENDPOINT("POST", "/post", postEndpoint,
              BODY_DTO(Object<PostRequestDto>, requestDto)) {
@@ -53,7 +58,7 @@ public:
     }
 
 private:
-    std::shared_ptr<OutgoingResponse> createResponse(const Status& status, const char* message) {
+    static std::shared_ptr<OutgoingResponse> createResponse(const Status& status, const char* message) {
         auto response = ResponseFactory::createResponse(status, message);
         response->putHeader(Header::CONTENT_TYPE, "text/plain");
         return response;

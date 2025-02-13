@@ -4,6 +4,11 @@
 
 #include "JwLegend.h"
 
+JwLegend::JwLegend(QString& legendTitle, QgsProject* project)
+: legendTitle(legendTitle), project(project) {};
+
+JwLegend::~JwLegend() = default;
+
 QPair<double, double> JwLegend::customize(
         QgsLayoutItemLegend* legend,
         QMap<QString, QVariant> imageSpec,

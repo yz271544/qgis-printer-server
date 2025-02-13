@@ -7,11 +7,17 @@
 // 构造函数
 JwLayout::JwLayout(QgsProject* project, QgsMapCanvas* canvas, const QString& sceneName,
                    const QVariantMap& imageSpec, const QString& projectDir, const QString& layoutName)
-        : mProject(project), mCanvas(canvas), mSceneName(sceneName), mImageSpec(imageSpec), mProjectDir(projectDir),
-          mLayoutName(layoutName), mMapWidth(0), mMapHeight(0)
+        : mProject(project),
+        mCanvas(canvas),
+        mSceneName(sceneName),
+        mImageSpec(imageSpec),
+        mProjectDir(projectDir),
+        mLayoutName(layoutName),
+        mMapWidth(0),
+        mMapHeight(0)
 {
     QString legendTitle = imageSpec["legend_title"].toString();
-    this->mJwLegend = std::make_shared<JwLegend>(legendTitle, project.get());
+    this->mJwLegend = std::make_unique<JwLegend>(legendTitle, project);
 }
 
 // 过滤地图图层
@@ -505,7 +511,7 @@ void JwLayout::addArrowBasedOnFrontendParams(QgsPrintLayout* layout, const QList
 
 // 初始化 2D 布局
 void JwLayout::init2DLayout(const QString& layoutName) {
-    auto layout = std::make_unique<QgsPrintLayout>(mProject.get());
+    auto layout = std::make_unique<QgsPrintLayout>(mProject);
     layout->setName(layoutName);
     layout->setUnits(Qgis::LayoutUnit::Millimeters);
     layout->initializeDefaults();
@@ -650,7 +656,7 @@ void JwLayout::loadQptTemplate(const QString& qptFilePath, const QString& layout
     file.close();
 
     // 创建布局并加载模板
-    auto layout = std::make_shared<QgsPrintLayout>(mProject.get());
+    auto layout = std::make_shared<QgsPrintLayout>(mProject);
     QgsReadWriteContext context;
     QList<QgsLayoutItem*> qgs_layout_items = layout->loadFromTemplate(doc, context);
     if (qgs_layout_items.isEmpty()) {

@@ -17,7 +17,7 @@ JwLayout3D::JwLayout3D(QgsProject* project,
           mProjectDir(projectDir), mLayoutName(layoutName),
           mMapWidth(0), mMapHeight(0) {
     QString legendTitle = imageSpec["legend_title"].toString();
-    this->mJwLegend = std::make_shared<JwLegend>(legendTitle, project.get());
+    this->mJwLegend = std::make_unique<JwLegend>(legendTitle, project);
 }
 
 
@@ -485,7 +485,7 @@ void JwLayout3D::addArrowBasedOnFrontendParams(QgsLayout *layout, const QList<QV
 }
 
 void JwLayout3D::init3DLayout(const QString &layoutName) {
-    auto layout = std::make_unique<QgsPrintLayout>(mProject.get());
+    auto layout = std::make_unique<QgsPrintLayout>(mProject);
     layout->setName(layoutName);
     layout->setUnits(Qgis::LayoutUnit::Millimeters);
     layout->initializeDefaults();
@@ -608,7 +608,7 @@ void JwLayout3D::init3DMapSettings(
     spdlog::debug("set renderer usage:", mapSettings3d->rendererUsage());
 
     auto mapSett3d = mapSettings3d.get();
-    QObject::connect( mProject.get(), &QgsProject::transformContextChanged, mapSett3d, [this, &mapSett3d] {
+    QObject::connect( mProject, &QgsProject::transformContextChanged, mapSett3d, [this, &mapSett3d] {
         mapSett3d->setTransformContext( mProject->transformContext() );
     } );
     spdlog::debug("connect project transform context changed");
@@ -798,7 +798,7 @@ void JwLayout3D::loadQptTemplate(const QString &qptFilePath, const QString &layo
     file.close();
 
     // 创建布局并加载模板
-    auto layout = std::make_unique<QgsPrintLayout>(mProject.get());
+    auto layout = std::make_unique<QgsPrintLayout>(mProject);
     QgsReadWriteContext context;
     QList<QgsLayoutItem *> qgs_layout_items = layout->loadFromTemplate(doc, context);
     if (qgs_layout_items.isEmpty()) {

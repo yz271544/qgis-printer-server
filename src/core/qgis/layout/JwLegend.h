@@ -21,9 +21,9 @@
 class JwLegend {
 public:
 
-    JwLegend(QString& legendTitle, QgsProject* project) : legendTitle(legendTitle), project(project) {};
+    JwLegend(QString& legendTitle, QgsProject* project);
 
-    ~JwLegend() = default;
+    ~JwLegend();
 
     QPair<double, double> customize(
             QgsLayoutItemLegend* legend,

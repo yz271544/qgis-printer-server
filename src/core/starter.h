@@ -95,8 +95,6 @@ public:
     std::array<int, 4> Priority() override { return {DEFAULT_PRIORITY,DEFAULT_PRIORITY,DEFAULT_PRIORITY,DEFAULT_PRIORITY}; }
     virtual std::string GetName() = 0;
     virtual Starter* GetInstance() = 0;
-private:
-    YAML::Node* mConfig;
 };
 
 

@@ -173,12 +173,12 @@ public:
 
 private:
     QString mLayoutName;
-    std::shared_ptr<QgsProject> mProject;
+    QgsProject* mProject;
     QString mProjectDir;
-    std::shared_ptr<QgsMapCanvas> mCanvas2d;
-    std::shared_ptr<Qgs3DMapCanvas> mCanvas3d;
+    QgsMapCanvas* mCanvas2d;
+    Qgs3DMapCanvas* mCanvas3d;
     QString mSceneName;
-    std::shared_ptr<JwLegend> mJwLegend;
+    std::unique_ptr<JwLegend> mJwLegend;
     QVariantMap mImageSpec;
     double mMapWidth;
     double mMapHeight;

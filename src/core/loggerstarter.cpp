@@ -15,13 +15,13 @@ void LoggerStarter::Init(StarterContext& context) {
     spdlog::info("ConfStarter Init start");
     bool qtLogEnable = false;
     try {
-        mConfig = context.Props();
+        auto config = context.Props();
         std::string loggerLevel = "info";
         try{
-            loggerLevel = (*mConfig)["logging"]["level"].as<std::string>();
+            loggerLevel = (*config)["logging"]["level"].as<std::string>();
             spdlog::warn("loggerLevel: {}", loggerLevel);
 
-            qtLogEnable = (*mConfig)["logging"]["qt_log_enable"].as<bool>();
+            qtLogEnable = (*config)["logging"]["qt_log_enable"].as<bool>();
             if (qtLogEnable) {
                 setQLoggerLevel(loggerLevel);
                 qDebug() << "qDebug qDebug qDebug qDebug";
