@@ -121,17 +121,24 @@ void QCoreStarter::Stop(StarterContext& context) {
 
     // 释放 OpenGL 上下文
     if (mOpenGLContext) {
+        spdlog::info("Destroy OpenGL context");
         if (mOpenGLContext->makeCurrent(mQOffscreenSurface.get())) {
+            spdlog::info("OpenGL context current during cleanup");
             mOpenGLContext->doneCurrent();
         } else {
             spdlog::error("Failed to make OpenGL context current during cleanup");
         }
+        spdlog::info("destroy OpenGL context");
+        mOpenGLContext->destroyed();
+        spdlog::info("reset OpenGL context");
         mOpenGLContext.reset();
     }
 
     // 释放离屏表面
     if (mQOffscreenSurface) {
+        spdlog::info("Destroy offscreen surface");
         mQOffscreenSurface->destroy();
+        spdlog::info("reset offscreen surface");
         mQOffscreenSurface.reset();
     }
 

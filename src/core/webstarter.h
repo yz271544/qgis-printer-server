@@ -32,7 +32,7 @@ private:
     std::shared_ptr<oatpp::web::server::HttpConnectionHandler> connectionHandler;
     std::shared_ptr<oatpp::network::Server> server;
     std::shared_ptr<YAML::Node> config;
-
+    std::jthread mWebServerThread;
 public:
     WebStarter();
 
@@ -59,6 +59,8 @@ public:
     YAML::Node GetConfig();
 
     void SetBlocking(bool isBlock);
+
+    std::string threadIdToString(const std::thread::id& id);
 };
 
 

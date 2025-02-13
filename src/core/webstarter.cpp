@@ -111,16 +111,21 @@ void WebStarter::Setup(StarterContext& context) {
 void WebStarter::Start(StarterContext& context) {
     spdlog::info("WebStarter Start start");
     // 启动Web服务器
-    if (mBlock) {
-        server->run();
-    } else {
-        // **新开线程运行 Web 服务器**
-        std::thread webServerThread([this]() {
+    try {
+        if (mBlock) {
             server->run();
-        });
-
-        // **让 Web 服务器线程独立运行**
-        webServerThread.detach();
+        } else {
+            mWebServerThread = std::jthread([this](std::stop_token st) {
+                server->run();
+                while (!st.stop_requested()) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1000));  // 等待停止信号
+                }
+                server->stop();  // 收到停止信号后停止服务器
+            });
+        }
+    } catch (const std::exception& e) {
+        spdlog::critical("Web服务启动失败: {}", e.what());
+        throw;
     }
     spdlog::info("WebStarter Start end");
 }
@@ -128,12 +133,27 @@ void WebStarter::Start(StarterContext& context) {
 void WebStarter::Stop(StarterContext& context) {
     spdlog::info("WebStarter Stop start");
     // 停止Web服务器
-    server->stop();
+    try {
+        spdlog::info("try join web server thread: {}", threadIdToString(mWebServerThread.get_id()));
+        if (mWebServerThread.joinable()) {
+            spdlog::info("inside stop server");
+            server->stop();  // 停止服务器
+            spdlog::info("request stop web server thread");
+            mWebServerThread.request_stop();  // 请求线程停止
+            spdlog::info("join web server thread");
+            mWebServerThread.join();           // 等待线程结束
+            spdlog::info("joined the web server thread");
+        }
+        spdlog::info("outside stop server");
+        server->stop();
 #ifdef OATPP_VERSION_LESS_1_4_0
-    oatpp::base::Environment::destroy();
+        oatpp::base::Environment::destroy();
 #else
-    oatpp::Environment::destroy();
+        oatpp::Environment::destroy();
 #endif
+    } catch (const std::exception& e) {
+        spdlog::error("Web服务停止失败: {}", e.what());
+    }
     spdlog::info("WebStarter Stop end");
 }
 
@@ -160,4 +180,11 @@ YAML::Node WebStarter::GetConfig() {
 
 void WebStarter::SetBlocking(bool isBlock) {
     mBlock = isBlock;
+}
+
+
+std::string WebStarter::threadIdToString(const std::thread::id& id) {
+    std::ostringstream oss;
+    oss << id;
+    return oss.str();
 }
