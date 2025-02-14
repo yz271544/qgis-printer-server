@@ -181,6 +181,8 @@ class ResponseDto : public oatpp::DTO {
 
     DTO_FIELD(String, project_zip_url);
     DTO_FIELD(String, image_url);
+    DTO_FIELD(String, pdf_url);
+    DTO_FIELD(String, svg_url);
     DTO_FIELD(String, error);
 };
 

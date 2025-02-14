@@ -45,11 +45,11 @@ public:
 
     QgsPoint transformFunction(const QgsPoint& point);
 
-    void addPolygon(const QList<QString>& nameList,
+    void addPolygons(const QList<QString>& nameList,
                     const QList<QgsPolygon>& polygons,
                     const QJsonObject& fontStyle,
                     const QJsonObject& layerStyle,
-                    const QList<QVariant>& styleList);
+                    const QList<QJsonObject>& styleList);
 
 private:
     QString mSceneName;

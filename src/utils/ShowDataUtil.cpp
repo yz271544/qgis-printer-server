@@ -44,3 +44,24 @@ std::string ShowDataUtil::formatQListDoubleToString(const QList<QList<double>>& 
     result += "]";
     return result;
 }
+
+std::string ShowDataUtil::lineStringPointsToString(const QgsLineString& lineString) {
+    std::ostringstream oss;
+    oss << "{";
+
+    int pointCount = lineString.numPoints();
+    for (int i = 0; i < pointCount; ++i) {
+        const QgsPoint& point = lineString.pointN(i);
+
+        // 输出点的坐标
+        oss << "(" << point.x() << "," << point.y() << "," << point.z() << ")";
+
+        // 如果不是最后一个点，添加逗号分隔
+        if (i < pointCount - 1) {
+            oss << ",";
+        }
+    }
+
+    oss << "}";
+    return oss.str();
+}

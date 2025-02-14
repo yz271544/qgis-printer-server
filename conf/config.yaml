@@ -36,6 +36,9 @@ qgis:
   mapping_export_nginx_port: 80
   mapping_export_nginx_url_prefix: "http://{MAPPING_EXPORT_NGINX_HOST}:{MAPPING_EXPORT_NGINX_PORT}/map/qgz"
   north_arrow_path: "/usr/share/qgis/svg/arrows/NorthArrow_10.svg"
+  export_png_enable: true
+  export_pdf_enable: false
+  export_svg_enable: false
 specification:
   - name: "现场位置图"
     local: "local"

@@ -103,7 +103,7 @@ public:
     void addLevelKeyAreas(
             const QList<QgsPoint>& areasCenterPointList,
             const QList<double>& areasRadii,
-            const QList<QVector<double>>& areasPercent,
+            const QList<QList<double>>& areasPercent,
             const QList<QColor>& areasColorList,
             const QList<float>& areasOpacityList,
             int numSegments = 36);

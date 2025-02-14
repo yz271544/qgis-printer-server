@@ -46,6 +46,21 @@ Processor::Processor(QList<QString> argvList, YAML::Node *config) {
     } catch (const std::exception &e) {
         spdlog::warn("get jingwei_server_url error: {}", e.what());
     }
+    try {
+        m_export_png_enable = m_config->operator[]("qgis")["m_export_png_enable"].as<bool>();
+    } catch (const std::exception &e) {
+        spdlog::warn("get m_export_png_enable error: {}", e.what());
+    }
+    try {
+        m_export_pdf_enable = m_config->operator[]("qgis")["m_export_pdf_enable"].as<bool>();
+    } catch (const std::exception &e) {
+        spdlog::warn("get m_export_pdf_enable error: {}", e.what());
+    }
+    try {
+        m_export_svg_enable = m_config->operator[]("qgis")["m_export_svg_enable"].as<bool>();
+    } catch (const std::exception &e) {
+        spdlog::warn("get m_export_svg_enable error: {}", e.what());
+    }
     jingwei_server_url = jingwei_server_url.replace("{JINGWEI_SERVER_HOST}", jingwei_server_host);
     jingwei_server_url = jingwei_server_url.replace("{JINGWEI_SERVER_PORT}", QString::number(jingwei_server_port));
     jingwei_server_url = jingwei_server_url.replace("{JINGWEI_SERVER_API_PREFIX}", jingwei_server_api_prefix);
@@ -236,8 +251,9 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
         spdlog::info("invoke method to create project");
         // Qt::TimerType tempReceiver;
         QMetaObject::invokeMethod(qApp, [this, plottingWeb, plottingRespDto, layoutType, promise, &eventLoop]() {
-        //QTimer::singleShot(0, tempReceiver, [this, plottingWeb, plottingRespDto, layoutType, promise, &eventLoop]() {
+            //QTimer::singleShot(0, tempReceiver, [this, plottingWeb, plottingRespDto, layoutType, promise, &eventLoop]() {
             spdlog::info("Inside invokeMethod lambda: start");
+            auto responseDto = ResponseDto::createShared();
             try {
                 QString sceneName = QString::fromStdString(plottingWeb->sceneName);
                 spdlog::debug("create qgis project, sceneName: {}", sceneName.toStdString());
@@ -342,18 +358,39 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                 auto imageSubDir = getImageSubDir(layoutType);
                 // 异步导出图像
                 QString paperName = QString::fromStdString(plottingWeb->paper);
-                auto imageName = exportImage(sceneName, layoutType, imageSubDir, paperName);
-                spdlog::info("export image name: {}", imageName.toStdString());
-                auto responseDto = ResponseDto::createShared();
+
                 spdlog::info("responseDto created");
                 QString project_zip_url = QString(m_mapping_export_nginx_url_prefix)
                         .append("/").append(zip_file_name);
                 spdlog::info("project_zip_url: {}", project_zip_url.toStdString());
                 responseDto->project_zip_url = project_zip_url.toStdString();
-                QString image_url = QString(m_mapping_export_nginx_url_prefix)
-                        .append("/").append(imageSubDir).append("/").append(imageName);
-                spdlog::info("image_url: {}", image_url.toStdString());
-                responseDto->image_url = image_url.toStdString();
+
+                QString imageName = "";
+                if (m_export_png_enable) {
+                    imageName = exportPNG(sceneName, layoutType, imageSubDir, paperName);
+                    spdlog::info("export image name: {}", imageName.toStdString());
+                    QString image_url = QString(m_mapping_export_nginx_url_prefix)
+                            .append("/").append(imageSubDir).append("/").append(imageName);
+                    spdlog::info("image_url: {}", image_url.toStdString());
+                    responseDto->image_url = image_url.toStdString();
+                }
+                QString pdfName = "";
+                if (m_export_pdf_enable) {
+                    pdfName = exportPDF(sceneName, layoutType, imageSubDir, paperName);
+                    QString pdf_url = QString(m_mapping_export_nginx_url_prefix)
+                            .append("/").append(imageSubDir).append("/").append(imageName);
+                    spdlog::info("pdf_url: {}", pdf_url.toStdString());
+                    responseDto->pdf_url = pdf_url.toStdString();
+                }
+                QString svgName = "";
+                if (m_export_svg_enable) {
+                    svgName = exportSVG(sceneName, layoutType, imageSubDir, paperName);
+                    QString svg_url = QString(m_mapping_export_nginx_url_prefix)
+                            .append("/").append(imageSubDir).append("/").append(svgName);
+                    spdlog::info("svg_url: {}", svg_url.toStdString());
+                    responseDto->svg_url = svg_url.toStdString();
+                }
+
                 responseDto->error = "";
                 spdlog::info("set value responseDto to promise");
                 promise->set_value(responseDto);
@@ -368,9 +405,11 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
             } catch (const std::exception &e) {
                 spdlog::error("Exception in invokeMethod lambda: {}", e.what());
                 promise->set_exception(std::make_exception_ptr(e));
+                responseDto->error = e.what();
+
                 eventLoop.quit(); // 退出事件循环
             }
-        //});
+            //});
         }, Qt::QueuedConnection);
 
         // 启动事件循环，直到 lambda 执行完成
@@ -418,7 +457,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
     auto map_plot_payloads = plotting_data->data;
 
     // 遍历每个 payload
-    for (const auto& payloads : *map_plot_payloads) {
+    for (const auto &payloads: *map_plot_payloads) {
 
         auto plottings = payloads->plottings;
         QList<QString> name_list;
@@ -449,9 +488,9 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                         if (type == "Point") {
                             auto coordinates = geometry["coordinates"].toArray();
                             auto coord = coordinates[0].toDouble();
-                            QList <double> circle_geometry_coordinates = {coordinates[0].toDouble(),
-                                                                          coordinates[1].toDouble(),
-                                                                          coordinates[2].toDouble()};
+                            QList<double> circle_geometry_coordinates = {coordinates[0].toDouble(),
+                                                                         coordinates[1].toDouble(),
+                                                                         coordinates[2].toDouble()};
                             circle_geometry_coordinates_list.append(circle_geometry_coordinates);
                         }
                     }
@@ -467,7 +506,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
             qDebug() << "circle_geometry_coordinates_list: " << circle_geometry_coordinates_list;
             qDebug() << "polygon_geometry_properties_radius: " << polygon_geometry_properties_radius;
 
-            QList<QList<int>> style_percents;
+            QList<QList<double>> style_percents;
             QList<QList<QString>> style_color_list;
             QList<QList<double>> style_color_opacity_list;
             for (const auto &item: style_list) {
@@ -476,13 +515,13 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                     auto layerStyleObj = style["layerStyleObj"].toObject();
                     if (layerStyleObj.contains("djy")) {
                         auto djy = layerStyleObj["djy"].toArray();
-                        QList<int> djyPercentList;
+                        QList<double> djyPercentList;
                         QList<QString> djyColorList;
                         QList<double> djyOpacityList;
                         for (const auto &itemDjy: djy) {
                             auto djyItem = itemDjy.toObject();
                             if (djyItem.contains("num")) {
-                                auto percent = djyItem["num"].toInt();
+                                auto percent = djyItem["num"].toDouble();
                                 djyPercentList.append(percent);
                             }
                             if (djyItem.contains("color")) {
@@ -526,17 +565,286 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                         m_app->getProjectDir(),
                         m_app->getProject(),
                         m_app->getTransformContext()
-                        );
+                );
 
+                QList<QgsPoint> pointsList;
+                auto coordPointsList = color_style_dict["polygon_geometry_coordinates_list"].toList();
+                for (const auto &coordPoint: coordPointsList) {
+                    auto coordPointList = coordPoint.toList();
+                    pointsList.append(QgsPoint(coordPointList[0].toDouble(), coordPointList[1].toDouble(),
+                                               coordPointList[2].toDouble()));
+                }
 
+                auto radiusQVariants = color_style_dict["polygon_geometry_properties_radius"].toList();
+                QList<double> radiusDoubleList;
+                for (const auto &radiusQVariant: radiusQVariants) {
+                    if (radiusQVariant.canConvert<double>()) {
+                        radiusDoubleList.append(radiusQVariant.toDouble());
+                    }
+                }
 
+                QList<QColor> areasColorList;
+                auto areas_color_list = color_style_dict["areas_color_list"].toList();
+                for (const auto &color: areas_color_list) {
+                    if (color.canConvert<QString>()) {
+                        areasColorList.append(QColor(color.toString()));
+                    }
+                }
+                QList<float> styleColorOpacityList;
+                auto areas_opacity_list = color_style_dict["areas_opacity_list"].toList();
+                for (const auto &item: areas_opacity_list) {
+                    if (item.canConvert<double>()) {
+                        styleColorOpacityList.append(item.toDouble());
+                    }
+                }
+
+                jw_circle->addLevelKeyAreas(
+                        pointsList,
+                        radiusDoubleList,
+                        style_percents,
+                        areasColorList,
+                        styleColorOpacityList,
+                        72
+                );
+                circle_num++;
             }
 
         } else {
-            // not 等级域, others
+            // others, not 等级域
+            QList<QList<double>> point_geometry_coordinates_list;  // points list
+            QList<QList<QList<double>>> line_geometry_coordinates_list; // lineString list
+            QList<QList<QList<QList<double >> >> polygon_geometry_coordinates_list; // polygon list
+            QList<double> circle_radii; // circle radius list
+
+            for (const auto &shape: shape_list) {
+                if (shape.contains("properties")) {
+                    auto properties = shape["properties"].toObject();
+                    if (properties.contains("subType")) {
+                        auto subType = properties["subType"].toString();
+                        if (subType == "Circle") {
+                            if (properties.contains("radius")) {
+                                auto radius = properties["radius"].toDouble();
+                                circle_radii.append(radius);
+                            }
+                        }
+                    }
+                }
+
+                if (shape.contains("geometry")) {
+                    auto geometry = shape["geometry"].toObject();
+                    if (geometry.contains("type")) {
+                        auto type = geometry["type"].toString();
+                        if (type == "Point") {
+                            auto coordinates = geometry["coordinates"].toArray();
+                            auto coord = coordinates[0].toDouble();
+                            QList<double> point_geometry_coordinates = {coordinates[0].toDouble(),
+                                                                        coordinates[1].toDouble(),
+                                                                        coordinates[2].toDouble()};
+                            point_geometry_coordinates_list.append(point_geometry_coordinates);
+                        }
+                        if (type == "LineString") {
+                            auto coordinates = geometry["coordinates"].toArray();
+                            QList<QList<double>> line_geometry_coordinates;
+                            for (const auto &coord: coordinates) {
+                                auto coordList = coord.toArray();
+                                QList<double> line_geometry_coordinate = {coordList[0].toDouble(),
+                                                                          coordList[1].toDouble(),
+                                                                          coordList[2].toDouble()};
+                                line_geometry_coordinates.append(line_geometry_coordinate);
+                            }
+                            line_geometry_coordinates_list.append(line_geometry_coordinates);
+                        }
+                        if (type == "Polygon") {
+                            auto coordinates = geometry["coordinates"].toArray();
+                            QList<QList<QList<double>>> polygon_geometry_coordinates;
+                            for (const auto &coordArr: coordinates) {
+                                QList<QList<double>> line_polygon_geometry_coordinate;
+                                auto lineCoordArray = coordArr.toArray();
+                                for (const auto &coordList: lineCoordArray) {
+                                    auto pointCoordArray = coordList.toArray();
+                                    QList<double> point_polygon_geometry_coordinate_list = {
+                                            pointCoordArray[0].toDouble(),
+                                            pointCoordArray[1].toDouble(),
+                                            pointCoordArray[2].toDouble()};
+                                    line_polygon_geometry_coordinate.append(point_polygon_geometry_coordinate_list);
+                                }
+                                polygon_geometry_coordinates.append(line_polygon_geometry_coordinate);
+                            }
+                            polygon_geometry_coordinates_list.append(polygon_geometry_coordinates);
+                        }
+                    }
+                }
+            }
+
+            // paint the circles and points to layer
+            if (point_geometry_coordinates_list.size() > 0) {
+                QString layerName = QString::fromStdString(payloads->name);
+                if (circle_radii.size() > 0) {
+                    auto jw_circle = std::make_unique<JwCircle>(
+                            m_app->getSceneName(),
+                            layerName,
+                            m_app->getProjectDir(),
+                            m_app->getProject(),
+                            m_app->getTransformContext()
+                    );
+                    QString iconName = QString::fromStdString(payloads->name);
+                    QList<QgsPoint> pointsList;
+                    for (const auto &coordPoint: point_geometry_coordinates_list) {
+                        pointsList.append(QgsPoint(coordPoint[0], coordPoint[1], coordPoint[2]));
+                    }
+                    jw_circle->addCircles(iconName, name_list, pointsList, circle_radii, layer_style, style_list);
+                } else {
+                    auto jw_point = std::make_unique<JwPoint>(
+                            m_app->getSceneName(),
+                            layerName,
+                            m_app->getProjectDir(),
+                            m_app->getProject(),
+                            m_app->getTransformContext()
+                    );
+                    QString iconName = QString::fromStdString(payloads->name);
+                    QList<QgsPoint> pointsList;
+                    for (const auto &coordPoint: point_geometry_coordinates_list) {
+                        pointsList.append(QgsPoint(coordPoint[0], coordPoint[1], coordPoint[2]));
+                    }
+                    QString attachment = QString::fromStdString(payloads->attachment);
+                    jw_point->addPoints(iconName, name_list, pointsList, font_style, layer_style, style_list, 20,
+                                        attachment);
+                }
+            }
+            // paint the lineString to layer
+            if (line_geometry_coordinates_list.size() > 0) {
+                auto grouped_color = _grouped_color_lines(
+                        name_list,
+                        line_geometry_coordinates_list,
+                        style_list
+                );
+                int line_num = 0;
+                for (const auto &color_style: grouped_color.keys()) {
+                    auto color_style_dict = grouped_color.value(color_style).toMap();
+                    QString layerPrefix = QString::fromStdString(payloads->name);
+                    QString layerName = QString("%1%2").arg(layerPrefix, QString::number(line_num));
+                    auto jw_line = std::make_unique<JwLine>(
+                            m_app->getSceneName(),
+                            layerName,
+                            m_app->getProjectDir(),
+                            m_app->getProject(),
+                            m_app->getTransformContext()
+                    );
+
+                    QList<QString> lineNameList;
+                    auto line_name_list = color_style_dict["name_list"].toList();
+                    for (const auto &name: line_name_list) {
+                        if (name.canConvert<QString>()) {
+                            lineNameList.append(name.toString());
+                        }
+                    }
+                    QList<QgsLineString> linesGeometryCoordinates;
+                    auto geometry_coordinates_list = color_style_dict["geometry_coordinates_list"].toList();
+                    QList<QList<QList<double>>> typed_geometry_coordinates_list = TypeConvert::convertVariant<QList<QList<QList<double>>>>(
+                            geometry_coordinates_list);
+                    for (const auto &coordLines: typed_geometry_coordinates_list) {
+                        QgsLineString line_geometry_coordinate;
+                        auto coordPoints = coordLines;
+                        for (const auto &coordPoint: coordPoints) {
+                            auto coordPointList = coordPoint;
+                            QgsPoint line_vertexes = QgsPoint(coordPointList[0],
+                                                              coordPointList[1],
+                                                              coordPointList[2]);
+                            line_geometry_coordinate.addVertex(line_vertexes);
+                        }
+                        linesGeometryCoordinates.append(line_geometry_coordinate);
+                        qDebug() << "linesGeometryCoordinates size: " << linesGeometryCoordinates.size();
+                        for (const auto &line: linesGeometryCoordinates) {
+                            qDebug() << "linesGeometryCoordinates: " << QString::fromStdString(ShowDataUtil::lineStringPointsToString(line));
+                        }
+                    }
+
+                    QList<QJsonObject> styleList;
+                    auto style_list_ = color_style_dict["style_list"].toList();
+                    for (const auto &item: style_list_) {
+                        auto cc = item;
+                        if (item.canConvert<QJsonObject>()) {
+                            styleList.append(item.value<QJsonObject>());
+                        }
+                    }
+
+                    jw_line->addLines(
+                            lineNameList,
+                            linesGeometryCoordinates,
+                            font_style,
+                            layer_style,
+                            styleList
+                    );
+                    line_num++;
+                }
+            }
+            // paint the polygon to layer
+            if (polygon_geometry_coordinates_list.size() > 0) {
+                auto grouped_color = _grouped_color_polygons(
+                        name_list,
+                        polygon_geometry_coordinates_list,
+                        style_list
+                );
+                int polygon_num = 0;
+                for (const auto &color_style: grouped_color.keys()) {
+                    auto color_style_dict = grouped_color.value(color_style).toMap();
+                    QString layerPrefix = QString::fromStdString(payloads->name);
+                    QString layerName = QString("%1%2").arg(layerPrefix, QString::number(polygon_num));
+                    auto jw_polygon = std::make_unique<JwPolygon>(
+                            m_app->getSceneName(),
+                            layerName,
+                            m_app->getProjectDir(),
+                            m_app->getProject(),
+                            m_app->getTransformContext()
+                    );
+
+                    QList<QString> polygonNameList;
+                    auto polygon_name_list = color_style_dict["name_list"].toList();
+                    for (const auto &name: polygon_name_list) {
+                        if (name.canConvert<QString>()) {
+                            polygonNameList.append(name.toString());
+                        }
+                    }
+                    QList<QgsPolygon> polygonGeometryCoordinates;
+                    auto geometry_coordinates_list = color_style_dict["geometry_coordinates_list"].toList();
+                    QList<QList<QList<QList<double>>>> typed_geometry_coordinates_list = TypeConvert::convertVariant<QList<QList<QList<QList<double>>>>>(
+                            geometry_coordinates_list);
+                    for (const auto &coordPolygons: typed_geometry_coordinates_list) {
+                        QgsLineString lineString;
+                        for (const auto &coordLines: coordPolygons) {
+                            for (const auto &coordPoint: coordLines) {
+                                QgsPoint point_vertex_of_polygon = QgsPoint(coordPoint[0],
+                                                                            coordPoint[1],
+                                                                            coordPoint[2]);
+                                lineString.addVertex(point_vertex_of_polygon);
+                            }
+                        }
+                        QgsPolygon qgsPolygon;
+                        Formula::checkAndClosedLineStringOfPolygon(lineString);
+                        qgsPolygon.setExteriorRing(lineString.clone());
+                        polygonGeometryCoordinates.append(qgsPolygon);
+                    }
+
+                    QList<QJsonObject> styleList;
+                    auto style_list_ = color_style_dict["style_list"].toList();
+                    for (const auto &item: style_list_) {
+                        auto cc = item;
+                        if (item.canConvert<QJsonObject>()) {
+                            styleList.append(item.value<QJsonObject>());
+                        }
+                    }
+
+                    jw_polygon->addPolygons(
+                            polygonNameList,
+                            polygonGeometryCoordinates,
+                            font_style,
+                            layer_style,
+                            styleList
+                    );
+                    polygon_num++;
+                }
+            }
         }
-
-
     }
 }
 
@@ -569,7 +877,7 @@ void Processor::add_layout(
 
 // 添加3d布局
 void Processor::add_3d_layout(
-        QgsMapCanvas* canvas,
+        QgsMapCanvas *canvas,
         const QString &layout_name,
         const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
         const QMap<QString, QVariant> &image_spec,
@@ -615,7 +923,7 @@ QString Processor::getImageSubDir(const QString &layout_name) {
     return image_spec["local"].toString();
 }
 
-QString Processor::exportImage(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
+QString Processor::exportPNG(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
                                const QString &paperName) {
     QString imageName = QString("%1-%2-%3.png").arg(sceneName, layoutName, paperName);
     QString outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, imageName);
@@ -626,14 +934,36 @@ QString Processor::exportImage(const QString &sceneName, const QString &layoutNa
     return imageName;
 }
 
+QString Processor::exportPDF(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
+                               const QString &paperName) {
+    QString imageName = QString("%1-%2-%3.pdf").arg(sceneName, layoutName, paperName);
+    QString outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, imageName);
+    FileUtil::delete_file(outputPath);
+    spdlog::info("export image -> outputPath: {}", outputPath.toStdString());
+    auto isExportStatus = m_app->exportLayoutAsPdf(layoutName, outputPath, paperName);
+    spdlog::info("export status: {}", isExportStatus);
+    return imageName;
+}
+
+QString Processor::exportSVG(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
+                               const QString &paperName) {
+    QString imageName = QString("%1-%2-%3.svg").arg(sceneName, layoutName, paperName);
+    QString outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, imageName);
+    FileUtil::delete_file(outputPath);
+    spdlog::info("export image -> outputPath: {}", outputPath.toStdString());
+    auto isExportStatus = m_app->exportLayoutAsSvg(layoutName, outputPath, paperName);
+    spdlog::info("export status: {}", isExportStatus);
+    return imageName;
+}
+
 QVariantMap Processor::_grouped_circle_by_color_grouped(
-        QMap<QString, int>& grouped_color,
-        QList<QList<double>>& polygon_geometry_coordinates_list,
-        QList<int>& polygon_geometry_properties_radius,
-        QList<QList<int>>& style_percents,
-        QList<QList<QString>>& areas_color_list,
-        QList<QList<double>>& areas_opacity_list
-)  {
+        QMap<QString, int> &grouped_color,
+        QList<QList<double>> &polygon_geometry_coordinates_list,
+        QList<int> &polygon_geometry_properties_radius,
+        QList<QList<double>> &style_percents,
+        QList<QList<QString>> &areas_color_list,
+        QList<QList<double>> &areas_opacity_list
+) {
     QVariantMap style_grouped;
     for (int i = 0; i < areas_color_list.size(); ++i) {
         auto colors = areas_color_list[i];
@@ -645,7 +975,7 @@ QVariantMap Processor::_grouped_circle_by_color_grouped(
             // 更新 polygon_geometry_coordinates_list
             QVariantList coordinatesList = mergedMap["polygon_geometry_coordinates_list"].toList();
             QVariantList nestedList;
-            for (const auto& coord : polygon_geometry_coordinates_list[i]) {
+            for (const auto &coord: polygon_geometry_coordinates_list[i]) {
                 nestedList.append(coord);
             }
             coordinatesList.append(nestedList);
@@ -659,7 +989,7 @@ QVariantMap Processor::_grouped_circle_by_color_grouped(
             // 更新 style_percents
             QVariantList percentsList = mergedMap["style_percents"].toList();
             QVariantList percents;
-            for (const auto& percent : style_percents[i]) {
+            for (const auto &percent: style_percents[i]) {
                 percents.append(percent);
             }
             percentsList.append(percents);
@@ -668,7 +998,7 @@ QVariantMap Processor::_grouped_circle_by_color_grouped(
             // 更新 areas_color_list
             QVariantList colorList = mergedMap["areas_color_list"].toList();
             QVariantList colors_;
-            for (const auto& color : areas_color_list[i]) {
+            for (const auto &color: areas_color_list[i]) {
                 colors_.append(color);
             }
             colorList.append(colors_);
@@ -677,7 +1007,7 @@ QVariantMap Processor::_grouped_circle_by_color_grouped(
             // 更新 areas_opacity_list
             QVariantList opacityList = mergedMap["areas_opacity_list"].toList();
             QVariantList opacities_;
-            for (const auto& opacity : areas_opacity_list[i]) {
+            for (const auto &opacity: areas_opacity_list[i]) {
                 opacities_.append(opacity);
             }
             opacityList.append(opacities_);
@@ -688,7 +1018,7 @@ QVariantMap Processor::_grouped_circle_by_color_grouped(
 
             QVariantList geometryList;
             QVariantList coordinatesList;
-            for (const auto& coord : polygon_geometry_coordinates_list[i]) {
+            for (const auto &coord: polygon_geometry_coordinates_list[i]) {
                 coordinatesList.append(coord);
             }
             geometryList.append(coordinatesList);
@@ -700,7 +1030,7 @@ QVariantMap Processor::_grouped_circle_by_color_grouped(
 
             QVariantList stylePercentsList;
             QVariantList percentsList;
-            for (const auto& percent : style_percents[i]) {
+            for (const auto &percent: style_percents[i]) {
                 percentsList.append(percent);
             }
             stylePercentsList.append(percentsList);
@@ -708,7 +1038,7 @@ QVariantMap Processor::_grouped_circle_by_color_grouped(
 
             QVariantList areasColorList;
             QVariantList colorList;
-            for (const auto& color : areas_color_list[i]) {
+            for (const auto &color: areas_color_list[i]) {
                 colorList.append(color);
             }
             areasColorList.append(colorList);
@@ -716,7 +1046,7 @@ QVariantMap Processor::_grouped_circle_by_color_grouped(
 
             QVariantList areasOpacityList;
             QVariantList opacityList;
-            for (const auto& opacity : areas_opacity_list[i]) {
+            for (const auto &opacity: areas_opacity_list[i]) {
                 opacityList.append(opacity);
             }
             areasOpacityList.append(opacityList);
@@ -728,9 +1058,9 @@ QVariantMap Processor::_grouped_circle_by_color_grouped(
     return style_grouped;
 }
 
-QVariantMap Processor::_grouped_color_line(
+QVariantMap Processor::_grouped_color_lines(
         QList<QString> &name_list,
-        QList<QList<double>> &geometry_coordinates_list,
+        QList<QList<QList<double>>> &geometry_coordinates_list,
         QList<QJsonObject> &style_list) {
     QVariantMap color_dict;
     for (int i = 0; i < style_list.size(); ++i) {
@@ -759,11 +1089,18 @@ QVariantMap Processor::_grouped_color_line(
 
             // 修改 geometry_coordinates_list 的处理方式，保证是一个列表
             QVariantList geometryList = colorMap["geometry_coordinates_list"].toList();
-            QVariantList nestedList;
-            for (const auto& coord : geometry_coordinates_list[i]) {
-                nestedList.append(coord);
+            QVariantList lineList;
+            qDebug() << "geometry_coordinates_list[i]: " << geometry_coordinates_list[i];
+            for (const auto &coordsLine: geometry_coordinates_list[i]) {
+                QVariantList pointList;
+                for (const auto &coord: coordsLine) {
+                    pointList.append(coord);
+                    qDebug() << "pointList: " << pointList;
+                }
+                lineList.insert(lineList.size(), QVariant(pointList));
+                qDebug() << "lineList: " << lineList;
             }
-            geometryList.append(nestedList);
+            geometryList.insert(geometryList.size(), QVariant(lineList));
             colorMap["geometry_coordinates_list"] = geometryList;
 
             // 修改 style_list 的处理方式，保证是一个列表
@@ -779,11 +1116,19 @@ QVariantMap Processor::_grouped_color_line(
             data.insert("name_list", nameList);
 
             QVariantList geometryList;
-            QVariantList nestedList;
-            for (const auto& coord : geometry_coordinates_list[i]) {
-                nestedList.append(coord);
+            QVariantList lineList;
+            qDebug() << "geometry_coordinates_list[i]: " << geometry_coordinates_list[i];
+            for (const auto &coordsLine: geometry_coordinates_list[i]) {
+                QVariantList pointList;
+                for (const auto &coord: coordsLine) {
+                    pointList.append(coord);
+                    qDebug() << "pointList: " << pointList;
+                }
+                lineList.insert(lineList.size(), QVariant(pointList));
+                qDebug() << "lineList: " << lineList;
             }
-            geometryList.append(nestedList);
+            geometryList.insert(geometryList.size(), QVariant(lineList));
+            qDebug() << "geometryList: " << geometryList;
             data.insert("geometry_coordinates_list", geometryList);
 
             QVariantList styleList;
@@ -796,10 +1141,10 @@ QVariantMap Processor::_grouped_color_line(
     return color_dict;
 }
 
-QVariantMap Processor::_grouped_color_polygon(
-         QList<QString> &name_list,
-         QList<QList<QList<double>>> &geometry_coordinates_list,
-         QList<QJsonObject> &style_list) {
+QVariantMap Processor::_grouped_color_polygons(
+        QList<QString> &name_list,
+        QList<QList<QList<QList<double>>>> &geometry_coordinates_list,
+        QList<QJsonObject> &style_list) {
     QVariantMap color_dict;
     for (int i = 0; i < style_list.size(); ++i) {
         QString style_color;
@@ -825,13 +1170,19 @@ QVariantMap Processor::_grouped_color_polygon(
 
             // 修改 geometry_coordinates_list 的处理方式，保证是一个列表
             QVariantList geometryList = colorMap["geometry_coordinates_list"].toList();
-            QVariantList nestedList;
-            for (const auto& coordList : geometry_coordinates_list[i]) {
-                for (const auto &coord: coordList) {
-                    nestedList.append(coord);
+            QVariantList polygonList;
+            for (const auto &coordLineList: geometry_coordinates_list[i]) {
+                QVariantList lineList;
+                for (const auto &pointCoordList: coordLineList) {
+                    QVariantList pointList;
+                    for (const auto &coord: pointCoordList) {
+                        pointList.append(coord);
+                    }
+                    lineList.insert(lineList.size(), QVariant(pointList));
                 }
+                polygonList.insert(polygonList.size(), QVariant(lineList));
             }
-            geometryList.append(nestedList);
+            geometryList.insert(geometryList.size(), QVariant(polygonList));
             colorMap["geometry_coordinates_list"] = geometryList;
 
             // 修改 style_list 的处理方式，保证是一个列表
@@ -847,13 +1198,19 @@ QVariantMap Processor::_grouped_color_polygon(
             data.insert("name_list", nameList);
 
             QVariantList geometryList;
-            QVariantList nestedList;
-            for (const auto& coordList : geometry_coordinates_list[i]) {
-                for (const auto &coord: coordList) {
-                    nestedList.append(coord);
+            QVariantList polygonList;
+            for (const auto &coordLineList: geometry_coordinates_list[i]) {
+                QVariantList lineList;
+                for (const auto &pointCoordList: coordLineList) {
+                    QVariantList pointList;
+                    for (const auto &coord: pointCoordList) {
+                        pointList.append(coord);
+                    }
+                    lineList.insert(lineList.size(), QVariant(pointList));
                 }
+                polygonList.insert(polygonList.size(), QVariant(lineList));
             }
-            geometryList.append(nestedList);
+            geometryList.insert(geometryList.size(), QVariant(polygonList));
             data.insert("geometry_coordinates_list", geometryList);
 
             QVariantList styleList;

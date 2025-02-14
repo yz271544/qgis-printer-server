@@ -133,6 +133,11 @@ void WebStarter::Stop(StarterContext &context) {
     spdlog::info("WebStarter Stop start");
     // 停止Web服务器
     try {
+
+        if (server) {
+            server->stop();  // 确保服务器停止
+        }
+
         spdlog::info("try join web server thread: {}", threadIdToString(mWebServerThread.get_id()));
         if (mWebServerThread.joinable()) {
             spdlog::info("inside stop server");

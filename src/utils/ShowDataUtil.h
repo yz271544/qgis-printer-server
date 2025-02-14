@@ -5,10 +5,15 @@
 #ifndef JINGWEIPRINTER_SHOWDATAUTIL_H
 #define JINGWEIPRINTER_SHOWDATAUTIL_H
 
+#include <sstream>
+#include <string>
 #include <QList>
 #include <QString>
 #include <spdlog/spdlog.h>
 #include <string>
+#include <qgspoint.h>
+#include <qgslinestring.h>
+#include <qgspolygon.h>
 
 class ShowDataUtil {
 public:
@@ -17,6 +22,8 @@ public:
     static std::string formatQListDoubleToString(const QList<double>& list);
 
     static std::string formatQListDoubleToString(const QList<QList<double>>& list);
+
+    static std::string lineStringPointsToString(const QgsLineString& lineString);
 };
 
 

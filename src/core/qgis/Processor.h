@@ -30,6 +30,10 @@
 #include "App.h"
 #include "utils/ShowDataUtil.h"
 #include "layer/JwCircle.h"
+#include "layer/JwPoint.h"
+#include "layer/JwLine.h"
+#include "layer/JwPolygon.h"
+#include "utils/TypeConvert.h"
 
 /*#include <QMetaType>
 Q_DECLARE_METATYPE(QgsPoint)*/
@@ -39,6 +43,9 @@ class Processor {
 private:
     bool m_enable_3d = true;
     bool m_verbose = false;
+    bool m_export_png_enable = true;
+    bool m_export_pdf_enable = false;
+    bool m_export_svg_enable = false;
     YAML::Node *m_config;
     std::unique_ptr<PlottingFetch> m_plotting_fetch;
     std::unique_ptr<App> m_app;
@@ -89,9 +96,17 @@ public:
                     const QVector<QString> &removeLayerNames,
                     const QVector<QString> &removeLayerPrefixs);
 
-    // 异步导出图像
-    QString exportImage(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
+    // 导出PNG
+    QString exportPNG(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
                  const QString &paperName);
+
+    // 导出PDF
+    QString exportPDF(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
+                        const QString &paperName);
+
+    // 导出SVG
+    QString exportSVG(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
+                        const QString &paperName);
 
     // 压缩项目的静态方法
     QString zipProject(const QString &scene_name);
@@ -128,7 +143,7 @@ public:
             QMap<QString, int>& grouped_color,
             QList<QList<double>>& polygon_geometry_coordinates_list,
             QList<int>& polygon_geometry_properties_radius,
-            QList<QList<int>>& style_percents,
+            QList<QList<double>>& style_percents,
             QList<QList<QString>>& areas_color_list,
             QList<QList<double>>& areas_opacity_list);
 
@@ -151,15 +166,15 @@ public:
             }
         }
      */
-    static QVariantMap _grouped_color_line(
+    static QVariantMap _grouped_color_lines(
             QList<QString> &name_list,
-            QList<QList<double>> &geometry_coordinates_list,
+            QList<QList<QList<double>>> &geometry_coordinates_list,
             QList<QJsonObject> &style_list);
 
 
-    static QVariantMap _grouped_color_polygon(
+    static QVariantMap _grouped_color_polygons(
             QList<QString> &name_list,
-            QList<QList<QList<double>>> &geometry_coordinates_list,
+            QList<QList<QList<QList<double>>>> &geometry_coordinates_list,
             QList<QJsonObject> &style_list);
 };
 

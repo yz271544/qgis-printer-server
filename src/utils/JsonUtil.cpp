@@ -59,29 +59,31 @@ QJsonDocument JsonUtil::variantMapToJson(QVariantMap& variantMap) {
                     jsonArray.append(variantMapToJson(map2).object());
                 } else if (item.type() == QVariant::List) {
                     // 如果列表元素是 QVariantList，递归处理
-                    QJsonArray subArray;
-                    const QVariantList& subList = item.toList();
-                    for (const auto& subItem : subList) {
-                        if (subItem.type() == QVariant::Double) {
-                            subArray.append(subItem.toDouble());
-                        }
-                    }
-                    jsonArray.append(subArray);
-                } else if (item.type() == QVariant::Double) {
-                    jsonArray.append(item.toDouble());
+                    jsonArray.append(processVariantList(item.toList()));
                 } else {
                     // 其他类型，直接添加到数组中
                     jsonArray.append(QJsonValue::fromVariant(item));
                 }
             }
             jsonObject[key] = jsonArray;
-        } else if (value.type() == QVariant::Double) {
-            jsonObject[key] = value.toDouble();
-        } else if (value.type() == QVariant::String) {
-            jsonObject[key] = value.toString();
-        } else if (value.type() == QVariant::Bool) {
-            jsonObject[key] = value.toBool();
+        } else {
+            // 其他类型，直接添加到对象中
+            jsonObject[key] = QJsonValue::fromVariant(value);
         }
     }
     return QJsonDocument(jsonObject);
+}
+
+QJsonArray JsonUtil::processVariantList(const QVariantList& list) {
+    QJsonArray jsonArray;
+    for (const auto& item : list) {
+        if (item.type() == QVariant::List) {
+            // 递归处理更深层次的嵌套列表
+            jsonArray.append(processVariantList(item.toList()));
+        } else {
+            // 其他类型，直接添加到数组中
+            jsonArray.append(QJsonValue::fromVariant(item));
+        }
+    }
+    return jsonArray;
 }

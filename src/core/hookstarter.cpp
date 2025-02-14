@@ -54,6 +54,12 @@ void HookStarter::sig_handler(StarterContext& context)
 
 void HookStarter::Init(StarterContext& context) {
     spdlog::info("HookStarter Init Begin");
+
+    if (!callbacks.empty()) {
+        spdlog::warn("HookStarter callbacks already initialized");
+        return;
+    }
+
     std::vector<Starter*> starters = starterRegister->AllStarters();
     for (const auto& starter : starters) {
         spdlog::info("starter name: {}", typeid(*starter).name());

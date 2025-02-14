@@ -15,9 +15,9 @@ TEST(blaTest, test1) {
     //arrange
     //act
     //assert
-    EXPECT_EQ (Formula::bla (0),  0); //通过
-    EXPECT_EQ (Formula::bla (2), 4); //通过
-    EXPECT_NE (Formula::bla (4), 6); //不通过
+    EXPECT_EQ (Formula::bla(0), 0); //通过
+    EXPECT_EQ (Formula::bla(2), 4); //通过
+    EXPECT_NE (Formula::bla(4), 6); //不通过
 }
 
 
@@ -51,7 +51,7 @@ TEST(blaTest, testArea) {
 
     spdlog::info("area_name size: {}", area_name.size());
 
-    spdlog::info("area_name -> {}", std::for_each(area_name.begin(), area_name.end(), [](const QString& name) {
+    spdlog::info("area_name -> {}", std::for_each(area_name.begin(), area_name.end(), [](const QString &name) {
         return fmt::format("({},)", name.toStdString());
     }));
 
@@ -66,8 +66,8 @@ TEST(blaTest, testArea) {
 
 TEST(blaTest, testExtraElement) {
 
-    QList<QString> area_render_names = {"a", "b" };
-    QList<QString> area_name = {"a", "b", "c", "d" };
+    QList<QString> area_render_names = {"a", "b"};
+    QList<QString> area_name = {"a", "b", "c", "d"};
 
     int sizeOfAreaRenderName = area_render_names.size();
     int sizeOfAreaName = area_name.size();
@@ -80,4 +80,22 @@ TEST(blaTest, testExtraElement) {
     spdlog::info("area_name: {}", ShowDataUtil::formatQListToString(area_name));
     spdlog::info("area_render_names: {}", ShowDataUtil::formatQListToString(area_render_names));
 
+}
+
+TEST(blaTest, testCloseLineString) {
+    // 步骤1: 创建多个QgsPoint对象
+    QgsPoint point1(111.485589, 40.727251, 1022.969204);
+    QgsPoint point2(111.487047, 40.726286, 1022.509176);
+    QgsPoint point3(111.48545, 40.724972, 1024.888198);
+    QgsPoint point4(111.483998, 40.725913, 1022.540483);
+    // 步骤2: 创建QgsLineString对象
+    QgsLineString lineString;
+    lineString.addVertex(point1);
+    lineString.addVertex(point2);
+    lineString.addVertex(point3);
+    lineString.addVertex(point4);
+
+    Formula::checkAndClosedLineStringOfPolygon(lineString);
+
+    GTEST_LOG_(INFO) << "lineString wkt: " << lineString.asWkt().toStdString();
 }

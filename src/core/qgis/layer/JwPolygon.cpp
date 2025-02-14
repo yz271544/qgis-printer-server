@@ -25,11 +25,11 @@ QgsPoint JwPolygon::transformFunction(const QgsPoint &point) {
     return *transformedPoint;
 }
 
-void JwPolygon::addPolygon(const QList<QString> &nameList,
+void JwPolygon::addPolygons(const QList<QString> &nameList,
                            const QList<QgsPolygon> &polygons,
                            const QJsonObject &fontStyle,
                            const QJsonObject &layerStyle,
-                           const QList<QVariant> &styleList) {
+                           const QList<QJsonObject> &styleList) {
     auto memPolygonVectorLayer = std::make_unique<QgsVectorLayer>(
             QString("PolygonZ?crs=%1").arg(MAIN_CRS), mLayerName, QStringLiteral("memory"));
     if (!memPolygonVectorLayer->isValid()) {

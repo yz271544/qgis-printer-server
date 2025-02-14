@@ -350,7 +350,7 @@ void JwCircle::addCircleKeyAreas(
 void JwCircle::addLevelKeyAreas(
         const QList<QgsPoint>& areasCenterPointList,
         const QList<double>& areasRadii,
-        const QList<QVector<double>>& areasPercent,
+        const QList<QList<double>>& areasPercent,
         const QList<QColor>& areasColorList,
         const QList<float>& areasOpacityList,
         int numSegments) {
@@ -385,18 +385,16 @@ void JwCircle::addLevelKeyAreas(
 
     QList<QString> area_render_names;
     // 为每个等级域创建三个同心圆
-    zip3(areasCenterPointList, areasRadii, areasPercent, [&](const QgsPoint &centerPoint, double radius, const QVector<double> &percent) {
-        auto percentList = percent.toList();
-        spdlog::debug("centerPoint: {}-{}-{}, radius: {}, percent: {}",
-                      centerPoint.x(), centerPoint.y(), centerPoint.z(), radius,
-                      ShowDataUtil::formatQListDoubleToString(percentList));
+    zip3(areasCenterPointList, areasRadii, areasPercent, [&](const QgsPoint &centerPoint, double radius, const QList<double> &percent) {
+        auto percentList = percent;
+        qDebug() << "centerPoint: " << centerPoint.x() << "-" <<centerPoint.y() << "-" << centerPoint.z()
+        << " radius: " << radius << " percent: " << percentList;
         if (percent.size() < 3) {
             spdlog::error("percent should have 3 elements");
             return;
         }
         std::reverse(percentList.begin(), percentList.end());
-        spdlog::debug("reverse percent is {}", ShowDataUtil::formatQListDoubleToString(percentList));
-
+        qDebug() << "reverse percent is " << percentList;
         QList<double> radii = {};
         for (int i = 0; i < percentList.size(); ++i) {
             spdlog::debug("enumerate i: {} -> percent: {}", i, percentList[i]);
@@ -410,8 +408,6 @@ void JwCircle::addLevelKeyAreas(
         for (const auto &item_label: CIRCLE_LABELS) {
             circleLabels.append(QString::fromStdString(item_label));
         }
-
-        auto ddd = circleLabels.mid(0, radii.size());
 
         QList<QString> area_name;
         area_name.append(circleLabels.mid(0, radii.size()));

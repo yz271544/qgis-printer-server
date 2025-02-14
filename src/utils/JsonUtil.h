@@ -20,6 +20,8 @@
 #endif
 
 class JsonUtil {
+private:
+    static QJsonArray processVariantList(const QVariantList& list);
 public:
     static QVariantMap jsonObjectToVariantMap(const QJsonObject& jsonObject);
     // create singleton ObjectMapper

@@ -10,6 +10,7 @@
 #include "config.h"
 #include "core/qgis/Processor.h"
 #include "utils/JsonUtil.h"
+#include "utils/TypeConvert.h"
 
 class ProcessEnvironment : public ::testing::Environment {
 public:
@@ -18,10 +19,8 @@ public:
     void SetUp() override {
         auto config = YAML::LoadFile(CONF_FILE);
         GTEST_LOG_(INFO) << "Configuration file loaded successfully.";
-        auto conf = std::make_shared<YAML::Node>(config);
-        GTEST_LOG_(INFO) << "Configuration node created successfully.";
         QList<QString> argv;
-        m_processor = std::make_unique<Processor>(argv, conf);
+        m_processor = std::make_unique<Processor>(argv, &config);
         GTEST_LOG_(INFO) << "Processor created successfully.";
     }
 
@@ -263,7 +262,7 @@ TEST_F(ProcessTest, test_grouped_circle_by_color_grouped) {
 
     QList<int> polygon_geometry_properties_radius = {41, 34, 91};
 
-    QList<QList<int>> style_percents = {
+    QList<QList<double>> style_percents = {
             {40, 30, 30},
             {40, 30, 30},
             {40, 30, 30}
@@ -290,7 +289,7 @@ TEST_F(ProcessTest, test_grouped_circle_by_color_grouped) {
             areas_opacity_list
     );
 
-    GTEST_LOG_(INFO) << "style_grouped: " << JsonUtil::variantMapToJson(*style_grouped).toJson().toStdString();
+    GTEST_LOG_(INFO) << "style_grouped: " << JsonUtil::variantMapToJson(style_grouped).toJson().toStdString();
 }
 
 
@@ -313,59 +312,7 @@ TEST_F(ProcessTest, test_json_doc) {
 }
 
 
-TEST_F(ProcessTest, test_grouped_color_line) {
-    QList<QString> name_list = {
-            "line1", "line2", "line3"
-    };
-
-    QList<QList<double>> geometry_coordinates_list = {
-            {111.477486, 40.724372},
-            {111.478305, 40.723215},
-            {112.477486, 42.724372},
-            {112.478305, 42.723215},
-            {113.477486, 43.724372},
-            {113.478305, 43.723215}
-    };
-
-    QJsonObject j1;
-    QJsonObject js1;
-    js1["color"] = "#ff4040";
-    j1["layerStyle"] = js1;
-
-    QJsonObject j2;
-    QJsonObject js2;
-    js2["color"] = "#00cd52";
-    j2["layerStyle"] = js2;
-
-    QJsonObject j3;
-    QJsonObject js3;
-    js3["color"] = "#2f99f3";
-    j3["layerStyle"] = js3;
-
-    QList<QJsonObject> style_list = {
-            j1, j2, j3
-    };
-
-    auto color_grouped = Processor::_grouped_color_line(
-            name_list, geometry_coordinates_list, style_list
-    );
-
-    GTEST_LOG_(INFO) << "style_grouped: " << JsonUtil::variantMapToJson(*color_grouped).toJson().toStdString();
-
-    // 检查 geometry_coordinates_list 的值
-    for (const auto &key: color_grouped->keys()) {
-        auto colorMap = color_grouped->value(key).toMap();
-        auto geometryList = colorMap["geometry_coordinates_list"].toList();
-        for (const auto &geometry: geometryList) {
-            GTEST_LOG_(INFO) << "geometry: " << geometry.toString().toStdString();
-        }
-    }
-
-    delete color_grouped;
-}
-
-
-TEST_F(ProcessTest, test_grouped_color_polygon) {
+TEST_F(ProcessTest, test_grouped_color_lines) {
     QList<QString> name_list = {
             "line1", "line2", "line3"
     };
@@ -404,20 +351,178 @@ TEST_F(ProcessTest, test_grouped_color_polygon) {
             j1, j2, j3
     };
 
-    auto color_grouped = Processor::_grouped_color_polygon(
+    auto color_grouped = Processor::_grouped_color_lines(
             name_list, geometry_coordinates_list, style_list
     );
 
-    GTEST_LOG_(INFO) << "style_grouped: " << JsonUtil::variantMapToJson(*color_grouped).toJson().toStdString();
+    GTEST_LOG_(INFO) << "style_grouped: " << JsonUtil::variantMapToJson(color_grouped).toJson().toStdString();
 
     // 检查 geometry_coordinates_list 的值
-    for (const auto &key: color_grouped->keys()) {
-        auto colorMap = color_grouped->value(key).toMap();
+    for (const auto &key: color_grouped.keys()) {
+        auto colorMap = color_grouped.value(key).toMap();
+        auto geometryList = colorMap["geometry_coordinates_list"].toList();
+        for (const auto &geometry: geometryList) {
+            GTEST_LOG_(INFO) << "geometry: " << geometry.toString().toStdString();
+        }
+    }
+}
+
+TEST_F(ProcessTest, test_grouped_color_lines2) {
+    QList<QString> name_list = {
+            "应急道路"
+    };
+
+    QList<QList<QList<double>>> geometry_coordinates_list = {
+            {
+                    {111.485753, 40.726074, 1023.238664},
+                    {111.486633, 40.725551, 1023.194337},
+                    {111.491019, 40.729211, 1022.597684}
+            }
+    };
+
+    QString json_style = """{\"dxFlag\": false, \"layerStyleObj\": {\"color\": \"rgba(255, 64, 64, 0.4)\"}, \"bim\": \"\", \"hcFlag\": false, \"fontStyle\": {\"borderColor\": \"rgba(255,255,255,1)\", \"loadFlag\": true, \"x\": 0, \"y\": 35, \"fontSize\": 20, \"fontColor\": \"rgba(255, 70, 70, 1)\", \"fontFlag\": false}, \"jb\": 1, \"jbList\": [{\"color\": \"rgba(125,142,52,0.7)\", \"num\": 10}]}""";
+    QByteArray jsonData = json_style.toUtf8();
+    QJsonParseError parseError;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData, &parseError);
+
+    QList<QJsonObject> style_list = {
+            jsonDoc.object()
+    };
+
+    auto color_grouped = Processor::_grouped_color_lines(
+            name_list, geometry_coordinates_list, style_list
+    );
+
+    GTEST_LOG_(INFO) << "style_grouped: " << JsonUtil::variantMapToJson(color_grouped).toJson().toStdString();
+
+    // 检查 geometry_coordinates_list 的值
+    for (const auto &key: color_grouped.keys()) {
+        auto colorMap = color_grouped.value(key).toMap();
+        auto geometryList = colorMap["geometry_coordinates_list"].toList();
+        for (const auto &geometry: geometryList) {
+            GTEST_LOG_(INFO) << "geometry: " << geometry.toString().toStdString();
+        }
+    }
+}
+
+TEST_F(ProcessTest, test_grouped_color_polygons) {
+    QList<QString> name_list = {
+            "line1", "line2", "line3"
+    };
+
+    QList<QList<QList<QList<double>>>> geometry_coordinates_list = {
+            {
+                    {
+                            {
+                                    111.485589,
+                                    40.727251,
+                                    1022.969204
+                            },
+                            {
+                                    111.487047,
+                                    40.726286,
+                                    1022.509176
+                            },
+                            {
+                                    111.48545,
+                                    40.724972,
+                                    1024.888198
+                            },
+                            {
+                                    111.483998,
+                                    40.725913,
+                                    1022.540483
+                            }
+                    },
+            }
+    };
+
+    QString json_style = """{\"dxFlag\": true, \"layerStyleObj\": {\"bordercolor\": \"rgba(255, 255, 255, 1)\", \"fillColor\": \"rgba(255, 222, 222, 0.4)\"}, \"bim\": \"\", \"hcFlag\": false, \"fontStyle\": {\"borderColor\": \"rgba(255,255,255,1)\", \"loadFlag\": true, \"x\": 0, \"y\": 35, \"fontSize\": 20, \"fontColor\": \"rgba(255,255,255,1)\", \"fontFlag\": false}, \"jb\": 1, \"qtObj\": {\"color\": \"rgba(255, 64, 64, 0.4)\", \"loadFlag\": false, \"height\": 0}, \"jbList\": [{\"color\": \"rgba(255,255,255,0.8)\", \"num\": 20}]}""";
+    QByteArray jsonData = json_style.toUtf8();
+    QJsonParseError parseError;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData, &parseError);
+
+    QList<QJsonObject> style_list = {
+            jsonDoc.object()
+    };
+
+    auto color_grouped = Processor::_grouped_color_polygons(
+            name_list, geometry_coordinates_list, style_list
+    );
+
+    GTEST_LOG_(INFO) << "style_grouped: " << JsonUtil::variantMapToJson(color_grouped).toJson().toStdString();
+
+    // 检查 geometry_coordinates_list 的值
+    for (const auto &key: color_grouped.keys()) {
+        auto colorMap = color_grouped.value(key).toMap();
         auto geometryList = colorMap["geometry_coordinates_list"].toList();
         for (const auto &geometry: geometryList) {
             GTEST_LOG_(INFO) << "geometry: " << geometry.toString().toStdString();
         }
     }
 
-    delete color_grouped;
+}
+
+
+
+TEST_F(ProcessTest, test_grouped_color_line_parser) {
+
+    // 示例数据
+    QList<QVariant> geometry_coordinates_list = {
+            QVariantList{
+                    QVariantList{
+                            QVariant(111.486), QVariant(40.7261), QVariant(1023.24)
+                    },
+                    QVariantList{
+                            QVariant(111.487), QVariant(40.7256), QVariant(1023.19)
+                    },
+                    QVariantList{
+                            QVariant(111.491), QVariant(40.7292), QVariant(1022.6)
+                    }
+            }
+    };
+
+    // 转换为目标类型
+    QList<QList<QList<double>>> nestedList = TypeConvert::convertToNestedList(geometry_coordinates_list);
+
+    // 打印结果
+    qDebug() << "Converted nested list:" << nestedList;
+
+    QList<QList<QList<double>>> result = TypeConvert::convertVariant<QList<QList<QList<double>>>>(geometry_coordinates_list);
+
+    // 打印结果
+    qDebug() << "Converted nested list:" << result;
+}
+
+
+TEST_F(ProcessTest, test_grouped_color_line_parser2) {
+
+    // 示例数据
+    QList<QVariant> geometry_coordinates_list = {
+            QVariantList{
+                    QVariantList{
+                            QVariantList{
+                                    QVariant(111.486), QVariant(40.7261), QVariant(1023.24)
+                            },
+                            QVariantList{
+                                    QVariant(111.487), QVariant(40.7256), QVariant(1023.19)
+                            },
+                            QVariantList{
+                                    QVariant(111.491), QVariant(40.7292), QVariant(1022.6)
+                            }
+                    }
+            }
+    };
+
+    //// 转换为目标类型
+    //QList<QList<QList<double>>> nestedList = TypeConvert::convertToNestedList(geometry_coordinates_list);
+    // 转换为目标类型：QList<QList<QList<QList<double>>>>
+//    using TargetType = QList<QList<QList<QList<double>>>>;
+//    TargetType nestedList = TypeConvert::convertVariant<TargetType>(geometry_coordinates_list);
+
+    QList<QList<QList<QList<double>>>> result = TypeConvert::convertVariant<QList<QList<QList<QList<double>>>>>(geometry_coordinates_list);
+
+    // 打印结果
+    qDebug() << "Converted nested list:" << result;
+
 }

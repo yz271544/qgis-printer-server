@@ -15,6 +15,7 @@
 #include "core/handler/dto/plotting.h"
 #include "core/fetch/PlottingFetch.h"
 #include "utils/JsonUtil.h"
+#include "utils/ShowDataUtil.h"
 
 class GeometryWktTest: public ::testing::Test {
 
@@ -61,5 +62,24 @@ TEST_F(GeometryWktTest, testQgsPolygon) {
     // 输出多边形的信息
     std::cout << "Number of exterior ring vertices: " << polygon.exteriorRing()->numPoints() << std::endl;
 
+
+    int vertexNum = lineString.numPoints();
+    // 遍历每个点
+    for (int i = 0; i < vertexNum; ++i)
+    {
+        // 获取当前点
+        const QgsPoint& point = lineString.pointN(i);
+
+        // 输出点的坐标
+        std::cout << "Point " << i << ": (" << point.x() << ", " << point.y() << ")" << std::endl;
+    }
+
+    std::cout << "LineString: " << ShowDataUtil::lineStringPointsToString(lineString);
+
+    auto startPoint = lineString.startPoint();
+    auto endPoint = lineString.endPoint();
+
+    GTEST_LOG_(INFO) << "startPoint x: " << startPoint.x() << ", y: " << startPoint.y() << " z:" << startPoint.z();
+    GTEST_LOG_(INFO) << "endPoint x: " << endPoint.x() << ", y: " << endPoint.y() << " z:" << startPoint.z();
 
 }

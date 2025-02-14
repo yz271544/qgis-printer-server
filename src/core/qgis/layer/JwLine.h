@@ -30,6 +30,7 @@
 #include "core/qgis/style/StyleLine.h"
 #include "JwGeometry.h"
 #include "utils/ImageUtil.h"
+#include "utils/ShowDataUtil.h"
 
 class JwLine : public QObject, public JwGeometry {
 Q_OBJECT
@@ -44,10 +45,10 @@ public:
     ~JwLine();
 
     void addLines(const QList<QString>& lineNameList,
-                  const QList<QList<QgsPoint>>& lines,
+                  const QList<QgsLineString>& lines,
                   const QJsonObject& fontStyle,
                   const QJsonObject& layerStyle,
-                  const QList<QString>& styleList,
+                  const QList<QJsonObject>& styleList,
                   int line_width = 1);
 
 private:

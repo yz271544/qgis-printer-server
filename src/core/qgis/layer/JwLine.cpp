@@ -21,10 +21,10 @@ JwLine::~JwLine() = default;
 
 void JwLine::addLines(
         const QList<QString>& lineNameList,
-        const QList<QList<QgsPoint>>& lines,
+        const QList<QgsLineString>& lines,
         const QJsonObject& fontStyle,
         const QJsonObject& layerStyle,
-        const QList<QString>& styleList,
+        const QList<QJsonObject>& styleList,
         int line_width) {
 
     auto memLineVectorLayer = std::make_unique<QgsVectorLayer>(
@@ -56,10 +56,12 @@ void JwLine::addLines(
         auto line = lines[i];
         try {
             QgsPolyline polyline;
-            for (const auto& point :line) {
+            for (int j=0; j < line.numPoints(); ++i) {
+                auto point = line.pointN(j);
                 auto qgsPointOfLine = transformPoint(point, *transformer);
                 polyline.append(*qgsPointOfLine);
             }
+
             QgsGeometry lineString = QgsGeometry::fromPolyline(polyline);
             QgsFeature feature(fields);
             feature.setGeometry(lineString);
@@ -70,10 +72,7 @@ void JwLine::addLines(
             feature.setAttributes(attribute);
             lineProvider->addFeature(feature);
         } catch (const std::exception& e) {
-            std::string lineString = fmt::format("{}", std::for_each(line.begin(), line.end(), [](const QgsPoint& point) {
-                return fmt::format("({}, {}, {})", point.x(), point.y(), point.z());
-            }));
-            spdlog::error("add line feature error: {}, polygon:", e.what(), lineString);
+            spdlog::error("add line feature error: {}, polygon:", e.what(), ShowDataUtil::lineStringPointsToString(line));
         }
     }
 
