@@ -72,7 +72,7 @@ void JwLine::addLines(
             feature.setAttributes(attribute);
             lineProvider->addFeature(feature);
         } catch (const std::exception& e) {
-            spdlog::error("add line feature error: {}, polygon:", e.what(), ShowDataUtil::lineStringPointsToString(line));
+            spdlog::error("add line feature error: {}, polygon:", e.what(), ShowDataUtil::lineStringToString(line));
         }
     }
 

@@ -45,7 +45,7 @@ std::string ShowDataUtil::formatQListDoubleToString(const QList<QList<double>>& 
     return result;
 }
 
-std::string ShowDataUtil::lineStringPointsToString(const QgsLineString& lineString) {
+std::string ShowDataUtil::lineStringToString(const QgsLineString& lineString) {
     std::ostringstream oss;
     oss << "{";
 
@@ -63,5 +63,41 @@ std::string ShowDataUtil::lineStringPointsToString(const QgsLineString& lineStri
     }
 
     oss << "}";
+    return oss.str();
+}
+
+std::string ShowDataUtil::polygonToString(const QgsPolygon& polygon) {
+    std::ostringstream oss;
+
+    // 获取外环
+    const auto exteriorRing = qgsgeometry_cast<const QgsLineString*>(polygon.exteriorRing());
+    if (exteriorRing) {
+        oss << "Exterior Ring:\n";
+        for (int i = 0; i < exteriorRing->numPoints(); ++i) {
+            QgsPoint point = exteriorRing->pointN(i);
+            oss << "(" << point.x() << ", " << point.y() << ")";
+            if (i < exteriorRing->numPoints() - 1) {
+                oss << ", ";
+            }
+        }
+        oss << "\n";
+    }
+
+    // 获取内环（洞）
+    for (int i = 0; i < polygon.numInteriorRings(); ++i) {
+        const auto interiorRing = qgsgeometry_cast<const QgsLineString*>(polygon.interiorRing(i));
+        if (interiorRing) {
+            oss << "Interior Ring " << i + 1 << ":\n";
+            for (int j = 0; j < interiorRing->numPoints(); ++j) {
+                QgsPoint point = interiorRing->pointN(j);
+                oss << "(" << point.x() << ", " << point.y() << ")";
+                if (j < interiorRing->numPoints() - 1) {
+                    oss << ", ";
+                }
+            }
+            oss << "\n";
+        }
+    }
+
     return oss.str();
 }

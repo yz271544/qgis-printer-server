@@ -55,7 +55,7 @@ private:
     QString m_mapping_export_nginx_url_prefix;
 public:
     // 构造函数
-    Processor(QList<QString> argvList, YAML::Node* config);
+    Processor(const QList<QString>& argvList, YAML::Node* config);
 
     // 析构函数
     ~Processor();
@@ -67,7 +67,7 @@ public:
 
 
     // 检查和处理闭合几何图形的函数
-    void checkDealWithClosedGeometry(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto> &geojson);
+    static void checkDealWithClosedGeometry(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto> &geojson);
 
     // 异步处理绘图数据的函数
     std::future<DTOWRAPPERNS::DTOWrapper<ResponseDto>> processByPlottingWeb(
@@ -81,7 +81,7 @@ public:
                     const QString &layout_name,
                     const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
                     const QMap<QString, QVariant> &image_spec,
-                    PaperSpecification available_paper,
+                    const PaperSpecification& available_paper,
                     bool write_qpt,
                     const QVector<QString> &removeLayerNames,
                     const QVector<QString> &removeLayerPrefixs);
@@ -91,7 +91,7 @@ public:
                     const QString &layout_name,
                     const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
                     const QMap<QString, QVariant> &image_spec,
-                    PaperSpecification available_paper,
+                    const PaperSpecification& available_paper,
                     bool write_qpt,
                     const QVector<QString> &removeLayerNames,
                     const QVector<QString> &removeLayerPrefixs);

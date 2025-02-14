@@ -23,7 +23,9 @@ public:
 
     static std::string formatQListDoubleToString(const QList<QList<double>>& list);
 
-    static std::string lineStringPointsToString(const QgsLineString& lineString);
+    static std::string lineStringToString(const QgsLineString& lineString);
+
+    static std::string polygonToString(const QgsPolygon& polygon);
 };
 
 

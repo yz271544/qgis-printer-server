@@ -4,7 +4,7 @@
 
 #include "Processor.h"
 
-Processor::Processor(QList<QString> argvList, YAML::Node *config) {
+Processor::Processor(const QList<QString>& argvList, YAML::Node *config) {
     m_config = config;
     try {
         m_verbose = m_config->operator[]("logging")["verbose"].as<bool>();
@@ -129,7 +129,10 @@ Processor::Processor(QList<QString> argvList, YAML::Node *config) {
         (*m_setting_image_spec)[itemMap["name"].toString()] = itemMap;
     }
     if (m_verbose) {
-        for (const auto &key: m_setting_image_spec->keys()) {
+        QVariantMap::Iterator it;
+        //for (const auto &key: m_setting_image_spec->keys()) {
+        for (it = m_setting_image_spec->begin(); it != m_setting_image_spec->end(); ++it) {
+            auto const& key = it.key();
             spdlog::debug("image_spec: {}", key.toStdString());
             auto value = m_setting_image_spec->value(key).toMap();
             spdlog::debug("local: {}", value["local"].toString().toStdString());
@@ -139,7 +142,7 @@ Processor::Processor(QList<QString> argvList, YAML::Node *config) {
 
 Processor::~Processor() {
     spdlog::info("Processor destroyed");
-};
+}
 
 std::future<DTOWRAPPERNS::DTOWrapper<PlottingRespDto>>
 Processor::fetchPlotting(const oatpp::String &token, const oatpp::String &scene_type,
@@ -498,7 +501,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                 if (shape.contains("properties")) {
                     auto properties = shape["properties"].toObject();
                     if (properties.contains("radius")) {
-                        auto radius = properties["radius"].toDouble();
+                        auto radius = properties["radius"].toInt();
                         polygon_geometry_properties_radius.append(radius);
                     }
                 }
@@ -539,7 +542,6 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
             }
             qDebug() << "style_percents: " << style_percents;
             qDebug() << "style_color_list: " << style_color_list;
-            qDebug() << "style_color_opacity_list: ", style_color_opacity_list;
 
             auto grouped_color = ColorTransformUtil::multiColorGroup(style_color_list);
 
@@ -554,7 +556,9 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
             qDebug() << "style_grouped: " << style_grouped;
 
             int circle_num = 0;
-            for (const auto &color_style: style_grouped.keys()) {
+            QVariantMap::iterator it;
+            for (it = style_grouped.begin(); it != style_grouped.end(); ++it) {
+                const auto& color_style = it.key();
                 auto color_style_dict = style_grouped.value(color_style).toMap();
                 qDebug() << "color_style: " << color_style << " --> " << color_style_dict;
                 QString layerPrefix = QString::fromStdString(payloads->name);
@@ -594,7 +598,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                 auto areas_opacity_list = color_style_dict["areas_opacity_list"].toList();
                 for (const auto &item: areas_opacity_list) {
                     if (item.canConvert<double>()) {
-                        styleColorOpacityList.append(item.toDouble());
+                        styleColorOpacityList.append(item.toFloat());
                     }
                 }
 
@@ -677,9 +681,9 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
             }
 
             // paint the circles and points to layer
-            if (point_geometry_coordinates_list.size() > 0) {
+            if (!point_geometry_coordinates_list.empty()) {
                 QString layerName = QString::fromStdString(payloads->name);
-                if (circle_radii.size() > 0) {
+                if (!circle_radii.empty()) {
                     auto jw_circle = std::make_unique<JwCircle>(
                             m_app->getSceneName(),
                             layerName,
@@ -712,14 +716,17 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                 }
             }
             // paint the lineString to layer
-            if (line_geometry_coordinates_list.size() > 0) {
+            if (!line_geometry_coordinates_list.empty()) {
                 auto grouped_color = _grouped_color_lines(
                         name_list,
                         line_geometry_coordinates_list,
                         style_list
                 );
                 int line_num = 0;
-                for (const auto &color_style: grouped_color.keys()) {
+                QVariantMap::iterator it;
+                //for (const auto &color_style: grouped_color.keys()) {
+                for (it = grouped_color.begin(); it != grouped_color.end(); ++it) {
+                    const auto& color_style = it.key();
                     auto color_style_dict = grouped_color.value(color_style).toMap();
                     QString layerPrefix = QString::fromStdString(payloads->name);
                     QString layerName = QString("%1%2").arg(layerPrefix, QString::number(line_num));
@@ -740,7 +747,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                     }
                     QList<QgsLineString> linesGeometryCoordinates;
                     auto geometry_coordinates_list = color_style_dict["geometry_coordinates_list"].toList();
-                    QList<QList<QList<double>>> typed_geometry_coordinates_list = TypeConvert::convertVariant<QList<QList<QList<double>>>>(
+                    auto typed_geometry_coordinates_list = TypeConvert::convertVariant<QList<QList<QList<double>>>>(
                             geometry_coordinates_list);
                     for (const auto &coordLines: typed_geometry_coordinates_list) {
                         QgsLineString line_geometry_coordinate;
@@ -753,21 +760,20 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                             line_geometry_coordinate.addVertex(line_vertexes);
                         }
                         linesGeometryCoordinates.append(line_geometry_coordinate);
-                        qDebug() << "linesGeometryCoordinates size: " << linesGeometryCoordinates.size();
-                        for (const auto &line: linesGeometryCoordinates) {
-                            qDebug() << "linesGeometryCoordinates: " << QString::fromStdString(ShowDataUtil::lineStringPointsToString(line));
-                        }
                     }
-
+                    qDebug() << "linesGeometryCoordinates size: " << linesGeometryCoordinates.size();
+                    for (const auto &line: linesGeometryCoordinates) {
+                        qDebug() << "linesGeometryCoordinates: " << QString::fromStdString(ShowDataUtil::lineStringToString(line));
+                    }
+                    qDebug() << "1111";
                     QList<QJsonObject> styleList;
                     auto style_list_ = color_style_dict["style_list"].toList();
                     for (const auto &item: style_list_) {
-                        auto cc = item;
                         if (item.canConvert<QJsonObject>()) {
                             styleList.append(item.value<QJsonObject>());
                         }
                     }
-
+                    qDebug() << "2222";
                     jw_line->addLines(
                             lineNameList,
                             linesGeometryCoordinates,
@@ -775,18 +781,22 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                             layer_style,
                             styleList
                     );
+                    qDebug() << "3333";
                     line_num++;
                 }
             }
             // paint the polygon to layer
-            if (polygon_geometry_coordinates_list.size() > 0) {
+            if (!polygon_geometry_coordinates_list.empty()) {
                 auto grouped_color = _grouped_color_polygons(
                         name_list,
                         polygon_geometry_coordinates_list,
                         style_list
                 );
                 int polygon_num = 0;
-                for (const auto &color_style: grouped_color.keys()) {
+                QVariantMap::iterator it;
+                //for (const auto &color_style: grouped_color.keys()) {
+                for (it = grouped_color.begin(); it != grouped_color.end(); ++it) {
+                    const auto& color_style = it.key();
                     auto color_style_dict = grouped_color.value(color_style).toMap();
                     QString layerPrefix = QString::fromStdString(payloads->name);
                     QString layerName = QString("%1%2").arg(layerPrefix, QString::number(polygon_num));
@@ -807,7 +817,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                     }
                     QList<QgsPolygon> polygonGeometryCoordinates;
                     auto geometry_coordinates_list = color_style_dict["geometry_coordinates_list"].toList();
-                    QList<QList<QList<QList<double>>>> typed_geometry_coordinates_list = TypeConvert::convertVariant<QList<QList<QList<QList<double>>>>>(
+                    auto typed_geometry_coordinates_list = TypeConvert::convertVariant<QList<QList<QList<QList<double>>>>>(
                             geometry_coordinates_list);
                     for (const auto &coordPolygons: typed_geometry_coordinates_list) {
                         QgsLineString lineString;
@@ -824,11 +834,14 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                         qgsPolygon.setExteriorRing(lineString.clone());
                         polygonGeometryCoordinates.append(qgsPolygon);
                     }
+                    qDebug() << "polygonGeometryCoordinates size: " << polygonGeometryCoordinates.size();
+                    for (const auto &polygon: polygonGeometryCoordinates) {
+                        qDebug() << "polygonGeometryCoordinates: " << QString::fromStdString(ShowDataUtil::polygonToString(polygon));
+                    }
 
                     QList<QJsonObject> styleList;
                     auto style_list_ = color_style_dict["style_list"].toList();
                     for (const auto &item: style_list_) {
-                        auto cc = item;
                         if (item.canConvert<QJsonObject>()) {
                             styleList.append(item.value<QJsonObject>());
                         }
@@ -855,7 +868,7 @@ void Processor::add_layout(
         const QString &layout_name,
         const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
         const QMap<QString, QVariant> &image_spec,
-        PaperSpecification available_paper,
+        const PaperSpecification& available_paper,
         bool write_qpt,
         const QVector<QString> &removeLayerNames,
         const QVector<QString> &removeLayerPrefixs) {
@@ -881,7 +894,7 @@ void Processor::add_3d_layout(
         const QString &layout_name,
         const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
         const QMap<QString, QVariant> &image_spec,
-        PaperSpecification available_paper,
+        const PaperSpecification& available_paper,
         bool write_qpt,
         const QVector<QString> &removeLayerNames,
         const QVector<QString> &removeLayerPrefixs) {
