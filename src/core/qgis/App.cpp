@@ -96,9 +96,9 @@ QgsCoordinateTransformContext& App::getTransformContext() {
 
 void App::finishQgis() {
     //QgsApplication::exitQgis();
-    /*if (QgsApplication::instance()) {
+    if (QgsApplication::instance()) {
         QgsApplication::exitQgis();
-    }*/
+    }
     spdlog::debug("finished qgis");
 }
 

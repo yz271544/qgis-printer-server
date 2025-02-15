@@ -131,30 +131,31 @@ void WebStarter::Start(StarterContext &context) {
 
 void WebStarter::Stop(StarterContext &context) {
     if (mStopped) {
-        spdlog::info("QCoreStarter already stopped, skipping...");
+        spdlog::info("oatpp WebStarter already stopped, skipping...");
         return;
     }
     mStopped = true;
     spdlog::info("WebStarter Stop start");
     // 停止Web服务器
     try {
-
-        if (server) {
-            server->stop();  // 确保服务器停止
+        if (mBlock) {
+            server->stop();
+        } else {
+            spdlog::info("try join web server thread: {}", threadIdToString(mWebServerThread.get_id()));
+            if (mWebServerThread.joinable()) {
+                spdlog::info("request stop web server thread");
+                mWebServerThread.request_stop();  // 请求线程停止
+                server->stop();  // 确保 `server->run()` 立即停止
+                spdlog::info("join web server thread");
+                mWebServerThread.join();           // 等待线程结束
+                spdlog::info("joined the web server thread");
+            }
         }
-
-        spdlog::info("try join web server thread: {}", threadIdToString(mWebServerThread.get_id()));
-        if (mWebServerThread.joinable()) {
-            spdlog::info("inside stop server");
-            server->stop();  // 停止服务器
-            spdlog::info("request stop web server thread");
-            mWebServerThread.request_stop();  // 请求线程停止
-            spdlog::info("join web server thread");
-            mWebServerThread.join();           // 等待线程结束
-            spdlog::info("joined the web server thread");
-        }
-        spdlog::info("outside stop server");
-        server->stop();
+        spdlog::info("oatpp server reset");
+        server.reset();
+        spdlog::info("Resetting connection handler");
+        connectionHandler.reset();
+        spdlog::info("Destroying oatpp environment");
 #ifdef OATPP_VERSION_LESS_1_4_0
         oatpp::base::Environment::destroy();
 #else
