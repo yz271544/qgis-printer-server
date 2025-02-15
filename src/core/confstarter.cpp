@@ -15,54 +15,54 @@ ConfStarter::~ConfStarter() = default;
 
 // 实现Init方法，从指定路径加载配置文件，若加载失败会输出错误信息到标准错误输出流
 void ConfStarter::Init(StarterContext& context) {
-    spdlog::debug("ConfStarter debug test");
-    spdlog::info("ConfStarter Init start");
+//    spdlog::debug("ConfStarter debug test");
+//    spdlog::info("ConfStarter Init start");
     try {
         // 尝试从指定路径加载配置文件，路径应根据实际项目情况正确配置
         //config = YAML::LoadFile("/lyndon/iProject/cpath/cboot/conf/config.yaml");
         auto config = YAML::LoadFile(CONF_FILE);
         mConfig = std::make_unique<YAML::Node>(config);
         context.SetProps(mConfig.get());
-        spdlog::info("CONF SERVER: {}, port: {}", config["app"]["name"].as<std::string>(), config["web"]["port"].as<int>());
+//        spdlog::info("CONF SERVER: {}, port: {}", config["app"]["name"].as<std::string>(), config["web"]["port"].as<int>());
     } catch (const YAML::BadFile& e) {
         std::cerr << "Error loading config file: " << e.what() << std::endl;
     }
-    spdlog::info("ConfStarter Init end");
+//    spdlog::info("ConfStarter Init end");
 }
 
 // 实现Setup方法，目前此方法只是一个占位，可根据具体业务需求实现更详细的配置调整等功能
 // 例如，根据配置内容对某些模块进行初始化设置，或者验证配置的合法性等
 void ConfStarter::Setup(StarterContext& context) {
-    spdlog::info("ConfStarter Setup start");
+//    spdlog::info("ConfStarter Setup start");
     // 此处可添加具体业务逻辑代码，比如：
     // if (config["some_key"]) {
     //     // 进行相关设置操作
     // }
-    spdlog::info("ConfStarter Setup end");
+//    spdlog::info("ConfStarter Setup end");
 }
 
 // 实现Start方法，根据从配置文件中解析出的配置内容做一些初始化启动相关的操作，需按实际业务需求实现
 // 比如，根据配置启动相应的服务、初始化数据库连接等（取决于具体应用场景）
 void ConfStarter::Start(StarterContext& context) {
-    spdlog::info("ConfStarter Start start");
+//    spdlog::info("ConfStarter Start start");
     // 此处可添加具体业务逻辑代码，例如：
     // if (config["database"]["enabled"].as<bool>()) {
     //     // 启动数据库连接相关代码
     // }
-    spdlog::info("ConfStarter Start end");
+//    spdlog::info("ConfStarter Start end");
 }
 
 // 实现Stop方法，清理与配置相关的资源或者状态等，同样需按具体业务逻辑完善
 // 例如，关闭打开的配置文件（如果有保持打开状态的情况），释放相关内存资源等
 void ConfStarter::Stop(StarterContext& context) {
     if (mStopped) {
-        spdlog::info("QCoreStarter already stopped, skipping...");
+//        spdlog::info("QCoreStarter already stopped, skipping...");
         return;
     }
     mStopped = true;
-    spdlog::info("ConfStarter Stop start");
+//    spdlog::info("ConfStarter Stop start");
     // 此处可添加具体业务逻辑代码，比如释放某些动态分配的内存（如果有）等操作
-    spdlog::info("ConfStarter Stop end");
+//    spdlog::info("ConfStarter Stop end");
 }
 
 // 返回该启动器所属的优先级分组，这里按照定义返回基础资源组（BasicResourcesGroup）

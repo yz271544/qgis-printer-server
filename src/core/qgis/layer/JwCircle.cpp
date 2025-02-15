@@ -54,7 +54,7 @@ void JwCircle::addCircle(QgsPoint &centerPoint,
     auto transformer = QgsUtil::coordinateTransformer4326To3857(mProject);
 
     // 添加要素
-    spdlog::info("JwCircle addCircle layer: {}", this->mLayerName.toStdString());
+//    spdlog::info("JwCircle addCircle layer: {}", this->mLayerName.toStdString());
 
     memCircleVectorLayer->startEditing();
 
@@ -159,7 +159,7 @@ void JwCircle::addCircles(
     auto transformer = QgsUtil::coordinateTransformer4326To3857(mProject);
 
     // 添加要素
-    spdlog::info("JwCircle addCircles layer: {}", this->mLayerName.toStdString());
+//    spdlog::info("JwCircle addCircles layer: {}", this->mLayerName.toStdString());
 
     memCircleVectorLayer->startEditing();
 
@@ -178,10 +178,10 @@ void JwCircle::addCircles(
             attribute.append(radius);
             feature.setAttributes(attribute);
             circleProvider->addFeature(feature);
-            spdlog::debug("added circle feature {}: {}-{}-{} {}",
-                          name.toStdString(),
-                          center_transformed->x(), center_transformed->y(),
-                          center_transformed->z(), radius);
+//            spdlog::debug("added circle feature {}: {}-{}-{} {}",
+//                          name.toStdString(),
+//                          center_transformed->x(), center_transformed->y(),
+//                          center_transformed->z(), radius);
         } catch (const std::exception &e) {
             spdlog::error("add circle {}-{}-{} {} feature error: {}",
                           centerPoint.x(), centerPoint.y(), centerPoint.z(),
@@ -263,7 +263,7 @@ void JwCircle::addCircleKeyAreas(
     auto transformer = QgsUtil::coordinateTransformer4326To3857(mProject);
 
     // 添加要素
-    spdlog::info("JwCircle addCircleKeyAreas layer:{}", this->mLayerName.toStdString());
+//    spdlog::info("JwCircle addCircleKeyAreas layer:{}", this->mLayerName.toStdString());
 
     // 分别创建三个同心圆并添加到图层
     QList<QString> areaNames;

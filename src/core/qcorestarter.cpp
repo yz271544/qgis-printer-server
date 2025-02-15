@@ -13,23 +13,23 @@ QCoreStarter::QCoreStarter() {}
 
 QCoreStarter::~QCoreStarter() {
     if (mQSurfaceFormat) {
-        spdlog::info("reset the mQSurfaceFormat");
+//        spdlog::info("reset the mQSurfaceFormat");
         mQSurfaceFormat.reset();
     }
     if (mQOffscreenSurface) {
-        spdlog::info("reset the mQOffscreenSurface");
+//        spdlog::info("reset the mQOffscreenSurface");
         mQOffscreenSurface.reset();
     }
     if (mOpenGLContext) {
-        spdlog::info("reset the mOpenGLContext");
+//        spdlog::info("reset the mOpenGLContext");
         mOpenGLContext.reset();
     }
     if (mQgsApp) {
-        spdlog::info("reset the mQgsApp");
+//        spdlog::info("reset the mQgsApp");
         mQgsApp.reset();
     }
     if (mApp) {
-        spdlog::info("reset the mApp");
+//        spdlog::info("reset the mApp");
         mApp.reset();
     }
 }
@@ -39,7 +39,7 @@ BaseStarter* QCoreStarter::GetInstance() {
 }
 
 void QCoreStarter::Init(StarterContext& context) {
-    spdlog::info("QCoreStarter Init start");
+//    spdlog::info("QCoreStarter Init start");
     auto config = context.Props();
     int newArgc;
     //char** newArgv;
@@ -57,7 +57,7 @@ void QCoreStarter::Init(StarterContext& context) {
     bool GUIenabled = false;
     try {
         GUIenabled = (*config)["qgis"]["gui_enabled"].as<bool>();
-        spdlog::info("GUIenabled: {}", GUIenabled);
+//        spdlog::info("GUIenabled: {}", GUIenabled);
     } catch (const std::exception& e) {
         spdlog::error("get gui_enabled error: {}", e.what());
     }
@@ -69,7 +69,7 @@ void QCoreStarter::Init(StarterContext& context) {
         mApp = std::make_unique<QCoreApplication>(newArgc, argsPtrs.data());
     }
 
-    spdlog::info("create qgis QgsApplication");
+//    spdlog::info("create qgis QgsApplication");
     mQgsApp = std::make_unique<QgsApplication>(newArgc, newArgv.release(), GUIenabled);
     QString qgis_prefix_path = "/usr";
     try {
@@ -80,7 +80,7 @@ void QCoreStarter::Init(StarterContext& context) {
     }
     QgsApplication::setPrefixPath(qgis_prefix_path, true);
 
-    spdlog::info("init qgis app");
+//    spdlog::info("init qgis app");
     try {
         QgsApplication::init();
         QgsApplication::initQgis();
@@ -88,10 +88,10 @@ void QCoreStarter::Init(StarterContext& context) {
     } catch (const std::exception& e) {
         spdlog::error("init qgis error: {}", e.what());
     }
-    spdlog::info("inited the qgs app");
+//    spdlog::info("inited the qgs app");
 
     // 设置OpenGL环境
-    spdlog::info("设置OpenGL环境");
+//    spdlog::info("设置OpenGL环境");
     //auto qSurfaceFormat = QSurfaceFormat::defaultFormat();
     //mQSurfaceFormat.reset(&qSurfaceFormat);
     mQSurfaceFormat = std::make_unique<QSurfaceFormat>();
@@ -102,14 +102,14 @@ void QCoreStarter::Init(StarterContext& context) {
     QSurfaceFormat::setDefaultFormat(*mQSurfaceFormat);
 
     // 创建离屏渲染环境
-    spdlog::info("创建离屏渲染环境");
+//    spdlog::info("创建离屏渲染环境");
     mQOffscreenSurface = std::make_unique<QOffscreenSurface>();
     mQOffscreenSurface->setFormat(*mQSurfaceFormat);
-    spdlog::info("create offscreen surface");
+//    spdlog::info("create offscreen surface");
     mQOffscreenSurface->create();
 
     // 创建OpenGL上下文
-    spdlog::info("创建OpenGL上下文");
+//    spdlog::info("创建OpenGL上下文");
     mOpenGLContext = std::make_unique<QOpenGLContext>();
     mOpenGLContext->setFormat(*mQSurfaceFormat);
     if (!mOpenGLContext->create()) {
@@ -118,34 +118,34 @@ void QCoreStarter::Init(StarterContext& context) {
     }
 
     // 设置当前上下文
-    spdlog::info("设置当前上下文");
+//    spdlog::info("设置当前上下文");
     if (!mOpenGLContext->makeCurrent(mQOffscreenSurface.get())) {
         spdlog::error("Failed to make OpenGL context current");
         exit(-1);
     }
 
-    spdlog::info("QCoreStarter Init end");
+//    spdlog::info("QCoreStarter Init end");
 }
 
 void QCoreStarter::Setup(StarterContext& context) {
-    spdlog::info("QCoreStarter Setup start");
-    spdlog::info("QCoreStarter Setup end");
+//    spdlog::info("QCoreStarter Setup start");
+//    spdlog::info("QCoreStarter Setup end");
 }
 
 void QCoreStarter::Start(StarterContext& context) {
-    spdlog::info("QCoreStarter Start start");
+//    spdlog::info("QCoreStarter Start start");
     auto config = context.Props();
     auto guiEnable = (*config)["qgis"]["gui_enabled"].as<bool>();
-    spdlog::info("start qgis app, guiEnable: {}", guiEnable);
+//    spdlog::info("start qgis app, guiEnable: {}", guiEnable);
     if (guiEnable) {
-        spdlog::info("enable gui, start gui application");
+//        spdlog::info("enable gui, start gui application");
         QApplication::exec();
     } else {
-        spdlog::info("not enable gui, start core application");
+//        spdlog::info("not enable gui, start core application");
         QCoreApplication::exec();
     }
 
-    spdlog::info("QCoreStarter Start end");
+//    spdlog::info("QCoreStarter Start end");
 }
 
 void QCoreStarter::Stop(StarterContext& context) {
@@ -153,10 +153,10 @@ void QCoreStarter::Stop(StarterContext& context) {
         spdlog::info("QCoreStarter already stopped, skipping...");
         return;
     }
-    spdlog::info("QCoreStarter Stop start");
+//    spdlog::info("QCoreStarter Stop start");
     // 停止事件循环
     if (!mStopped) {
-        spdlog::info("QCoreStarter Stop start");
+//        spdlog::info("QCoreStarter Stop start");
         mStopped = true;
         if (QgsApplication::instance()) {
             QgsApplication::exitQgis();
@@ -168,30 +168,30 @@ void QCoreStarter::Stop(StarterContext& context) {
 
     // 释放 OpenGL 上下文
     if (mOpenGLContext) {
-        spdlog::info("Destroy OpenGL context");
+//        spdlog::info("Destroy OpenGL context");
         if (mOpenGLContext->makeCurrent(mQOffscreenSurface.get())) {
-            spdlog::info("OpenGL context current during cleanup");
+//            spdlog::info("OpenGL context current during cleanup");
             mOpenGLContext->doneCurrent();
         } else {
-            spdlog::error("Failed to make OpenGL context current during cleanup");
+//            spdlog::error("Failed to make OpenGL context current during cleanup");
         }
-        spdlog::info("destroy OpenGL context");
+//        spdlog::info("destroy OpenGL context");
         //mOpenGLContext->destroyed();
         //mOpenGLContext.reset();
         mOpenGLContext->deleteLater();
-        spdlog::info("reset OpenGL context");
+//        spdlog::info("reset OpenGL context");
         mOpenGLContext.reset();
     }
 
     // 释放离屏表面
     if (mQOffscreenSurface) {
-        spdlog::info("Destroy offscreen surface");
+//        spdlog::info("Destroy offscreen surface");
         mQOffscreenSurface->destroy();
-        spdlog::info("reset offscreen surface");
+//        spdlog::info("reset offscreen surface");
         mQOffscreenSurface.reset();
     }
 
-    spdlog::info("QCoreStarter Stop end");
+//    spdlog::info("QCoreStarter Stop end");
 }
 
 int QCoreStarter::PriorityGroup() {

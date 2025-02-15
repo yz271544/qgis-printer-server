@@ -21,7 +21,7 @@ BaseStarter *WebStarter::GetInstance() {
 }
 
 void WebStarter::Init(StarterContext &context) {
-    spdlog::info("WebStarter Init start");
+//    spdlog::info("WebStarter Init start");
 
     // 先查找ConfStarter实例，获取配置信息
     auto config = context.Props();
@@ -40,11 +40,11 @@ void WebStarter::Init(StarterContext &context) {
     oatpp::Environment::init();
 #endif
 
-    spdlog::info("WebStarter Init end");
+//    spdlog::info("WebStarter Init end");
 }
 
 void WebStarter::Setup(StarterContext &context) {
-    spdlog::info("WebStarter Setup start");
+//    spdlog::info("WebStarter Setup start");
 #if OATPP_VERSION_LESS_1_4_0
     auto objectMapper = OBJECTMAPPERNS::ObjectMapper::createShared();
     objectMapper->getSerializer()->getConfig()->escapeFlags = 0; // 禁用转义
@@ -104,11 +104,11 @@ void WebStarter::Setup(StarterContext &context) {
     // 打印服务器端口
     // OATPP_LOGI("MyApp", "Server running on port {}", static_cast<const char*>(connectionProvider->getProperty("port").getData()));
     // OATPP_LOGI("MyApp", "Server running on port {}", connectionProvider->getProperty("port").getData());
-    spdlog::info("WebStarter Setup end");
+//    spdlog::info("WebStarter Setup end");
 }
 
 void WebStarter::Start(StarterContext &context) {
-    spdlog::info("WebStarter Start start");
+//    spdlog::info("WebStarter Start start");
     // 启动Web服务器
     try {
         if (mBlock) {
@@ -126,7 +126,7 @@ void WebStarter::Start(StarterContext &context) {
         spdlog::critical("Web服务启动失败: {}", e.what());
         throw;
     }
-    spdlog::info("WebStarter Start end");
+//    spdlog::info("WebStarter Start end");
 }
 
 void WebStarter::Stop(StarterContext &context) {
@@ -135,27 +135,27 @@ void WebStarter::Stop(StarterContext &context) {
         return;
     }
     mStopped = true;
-    spdlog::info("WebStarter Stop start");
+//    spdlog::info("WebStarter Stop start");
     // 停止Web服务器
     try {
         if (mBlock) {
             server->stop();
         } else {
-            spdlog::info("try join web server thread: {}", threadIdToString(mWebServerThread.get_id()));
+//            spdlog::info("try join web server thread: {}", threadIdToString(mWebServerThread.get_id()));
             if (mWebServerThread.joinable()) {
-                spdlog::info("request stop web server thread");
+//                spdlog::info("request stop web server thread");
                 mWebServerThread.request_stop();  // 请求线程停止
                 server->stop();  // 确保 `server->run()` 立即停止
-                spdlog::info("join web server thread");
+//                spdlog::info("join web server thread");
                 mWebServerThread.join();           // 等待线程结束
-                spdlog::info("joined the web server thread");
+//                spdlog::info("joined the web server thread");
             }
         }
-        spdlog::info("oatpp server reset");
+//        spdlog::info("oatpp server reset");
         server.reset();
-        spdlog::info("Resetting connection handler");
+//        spdlog::info("Resetting connection handler");
         connectionHandler.reset();
-        spdlog::info("Destroying oatpp environment");
+//        spdlog::info("Destroying oatpp environment");
 #ifdef OATPP_VERSION_LESS_1_4_0
         oatpp::base::Environment::destroy();
 #else
@@ -164,7 +164,7 @@ void WebStarter::Stop(StarterContext &context) {
     } catch (const std::exception &e) {
         spdlog::error("Web服务停止失败: {}", e.what());
     }
-    spdlog::info("WebStarter Stop end");
+//    spdlog::info("WebStarter Stop end");
 }
 
 int WebStarter::PriorityGroup() {

@@ -29,6 +29,7 @@ void JwLine::addLines(
 
     auto memLineVectorLayer = std::make_unique<QgsVectorLayer>(
             QString("LineStringZ?crs=%1").arg(MAIN_CRS), mLayerName, QStringLiteral("memory"));
+//    qDebug() << "memLineVectorLayer: " << memLineVectorLayer->name();
     if (!memLineVectorLayer->isValid()) {
         spdlog::error("Failed to create memory line layer: {}", mLayerName.toStdString());
         return;
@@ -36,14 +37,15 @@ void JwLine::addLines(
 
     // 添加属性
     QgsVectorDataProvider *lineProvider = memLineVectorLayer->dataProvider();
-
+//    qDebug() << "lineProvider: " << lineProvider->name();
     QList<QgsField> fields;
     fields.append(QgsField(QStringLiteral("name"), QMetaType::Type::QString, "varchar", 256));
     fields.append(QgsField("type", QMetaType::Type::QString, "varchar", 256));
-
+//    qDebug() << "set fields";
     lineProvider->addAttributes(fields);
+//    qDebug() << "set addAttributes";
     memLineVectorLayer->updatedFields();
-
+//    qDebug() << "set updatedFields";
     // get 坐标转换 transformer worker
     auto transformer = QgsUtil::coordinateTransformer4326To3857(mProject);
 
@@ -51,9 +53,9 @@ void JwLine::addLines(
     spdlog::info("Adding line layer: {}", this->mLayerName.toStdString());
 
     memLineVectorLayer->startEditing();
-
+    qDebug() << "line size: " << lines.size();
     for (int i=0; i < lines.size(); ++i) {
-        auto line = lines[i];
+        const auto& line = lines[i];
         try {
             QgsPolyline polyline;
             for (int j=0; j < line.numPoints(); ++i) {
@@ -61,16 +63,19 @@ void JwLine::addLines(
                 auto qgsPointOfLine = transformPoint(point, *transformer);
                 polyline.append(*qgsPointOfLine);
             }
-
+//            qDebug() << "polyline: " << polyline.isEmpty();
             QgsGeometry lineString = QgsGeometry::fromPolyline(polyline);
             QgsFeature feature(fields);
             feature.setGeometry(lineString);
 
             QgsAttributes attribute;
-            attribute.append(lineNameList[i]);
-            attribute.append("line");
+            attribute.push_back(lineNameList[i]);
+            attribute.push_back("line");
+//            qDebug() << "attribute: " << attribute;
             feature.setAttributes(attribute);
+//            qDebug() << "feature: " << feature;
             lineProvider->addFeature(feature);
+//            qDebug() << "addFeature";
         } catch (const std::exception& e) {
             spdlog::error("add line feature error: {}, polygon:", e.what(), ShowDataUtil::lineStringToString(line));
         }

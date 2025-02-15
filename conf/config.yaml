@@ -1,9 +1,9 @@
 app:
   name: jingweiprinter
 logging:
-  level: info
+  level: debug
   verbose: false
-  qt_log_enable: false
+  qt_log_enable: true
 web:
   host: "0.0.0.0"
   port: 5890

@@ -15,41 +15,41 @@ BaseStarter* ProcessorStarter::GetInstance() {
 void ProcessorStarter::Init(StarterContext& context) {
     spdlog::info("ProcessorStarter Init start");
     auto config = context.Props();
-    spdlog::info("props: {}", (*config)["app"]["name"].as<std::string>());
+//    spdlog::info("props: {}", (*config)["app"]["name"].as<std::string>());
 
-    spdlog::info("qgis -> projects_prefix: {}", (*config)["qgis"]["projects_prefix"].as<std::string>());
+//    spdlog::info("qgis -> projects_prefix: {}", (*config)["qgis"]["projects_prefix"].as<std::string>());
 
     m_processor = std::make_unique<Processor>(context.getArgs(), config);
 
     context.setProcessor(m_processor.get());
 
-    spdlog::info("ProcessorStarter Init end");
+//    spdlog::info("ProcessorStarter Init end");
 }
 
 void ProcessorStarter::Setup(StarterContext& context) {
-    spdlog::info("ProcessorStarter Setup start");
-
-
-    spdlog::info("ProcessorStarter Setup end");
+//    spdlog::info("ProcessorStarter Setup start");
+//
+//
+//    spdlog::info("ProcessorStarter Setup end");
 }
 
 void ProcessorStarter::Start(StarterContext& context) {
-    spdlog::info("ProcessorStarter Start start");
+//    spdlog::info("ProcessorStarter Start start");
 
 
-    spdlog::info("ProcessorStarter Start end");
+//    spdlog::info("ProcessorStarter Start end");
 }
 
 void ProcessorStarter::Stop(StarterContext& context) {
     if (mStopped) {
-        spdlog::info("QCoreStarter already stopped, skipping...");
+//        spdlog::info("QCoreStarter already stopped, skipping...");
         return;
     }
     mStopped = true;
-    spdlog::info("ProcessorStarter Stop start");
+//    spdlog::info("ProcessorStarter Stop start");
 
 
-    spdlog::info("ProcessorStarter Stop end");
+//    spdlog::info("ProcessorStarter Stop end");
 }
 
 int ProcessorStarter::PriorityGroup() {

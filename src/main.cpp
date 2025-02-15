@@ -20,10 +20,10 @@ int main(int argc, char* argv[]) {
     // 创建并注册不同的Starter实例
     ConfStarter confStarter;
     LoggerStarter loggerStarter;
-    WebStarter webStarter;
-    webStarter.SetBlocking(false);
-//    QtWebStarter webStarter;
+//    WebStarter webStarter;
 //    webStarter.SetBlocking(false);
+    QtWebStarter webStarter;
+    webStarter.SetBlocking(false);
     ProcessorStarter processorStarter;
     QCoreStarter qCoreStarter;
     qCoreStarter.SetBlocking(true);

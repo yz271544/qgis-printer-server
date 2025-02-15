@@ -16,23 +16,23 @@ BaseStarter* QtWebStarter::GetInstance() {
 
 void QtWebStarter::Init(StarterContext &context) {
     auto config = context.Props();
-    spdlog::info("QtWebStarter Init start");
+//    spdlog::info("QtWebStarter Init start");
 
     std::string app_name = (*config)["app"]["name"].as<std::string>();
     int webPort = (*config)["web"]["port"].as<int>();
     std::string webRoutePrefix = (*config)["web"]["route_prefix"].as<std::string>();
 
-    spdlog::info("APP name: {} QtWebStarter Init with port: {} , route prefix: {}", app_name, webPort, webRoutePrefix);
-    spdlog::info("QtWebStarter Init end");
+//    spdlog::info("APP name: {} QtWebStarter Init with port: {} , route prefix: {}", app_name, webPort, webRoutePrefix);
+//    spdlog::info("QtWebStarter Init end");
 }
 
 void QtWebStarter::Setup(StarterContext &context) {
-    spdlog::info("QtWebStarter Setup start");
-    spdlog::info("QtWebStarter Setup end");
+//    spdlog::info("QtWebStarter Setup start");
+//    spdlog::info("QtWebStarter Setup end");
 }
 
 void QtWebStarter::Start(StarterContext &context) {
-    spdlog::info("WebStarter Start start");
+//    spdlog::info("WebStarter Start start");
     auto config = context.Props();
     server = new QTcpServer(this);
     if (!server->listen(QHostAddress::Any, (*config)["web"]["port"].as<int>())) {
@@ -41,7 +41,7 @@ void QtWebStarter::Start(StarterContext &context) {
     }
 
     connect(server, &QTcpServer::newConnection, this, &QtWebStarter::newConnection);
-    spdlog::info("Server started on port {}", (*config)["web"]["port"].as<int>());
+//    spdlog::info("Server started on port {}", (*config)["web"]["port"].as<int>());
 
     if (mBlock) {
         // 阻塞模式
@@ -58,7 +58,7 @@ void QtWebStarter::Start(StarterContext &context) {
         serverThread->start();
     }
 
-    spdlog::info("WebStarter Start end");
+//    spdlog::info("WebStarter Start end");
 }
 
 void QtWebStarter::Stop(StarterContext &context) {
@@ -67,31 +67,31 @@ void QtWebStarter::Stop(StarterContext &context) {
         return;
     }
     mStopped = true;
-    spdlog::info("WebStarter Stop start");
+//    spdlog::info("WebStarter Stop start");
 
-    spdlog::info("try stop server");
+//    spdlog::info("try stop server");
     if (server) {
-        spdlog::info("found running server, try to close server");
+//        spdlog::info("found running server, try to close server");
         server->close();
-        spdlog::info("server close...");
+//        spdlog::info("server close...");
         server->deleteLater();
-        spdlog::info("server delete later");
+//        spdlog::info("server delete later");
         server = nullptr;
     }
 
-    spdlog::info("try stop server thread");
+//    spdlog::info("try stop server thread");
     if (serverThread && serverThread->isRunning()) {
-        spdlog::info("found server thread is running");
+//        spdlog::info("found server thread is running");
         serverThread->quit();
-        spdlog::info("try to quit the server thread");
+//        spdlog::info("try to quit the server thread");
         serverThread->wait();
-        spdlog::info("wait to stop server thread");
+//        spdlog::info("wait to stop server thread");
         delete serverThread;
-        spdlog::info("delete server thread");
+//        spdlog::info("delete server thread");
         serverThread = nullptr;
     }
 
-    spdlog::info("WebStarter Stop end");
+//    spdlog::info("WebStarter Stop end");
 }
 
 void QtWebStarter::newConnection() {
