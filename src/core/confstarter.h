@@ -13,6 +13,7 @@
 
 class ConfStarter : public BaseStarter {
 private:
+    bool mStopped = false;
     // 用于存储配置相关的数据结构等，这里简单示意
     std::unique_ptr<YAML::Node> mConfig;
 

@@ -12,6 +12,7 @@
 #include "core/webstarter.h"
 #include "core/processorstarter.h"
 #include "core/qcorestarter.h"
+#include "core/qtwebstarter.h"
 
 int main(int argc, char* argv[]) {
     // 启动 Qt 事件循环
@@ -19,7 +20,9 @@ int main(int argc, char* argv[]) {
     // 创建并注册不同的Starter实例
     ConfStarter confStarter;
     LoggerStarter loggerStarter;
-    WebStarter webStarter;
+//    WebStarter webStarter;
+//    webStarter.SetBlocking(false);
+    QtWebStarter webStarter;
     webStarter.SetBlocking(false);
     ProcessorStarter processorStarter;
     QCoreStarter qCoreStarter;

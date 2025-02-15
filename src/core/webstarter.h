@@ -14,7 +14,6 @@
 #include <spdlog/spdlog.h>
 
 #include "confstarter.h"
-#include "starter.h"
 #include "starterregister.h"
 #include "handler/hellohandler.h"
 #include "oatpp/web/server/HttpConnectionHandler.hpp"
@@ -32,6 +31,7 @@ private:
     std::shared_ptr<oatpp::web::server::HttpConnectionHandler> connectionHandler;
     std::shared_ptr<oatpp::network::Server> server;
     std::jthread mWebServerThread;
+    bool mStopped = false;
 public:
     WebStarter();
 

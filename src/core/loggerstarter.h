@@ -53,6 +53,8 @@ public:
     // 获取启动器的名称，方便在日志、调试或者管理启动器列表等场景使用
     std::string GetName();
 private:
+    bool mStopped = false;
+
     void setQLoggerLevel(std::string& level);
 
     void disableAllQtLogs();

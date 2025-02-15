@@ -17,6 +17,7 @@
 class ProcessorStarter : public BaseStarter  {
 private:
     std::unique_ptr<Processor> m_processor;
+    bool mStopped = false;
 public:
     ProcessorStarter();
 

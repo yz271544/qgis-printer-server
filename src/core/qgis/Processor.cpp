@@ -47,19 +47,19 @@ Processor::Processor(const QList<QString>& argvList, YAML::Node *config) {
         spdlog::warn("get jingwei_server_url error: {}", e.what());
     }
     try {
-        m_export_png_enable = m_config->operator[]("qgis")["m_export_png_enable"].as<bool>();
+        m_export_png_enable = m_config->operator[]("qgis")["export_png_enable"].as<bool>();
     } catch (const std::exception &e) {
-        spdlog::warn("get m_export_png_enable error: {}", e.what());
+        spdlog::warn("get export_png_enable error: {}", e.what());
     }
     try {
-        m_export_pdf_enable = m_config->operator[]("qgis")["m_export_pdf_enable"].as<bool>();
+        m_export_pdf_enable = m_config->operator[]("qgis")["export_pdf_enable"].as<bool>();
     } catch (const std::exception &e) {
-        spdlog::warn("get m_export_pdf_enable error: {}", e.what());
+        spdlog::warn("get export_pdf_enable error: {}", e.what());
     }
     try {
-        m_export_svg_enable = m_config->operator[]("qgis")["m_export_svg_enable"].as<bool>();
+        m_export_svg_enable = m_config->operator[]("qgis")["export_svg_enable"].as<bool>();
     } catch (const std::exception &e) {
-        spdlog::warn("get m_export_svg_enable error: {}", e.what());
+        spdlog::warn("get export_svg_enable error: {}", e.what());
     }
     jingwei_server_url = jingwei_server_url.replace("{JINGWEI_SERVER_HOST}", jingwei_server_host);
     jingwei_server_url = jingwei_server_url.replace("{JINGWEI_SERVER_PORT}", QString::number(jingwei_server_port));

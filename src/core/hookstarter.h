@@ -25,6 +25,7 @@
 
 class HookStarter : public BaseStarter {
 private:
+    bool mStopped = false;
     static HookStarter* instance;
     StarterContext context;
     StarterRegister* starterRegister;

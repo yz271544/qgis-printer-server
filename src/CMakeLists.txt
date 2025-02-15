@@ -4,7 +4,9 @@ file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.h *.cpp)
 set(SOURCES ${SOURCES})
 message("SOURCES: ${SOURCES}")
 
-add_executable(${PROJECT_NAME} ${SOURCES})
+add_executable(${PROJECT_NAME} ${SOURCES}
+        core/qtwebstarter.cpp
+        core/qtwebstarter.h)
 add_library(${PROJECT_NAME}_lib STATIC ${SOURCES})
 
 # 为 jingweiprinter 启用 AUTOMOC
@@ -43,7 +45,9 @@ target_link_libraries(${PROJECT_NAME}
         spdlog::spdlog
         oatpp::oatpp
         oatpp::oatpp-curl
-        ${QGIS_CORE_LIBRARY} ${QGIS_GUI_LIBRARY} ${QGIS_3D_LIBRARY} Qt5::Core Qt5::Gui Qt5::Qml Qt5::Quick Qt5::Widgets Qt5::Xml Qt5::Svg Qt5::Test ${Qt53DRender_LIBRARY} ${GDAL_LIBRARY} ${YAML_CPP_LIBRARIES}
+        ${QGIS_CORE_LIBRARY} ${QGIS_GUI_LIBRARY} ${QGIS_3D_LIBRARY}
+        Qt5::Core Qt5::Gui Qt5::Qml Qt5::Quick Qt5::Widgets Qt5::Xml Qt5::Svg Qt5::Test Qt5::Network ${Qt53DRender_LIBRARY}
+        ${GDAL_LIBRARY} ${YAML_CPP_LIBRARIES}
         ${LIBARCHIVE_LIBRARIES} ${LIBZIP_LIBRARIES}
 )
 
@@ -54,6 +58,8 @@ target_link_libraries(${PROJECT_NAME}_lib
         oatpp::oatpp
         oatpp::oatpp-curl
         gtest
-        ${QGIS_CORE_LIBRARY} ${QGIS_GUI_LIBRARY} ${QGIS_3D_LIBRARY} Qt5::Core Qt5::Gui Qt5::Qml Qt5::Quick Qt5::Widgets Qt5::Xml Qt5::Svg Qt5::Test ${Qt53DRender_LIBRARY} ${GDAL_LIBRARY} ${YAML_CPP_LIBRARIES}
+        ${QGIS_CORE_LIBRARY} ${QGIS_GUI_LIBRARY} ${QGIS_3D_LIBRARY}
+        Qt5::Core Qt5::Gui Qt5::Qml Qt5::Quick Qt5::Widgets Qt5::Xml Qt5::Svg Qt5::Test Qt5::Network ${Qt53DRender_LIBRARY}
+        ${GDAL_LIBRARY} ${YAML_CPP_LIBRARIES}
         ${LIBARCHIVE_LIBRARIES} ${LIBZIP_LIBRARIES}
 )

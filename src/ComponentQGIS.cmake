@@ -184,6 +184,7 @@ elseif(UNIX)
             3DRender
             3DCore
             PrintSupport
+            Network
             Test
     )
     find_package(Qt5Keychain CONFIG REQUIRED)
@@ -235,6 +236,8 @@ message("Qt5PrintSupport_INCLUDE_DIRS: ${Qt5PrintSupport_INCLUDE_DIRS}")
 include_directories(${Qt5PrintSupport_INCLUDE_DIRS})
 message("Qt53DCore_INCLUDE_DIRS: ${Qt53DCore_INCLUDE_DIRS}")
 include_directories(${Qt53DCore_INCLUDE_DIRS})
+message("Qt5Network_INCLUDE_DIRS: ${Qt5Network_INCLUDE_DIRS}")
+include_directories(${Qt5Network_INCLUDE_DIRS})
 message("LIBARCHIVE_INCLUDE_DIRS: ${LIBARCHIVE_INCLUDE_DIRS}")
 message("LIBZIP_INCLUDE_DIRS: ${LIBZIP_INCLUDE_DIRS}")
 include_directories(${LIBARCHIVE_INCLUDE_DIRS} ${LIBZIP_INCLUDE_DIRS})

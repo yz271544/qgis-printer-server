@@ -41,6 +41,11 @@ void ProcessorStarter::Start(StarterContext& context) {
 }
 
 void ProcessorStarter::Stop(StarterContext& context) {
+    if (mStopped) {
+        spdlog::info("QCoreStarter already stopped, skipping...");
+        return;
+    }
+    mStopped = true;
     spdlog::info("ProcessorStarter Stop start");
 
 

@@ -49,7 +49,7 @@ void WebStarter::Setup(StarterContext &context) {
     auto objectMapper = OBJECTMAPPERNS::ObjectMapper::createShared();
     objectMapper->getSerializer()->getConfig()->escapeFlags = 0; // 禁用转义
 #else
-    auto objectMapper = std::make_shared<oatpp::json::ObjectMapper>();
+    auto objectMapper = std::make_shared<OBJECTMAPPERNS::ObjectMapper>();
     objectMapper->serializerConfig().json.escapeFlags = 0;
 #endif
     auto config = context.Props();
@@ -130,6 +130,11 @@ void WebStarter::Start(StarterContext &context) {
 }
 
 void WebStarter::Stop(StarterContext &context) {
+    if (mStopped) {
+        spdlog::info("QCoreStarter already stopped, skipping...");
+        return;
+    }
+    mStopped = true;
     spdlog::info("WebStarter Stop start");
     // 停止Web服务器
     try {

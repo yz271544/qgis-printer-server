@@ -85,6 +85,11 @@ void HookStarter::Start(StarterContext& context) {
 }
 
 void HookStarter::Stop(StarterContext& context) {
+    if (mStopped) {
+        spdlog::info("QCoreStarter already stopped, skipping...");
+        return;
+    }
+    mStopped = true;
     spdlog::info("HookStarter Stop Begin");
     // 确保事件循环退出后再调用 Stop
     /*QCoreApplication::quit();

@@ -55,6 +55,11 @@ void ConfStarter::Start(StarterContext& context) {
 // 实现Stop方法，清理与配置相关的资源或者状态等，同样需按具体业务逻辑完善
 // 例如，关闭打开的配置文件（如果有保持打开状态的情况），释放相关内存资源等
 void ConfStarter::Stop(StarterContext& context) {
+    if (mStopped) {
+        spdlog::info("QCoreStarter already stopped, skipping...");
+        return;
+    }
+    mStopped = true;
     spdlog::info("ConfStarter Stop start");
     // 此处可添加具体业务逻辑代码，比如释放某些动态分配的内存（如果有）等操作
     spdlog::info("ConfStarter Stop end");
