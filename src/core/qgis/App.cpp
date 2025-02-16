@@ -55,9 +55,9 @@ App::App(const QList<QString>& argvList, YAML::Node *config)
 }
 
 App::~App() {
-    spdlog::info("App destroy start");
+//    spdlog::info("App destroy start");
     finishQgis();
-    spdlog::info("App destroy finished");
+//    spdlog::info("App destroy finished");
 }
 
 //// 实现槽函数
@@ -99,33 +99,33 @@ void App::finishQgis() {
     if (QgsApplication::instance()) {
         QgsApplication::exitQgis();
     }
-    spdlog::debug("finished qgis");
+//    spdlog::debug("finished qgis");
 }
 
 void App::createProject(QString& scene_name, QString& crs) {
-    spdlog::info("Starting createProject for scene: {}", scene_name.toStdString());
+//    spdlog::info("Starting createProject for scene: {}", scene_name.toStdString());
     mSceneName = scene_name;
-    spdlog::debug("scene_name: {}", mSceneName.toStdString());
+//    spdlog::debug("scene_name: {}", mSceneName.toStdString());
     /*mProject = std::make_shared<QgsProject>();
     mCanvas = std::make_shared<QgsMapCanvas>();
     mMapSettings = std::make_shared<QgsMapSettings>();*/
     mProjectDir = QString::fromStdString((*mConfig)["qgis"]["projects_prefix"].as<std::string>()) + "/" + mSceneName;
-    spdlog::debug("create_project::clearLayers()");
+//    spdlog::debug("create_project::clearLayers()");
     clearLayers();
-    spdlog::debug("create_project::cleanProject()");
+//    spdlog::debug("create_project::cleanProject()");
     cleanProject();
-    spdlog::debug("create_project::create()");
+//    spdlog::debug("create_project::create()");
     auto project = QgsProject::instance();
     mProject.reset(project);
     if (!mProject) {
         spdlog::error("QgsProject::instance() is nullptr! QGIS 未正确初始化！");
         return;
     }
-    spdlog::debug("get QgsProject instance");
+//    spdlog::debug("get QgsProject instance");
     mCanvas = std::make_unique<QgsMapCanvas>();
-    spdlog::debug("create_canvas");
+//    spdlog::debug("create_canvas");
     mMapSettings = std::make_unique<QgsMapSettings>();
-    spdlog::debug("create_map_settings");
+//    spdlog::debug("create_map_settings");
     if (!(*mConfig)["qgis"]) {
         spdlog::error("qgis not found in the config.yaml");
         return;
@@ -137,11 +137,11 @@ void App::createProject(QString& scene_name, QString& crs) {
     QgsCoordinateTransformContext rhs;
     mProject->setTransformContext(rhs);
     mTransformContext = mProject->transformContext();
-    spdlog::debug("get TransformContext");
-    spdlog::debug("mProject.setCrs(QgsCoordinateReferenceSystem(qgscrs))");
+//    spdlog::debug("get TransformContext");
+//    spdlog::debug("mProject.setCrs(QgsCoordinateReferenceSystem(qgscrs))");
     QgsCoordinateReferenceSystem qgscrs(crs);
     mProject->setCrs(qgscrs);
-    spdlog::debug("create_directory {}", mProjectDir.toStdString());
+//    spdlog::debug("create_directory {}", mProjectDir.toStdString());
     FileUtil::create_directory(mProjectDir.toStdString());
 }
 
@@ -179,12 +179,12 @@ void App::clearLayers() {
         // clear layers
         auto layers = mProject->mapLayers();
         for (auto it = layers.constBegin(); it != layers.constEnd(); ++it) {
-            spdlog::debug("Layer ID: {}, Name: {}", it.key().toStdString(), it.value()->name().toStdString());
+//            spdlog::debug("Layer ID: {}, Name: {}", it.key().toStdString(), it.value()->name().toStdString());
             mProject->removeMapLayer(it.key());
         }
         clearProject();
         mProject.reset();
-        spdlog::debug("cleared qgs project");
+//        spdlog::debug("cleared qgs project");
     }
 }
 
@@ -201,7 +201,7 @@ void App::createCanvas(QString& crs) {
 }
 
 void App::addMapBaseTileLayer() {
-    spdlog::debug("App::addMapBaseTileLayer");
+//    spdlog::debug("App::addMapBaseTileLayer");
 
     int32_t base_tile_layer_max_level = 18;
     try {
@@ -217,7 +217,7 @@ void App::addMapBaseTileLayer() {
     } catch (const std::exception& e) {
         spdlog::error("get qgis.base_tile_layer_min_level error: {}", e.what());
     }
-    spdlog::debug("base_tile_layer_min_level: {}", base_tile_layer_min_level);
+//    spdlog::debug("base_tile_layer_min_level: {}", base_tile_layer_min_level);
 
     QString map_base_url;
     try {
@@ -226,7 +226,7 @@ void App::addMapBaseTileLayer() {
     } catch (const std::exception& e) {
         spdlog::error("get qgis.map_base_url error: {}", e.what());
     }
-    spdlog::debug("map_base_url: {}", map_base_url.toStdString());
+//    spdlog::debug("map_base_url: {}", map_base_url.toStdString());
 
     QString map_base_prefix;
     try {
@@ -236,7 +236,7 @@ void App::addMapBaseTileLayer() {
     } catch (const std::exception& e) {
         spdlog::error("get qgis.map_base_prefix error: {}", e.what());
     }
-    spdlog::debug("map_base_prefix: {}", map_base_prefix.toStdString());
+//    spdlog::debug("map_base_prefix: {}", map_base_prefix.toStdString());
 
     QString map_base_suffix;
     try {

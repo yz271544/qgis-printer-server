@@ -55,10 +55,13 @@ void JwLine::addLines(
     memLineVectorLayer->startEditing();
     qDebug() << "line size: " << lines.size();
     for (int i=0; i < lines.size(); ++i) {
+        qDebug() << "line: " << i;
+    //for (auto it = lines.begin(); it != lines.end(); ++it) {
         const auto& line = lines[i];
+        //const auto& line = *it;
         try {
             QgsPolyline polyline;
-            for (int j=0; j < line.numPoints(); ++i) {
+            for (int j=0; j < line.numPoints(); ++j) {
                 auto point = line.pointN(j);
                 auto qgsPointOfLine = transformPoint(point, *transformer);
                 polyline.append(*qgsPointOfLine);
