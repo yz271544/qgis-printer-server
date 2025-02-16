@@ -572,13 +572,16 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                 );
 
                 QList<QgsPoint> pointsList;
+                qDebug() << "polygon_geometry_coordinates_list: " << color_style_dict["polygon_geometry_coordinates_list"];
                 auto coordPointsList = color_style_dict["polygon_geometry_coordinates_list"].toList();
+                qDebug() << "4444";
                 for (const auto &coordPoint: coordPointsList) {
+                    qDebug() << "coordPoint: " << coordPoint;
                     auto coordPointList = coordPoint.toList();
                     pointsList.append(QgsPoint(coordPointList[0].toDouble(), coordPointList[1].toDouble(),
                                                coordPointList[2].toDouble()));
                 }
-
+                qDebug() << "polygon_geometry_properties_radius: " << color_style_dict["polygon_geometry_properties_radius"];
                 auto radiusQVariants = color_style_dict["polygon_geometry_properties_radius"].toList();
                 QList<double> radiusDoubleList;
                 for (const auto &radiusQVariant: radiusQVariants) {
@@ -588,6 +591,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                 }
 
                 QList<QColor> areasColorList;
+                qDebug() << "areas_color_list: " << color_style_dict["areas_color_list"];
                 auto areas_color_list = color_style_dict["areas_color_list"].toList();
                 for (const auto &color: areas_color_list) {
                     if (color.canConvert<QString>()) {
@@ -595,6 +599,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                     }
                 }
                 QList<float> styleColorOpacityList;
+                qDebug() << "areas_opacity_list: " << color_style_dict["areas_opacity_list"];
                 auto areas_opacity_list = color_style_dict["areas_opacity_list"].toList();
                 for (const auto &item: areas_opacity_list) {
                     if (item.canConvert<double>()) {
