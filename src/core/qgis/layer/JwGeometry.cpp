@@ -47,11 +47,11 @@ QgsGeometry JwGeometry::transformPolygon2(const QgsPolygon& transformedPolygon) 
     QString wkt_polygon = "POLYGON((";
     for (auto it = transformedPolygon.vertices_begin(); it != transformedPolygon.vertices_end(); ++it) {
         auto p = *it;
-        wkt_polygon.append(QString::number(p.x()));
+        wkt_polygon.append(QString::number(p.x(), 'f', 15));
         wkt_polygon.append(" ");
-        wkt_polygon.append(QString::number(p.y()));
+        wkt_polygon.append(QString::number(p.y(), 'f', 15));
         wkt_polygon.append(" ");
-        wkt_polygon.append(QString::number(p.z()));
+        wkt_polygon.append(QString::number(p.z(), 'f', 15));
         wkt_polygon.append(",");
     }
     auto geometry = QgsGeometry::fromWkt(wkt_polygon);
@@ -72,13 +72,17 @@ QgsGeometry JwGeometry::transformPolygon2(const QgsPolygon& transformedPolygon) 
         double x = center_transformed.x() + radius * CIRCLE_RADIUS_COEFFICIENT * std::cos(angle);
         double y = center_transformed.y() + radius * CIRCLE_RADIUS_COEFFICIENT * std::sin(angle);
         double z = center_transformed.z();
-        points.append(QgsPoint(x, y, z));
+        QgsPoint point(x, y, z);
+        points.append(point);
     }
     points.append(points[0]);  // 闭合多边形
     QString wkt_polygon = "POLYGON((";
     for (int index = 0; index < points.size(); ++index) {
         const QgsPoint& point = points[index];
-        wkt_polygon += QString("%1 %2 %3").arg(point.x()).arg(point.y()).arg(point.z());
+        wkt_polygon += QString("%1 %2 %3")
+                .arg(QString::number(point.x(), 'f', 15))
+                .arg(QString::number(point.y(), 'f', 15))
+                .arg(QString::number(point.z(), 'f', 15));
         if (index < points.size() - 1) {
             wkt_polygon += ", ";
         }

@@ -312,7 +312,14 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
 
                 // create 2d canvas
                 m_app->createCanvas(mainCrs);
-                m_app->resetCanvas(plottingWeb->geojson);
+                auto extent = m_app->resetCanvas(plottingWeb->geojson);
+                qDebug() << "refresh extent -> width: " << extent.width() << " height: " << extent.height()
+                        << " xMin: " << QString::number(extent.xMinimum(), 'f', 15)
+                        << " xMax: " << QString::number(extent.xMaximum(), 'f', 15)
+                        << " yMin: " << QString::number(extent.yMinimum(), 'f', 15)
+                        << " yMax: " << QString::number(extent.yMaximum(), 'f', 15);
+                QgsReferencedRectangle referenced_rectangle(extent, m_app->getProject()->crs());
+                m_app->getProject()->viewSettings()->setDefaultViewExtent(referenced_rectangle);
 
                 // add 2d layout
 //                spdlog::debug("add 2d layout");
@@ -605,6 +612,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                         areasColorList.append(QColor(color.toString()));
                     }
                 }
+                // todo throw exception when areasColorList is empty
                 QList<float> styleColorOpacityList;
                 if (m_verbose) {
                     qDebug() << "areas_opacity_list: " << color_style_dict["areas_opacity_list"];
@@ -613,6 +621,35 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                 for (const auto &item: areas_opacity_list) {
                     if (item.canConvert<double>()) {
                         styleColorOpacityList.append(item.toFloat());
+                    }
+                }
+                // add level key areas
+                if (m_verbose) {
+                    for (const auto &item: pointsList) {
+                        qDebug() << "add level key areas -> pointsList: " << item.x() << ", " << item.y() << ", "
+                                 << item.z();
+                    }
+                    qDebug() << "add level key areas -> radiusDoubleList size: " << radiusDoubleList.size();
+                    for (const auto &item: radiusDoubleList) {
+                        qDebug() << "add level key areas -> radiusDoubleList: " << item;
+                    }
+
+                    qDebug() << "add level key areas -> style_percents size:" << style_percents.size();
+                    for (const auto &item: style_percents) {
+                        qDebug() << "add level key areas -> style_percents size: " << item.size();
+                        for (const auto &subItem: item) {
+                            qDebug() << "add level key areas -> style_percents: " << subItem;
+                        }
+                    }
+
+                    qDebug() << "add level key areas -> areasColorList size:" << areasColorList.size();
+                    for (const auto &item: areasColorList) {
+                        qDebug() << "add level key areas -> areasColorList: " << item;
+                    }
+
+                    qDebug() << "add level key areas -> styleColorOpacityList size:" << styleColorOpacityList.size();
+                    for (const auto &item: styleColorOpacityList) {
+                        qDebug() << "add level key areas -> styleColorOpacityList: " << item;
                     }
                 }
 
@@ -1027,20 +1064,20 @@ QVariantMap Processor::_grouped_circle_by_color_grouped(
 
             // 更新 areas_color_list
             QVariantList colorList = mergedMap["areas_color_list"].toList();
-            QVariantList colors_;
             for (const auto &color: areas_color_list[i]) {
-                colors_.append(color);
+                if(!colorList.contains(color)) {
+                    colorList.append(color);
+                }
             }
-            colorList.insert(colorList.size(), QVariant(colors_));
             mergedMap["areas_color_list"] = colorList;
 
             // 更新 areas_opacity_list
             QVariantList opacityList = mergedMap["areas_opacity_list"].toList();
-            QVariantList opacities_;
             for (const auto &opacity: areas_opacity_list[i]) {
-                opacities_.append(opacity);
+                if(!opacityList.contains(opacity)) {
+                    opacityList.append(opacity);
+                }
             }
-            opacityList.insert(opacityList.size(), QVariant(opacities_));
             mergedMap["areas_opacity_list"] = opacityList;
             style_grouped.insert(merged_areas_color, mergedMap);
         } else {
@@ -1067,19 +1104,15 @@ QVariantMap Processor::_grouped_circle_by_color_grouped(
             data.insert("style_percents", stylePercentsList);
 
             QVariantList areasColorList;
-            QVariantList colorList;
             for (const auto &color: areas_color_list[i]) {
-                colorList.append(color);
+                areasColorList.append(color);
             }
-            areasColorList.insert(areasColorList.size(), QVariant(colorList));
             data.insert("areas_color_list", areasColorList);
 
             QVariantList areasOpacityList;
-            QVariantList opacityList;
             for (const auto &opacity: areas_opacity_list[i]) {
-                opacityList.append(opacity);
+                areasOpacityList.append(opacity);
             }
-            areasOpacityList.insert(areasOpacityList.size(), QVariant(opacityList));
             data.insert("areas_opacity_list", areasOpacityList);
 
             style_grouped.insert(merged_areas_color, data);

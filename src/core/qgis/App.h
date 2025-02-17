@@ -74,7 +74,7 @@ public:
     * 重置地图视口范围
     * :param geojson: 前端传输地图视口数据
     */
-    void resetCanvas(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto>& geoJsonDto);
+    QgsRectangle resetCanvas(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto>& geoJsonDto);
 
     void resetCanvasByElements();
 

@@ -71,7 +71,7 @@ public:
             const QVector<QString>& removeLayerNames = QVector<QString>(),
             const QVector<QString>& removeLayerPrefixes = QVector<QString>());
 
-    void setPageOrientation(QgsPrintLayout* layout, const PaperSpecification availablePaper, int pageNum,
+    void setPageOrientation(QgsPrintLayout* layout, const PaperSpecification& availablePaper, int pageNum,
                             QgsLayoutItemPage::Orientation orientation = QgsLayoutItemPage::Landscape);
     void setTitle(QgsPrintLayout* layout, const QVariantMap& titleOfLayinfo);
     void setLegend(QgsPrintLayout* layout, const QVariantMap& imageSpec, int legendWidth = 40, int legendHeight = 80,

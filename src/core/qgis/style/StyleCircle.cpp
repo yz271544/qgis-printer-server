@@ -42,12 +42,10 @@ QgsFeatureRenderer *StyleCircle::get2dCategoriesRenderer(
     auto categories = std::make_unique<QList<QgsRendererCategory>>();
     QString border_color = "#000000";  // 边线颜色，这里设置为黑色
     float border_width = 0.2;  // 边线宽度
-
     QList<QColor> render_colors = colors;
     QList<float> render_opacities = opacities;
     std::reverse(render_colors.begin(), render_colors.end());
     std::reverse(render_opacities.begin(), render_opacities.end());
-
     for (int i = 0; i < render_colors.size(); ++i) {
         auto props = std::make_unique<QVariantMap>();
         auto simpleFillSymbolLayer = std::make_unique<QgsSimpleFillSymbolLayer>();
@@ -56,7 +54,7 @@ QgsFeatureRenderer *StyleCircle::get2dCategoriesRenderer(
         simpleFillSymbolLayer->setStrokeWidth(border_width);
         auto symbolLayerList = std::make_unique<QgsSymbolLayerList>();
         symbolLayerList->append(simpleFillSymbolLayer.release());
-        auto symbol = std::make_unique<QgsFillSymbol>(*symbolLayerList);
+        auto symbol = std::make_unique<QgsFillSymbol>(*(symbolLayerList.release()));
         symbol->setColor(render_colors[i]);
         symbol->setOpacity(render_opacities[i]);
         QString value_or_label;
@@ -66,9 +64,10 @@ QgsFeatureRenderer *StyleCircle::get2dCategoriesRenderer(
             value_or_label = "c" + QString::number(i);
         }
         auto category = std::make_unique<QgsRendererCategory>(value_or_label, symbol.release(), value_or_label);
-        categories->append(*category);
+        categories->append(*(category.release()));
     }
-    return std::make_unique<QgsCategorizedSymbolRenderer>(field_name, *categories).release();
+    auto renderer = std::make_unique<QgsCategorizedSymbolRenderer>(field_name, *(categories.release()));
+    return renderer.release();
 }
 
 /**

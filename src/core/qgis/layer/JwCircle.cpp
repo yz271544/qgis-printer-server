@@ -72,7 +72,7 @@ void JwCircle::addCircle(QgsPoint &centerPoint,
         attribute.append(radius);
         feature.setAttributes(attribute);
         circleProvider->addFeature(feature);
-        spdlog::debug("added circle feature {}: {}-{}-{} {}",
+        spdlog::debug("addCircle added circle feature {}: {}-{}-{} {}",
                       mLayerName.toStdString(),
                       center_transformed->x(), center_transformed->y(),
                       center_transformed->z(), radius);
@@ -287,7 +287,7 @@ void JwCircle::addCircleKeyAreas(
     for (const auto &radius_: radii) {
         try {
             auto center_transformed = transformPoint(centerPoint, *transformer);
-            auto circle_geometry = paintCircleGeometry3d(numSegments, *center_transformed, radius);
+            auto circle_geometry = paintCircleGeometry3d(numSegments, *center_transformed, radius_);
             QgsFeature feature(fields);
             feature.setGeometry(circle_geometry);
             const auto& name_ = areaNames[level];
@@ -300,7 +300,7 @@ void JwCircle::addCircleKeyAreas(
             attribute.append(radius_);
             feature.setAttributes(attribute);
             circleProvider->addFeature(feature);
-            spdlog::debug("added circle feature {}: {}-{}-{} {}",
+            spdlog::debug("addCircleKeyAreas added circle feature {}: {}-{}-{} {}",
                           name_.toStdString(),
                           center_transformed->x(),
                           center_transformed->y(),
@@ -441,7 +441,7 @@ void JwCircle::addLevelKeyAreas(
         int level = 0;
         for (const auto &radius_: radii) {
             try {
-                auto circle_geometry = paintCircleGeometry3d(numSegments, *center_transformed, radius);
+                auto circle_geometry = paintCircleGeometry3d(numSegments, *center_transformed, radius_);
                 QgsFeature feature(fields);
                 feature.setGeometry(circle_geometry);
                 const auto& name_ = area_render_names[level];
@@ -454,7 +454,7 @@ void JwCircle::addLevelKeyAreas(
                 attribute.append(radius_);
                 feature.setAttributes(attribute);
                 circleProvider->addFeature(feature);
-                spdlog::debug("added circle feature {}: {}-{}-{} {}",
+                spdlog::debug("addLevelKeyAreas added circle feature {}: {}-{}-{} {}",
                               name_.toStdString(),
                               center_transformed->x(),
                               center_transformed->y(),

@@ -56,7 +56,7 @@ void JwLayout3D::filterMapLayers(const QVector<QString> &removeLayerNames,
         spdlog::debug("set layers to 3d map settings");
         std::reverse(filteredLayers.begin(), filteredLayers.end());
         for (QgsMapLayer *filtered_layer: filteredLayers) {
-            spdlog::debug("add layer to layout map: {}", filtered_layer->name().toStdString());
+            spdlog::debug("JwLayout3D add layer to layout map: {}", filtered_layer->name().toStdString());
         }
         mapSettings3d->setLayers(filteredLayers);
         spdlog::debug("set layers to 3d map settings done");

@@ -56,14 +56,14 @@ void JwLayout::filterMapLayers(
         std::reverse(filteredLayers.begin(), filteredLayers.end());
         for (QgsMapLayer* filtered_layer : filteredLayers)
         {
-            spdlog::debug("add layer to layout map: {}", filtered_layer->name().toStdString());
+            spdlog::debug("JwLayout add layer to layout map: {}", filtered_layer->name().toStdString());
         }
         mapItem->setLayers(filteredLayers);
     }
 }
 
 // 设置页面方向
-void JwLayout::setPageOrientation(QgsPrintLayout* layout, const PaperSpecification availablePaper, int pageNum,
+void JwLayout::setPageOrientation(QgsPrintLayout* layout, const PaperSpecification& availablePaper, int pageNum,
                                   QgsLayoutItemPage::Orientation orientation) {
     QgsLayoutPageCollection* pageCollection = layout->pageCollection();
     QgsLayoutItemPage* page = pageCollection->page(pageNum);

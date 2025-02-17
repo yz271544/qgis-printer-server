@@ -11,33 +11,28 @@ LoggerStarter::LoggerStarter() = default;
 LoggerStarter::~LoggerStarter() = default;
 
 // 实现Init方法，从指定路径加载配置文件，若加载失败会输出错误信息到标准错误输出流
-void LoggerStarter::Init(StarterContext& context) {
+void LoggerStarter::Init(StarterContext &context) {
 //    spdlog::info("ConfStarter Init start");
     bool qtLogEnable = false;
     try {
         auto config = context.Props();
         std::string loggerLevel = "info";
-        try{
+        try {
             loggerLevel = (*config)["logging"]["level"].as<std::string>();
             spdlog::warn("loggerLevel: {}", loggerLevel);
 
             qtLogEnable = (*config)["logging"]["qt_log_enable"].as<bool>();
             if (qtLogEnable) {
                 setQLoggerLevel(loggerLevel);
-//                qDebug() << "qDebug qDebug qDebug qDebug";
-//                qInfo() << "qInfo qInfo qInfo qInfo";
-//                qWarning() << "qWarning qWarning qWarning qWarning";
-//                qCritical() << "qCritical qCritical qCritical qCritical";
-                //qFatal("qFatal qFatal qFatal qFatal");
             }
-        } catch (const std::exception& e) {
+        } catch (const std::exception &e) {
             spdlog::warn("get logging.level error: {}", e.what());
         }
         auto level = spdlog::level::from_str(loggerLevel);
         spdlog::set_level(level);
         //spdlog::set_pattern("[%Y-%m-%d %H:%M:%S %z] [%^---%L---%$] [thread %t] %v");
         spdlog::set_pattern("[%Y-%m-%d %H:%M:%S %z] [%^%l%$] [thread %t] %v");
-    } catch (const YAML::BadFile& e) {
+    } catch (const YAML::BadFile &e) {
         std::cerr << "Error loading config file: " << e.what() << std::endl;
     }
 //    spdlog::info("ConfStarter Init end");
@@ -45,21 +40,21 @@ void LoggerStarter::Init(StarterContext& context) {
 
 // 实现Setup方法，目前此方法只是一个占位，可根据具体业务需求实现更详细的配置调整等功能
 // 例如，根据配置内容对某些模块进行初始化设置，或者验证配置的合法性等
-void LoggerStarter::Setup(StarterContext& context) {
+void LoggerStarter::Setup(StarterContext &context) {
 //    spdlog::info("ConfStarter Setup start");
 //    spdlog::info("ConfStarter Setup end");
 }
 
 // 实现Start方法，根据从配置文件中解析出的配置内容做一些初始化启动相关的操作，需按实际业务需求实现
 // 比如，根据配置启动相应的服务、初始化数据库连接等（取决于具体应用场景）
-void LoggerStarter::Start(StarterContext& context) {
+void LoggerStarter::Start(StarterContext &context) {
 //    spdlog::info("ConfStarter Start start");
 //    spdlog::info("ConfStarter Start end");
 }
 
 // 实现Stop方法，清理与配置相关的资源或者状态等，同样需按具体业务逻辑完善
 // 例如，关闭打开的配置文件（如果有保持打开状态的情况），释放相关内存资源等
-void LoggerStarter::Stop(StarterContext& context) {
+void LoggerStarter::Stop(StarterContext &context) {
     if (mStopped) {
 //        spdlog::info("QCoreStarter already stopped, skipping...");
         return;
@@ -90,11 +85,11 @@ std::string LoggerStarter::GetName() {
 }
 
 // 实现Starter基类中获取启动器实例的抽象方法
-BaseStarter* LoggerStarter::GetInstance() {
+BaseStarter *LoggerStarter::GetInstance() {
     return getInstance();
 }
 
-void LoggerStarter::setQLoggerLevel(std::string& level) {
+void LoggerStarter::setQLoggerLevel(std::string &level) {
     bool debug = false;
     bool info = false;
     bool warn = false;
@@ -141,12 +136,14 @@ void LoggerStarter::setQLoggerLevel(std::string& level) {
     }
 
     // 构建 QLoggingCategory 的过滤规则
-    QString qLoggerRule = QString("*.debug=%1\n"
-                                  "*.info=%2\n"
-                                  "*.warning=%3\n"
-                                  "*.error=%4\n"
-                                  "*.critical=%5\n"
-                                  "*.fatal=%6\n")
+    QString qLoggerRule = QString(
+            "qt.qpa.events.reader.warning=false\n"
+            "*.debug=%1\n"
+            "*.info=%2\n"
+            "*.warning=%3\n"
+            "*.error=%4\n"
+            "*.critical=%5\n"
+            "*.fatal=%6\n")
             .arg(debug ? "true" : "false")
             .arg(info ? "true" : "false")
             .arg(warn ? "true" : "false")

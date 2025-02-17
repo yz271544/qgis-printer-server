@@ -375,7 +375,7 @@ void App::refreshCanvasExtent() {
     mCanvas->refresh();
 }
 
-void App::resetCanvas(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto>& geoJsonDto) {
+QgsRectangle App::resetCanvas(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto>& geoJsonDto) {
     // 设置坐标系
     QgsCoordinateReferenceSystem crs(MAIN_CRS);
     // 创建地图设置对象
@@ -383,11 +383,12 @@ void App::resetCanvas(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto>& geoJson
     mCanvas->setDestinationCrs(crs);
     mapSettings.setDestinationCrs(crs);
 
+    // 计算所有图层的合并范围
+    QgsRectangle extent;
     // 检查geojson是否包含有效的Polygon数据
     if (geoJsonDto->geometry && geoJsonDto->geometry->type == "Polygon" && geoJsonDto->geometry->coordinates) {
-        QJsonDocument geometryJsonDoc = JsonUtil::convertDtoToQJsonObject(geoJsonDto);
+        QJsonDocument geometryJsonDoc = JsonUtil::convertDtoToQJsonObject(geoJsonDto->geometry);
         QJsonObject geometry = geometryJsonDoc.object();
-
         if (geometry["type"].toString() == "Polygon" && geometry.contains("coordinates")) {
             QJsonArray coordinates = geometry["coordinates"].toArray()[0].toArray();
 
@@ -412,16 +413,17 @@ void App::resetCanvas(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto>& geoJson
                 spdlog::info("web_canvas_coordinates ---> min_x: {}, min_y: {}, max_x: {}, max_y: {}", minX, minY, maxX, maxY);
 
                 // 设置地图范围
-                QgsRectangle webCanvas(minX, minY, maxX, maxY);
-                mapSettings.setExtent(webCanvas);
-                mCanvas->setExtent(webCanvas);
-                mCanvas->zoomToFeatureExtent(webCanvas);
+                extent = QgsRectangle(minX, minY, maxX, maxY);
+                extent.combineExtentWith(extent);
+                //QgsRectangle webCanvas(minX, minY, maxX, maxY);
+                mapSettings.setExtent(extent);
+                mCanvas->setExtent(extent);
+                mCanvas->zoomToFeatureExtent(extent);
             }
         }
     } else {
-        // 计算所有图层的合并范围
-        QgsRectangle extent;
-
+        // Calculate the combined extent of all layers
+        qDebug() << "Calculate the combined extent of all layers";
         QMap<QString, QgsMapLayer*> projectLayers = mProject->mapLayers();
         for (QgsMapLayer* layer : projectLayers) {
             if (layer->name() != BASE_TILE_NAME && layer->name() != MAIN_TILE_NAME && !layer->name().startsWith(MAIN_TILE_NAME)) {
@@ -445,6 +447,8 @@ void App::resetCanvas(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto>& geoJson
     spdlog::debug("refreshed map_settings visibleExtent: {}", mapSettings.visibleExtent().toString().toStdString());
     spdlog::debug("refreshed map_settings mapSettings scale: {}", mapSettings.scale());
     spdlog::debug("refreshed map_settings mapSettings rotation: {}", mapSettings.rotation());
+
+    return extent;
 }
 
 void App::resetCanvasByElements() {
