@@ -59,10 +59,10 @@ public:
 
     JwLayout(QgsProject* project,
              QgsMapCanvas* canvas,
-             const QString &sceneName,
+             QString sceneName,
              const QVariantMap &imageSpec,
-             const QString &projectDir,
-             const QString &layoutName);
+             QString projectDir,
+             QString layoutName);
 
     ~JwLayout() = default;
 
@@ -71,7 +71,7 @@ public:
             const QVector<QString>& removeLayerNames = QVector<QString>(),
             const QVector<QString>& removeLayerPrefixes = QVector<QString>());
 
-    void setPageOrientation(QgsPrintLayout* layout, const PaperSpecification& availablePaper, int pageNum,
+    static void setPageOrientation(QgsPrintLayout* layout, const PaperSpecification& availablePaper, int pageNum,
                             QgsLayoutItemPage::Orientation orientation = QgsLayoutItemPage::Landscape);
     void setTitle(QgsPrintLayout* layout, const QVariantMap& titleOfLayinfo);
     void setLegend(QgsPrintLayout* layout, const QVariantMap& imageSpec, int legendWidth = 40, int legendHeight = 80,
@@ -85,7 +85,7 @@ public:
 
     void addScaleBar(QgsPrintLayout* layout);
 
-    void addArrowToLayout(QgsLayout* layout, const QVector<QgsPointXY>& points, const QColor& color, double width);
+    static void addArrowToLayout(QgsLayout* layout, const QVector<QgsPointXY>& points, const QColor& color, double width);
 
     void addArrowBasedOnFrontendParams(QgsPrintLayout* layout, const QList<QVariant>& position, double rotate);
 

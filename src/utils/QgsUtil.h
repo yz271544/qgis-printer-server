@@ -29,32 +29,37 @@
 
 class QtFontUtil {
 public:
-    static QgsTextFormat* createFont(const QString& font_family, int8_t font_size, const QString& font_color,
-                                     bool is_bold, bool is_italic, Qgis::TextOrientation orientation, double spacing);
+    static QgsTextFormat *createFont(
+            const QString &font_family,
+            double font_size,
+            const QString &font_color,
+            bool is_bold,
+            bool is_italic,
+            Qgis::TextOrientation orientation,
+            double spacing);
 };
 
 
 class QgsUtil {
 public:
-    static void showLayerLabel(QgsVectorLayer* layer, const QString& style);
+    static void showLayerLabel(QgsVectorLayer *layer, const QString &style);
 
 
-    static QgsVectorLayerSimpleLabeling* getLayerLabel(QVariantMap& style, const std::string& label_of_field_name);
+    static QgsVectorLayerSimpleLabeling *getLayerLabel(QVariantMap &style, const std::string &label_of_field_name);
 
 
     static float d300PixelToMm(float pixel_size);
 
 
-    static QgsCoordinateTransform* coordinateTransformer4326To3857(QgsProject* project);
+    static QgsCoordinateTransform *coordinateTransformer4326To3857(QgsProject *project);
 
 
-    static std::unique_ptr<QgsVectorLayer> writePersistedLayer(const QString& layer_name, QgsVectorLayer* layer,
-                                                               const QString& project_dir, const QgsFields& fields,
+    static std::unique_ptr<QgsVectorLayer> writePersistedLayer(const QString &layer_name, QgsVectorLayer *layer,
+                                                               const QString &project_dir, const QgsFields &fields,
                                                                Qgis::WkbType qgs_wkb_type,
-                                                               const QgsCoordinateTransformContext& cts,
-                                                               const QgsCoordinateReferenceSystem& crs);
+                                                               const QgsCoordinateTransformContext &cts,
+                                                               const QgsCoordinateReferenceSystem &crs);
 };
-
 
 
 #endif //CBOOT_QGSUTIL_H

@@ -5,7 +5,7 @@
 #include "PaperSpecification.h"
 
 
-PaperSpecification::PaperSpecification(QString type)
+PaperSpecification::PaperSpecification(const QString& type)
 {
     if (type == "A3") this->type = Type::A3;
     else if (type == "A4") this->type = Type::A4;

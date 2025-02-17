@@ -5,15 +5,15 @@
 #include "JwLegend.h"
 
 JwLegend::JwLegend(QString& legendTitle, QgsProject* project)
-: legendTitle(legendTitle), project(project) {};
+: legendTitle(legendTitle), project(project) {}
 
 JwLegend::~JwLegend() = default;
 
-QPair<double, double> JwLegend::customize(
+QPair<int, int> JwLegend::customize(
         QgsLayoutItemLegend* legend,
-        QMap<QString, QVariant> imageSpec,
-        double legendWidth,
-        int32_t legendHeight,
+        const QVariantMap& imageSpec,
+        int legendWidth,
+        int legendHeight,
         const QSet<QString>& filteredLegendItems)
 {
     spdlog::debug("customize legend, title: {}", legendTitle.toStdString());
@@ -28,8 +28,8 @@ QPair<double, double> JwLegend::customize(
         legendModel->removeRow(0);
     }
 
-    QList<double> column_letter_width = {legendWidth};
-    double legend_element_total_height = 0.0;
+    QList<int> column_letter_width = {legendWidth};
+    int legend_element_total_height = 0;
     QSet<QgsMapLayer*> filtered_legend_layer_items;
     QSet<QString> level_domain_text_set;
 
@@ -172,7 +172,7 @@ QPair<double, double> JwLegend::customize(
 
     // 核算图例的高度
     legendHeight += (FontUtil::getSingleTextSize(12) + FontUtil::getSingleTextSize(2.5));
-    for (double width : column_letter_width)
+    for (int width : column_letter_width)
     {
         if (width > legendWidth)
         {

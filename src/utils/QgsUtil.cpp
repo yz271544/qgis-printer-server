@@ -7,7 +7,7 @@
 
 QgsTextFormat* QtFontUtil::createFont(
         const QString& font_family,
-        int8_t font_size,
+        double font_size,
         const QString& font_color,
         bool is_bold,
         bool is_italic,
@@ -149,10 +149,10 @@ std::unique_ptr<QgsVectorLayer> QgsUtil::writePersistedLayer(
     QgsFeatureIterator it = layer->getFeatures();
     QgsFeature feature;
     while (it.nextFeature(feature)) {
-        auto attributeMap = feature.attributeMap();
-        auto attr_map_json = JsonUtil::variantMapToJson(attributeMap);
+        //auto attributeMap = feature.attributeMap();
+        //auto const& attr_map_json = JsonUtil::variantMapToJson(attributeMap);
         if (!writer->addFeature(feature)) {
-            spdlog::debug("Failed to write feature ID: {}", feature.id());
+            spdlog::error("Failed to write feature ID: {}", feature.id());
         }
     }
 
@@ -162,19 +162,11 @@ std::unique_ptr<QgsVectorLayer> QgsUtil::writePersistedLayer(
     // 确保资源释放
     QThread::msleep(100);
 
-    // QgsVectorFileWriter::writeAsVectorFormatV3(
-    // 	layer,                    // 原始图层
-    // 	file_path,                // 目标文件路径
-    // 	cts,                      // 坐标转换上下文
-    // 	options                   // 写入选项
-    // );
-
     // 重命名临时文件
     QString temp_real_file_path = QString(temp_file_path).append(".geojson");
     if (!QFile::rename(temp_real_file_path, file_path)) {
-        spdlog::debug("Failed to rename temp file to target file.");
-        spdlog::debug("Temp file path: {}", temp_file_path.toStdString());
-        spdlog::debug("Target file path: {}", file_path.toStdString());
+        spdlog::error("Failed to rename temp file to target file, Temp file path: {}, Target file path: {}",
+                      temp_file_path.toStdString(), file_path.toStdString());
         return nullptr;
     }
 

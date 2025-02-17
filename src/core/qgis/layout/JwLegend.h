@@ -25,11 +25,11 @@ public:
 
     ~JwLegend();
 
-    QPair<double, double> customize(
+    QPair<int, int> customize(
             QgsLayoutItemLegend* legend,
-            QMap<QString, QVariant> imageSpec,
-            double legendWidth,
-            int32_t legendHeight,
+            const QVariantMap& imageSpec,
+            int legendWidth,
+            int legendHeight,
             const QSet<QString>& filteredLegendItems);
 
     static QString get_type(QgsVectorLayer* layer);

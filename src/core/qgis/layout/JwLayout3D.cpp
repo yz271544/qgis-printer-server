@@ -4,18 +4,26 @@
 
 #include "JwLayout3D.h"
 
+#include <utility>
+
 
 // 构造函数
-JwLayout3D::JwLayout3D(QgsProject* project,
-                       QgsMapCanvas* canvas2d,
-                       Qgs3DMapCanvas* canvas3d,
-                       const QString &sceneName,
+JwLayout3D::JwLayout3D(QgsProject *project,
+                       QgsMapCanvas *canvas2d,
+                       Qgs3DMapCanvas *canvas3d,
+                       QString sceneName,
                        const QVariantMap &imageSpec,
-                       const QString &projectDir,
-                       const QString &layoutName)
-        : mProject(project), mCanvas2d(canvas2d), mCanvas3d(canvas3d), mSceneName(sceneName), mImageSpec(imageSpec),
-          mProjectDir(projectDir), mLayoutName(layoutName),
-          mMapWidth(0), mMapHeight(0) {
+                       QString projectDir,
+                       QString layoutName)
+        : mProject(project),
+          mCanvas2d(canvas2d),
+          mCanvas3d(canvas3d),
+          mSceneName(std::move(sceneName)),
+          mImageSpec(imageSpec),
+          mProjectDir(std::move(projectDir)),
+          mLayoutName(std::move(layoutName)),
+          mMapWidth(0),
+          mMapHeight(0) {
     QString legendTitle = imageSpec["legend_title"].toString();
     this->mJwLegend = std::make_unique<JwLegend>(legendTitle, project);
 }
@@ -65,8 +73,8 @@ void JwLayout3D::filterMapLayers(const QVector<QString> &removeLayerNames,
 
 // 设置页面方向
 void JwLayout3D::setPageOrientation(
-        QgsPrintLayout* layout,
-        const PaperSpecification availablePaper,
+        QgsPrintLayout *layout,
+        const PaperSpecification& availablePaper,
         int pageNum,
         QgsLayoutItemPage::Orientation orientation) {
     QgsLayoutPageCollection *pageCollection = layout->pageCollection();
@@ -75,7 +83,7 @@ void JwLayout3D::setPageOrientation(
 }
 
 void JwLayout3D::setTitle(
-        QgsPrintLayout* layout,
+        QgsPrintLayout *layout,
         const QVariantMap &titleOfLayinfo) {
 
     // 添加标题
@@ -83,7 +91,7 @@ void JwLayout3D::setTitle(
     title->setText(titleOfLayinfo["text"].toString());
 
     // 设置标题字号
-    int8_t titleFontSize = mImageSpec["title_font_size"].toInt();
+    int titleFontSize = mImageSpec["title_font_size"].toInt();
     if (titleOfLayinfo.contains("fontSize")) {
         titleFontSize = titleOfLayinfo["fontSize"].toInt();
     }
@@ -118,7 +126,8 @@ void JwLayout3D::setTitle(
     title->adjustSizeToText();
 
     spdlog::debug("title_font_size: {}, title_font_family: {}, title_font_color: {}, title_letter_spacing: {}",
-                  titleFontSize, fontFamily.toStdString(), fontColor.toStdString(), mImageSpec["title_letter_spacing"].toDouble());
+                  titleFontSize, fontFamily.toStdString(), fontColor.toStdString(),
+                  mImageSpec["title_letter_spacing"].toDouble());
     title->attemptSetSceneRect(
             QRectF(mImageSpec["main_left_margin"].toDouble(), 0.0,
                    mMapWidth,
@@ -128,7 +137,7 @@ void JwLayout3D::setTitle(
 
 // 添加图例
 void JwLayout3D::setLegend(
-        QgsPrintLayout* layout,
+        QgsPrintLayout *layout,
         const QVariantMap &imageSpec,
         int legendWidth,
         int legendHeight,
@@ -136,7 +145,7 @@ void JwLayout3D::setLegend(
         const QSet<QString> &filteredLegendItems) {
     auto legend = std::make_unique<QgsLayoutItemLegend>(layout);
     spdlog::debug("ready to custom legend");
-    QPair<double, double> legendWidthHeight =
+    QPair<int, int> legendWidthHeight =
             mJwLegend->customize(legend.get(), imageSpec,
                                  legendWidth, legendHeight,
                                  filteredLegendItems);
@@ -168,7 +177,7 @@ void JwLayout3D::setLegend(
 }
 
 void JwLayout3D::setRemarks(
-        QgsPrintLayout* layout,
+        QgsPrintLayout *layout,
         const QVariantMap &remarkOfLayInfo,
         const bool writeQpt) {
     // 获取备注文本
@@ -182,18 +191,18 @@ void JwLayout3D::setRemarks(
     double positionHeight = position[3].toDouble();
 
     // 计算备注框的宽度和高度
-    double remarksWidth = mMapWidth * positionWidth / 100.0;
-    double remarksHeight = mMapHeight * positionHeight / 100.0;
+    int remarksWidth = static_cast<int>(mMapWidth * positionWidth / 100.0);
+    int remarksHeight = static_cast<int>(mMapHeight * positionHeight / 100.0);
 
     // 获取字体大小
     double remarkFontSize = remarkOfLayInfo.contains("fontSize")
-            ? remarkOfLayInfo["fontSize"].toDouble()
-            : mImageSpec["remark_font_size"].toDouble();
+                            ? remarkOfLayInfo["fontSize"].toDouble()
+                            : mImageSpec["remark_font_size"].toDouble();
 
     // 计算文本宽度和高度
-    double remarksTextWidth = FontUtil::getTextFontWidth(remarkText, remarkFontSize,
-                                                         mImageSpec["remark_letter_spacing"].toDouble());
-    double remarksTextHeight = FontUtil::getSingleTextSize(remarkFontSize);
+    int remarksTextWidth = FontUtil::getTextFontWidth(remarkText, remarkFontSize,
+                                                         mImageSpec["remark_letter_spacing"].toFloat());
+    int remarksTextHeight = FontUtil::getSingleTextSize(remarkFontSize);
 
     // 调整备注框的宽度和高度
     remarksWidth = qMax(remarksTextWidth, remarksWidth);
@@ -278,7 +287,7 @@ void JwLayout3D::setRemarks(
 }
 
 void JwLayout3D::addRightSideLabel(
-        QgsPrintLayout* layout,
+        QgsPrintLayout *layout,
         const QVariantMap &subTitle,
         int rightSideLabelWidth,
         int rightSideLabelHeight) {
@@ -297,7 +306,7 @@ void JwLayout3D::addRightSideLabel(
 
     // 计算文本宽度和高度
     double textFontHeight = FontUtil::getTextFontWidth(labelText, rightSeamSealFontSize,
-                                                       mImageSpec["signatureLetterSpacing"].toDouble());
+                                                       mImageSpec["signatureLetterSpacing"].toFloat());
     double textFontWidth = FontUtil::getSingleTextSize(rightSeamSealFontSize);
 
     // 打印调试信息
@@ -312,7 +321,7 @@ void JwLayout3D::addRightSideLabel(
 
     // 创建字体格式
     QgsTextFormat textFormat;
-    QFont font(mImageSpec["right_seam_seal_family"].toString(), rightSeamSealFontSize);
+    QFont font(mImageSpec["right_seam_seal_family"].toString(), static_cast<int>(rightSeamSealFontSize));
     font.setLetterSpacing(QFont::AbsoluteSpacing, mImageSpec["right_seam_seal_letter_spacing"].toDouble());
     textFormat.setFont(font);
     textFormat.setColor(QColor(rightSeamSealFontColor));
@@ -326,9 +335,9 @@ void JwLayout3D::addRightSideLabel(
 
     // 计算标签的位置
     double labelX = mImageSpec["main_left_margin"].toDouble() + mMapWidth +
-            mImageSpec["right_seam_seal_from_right_border_left_margin"].toDouble();
+                    mImageSpec["right_seam_seal_from_right_border_left_margin"].toDouble();
     double labelY = mImageSpec["main_top_margin"].toDouble() +
-            mImageSpec["right_seam_seal_from_right_border_left_margin"].toDouble();
+                    mImageSpec["right_seam_seal_from_right_border_left_margin"].toDouble();
 
     // 设置标签的位置和大小
     label->attemptSetSceneRect(QRectF(labelX, labelY, textFontWidth, textFontHeight));
@@ -338,7 +347,7 @@ void JwLayout3D::addRightSideLabel(
 }
 
 void JwLayout3D::addSignatureLabel(
-        QgsPrintLayout* layout,
+        QgsPrintLayout *layout,
         const QString &signatureText) {
     // 创建标签项
     auto label = std::make_unique<QgsLayoutItemLabel>(layout);
@@ -348,21 +357,22 @@ void JwLayout3D::addSignatureLabel(
 
     // 计算文本宽度和高度
     double textFontWidth = FontUtil::getTextFontWidth(signatureText, mImageSpec["signature_font_size"].toDouble(),
-                                                      mImageSpec["signature_letter_spacing"].toDouble());
+                                                      mImageSpec["signature_letter_spacing"].toFloat());
     double textFontHeight = FontUtil::getSingleTextSize(mImageSpec["signature_font_size"].toDouble());
 
     // 打印调试信息
-    spdlog::debug("add_signature_label font: {}, size: {}, color: {}, letter_spacing: {}, text_font_width: {}, text_font_height: {}",
-                  mImageSpec["right_seam_seal_family"].toString().toStdString(),
-                  mImageSpec["right_seam_seal_font_size"].toDouble(),
-                  mImageSpec["right_seam_seal_font_color"].toString().toStdString(),
-                  mImageSpec["right_seam_seal_letter_spacing"].toDouble(),
-                  textFontWidth,
-                  textFontHeight);
+    spdlog::debug(
+            "add_signature_label font: {}, size: {}, color: {}, letter_spacing: {}, text_font_width: {}, text_font_height: {}",
+            mImageSpec["right_seam_seal_family"].toString().toStdString(),
+            mImageSpec["right_seam_seal_font_size"].toDouble(),
+            mImageSpec["right_seam_seal_font_color"].toString().toStdString(),
+            mImageSpec["right_seam_seal_letter_spacing"].toDouble(),
+            textFontWidth,
+            textFontHeight);
 
     // 创建字体格式
     QgsTextFormat signatureTextFormat;
-    QFont font(mImageSpec["signature_family"].toString(), mImageSpec["signature_font_size"].toDouble());
+    QFont font(mImageSpec["signature_family"].toString(), mImageSpec["signature_font_size"].toInt());
     font.setLetterSpacing(QFont::AbsoluteSpacing, 3.0); // 设置字间距
     signatureTextFormat.setFont(font);
     signatureTextFormat.setColor(QColor(mImageSpec["signatureFontColor"].toString()));
@@ -377,9 +387,9 @@ void JwLayout3D::addSignatureLabel(
 
     // 计算标签的位置
     double labelX = mImageSpec["main_left_margin"].toDouble() + mMapWidth - textFontWidth -
-            mImageSpec["signature_from_right_border_right_margin"].toDouble();
+                    mImageSpec["signature_from_right_border_right_margin"].toDouble();
     double labelY = mImageSpec["main_top_margin"].toDouble() + mMapHeight +
-            mImageSpec["signature_from_bottom_border_top_margin"].toDouble();
+                    mImageSpec["signature_from_bottom_border_top_margin"].toDouble();
 
     // 设置标签的位置和大小
     label->attemptSetSceneRect(QRectF(labelX, labelY, textFontWidth, textFontHeight));
@@ -485,16 +495,16 @@ void JwLayout3D::addArrowBasedOnFrontendParams(QgsLayout *layout, const QList<QV
 }
 
 void JwLayout3D::init3DLayout(const QString &layoutName) {
-    auto layout = std::make_unique<QgsPrintLayout>(mProject);
-    layout->setName(layoutName);
-    layout->setUnits(Qgis::LayoutUnit::Millimeters);
-    layout->initializeDefaults();
-    QgsLayoutManager* layout_manager = mProject->layoutManager();
-    layout_manager->addLayout(layout.release());
+    mLayout = std::make_unique<QgsPrintLayout>(mProject);
+    mLayout->setName(layoutName);
+    mLayout->setUnits(Qgis::LayoutUnit::Millimeters);
+    mLayout->initializeDefaults();
+    //QgsLayoutManager *layout_manager = mProject->layoutManager();
+    //layout_manager->addLayout(layout.release());
 }
 
 // get layout from project->layoutManager()
-QgsPrintLayout* JwLayout3D::getLayout(const QString& layoutName) {
+QgsPrintLayout *JwLayout3D::getLayout(const QString &layoutName) {
     auto layout_manager = mProject->layoutManager();
     auto layoutInterface = layout_manager->layoutByName(layoutName);
     if (!layoutInterface) {
@@ -502,14 +512,19 @@ QgsPrintLayout* JwLayout3D::getLayout(const QString& layoutName) {
         return nullptr;
     }
     if (layoutInterface->layoutType() == QgsMasterLayoutInterface::PrintLayout) {
-        QgsPrintLayout* printLayout = static_cast<QgsPrintLayout*>(layoutInterface);
+        auto printLayout = dynamic_cast<QgsPrintLayout *>(layoutInterface);
         return printLayout;
     }
     return nullptr;
 }
 
-QgsLayoutItem3DMap* JwLayout3D::getMapItem3d() {
-    auto layout = getLayout(mLayoutName);
+QgsPrintLayout* JwLayout3D::getLayout3D() {
+    return mLayout.get();
+}
+
+QgsLayoutItem3DMap *JwLayout3D::getMapItem3d() {
+//    auto layout = getLayout(mLayoutName);
+    auto layout = getLayout3D();
     auto itemMap = layout->referenceMap();
     spdlog::debug("try reinterpret_cast<QgsLayoutItem3DMap*>");
     auto item3dMap = reinterpret_cast<QgsLayoutItem3DMap *>(itemMap);
@@ -517,7 +532,7 @@ QgsLayoutItem3DMap* JwLayout3D::getMapItem3d() {
     return item3dMap;
 }
 
-void JwLayout3D::saveQptTemplate(QgsLayout* layout) {
+void JwLayout3D::saveQptTemplate(QgsLayout *layout) {
     spdlog::debug("保存为 .qpt 文件");
     QString qptFilePath = QString("%1/%2%3").arg(mProjectDir, mLayoutName, ".qpt");
     QgsReadWriteContext context;
@@ -525,7 +540,7 @@ void JwLayout3D::saveQptTemplate(QgsLayout* layout) {
     spdlog::debug("Saved layout as QPT template: {}", qptFilePath.toStdString());
 }
 
-Qgs3DMapSettings* JwLayout3D::getMapSettings3d() {
+Qgs3DMapSettings *JwLayout3D::getMapSettings3d() {
     return mCanvas3d->mapSettings();
 }
 
@@ -542,40 +557,48 @@ void JwLayout3D::init3DMapSettings(
 
     auto flatTerrain = std::make_unique<QgsFlatTerrainGenerator>();
 #if _QGIS_VERSION_INT >= 34100
-    flatTerrain->setCrs( mapSettings3d->crs(), mProject->transformContext() );
+    flatTerrain->setCrs(mapSettings3d->crs(), mProject->transformContext());
 #else
     flatTerrain->setCrs( mapSettings3d->crs() );
 #endif
-    mapSettings3d->setTerrainGenerator( flatTerrain.release() );
+    mapSettings3d->setTerrainGenerator(flatTerrain.release());
     //mapSettings3d->setTerrainElevationOffset( project->elevationProperties()->terrainProvider()->offset() );
-    QgsAbstractTerrainSettings* terrainSettings = QgsFlatTerrainSettings::create();
+    QgsAbstractTerrainSettings *terrainSettings = QgsFlatTerrainSettings::create();
     terrainSettings->setElevationOffset(mProject->elevationProperties()->terrainProvider()->offset());
     mapSettings3d->setTerrainSettings(terrainSettings);
     // mapSettings3d->setBackgroundColor(QColor("#ffffff"));
     spdlog::debug("filtered map layers");
     const QgsReferencedRectangle projectExtent = mProject->viewSettings()->fullExtent();
-    const QgsRectangle fullExtent = Qgs3DUtils::tryReprojectExtent2D( projectExtent, projectExtent.crs(), mapSettings3d->crs(), mProject->transformContext() );
+    const QgsRectangle fullExtent = Qgs3DUtils::tryReprojectExtent2D(projectExtent, projectExtent.crs(),
+                                                                     mapSettings3d->crs(),
+                                                                     mProject->transformContext());
     //QgsReferencedRectangle fullExtent = project->viewSettings()->fullExtent();
     spdlog::debug("get3DMapSettings fullExtent:");
     CameraUtil::ExtentInfo(fullExtent);
     mapSettings3d->setOrigin(QgsVector3D(fullExtent.center().x(), fullExtent.center().y(), 0));
     spdlog::debug("set origin: {}", mapSettings3d->origin().toString().toStdString());
-    mapSettings3d->setSelectionColor( mCanvas2d->selectionColor() );
+    mapSettings3d->setSelectionColor(mCanvas2d->selectionColor());
     spdlog::debug("set selection color: {}", mapSettings3d->selectionColor().name().toStdString());
-    mapSettings3d->setBackgroundColor( mCanvas2d->canvasColor() );
+    mapSettings3d->setBackgroundColor(mCanvas2d->canvasColor());
     spdlog::debug("set backgroupdColor: {}", mapSettings3d->backgroundColor().name().toStdString());
     //mapSettings3d->setLayers( mCanvas2d->layers( true ) );
-    mapSettings3d->setTemporalRange( mCanvas2d->temporalRange() );
+    mapSettings3d->setTemporalRange(mCanvas2d->temporalRange());
     spdlog::debug("set temporal range: {}", mapSettings3d->temporalRange().isEmpty());
-    const Qgis::NavigationMode defaultNavMode = settings.enumValue( QStringLiteral( "map3d/defaultNavigation" ), Qgis::NavigationMode::TerrainBased, QgsSettings::App );
-    mapSettings3d->setCameraNavigationMode( defaultNavMode );
+    const Qgis::NavigationMode defaultNavMode = settings.enumValue(QStringLiteral("map3d/defaultNavigation"),
+                                                                   Qgis::NavigationMode::TerrainBased,
+                                                                   QgsSettings::App);
+    mapSettings3d->setCameraNavigationMode(defaultNavMode);
     spdlog::debug("set camera navigation mode: {}", mapSettings3d->cameraNavigationMode());
-    mapSettings3d->setCameraMovementSpeed( settings.value( QStringLiteral( "map3d/defaultMovementSpeed" ), 5, QgsSettings::App ).toDouble() );
+    mapSettings3d->setCameraMovementSpeed(
+            settings.value(QStringLiteral("map3d/defaultMovementSpeed"), 5, QgsSettings::App).toDouble());
     spdlog::debug("set camera movement speed: {}", mapSettings3d->cameraMovementSpeed());
-    const Qt3DRender::QCameraLens::ProjectionType defaultProjection = settings.enumValue( QStringLiteral( "map3d/defaultProjection" ), Qt3DRender::QCameraLens::PerspectiveProjection, QgsSettings::App );
-    mapSettings3d->setProjectionType( defaultProjection );
+    const Qt3DRender::QCameraLens::ProjectionType defaultProjection = settings.enumValue(
+            QStringLiteral("map3d/defaultProjection"), Qt3DRender::QCameraLens::PerspectiveProjection,
+            QgsSettings::App);
+    mapSettings3d->setProjectionType(defaultProjection);
     spdlog::debug("set project type: {}", mapSettings3d->projectionType());
-    mapSettings3d->setFieldOfView( settings.value( QStringLiteral( "map3d/defaultFieldOfView" ), 45, QgsSettings::App ).toInt() );
+    mapSettings3d->setFieldOfView(
+            settings.value(QStringLiteral("map3d/defaultFieldOfView"), 45, QgsSettings::App).toFloat());
     spdlog::debug("set field of view: {}", mapSettings3d->fieldOfView());
 
     Qgs3DAxisSettings axis;
@@ -583,20 +606,20 @@ void JwLayout3D::init3DMapSettings(
     spdlog::debug("mapSettings3d set3DAxisSettings");
     mapSettings3d->set3DAxisSettings(axis);
 
-    mapSettings3d->setTransformContext( QgsProject::instance()->transformContext() );
+    mapSettings3d->setTransformContext(QgsProject::instance()->transformContext());
     spdlog::debug("set transform context");
-    mapSettings3d->setPathResolver( QgsProject::instance()->pathResolver() );
+    mapSettings3d->setPathResolver(QgsProject::instance()->pathResolver());
     spdlog::debug("set path resolver");
-    mapSettings3d->setMapThemeCollection( QgsProject::instance()->mapThemeCollection() );
+    mapSettings3d->setMapThemeCollection(QgsProject::instance()->mapThemeCollection());
     qDebug() << "set map theme collection:" << mapSettings3d->mapThemeCollection();
-    mapSettings3d->configureTerrainFromProject( QgsProject::instance()->elevationProperties(), fullExtent );
+    mapSettings3d->configureTerrainFromProject(QgsProject::instance()->elevationProperties(), fullExtent);
     qDebug() << "configure terrain from project:" << mapSettings3d->terrainGenerator();
     // scenes default to a single directional light
     QgsPointLightSettings defaultPointLight;
-    QgsRectangle extent = fullExtent;
+    const QgsRectangle& extent = fullExtent;
     QgsPointXY center = extent.center();
-    defaultPointLight.setPosition( QgsVector3D( center.x(), center.y(), 1000 ) );
-    defaultPointLight.setConstantAttenuation( 0 );
+    defaultPointLight.setPosition(QgsVector3D(center.x(), center.y(), 1000));
+    defaultPointLight.setConstantAttenuation(0);
     mapSettings3d->setLightSources({defaultPointLight.clone()});
 //    auto directionalLightSettings = std::make_unique<QgsDirectionalLightSettings>();
 //    mapSettings3d->setLightSources( QList<QgsLightSource *>() << directionalLightSettings );
@@ -604,15 +627,16 @@ void JwLayout3D::init3DMapSettings(
 //    mapSettings3d->setOutputDpi( QGuiApplication::primaryScreen()->logicalDotsPerInch() );
     mapSettings3d->setOutputDpi(300);
     spdlog::debug("set output dpi:", mapSettings3d->outputDpi());
-    mapSettings3d->setRendererUsage( Qgis::RendererUsage::View );
+    mapSettings3d->setRendererUsage(Qgis::RendererUsage::View);
     spdlog::debug("set renderer usage:", mapSettings3d->rendererUsage());
 
     auto mapSett3d = mapSettings3d.get();
-    QObject::connect( mProject, &QgsProject::transformContextChanged, mapSett3d, [this, &mapSett3d] {
-        mapSett3d->setTransformContext( mProject->transformContext() );
-    } );
+    QObject::connect(mProject, &QgsProject::transformContextChanged, mapSett3d, [this, &mapSett3d] {
+        mapSett3d->setTransformContext(mProject->transformContext());
+    });
     spdlog::debug("connect project transform context changed");
-    mapSettings3d->setBackgroundColor(QColor("#ffffff"));
+    auto defaultColor = QColor(0xffffff);
+    mapSettings3d->setBackgroundColor(defaultColor);
 
     mapSettings3d->setExtent(fullExtent);
     //set3DCanvas(fullExtent);
@@ -623,9 +647,10 @@ void JwLayout3D::init3DMapSettings(
 void JwLayout3D::set3DCanvas() {
     const QgsReferencedRectangle projectExtent = mProject->viewSettings()->fullExtent();
     auto mapSettings3d = mCanvas3d->mapSettings();
-    const QgsRectangle fullExtent = Qgs3DUtils::tryReprojectExtent2D( projectExtent, projectExtent.crs(), mapSettings3d->crs(), mProject->transformContext() );
-
-    QgsRectangle extent = fullExtent;
+    const QgsRectangle fullExtent = Qgs3DUtils::tryReprojectExtent2D(projectExtent, projectExtent.crs(),
+                                                                     mapSettings3d->crs(),
+                                                                     mProject->transformContext());
+    const QgsRectangle& extent = fullExtent;
     spdlog::debug("set3DCanvas fullExtent:");
     CameraUtil::ExtentInfo(extent);
 
@@ -634,15 +659,15 @@ void JwLayout3D::set3DCanvas() {
 
     QgsVector3D lookAtCenterPoint = QgsVector3D(100, 500, 220.0);
     QgsPointXY center(lookAtCenterPoint.x(), lookAtCenterPoint.y());
-    float distance = extent.width() / 1.2; // 根据场景范围调整相机距离
+    auto distance = static_cast<float>(extent.width() / 1.2); // 根据场景范围调整相机距离
     float pitch = 38.0;
     float yaw = 20.0;
     mCanvas3d->setViewFromTop(center, distance, 0);
-    mCanvas3d->cameraController()->setLookingAtPoint(lookAtCenterPoint, distance, pitch , yaw);
+    mCanvas3d->cameraController()->setLookingAtPoint(lookAtCenterPoint, distance, pitch, yaw);
 }
 
 void JwLayout3D::set3DMap(
-        QgsPrintLayout* layout,
+        QgsPrintLayout *layout,
         const PaperSpecification &availablePaper,
         int mapFrameWidth,
         const QString &mapFrameColor,
@@ -672,14 +697,16 @@ void JwLayout3D::set3DMap(
     QgsVector3D lookAtCenterPoint = QgsVector3D(100, 500, 220.0);
     QgsPointXY center(lookAtCenterPoint.x(), lookAtCenterPoint.y());
     const QgsReferencedRectangle projectExtent = mProject->viewSettings()->fullExtent();
-    const QgsRectangle fullExtent = Qgs3DUtils::tryReprojectExtent2D( projectExtent, projectExtent.crs(), mapSettings3d->crs(), mProject->transformContext() );
-    QgsRectangle extent = fullExtent;
-    float distance = extent.width() / 1.2; // 根据场景范围调整相机距离
+    const QgsRectangle fullExtent = Qgs3DUtils::tryReprojectExtent2D(projectExtent, projectExtent.crs(),
+                                                                     mapSettings3d->crs(),
+                                                                     mProject->transformContext());
+    const QgsRectangle& extent = fullExtent;
+    auto distance = static_cast<float>(extent.width() / 1.2); // 根据场景范围调整相机距离
     float pitch = 38.0;
     float yaw = 20.0;
     spdlog::debug("distance: {}", distance);
     mCanvas3d->setViewFromTop(center, distance, 0);
-    mCanvas3d->cameraController()->setLookingAtPoint(lookAtCenterPoint, distance, pitch , yaw);
+    mCanvas3d->cameraController()->setLookingAtPoint(lookAtCenterPoint, distance, pitch, yaw);
 
     mapItem3d->setMapSettings(mapSettings3d);
 
@@ -697,11 +724,11 @@ void JwLayout3D::set3DMap(
     mapItem3d->setCameraPose(cameraPose);
     // 设置地图项大小
     mMapWidth = availablePaper.getPaperSize().second - mImageSpec["main_left_margin"].toDouble() -
-            mImageSpec["main_right_margin"].toDouble();
+                mImageSpec["main_right_margin"].toDouble();
     mMapHeight = availablePaper.getPaperSize().first - mImageSpec["main_top_margin"].toDouble() -
-            mImageSpec["main_bottom_margin"].toDouble();
+                 mImageSpec["main_bottom_margin"].toDouble();
     // 设置地图项位置
-    spdlog::debug("设置地图项位置: {}, {}, {}, {}", 
+    spdlog::debug("设置地图项位置: {}, {}, {}, {}",
                   mImageSpec["main_left_margin"].toDouble(),
                   mImageSpec["main_top_margin"].toDouble(),
                   mMapWidth,
@@ -724,13 +751,13 @@ void JwLayout3D::set3DMap(
 
 
 void JwLayout3D::addNorthArrow(
-        QgsPrintLayout* layout,
+        QgsPrintLayout *layout,
         const QVariantMap &north) {
     // 创建指北针图片项
     auto northArrow = std::make_unique<QgsLayoutItemPicture>(layout);
 
     // 设置指北针图片路径
-    QString northArrowPath = "";
+    QString northArrowPath;
     if (mImageSpec.contains("north_arrow_path")) {
         // write icon file to project directory from base64
         northArrowPath = mProjectDir + "/north_arrow.png";
@@ -755,9 +782,9 @@ void JwLayout3D::addNorthArrow(
             northWidth = mMapWidth * north.value("position").toList().at(2).toDouble() / 100;
             northHeight = mMapHeight * north.value("position").toList().at(3).toDouble() / 100;
             northX = mImageSpec["main_left_margin"].toDouble() +
-                    mMapWidth * north.value("position").toList().at(0).toDouble() / 100;
+                     mMapWidth * north.value("position").toList().at(0).toDouble() / 100;
             northY = mImageSpec["main_top_margin"].toDouble() +
-                    mMapHeight * north.value("position").toList().at(1).toDouble() / 100;
+                     mMapHeight * north.value("position").toList().at(1).toDouble() / 100;
         }
     }
 
@@ -819,7 +846,7 @@ void JwLayout3D::updateLayoutExtent(const QString &layoutName) {
     QgsLayoutManager *layoutManager = mProject->layoutManager();
 
     // 查找指定名称的布局
-    QgsPrintLayout *layout = dynamic_cast<QgsPrintLayout *>(layoutManager->layoutByName(layoutName));
+    auto layout = dynamic_cast<QgsPrintLayout *>(layoutManager->layoutByName(layoutName));
     if (!layout) {
         spdlog::warn("Layout not found: {}", layoutName.toStdString());
         return;
@@ -828,9 +855,9 @@ void JwLayout3D::updateLayoutExtent(const QString &layoutName) {
     // 获取主窗口的地图画布, 更新布局中所有地图项的范围
     QList<QGraphicsItem *> graphics_items = layout->items();
     for (QGraphicsItem *graphics_item: graphics_items) {
-        QgsLayoutItem *layout_item = dynamic_cast<QgsLayoutItem *>(graphics_item);
+        auto layout_item = dynamic_cast<QgsLayoutItem *>(graphics_item);
         if (layout_item) {
-            if (QgsLayoutItemMap *map_item = dynamic_cast<QgsLayoutItemMap *>(layout_item)) {
+            if (auto map_item = dynamic_cast<QgsLayoutItemMap *>(layout_item)) {
                 // map_item->setExtent(mCanvas3d->extent());
             }
         }
@@ -847,11 +874,11 @@ QPair<double, double> JwLayout3D::getLegendDimensions(const QString &layoutName)
 
     if (layoutInterface) {
         if (layoutInterface->layoutType() == QgsMasterLayoutInterface::PrintLayout) {
-            QgsPrintLayout *layout = static_cast<QgsPrintLayout *>(layoutInterface);
+            auto layout = dynamic_cast<QgsPrintLayout *>(layoutInterface);
             for (QGraphicsItem *graphicsItem: layout->items()) {
-                QgsLayoutItem *item = dynamic_cast<QgsLayoutItem *>(graphicsItem);
+                auto item = dynamic_cast<QgsLayoutItem *>(graphicsItem);
                 if (item) {
-                    if (QgsLayoutItemLegend *legend = dynamic_cast<QgsLayoutItemLegend *>(item)) {
+                    if (auto legend = dynamic_cast<QgsLayoutItemLegend *>(item)) {
                         QRectF boundingRect = legend->boundingRect();
                         return qMakePair(boundingRect.width(), boundingRect.height());
                     }
@@ -870,7 +897,8 @@ void JwLayout3D::addPrintLayout(const QString &layoutType, const QString &layout
     spdlog::debug("初始化3d布局");
     init3DLayout(layoutName);
 
-    auto layout = getLayout(mLayoutName);
+    //auto layout = getLayout(mLayoutName);
+    auto layout = getLayout3D();
 
     // 设置纸张类型和大小
     spdlog::debug("Setting page orientation and size");
@@ -975,44 +1003,69 @@ void JwLayout3D::addPrintLayout(const QString &layoutType, const QString &layout
     }
 }
 
-void JwLayout3D::exportLayoutToImage(QgsPrintLayout* layout, const QString &outputFilePath) {
-    QgsLayoutPageCollection* pageCollection = layout->pageCollection();
-    int pageCount = pageCollection->pageCount();
-    spdlog::debug("pageCount: {}", pageCount);
-    bool should = pageCollection->shouldExportPage(0);
-    spdlog::debug("should: {}", should);
+//void JwLayout3D::exportLayoutToImage(QgsPrintLayout *layout, const QString &outputFilePath) {
+void JwLayout3D::exportLayoutToImage(const QString& layoutName, QString &outputFilePath) {
+    spdlog::info("exportLayoutToImage layout");
+//    QgsLayoutManager *layout_manager = mProject->layoutManager();
+//    spdlog::info("11111");
+//    auto layouts = layout_manager->layouts();
+//    spdlog::info("layouts size: {}", layouts.size());
+//    for (const auto &layout: layouts) {
+//        spdlog::info("layout: {}", layout->name().toStdString());
+//    }
+//    auto layoutInterface = layout_manager->layoutByName(layoutName);
+//    spdlog::info("22222");
+//    if (layoutInterface == nullptr) {
+//        spdlog::info("layoutInterface is nullptr");
+//        return;
+//    }
+//    spdlog::info("layoutInterface: {}", layoutInterface->layoutType());
+    QgsPrintLayout *layout = mLayout.get();
+    //if (layoutInterface->layoutType() == QgsMasterLayoutInterface::PrintLayout) {
+    if (layout != nullptr) {
+        spdlog::info("layoutInterface is PrintLayout");
+        //layout = dynamic_cast<QgsPrintLayout*>(layoutInterface);
 
-    QgsLayoutRenderContext& renderContext = layout->renderContext();
-    QVector<qreal> scales;
-    scales << 1.2;
-    scales << 1.0;
-    renderContext.setPredefinedScales(scales);
-    QVector<qreal> predefinedScales = renderContext.predefinedScales();
-    for (const auto &item: predefinedScales){
-        spdlog::debug("predefinedScales: {}", item);
-    }
+        QgsLayoutPageCollection *pageCollection = layout->pageCollection();
+        int pageCount = pageCollection->pageCount();
+        spdlog::debug("pageCount: {}", pageCount);
+        bool should = pageCollection->shouldExportPage(0);
+        spdlog::debug("should: {}", should);
 
-    // 创建布局导出器
-    QgsLayoutExporter exporter(layout);
+        QgsLayoutRenderContext &renderContext = layout->renderContext();
+        QVector<qreal> scales;
+        scales << 1.2;
+        scales << 1.0;
+        renderContext.setPredefinedScales(scales);
+        QVector<qreal> predefinedScales = renderContext.predefinedScales();
+        for (const auto &item: predefinedScales) {
+            spdlog::debug("predefinedScales: {}", item);
+        }
 
-    // 设置导出选项
-    QgsLayoutExporter::ImageExportSettings settings;
-    settings.dpi = 300; // 设置DPI
-    settings.flags |= QgsLayoutRenderContext::FlagAntialiasing; // 启用抗锯齿
+        // 创建布局导出器
+        QgsLayoutExporter exporter(layout);
 
-    spdlog::debug("export to image: {}", outputFilePath.toStdString());
-    // 导出为PNG图片
-    QgsLayoutExporter::ExportResult result = exporter.exportToImage(outputFilePath, settings);
+        // 设置导出选项
+        QgsLayoutExporter::ImageExportSettings settings;
+        settings.dpi = 300; // 设置DPI
+        settings.flags |= QgsLayoutRenderContext::FlagAntialiasing; // 启用抗锯齿
 
-    if (result == QgsLayoutExporter::Success) {
-        spdlog::debug("Layout exported successfully to: {}", outputFilePath.toStdString());
+        spdlog::debug("export to image: {}", outputFilePath.toStdString());
+        // 导出为PNG图片
+        QgsLayoutExporter::ExportResult result = exporter.exportToImage(outputFilePath, settings);
+
+        if (result == QgsLayoutExporter::Success) {
+            spdlog::debug("Layout exported successfully to: {}", outputFilePath.toStdString());
+        } else {
+            spdlog::warn("Failed to export layout to:", outputFilePath.toStdString());
+        }
     } else {
-        spdlog::warn("Failed to export layout to:", outputFilePath.toStdString());
+        spdlog::warn("not fount the layout: {}", layoutName.toStdString());
     }
 }
 
 void JwLayout3D::exportLayoutToPdf(
-        QgsPrintLayout* layout,
+        QgsPrintLayout *layout,
         const QString &outputFilePath) {
     // 创建布局导出器
     QgsLayoutExporter exporter(layout);

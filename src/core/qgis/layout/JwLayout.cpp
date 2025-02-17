@@ -4,15 +4,21 @@
 
 #include "JwLayout.h"
 
+#include <utility>
+
 // 构造函数
-JwLayout::JwLayout(QgsProject* project, QgsMapCanvas* canvas, const QString& sceneName,
-                   const QVariantMap& imageSpec, const QString& projectDir, const QString& layoutName)
+JwLayout::JwLayout(QgsProject* project,
+                   QgsMapCanvas* canvas,
+                   QString  sceneName,
+                   const QVariantMap& imageSpec,
+                   QString  projectDir,
+                   QString  layoutName)
         : mProject(project),
         mCanvas(canvas),
-        mSceneName(sceneName),
+        mSceneName(std::move(sceneName)),
         mImageSpec(imageSpec),
-        mProjectDir(projectDir),
-        mLayoutName(layoutName),
+        mProjectDir(std::move(projectDir)),
+        mLayoutName(std::move(layoutName)),
         mMapWidth(0),
         mMapHeight(0)
 {
@@ -77,7 +83,7 @@ void JwLayout::setTitle(QgsPrintLayout* layout, const QVariantMap& titleOfLayinf
     spdlog::debug("title text {}", title->text().toStdString());
 
     // 设置标题字号
-    int8_t titleFontSize = mImageSpec["title_font_size"].toInt();
+    int titleFontSize = mImageSpec["title_font_size"].toInt();
     if (titleOfLayinfo.contains("fontSize")) {
         titleFontSize = titleOfLayinfo["fontSize"].toInt();
     }
@@ -144,7 +150,7 @@ void JwLayout::setLegend(QgsPrintLayout* layout, const QVariantMap& imageSpec, i
 {
     auto legend = std::make_unique<QgsLayoutItemLegend>(layout);
     spdlog::debug("ready to custom legend");
-    QPair<double, double> legendWidthHeight =
+    QPair<int, int> legendWidthHeight =
             mJwLegend->customize(legend.get(), imageSpec, legendWidth, legendHeight, filteredLegendItems);
     spdlog::debug("custom legend done");
     legendWidth = legendWidthHeight.first;
@@ -186,15 +192,15 @@ void JwLayout::setRemarks(QgsPrintLayout* layout, const QVariantMap& remarkOfLay
     double positionHeight = position[3].toDouble();
 
     // 计算备注框的宽度和高度
-    double remarksWidth = mMapWidth * positionWidth / 100.0;
-    double remarksHeight = mMapHeight * positionHeight / 100.0;
+    int remarksWidth = static_cast<int>(mMapWidth * positionWidth / 100.0);
+    int remarksHeight = static_cast<int>(mMapHeight * positionHeight / 100.0);
 
     // 获取字体大小
     double remarkFontSize = remarkOfLayinfo.contains("fontSize") ? remarkOfLayinfo["fontSize"].toDouble() : mImageSpec["remark_font_size"].toDouble();
 
     // 计算文本宽度和高度
-    double remarksTextWidth = FontUtil::getTextFontWidth(remarkText, remarkFontSize, mImageSpec["remark_letter_spacing"].toDouble());
-    double remarksTextHeight = FontUtil::getSingleTextSize(remarkFontSize);
+    int remarksTextWidth = FontUtil::getTextFontWidth(remarkText, remarkFontSize, mImageSpec["remark_letter_spacing"].toFloat());
+    int remarksTextHeight = FontUtil::getSingleTextSize(remarkFontSize);
 
     // 调整备注框的宽度和高度
     remarksWidth = qMax(remarksTextWidth, remarksWidth);
@@ -288,8 +294,8 @@ void JwLayout::addRightSideLabel(QgsPrintLayout* layout, const QVariantMap& subT
     QString rightSeamSealFontColor = subTitle.contains("color") ? ColorTransformUtil::strRgbaToHex(subTitle["color"].toString()).first : mImageSpec["right_seam_seal_font_color"].toString();
 
     // 计算文本宽度和高度
-    double textFontHeight = FontUtil::getTextFontWidth(labelText, rightSeamSealFontSize, mImageSpec["signatureLetterSpacing"].toDouble());
-    double textFontWidth = FontUtil::getSingleTextSize(rightSeamSealFontSize);
+    int textFontHeight = FontUtil::getTextFontWidth(labelText, rightSeamSealFontSize, mImageSpec["signatureLetterSpacing"].toFloat());
+    int textFontWidth = FontUtil::getSingleTextSize(rightSeamSealFontSize);
 
     // 打印调试信息
     spdlog::debug("add_right_side_label font: {}, size: {}, color: {}, right_seam_seal_letter_spacing: {}, "
@@ -303,7 +309,7 @@ void JwLayout::addRightSideLabel(QgsPrintLayout* layout, const QVariantMap& subT
 
     // 创建字体格式
     QgsTextFormat textFormat;
-    QFont font(mImageSpec["right_seam_seal_family"].toString(), rightSeamSealFontSize);
+    QFont font(mImageSpec["right_seam_seal_family"].toString(), static_cast<int>(rightSeamSealFontSize));
     font.setLetterSpacing(QFont::AbsoluteSpacing, mImageSpec["right_seam_seal_letter_spacing"].toDouble());
     textFormat.setFont(font);
     textFormat.setColor(QColor(rightSeamSealFontColor));
@@ -334,8 +340,8 @@ void JwLayout::addSignatureLabel(QgsPrintLayout* layout, const QString& signatur
     label->setText(signatureText);
 
     // 计算文本宽度和高度
-    double textFontWidth = FontUtil::getTextFontWidth(signatureText, mImageSpec["signature_font_size"].toDouble(), mImageSpec["signature_letter_spacing"].toDouble());
-    double textFontHeight = FontUtil::getSingleTextSize(mImageSpec["signature_font_size"].toDouble());
+    int textFontWidth = FontUtil::getTextFontWidth(signatureText, mImageSpec["signature_font_size"].toDouble(), mImageSpec["signature_letter_spacing"].toFloat());
+    int textFontHeight = FontUtil::getSingleTextSize(mImageSpec["signature_font_size"].toDouble());
 
     // 打印调试信息
     spdlog::debug("add_signature_label font: {}, size: {}, color: {}, letter_spacing: {}, text_font_width: {}, text_font_height: {}",
@@ -348,7 +354,7 @@ void JwLayout::addSignatureLabel(QgsPrintLayout* layout, const QString& signatur
 
     // 创建字体格式
     QgsTextFormat signatureTextFormat;
-    QFont font(mImageSpec["signature_family"].toString(), mImageSpec["signature_font_size"].toDouble());
+    QFont font(mImageSpec["signature_family"].toString(), mImageSpec["signature_font_size"].toInt());
     font.setLetterSpacing(QFont::AbsoluteSpacing, 3.0); // 设置字间距
     signatureTextFormat.setFont(font);
     signatureTextFormat.setColor(QColor(mImageSpec["signatureFontColor"].toString()));
@@ -528,7 +534,7 @@ QgsPrintLayout* JwLayout::getLayout(const QString& layoutName) {
         return nullptr;
     }
     if (layoutInterface->layoutType() == QgsMasterLayoutInterface::PrintLayout) {
-        QgsPrintLayout* printLayout = static_cast<QgsPrintLayout*>(layoutInterface);
+        auto printLayout = dynamic_cast<QgsPrintLayout*>(layoutInterface);
         return printLayout;
     }
     return nullptr;
@@ -587,7 +593,7 @@ void JwLayout::addNorthArrow(QgsPrintLayout* layout, const QVariantMap& north) {
     auto northArrow = std::make_unique<QgsLayoutItemPicture>(layout);
 
     // 设置指北针图片路径
-    QString northArrowPath = "";
+    QString northArrowPath;
     if (mImageSpec.contains("north_arrow_path")) {
         // write icon file to project directory from base64
         northArrowPath = mProjectDir + "/north_arrow.png";
@@ -723,7 +729,7 @@ QPair<double, double> JwLayout::getLegendDimensions(const QString& layoutName) {
         }
     }
     return qMakePair(0.0, 0.0);
-};
+}
 
 
 void JwLayout::saveQptTemplate(QgsPrintLayout* layout) {

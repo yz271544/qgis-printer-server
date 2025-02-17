@@ -12,9 +12,9 @@
 
 class FontUtil {
 public:
-    static int getTextFontWidth(const QString& data, int fontSize, float letterSpacing);
+    static int getTextFontWidth(const QString& data, double fontSize, float letterSpacing);
 
-    static int getSingleTextSize(float fontSize);
+    static int getSingleTextSize(double fontSize);
 };
 
 

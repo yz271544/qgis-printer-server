@@ -24,6 +24,10 @@ class Formula {
 public:
     static int bla(int arg1);
 
+    static std::string toUpperCase(const std::string& str);
+
+    static std::string toLowerCase(const std::string& str);
+
     static void checkAndClosedLineStringOfPolygon(QgsLineString& lineString) {
 
         auto startPoint = lineString.startPoint();
@@ -34,7 +38,6 @@ public:
         if (!equals) {
             lineString.addVertex(startPoint);
         }
-
     }
 };
 

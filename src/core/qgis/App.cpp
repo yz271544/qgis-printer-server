@@ -179,12 +179,12 @@ void App::clearLayers() {
         // clear layers
         auto layers = mProject->mapLayers();
         for (auto it = layers.constBegin(); it != layers.constEnd(); ++it) {
-//            spdlog::debug("Layer ID: {}, Name: {}", it.key().toStdString(), it.value()->name().toStdString());
+            spdlog::debug("Layer ID: {}, Name: {}", it.key().toStdString(), it.value()->name().toStdString());
             mProject->removeMapLayer(it.key());
         }
         clearProject();
         mProject.reset();
-//        spdlog::debug("cleared qgs project");
+        spdlog::debug("cleared qgs project");
     }
 }
 

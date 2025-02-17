@@ -4,7 +4,7 @@
 
 #include "Processor.h"
 
-Processor::Processor(const QList<QString>& argvList, YAML::Node *config) {
+Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
     m_config = config;
     try {
         m_verbose = m_config->operator[]("logging")["verbose"].as<bool>();
@@ -132,7 +132,7 @@ Processor::Processor(const QList<QString>& argvList, YAML::Node *config) {
         QVariantMap::Iterator it;
         //for (const auto &key: m_setting_image_spec->keys()) {
         for (it = m_setting_image_spec->begin(); it != m_setting_image_spec->end(); ++it) {
-            auto const& key = it.key();
+            auto const &key = it.key();
             spdlog::debug("image_spec: {}", key.toStdString());
             auto value = m_setting_image_spec->value(key).toMap();
             spdlog::debug("local: {}", value["local"].toString().toStdString());
@@ -283,7 +283,6 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                         }
                         QString plottingWebSceneId = QString::fromStdString(*plottingWeb->sceneId);
                         orthogonal_path = plottingWebSceneId.append("-").append(orthogonal_path.trimmed());
-//                        spdlog::info("add map main tile layer {}", orthogonal_path.toStdString());
                         m_app->addMapMainTileLayer(i, orthogonal_path);
                     }
                 }
@@ -301,87 +300,89 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                         }
                         QString plottingWebSceneId = QString::fromStdString(*plottingWeb->sceneId);
                         QString real_3d_path = plottingWebSceneId.append("-").append(path3d);
-//                        spdlog::info("add map tiled scene layer {}", real_3d_path.toStdString());
                         m_app->addMap3dTileLayer(i, real_3d_path);
                     }
                 }
 
                 // add layers
-//                spdlog::debug("add map plotting layers");
                 plottingLayers(plottingRespDto);
 
                 // create 2d canvas
                 m_app->createCanvas(mainCrs);
                 auto extent = m_app->resetCanvas(plottingWeb->geojson);
                 qDebug() << "refresh extent -> width: " << extent.width() << " height: " << extent.height()
-                        << " xMin: " << QString::number(extent.xMinimum(), 'f', 15)
-                        << " xMax: " << QString::number(extent.xMaximum(), 'f', 15)
-                        << " yMin: " << QString::number(extent.yMinimum(), 'f', 15)
-                        << " yMax: " << QString::number(extent.yMaximum(), 'f', 15);
+                         << " xMin: " << QString::number(extent.xMinimum(), 'f', 15)
+                         << " xMax: " << QString::number(extent.xMaximum(), 'f', 15)
+                         << " yMin: " << QString::number(extent.yMinimum(), 'f', 15)
+                         << " yMax: " << QString::number(extent.yMaximum(), 'f', 15);
                 QgsReferencedRectangle referenced_rectangle(extent, m_app->getProject()->crs());
                 m_app->getProject()->viewSettings()->setDefaultViewExtent(referenced_rectangle);
 
-                // add 2d layout
-//                spdlog::debug("add 2d layout");
                 auto image_spec = m_setting_image_spec->value(layoutType).toMap();
 
                 if (!image_spec.isEmpty()) {
-                    auto appAvailablePapers = m_app->getAvailablePapers();
-                    QVector<QString> removeLayerNames = QVector<QString>();
-                    QVector<QString> removeLayerPrefixes = QVector<QString>();
-                    removeLayerPrefixes.append(REAL3D_TILE_NAME);
-                    for (const auto &availablePaper: appAvailablePapers) {
-                        spdlog::info("image_spec_name: {}, available_paper: {}", layoutType.toStdString(),
-                                     availablePaper.getPaperName().toStdString());
-                        auto canvas2d = m_app->getCanvas();
-                        add_layout(canvas2d, layoutType, plottingWeb, image_spec, availablePaper, false,
-                                   removeLayerNames, removeLayerPrefixes);
+                    bool is3D = false;
+                    try {
+                        is3D = plottingWeb->mapType->is3D;
+                    } catch (const std::exception &e) {
+                        spdlog::warn("get mapType.is3D error: {}", e.what());
                     }
-                    if (m_enable_3d) {
-                        // add 3d layout
-//                        spdlog::debug("add 3d layout");
-                        QVector<QString> removeLayerNames3D = QVector<QString>();
-                        QVector<QString> removeLayerPrefixes3D = QVector<QString>();
-                        removeLayerNames3D.append(BASE_TILE_NAME);
-                        removeLayerPrefixes3D.append(MAIN_TILE_NAME);
-                        for (const auto &availablePaper: appAvailablePapers) {
-//                            spdlog::info("image_spec_name: {}, available_paper: {}", layoutType.toStdString(),
-//                                         availablePaper.getPaperName().toStdString());
+                    if (is3D) {
+                        spdlog::info("add and export 3d layout");
+                        if (m_enable_3d) {
+                            // add 3d layout
+                            spdlog::debug("add 3d layout");
+                            QVector<QString> removeLayerNames3D = QVector<QString>();
+                            QVector<QString> removeLayerPrefixes3D = QVector<QString>();
+                            removeLayerNames3D.append(BASE_TILE_NAME);
+                            removeLayerPrefixes3D.append(MAIN_TILE_NAME);
+                            auto paperSpec = plottingWeb->paper;
+                            auto upperPaperSpec = Formula::toUpperCase(paperSpec);
+                            PaperSpecification availablePaper3D(QString::fromStdString(upperPaperSpec));
                             auto canvas2d = m_app->getCanvas();
-                            add_3d_layout(canvas2d, layoutType, plottingWeb, image_spec, availablePaper,
-                                          false,
-                                          removeLayerNames3D, removeLayerPrefixes3D);
+                            auto jwLayout3d = add_3d_layout(canvas2d, layoutType, plottingWeb, image_spec, availablePaper3D,
+                                                            false,
+                                                            removeLayerNames3D, removeLayerPrefixes3D);
+                            spdlog::info("save project");
+                            m_app->saveProject();
+                            auto project_dir = m_app->getProjectDir();
+                            QString d3_scene_png = QString().append(project_dir).append("/").append("d3_scene.png");
+                            spdlog::info("d3 scene png: {}", d3_scene_png.toStdString());
+                            jwLayout3d->exportLayoutToImage(layoutType, d3_scene_png);
+                        } else {
+                            responseDto->error = "enable_3d in config.yaml is false";
                         }
+                    } else {
+                        spdlog::info("add and export 2d layout");
+                        auto appAvailablePapers = m_app->getAvailablePapers();
+                        QVector<QString> removeLayerNames = QVector<QString>();
+                        QVector<QString> removeLayerPrefixes = QVector<QString>();
+                        removeLayerPrefixes.append(REAL3D_TILE_NAME);
+                        for (const auto &availablePaper: appAvailablePapers) {
+                            spdlog::info("image_spec_name: {}, available_paper: {}", layoutType.toStdString(),
+                                         availablePaper.getPaperName().toStdString());
+                            auto canvas2d = m_app->getCanvas();
+                            add_layout(canvas2d, layoutType, plottingWeb, image_spec, availablePaper, false,
+                                       removeLayerNames, removeLayerPrefixes);
+                        }
+                        spdlog::info("save project");
+                        m_app->saveProject();
+                        export2DLayout(sceneName, layoutType, plottingWeb, responseDto);
                     }
                 }
 
-//                spdlog::info("canvas extent after add layout: {}",
-//                             m_app->getCanvas()->extent().toString().toStdString());
-//
-//                spdlog::info("save project");
-                m_app->saveProject();
-
-                auto zip_file_name = zipProject(sceneName);
-//                spdlog::info("zip_file_name: {}", zip_file_name.toStdString());
-//                spdlog::info("export image from qgis");
-
+                /*auto zip_file_name = zipProject(sceneName);
                 auto imageSubDir = getImageSubDir(layoutType);
-                // 异步导出图像
+                // 导出图像
                 QString paperName = QString::fromStdString(plottingWeb->paper);
-
-//                spdlog::info("responseDto created");
                 QString project_zip_url = QString(m_mapping_export_nginx_url_prefix)
                         .append("/").append(zip_file_name);
-//                spdlog::info("project_zip_url: {}", project_zip_url.toStdString());
                 responseDto->project_zip_url = project_zip_url.toStdString();
-
                 QString imageName = "";
                 if (m_export_png_enable) {
                     imageName = exportPNG(sceneName, layoutType, imageSubDir, paperName);
-//                    spdlog::info("export image name: {}", imageName.toStdString());
                     QString image_url = QString(m_mapping_export_nginx_url_prefix)
                             .append("/").append(imageSubDir).append("/").append(imageName);
-//                    spdlog::info("image_url: {}", image_url.toStdString());
                     responseDto->image_url = image_url.toStdString();
                 }
                 QString pdfName = "";
@@ -389,7 +390,6 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                     pdfName = exportPDF(sceneName, layoutType, imageSubDir, paperName);
                     QString pdf_url = QString(m_mapping_export_nginx_url_prefix)
                             .append("/").append(imageSubDir).append("/").append(imageName);
-//                    spdlog::info("pdf_url: {}", pdf_url.toStdString());
                     responseDto->pdf_url = pdf_url.toStdString();
                 }
                 QString svgName = "";
@@ -397,37 +397,62 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                     svgName = exportSVG(sceneName, layoutType, imageSubDir, paperName);
                     QString svg_url = QString(m_mapping_export_nginx_url_prefix)
                             .append("/").append(imageSubDir).append("/").append(svgName);
-//                    spdlog::info("svg_url: {}", svg_url.toStdString());
                     responseDto->svg_url = svg_url.toStdString();
-                }
-
+                }*/
                 responseDto->error = "";
-//                spdlog::info("set value responseDto to promise");
                 promise->set_value(responseDto);
-//                spdlog::info("set value responseDto to promise done");
-
-//                spdlog::info("clear project");
+                spdlog::info("clear layers and project");
                 m_app->clearLayers();
-//                spdlog::info("clean project");
+                spdlog::info("clean the project");
                 m_app->cleanProject();
-//                spdlog::info("clean project done");
+                spdlog::info("exit invokeMethod lambda");
                 eventLoop.quit(); // 退出事件循环
             } catch (const std::exception &e) {
                 spdlog::error("Exception in invokeMethod lambda: {}", e.what());
                 promise->set_exception(std::make_exception_ptr(e));
                 responseDto->error = e.what();
-
                 eventLoop.quit(); // 退出事件循环
             }
-            //});
         }, Qt::QueuedConnection);
-
         // 启动事件循环，直到 lambda 执行完成
         eventLoop.exec();
-//        spdlog::info("Inside fetchPlotting lambda: wait");
-
         return promise->get_future().get();
     });
+}
+
+
+void Processor::export2DLayout(QString& sceneName,
+                               const QString& layoutType,
+                               const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
+                               DTOWRAPPERNS::DTOWrapper<ResponseDto> responseDto) {
+    auto zip_file_name = zipProject(sceneName);
+    auto imageSubDir = getImageSubDir(layoutType);
+    // 导出图像
+    QString paperName = QString::fromStdString(plottingWeb->paper);
+    QString project_zip_url = QString(m_mapping_export_nginx_url_prefix)
+            .append("/").append(zip_file_name);
+    responseDto->project_zip_url = project_zip_url.toStdString();
+    QString imageName = "";
+    if (m_export_png_enable) {
+        imageName = exportPNG(sceneName, layoutType, imageSubDir, paperName);
+        QString image_url = QString(m_mapping_export_nginx_url_prefix)
+                .append("/").append(imageSubDir).append("/").append(imageName);
+        responseDto->image_url = image_url.toStdString();
+    }
+    QString pdfName = "";
+    if (m_export_pdf_enable) {
+        pdfName = exportPDF(sceneName, layoutType, imageSubDir, paperName);
+        QString pdf_url = QString(m_mapping_export_nginx_url_prefix)
+                .append("/").append(imageSubDir).append("/").append(imageName);
+        responseDto->pdf_url = pdf_url.toStdString();
+    }
+    QString svgName = "";
+    if (m_export_svg_enable) {
+        svgName = exportSVG(sceneName, layoutType, imageSubDir, paperName);
+        QString svg_url = QString(m_mapping_export_nginx_url_prefix)
+                .append("/").append(imageSubDir).append("/").append(svgName);
+        responseDto->svg_url = svg_url.toStdString();
+    }
 }
 
 
@@ -562,13 +587,14 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
 
             if (m_verbose) {
                 qDebug() << "style_grouped: " << style_grouped;
-                qDebug() << "style_grouped json: " << JsonUtil::variantMapToJson(style_grouped).toJson(QJsonDocument::JsonFormat::Compact);
+                qDebug() << "style_grouped json: "
+                         << JsonUtil::variantMapToJson(style_grouped).toJson(QJsonDocument::JsonFormat::Compact);
             }
 
             int circle_num = 0;
             QVariantMap::iterator it;
             for (it = style_grouped.begin(); it != style_grouped.end(); ++it) {
-                const auto& color_style = it.key();
+                const auto &color_style = it.key();
                 auto color_style_dict = style_grouped.value(color_style).toMap();
                 qDebug() << "color_style: " << color_style << " --> " << color_style_dict;
                 QString layerPrefix = QString::fromStdString(payloads->name);
@@ -583,7 +609,8 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
 
                 QList<QgsPoint> pointsList;
                 if (m_verbose) {
-                    qDebug() << "polygon_geometry_coordinates_list: " << color_style_dict["polygon_geometry_coordinates_list"];
+                    qDebug() << "polygon_geometry_coordinates_list: "
+                             << color_style_dict["polygon_geometry_coordinates_list"];
                 }
                 auto coordPointsList = color_style_dict["polygon_geometry_coordinates_list"].toList();
                 for (const auto &coordPoint: coordPointsList) {
@@ -592,7 +619,8 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                                                coordPointList[2].toDouble()));
                 }
                 if (m_verbose) {
-                    qDebug() << "polygon_geometry_properties_radius: " << color_style_dict["polygon_geometry_properties_radius"];
+                    qDebug() << "polygon_geometry_properties_radius: "
+                             << color_style_dict["polygon_geometry_properties_radius"];
                 }
                 auto radiusQVariants = color_style_dict["polygon_geometry_properties_radius"].toList();
                 QList<double> radiusDoubleList;
@@ -777,7 +805,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                 QVariantMap::iterator it;
                 //for (const auto &color_style: grouped_color.keys()) {
                 for (it = grouped_color.begin(); it != grouped_color.end(); ++it) {
-                    const auto& color_style = it.key();
+                    const auto &color_style = it.key();
                     auto color_style_dict = grouped_color.value(color_style).toMap();
                     QString layerPrefix = QString::fromStdString(payloads->name);
                     QString layerName = QString("%1%2").arg(layerPrefix, QString::number(line_num));
@@ -802,7 +830,8 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                             geometry_coordinates_list);
                     auto coordinate_list_json = JsonUtil::convertQListNest3ToJson(typed_geometry_coordinates_list);
                     if (m_verbose) {
-                        qDebug() << "coordinate_list_json: " << coordinate_list_json.toJson(QJsonDocument::JsonFormat::Compact);
+                        qDebug() << "coordinate_list_json: "
+                                 << coordinate_list_json.toJson(QJsonDocument::JsonFormat::Compact);
                     }
                     for (const auto &coordLines: typed_geometry_coordinates_list) {
                         QgsLineString line_geometry_coordinate;
@@ -819,7 +848,8 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                     if (m_verbose) {
                         qDebug() << "linesGeometryCoordinates size: " << linesGeometryCoordinates.size();
                         for (const auto &line: linesGeometryCoordinates) {
-                            qDebug() << "linesGeometryCoordinates: " << QString::fromStdString(ShowDataUtil::lineStringToString(line));
+                            qDebug() << "linesGeometryCoordinates: "
+                                     << QString::fromStdString(ShowDataUtil::lineStringToString(line));
                         }
                     }
                     QList<QJsonObject> styleList;
@@ -850,7 +880,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                 QVariantMap::iterator it;
                 //for (const auto &color_style: grouped_color.keys()) {
                 for (it = grouped_color.begin(); it != grouped_color.end(); ++it) {
-                    const auto& color_style = it.key();
+                    const auto &color_style = it.key();
                     auto color_style_dict = grouped_color.value(color_style).toMap();
                     QString layerPrefix = QString::fromStdString(payloads->name);
                     QString layerName = QString("%1%2").arg(layerPrefix, QString::number(polygon_num));
@@ -891,7 +921,8 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                     if (m_verbose) {
                         qDebug() << "polygonGeometryCoordinates size: " << polygonGeometryCoordinates.size();
                         for (const auto &polygon: polygonGeometryCoordinates) {
-                            qDebug() << "polygonGeometryCoordinates: " << QString::fromStdString(ShowDataUtil::polygonToString(polygon));
+                            qDebug() << "polygonGeometryCoordinates: "
+                                     << QString::fromStdString(ShowDataUtil::polygonToString(polygon));
                         }
                     }
                     QList<QJsonObject> styleList;
@@ -922,7 +953,7 @@ void Processor::add_layout(
         const QString &layout_name,
         const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
         const QMap<QString, QVariant> &image_spec,
-        const PaperSpecification& available_paper,
+        const PaperSpecification &available_paper,
         bool write_qpt,
         const QVector<QString> &removeLayerNames,
         const QVector<QString> &removeLayerPrefixs) {
@@ -943,15 +974,15 @@ void Processor::add_layout(
 }
 
 // 添加3d布局
-void Processor::add_3d_layout(
+JwLayout3D* Processor::add_3d_layout(
         QgsMapCanvas *canvas,
         const QString &layout_name,
         const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
         const QMap<QString, QVariant> &image_spec,
-        const PaperSpecification& available_paper,
+        const PaperSpecification &available_paper,
         bool write_qpt,
         const QVector<QString> &removeLayerNames,
-        const QVector<QString> &removeLayerPrefixs) {
+        const QVector<QString> &removeLayerPrefixes) {
     auto joinedLayoutName = QString().append(layout_name).append("-").append(available_paper.getPaperName()).append(
             "-3D");
     spdlog::info("add layout: {}", joinedLayoutName.toStdString());
@@ -960,15 +991,18 @@ void Processor::add_3d_layout(
     auto project = m_app->getProject();
     auto sceneName = m_app->getSceneName();
     auto projectDir = m_app->getProjectDir();
-    JwLayout3D jwLayout3d(project, canvas, canvas3d.get(),
-                          sceneName, image_spec, projectDir, joinedLayoutName);
+    /*JwLayout3D jwLayout3d(project, canvas, canvas3d.get(),
+                          sceneName, image_spec, projectDir, joinedLayoutName);*/
+    auto jwLayout3d = std::make_unique<JwLayout3D>(project, canvas, canvas3d.get(),
+                                                   sceneName, image_spec, projectDir, joinedLayoutName);
 
     auto plottingWebJsonDoc = JsonUtil::convertDtoToQJsonObject(plottingWeb);
     auto plottingWebMap = JsonUtil::jsonObjectToVariantMap(plottingWebJsonDoc.object());
 
-    jwLayout3d.init3DMapSettings(removeLayerNames, removeLayerPrefixs);
-    jwLayout3d.set3DCanvas();
-    jwLayout3d.addPrintLayout(QString("3d"), joinedLayoutName, plottingWebMap, available_paper, write_qpt);
+    jwLayout3d->init3DMapSettings(removeLayerNames, removeLayerPrefixes);
+    jwLayout3d->set3DCanvas();
+    jwLayout3d->addPrintLayout(QString("3d"), joinedLayoutName, plottingWebMap, available_paper, write_qpt);
+    return jwLayout3d.release();
 }
 
 QString Processor::zipProject(const QString &scene_name) {
@@ -991,7 +1025,7 @@ QString Processor::getImageSubDir(const QString &layout_name) {
 }
 
 QString Processor::exportPNG(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
-                               const QString &paperName) {
+                             const QString &paperName) {
     QString imageName = QString("%1-%2-%3.png").arg(sceneName, layoutName, paperName);
     QString outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, imageName);
     FileUtil::delete_file(outputPath);
@@ -1002,7 +1036,7 @@ QString Processor::exportPNG(const QString &sceneName, const QString &layoutName
 }
 
 QString Processor::exportPDF(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
-                               const QString &paperName) {
+                             const QString &paperName) {
     QString imageName = QString("%1-%2-%3.pdf").arg(sceneName, layoutName, paperName);
     QString outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, imageName);
     FileUtil::delete_file(outputPath);
@@ -1013,7 +1047,7 @@ QString Processor::exportPDF(const QString &sceneName, const QString &layoutName
 }
 
 QString Processor::exportSVG(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
-                               const QString &paperName) {
+                             const QString &paperName) {
     QString imageName = QString("%1-%2-%3.svg").arg(sceneName, layoutName, paperName);
     QString outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, imageName);
     FileUtil::delete_file(outputPath);
@@ -1065,7 +1099,7 @@ QVariantMap Processor::_grouped_circle_by_color_grouped(
             // 更新 areas_color_list
             QVariantList colorList = mergedMap["areas_color_list"].toList();
             for (const auto &color: areas_color_list[i]) {
-                if(!colorList.contains(color)) {
+                if (!colorList.contains(color)) {
                     colorList.append(color);
                 }
             }
@@ -1074,7 +1108,7 @@ QVariantMap Processor::_grouped_circle_by_color_grouped(
             // 更新 areas_opacity_list
             QVariantList opacityList = mergedMap["areas_opacity_list"].toList();
             for (const auto &opacity: areas_opacity_list[i]) {
-                if(!opacityList.contains(opacity)) {
+                if (!opacityList.contains(opacity)) {
                     opacityList.append(opacity);
                 }
             }

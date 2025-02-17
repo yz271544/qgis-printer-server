@@ -150,6 +150,7 @@ class MapTypeDto : public oatpp::DTO {
 
   DTO_FIELD(Boolean, map);
   DTO_FIELD(Boolean, electron);
+  DTO_FIELD(Boolean, is3D);
 };
 
 /**

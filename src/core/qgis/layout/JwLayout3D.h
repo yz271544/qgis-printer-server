@@ -71,10 +71,10 @@ public:
     JwLayout3D(QgsProject* project,
                QgsMapCanvas* canvas2d,
                Qgs3DMapCanvas* canvas3d,
-               const QString& sceneName,
+               QString  sceneName,
                const QVariantMap& imageSpec,
-               const QString& projectDir,
-               const QString& layoutName);
+               QString  projectDir,
+               QString  layoutName);
 
     ~JwLayout3D() = default;
 
@@ -82,9 +82,9 @@ public:
                          const QVector<QString>& removeLayerPrefixes = QVector<QString>(),
                          Qgs3DMapSettings* mapSettings3d = nullptr);
 
-    void setPageOrientation(
+    static void setPageOrientation(
             QgsPrintLayout* layout,
-            const PaperSpecification availablePaper,
+            const PaperSpecification& availablePaper,
             int pageNum,
             QgsLayoutItemPage::Orientation orientation = QgsLayoutItemPage::Landscape);
     void setTitle(QgsPrintLayout* layout, const QVariantMap& titleOfLayinfo);
@@ -110,7 +110,7 @@ public:
             QgsPrintLayout* layout,
             const QString& signatureText);
 
-    void addArrowToLayout(
+    static void addArrowToLayout(
             QgsLayout* layout,
             const QVector<QgsPointXY>& points,
             const QColor& color, double width);
@@ -151,8 +151,9 @@ public:
     QPair<double, double> getLegendDimensions(const QString& layoutName);
 
     void exportLayoutToImage(
-            QgsPrintLayout* layout,
-            const QString &outputFilePath);
+            //QgsPrintLayout* layout,
+            const QString& layoutName,
+            QString &outputFilePath);
 
     void exportLayoutToPdf(
             QgsPrintLayout* layout,
@@ -165,6 +166,9 @@ public:
     QgsLayoutItem3DMap* getMapItem3d();
 
     Qgs3DMapSettings* getMapSettings3d();
+
+    QgsPrintLayout* getLayout3D();
+
 
 #ifdef ENABLE_APP
     void create3DMapCanvasWidget(QString view3dName);
@@ -179,6 +183,7 @@ private:
     Qgs3DMapCanvas* mCanvas3d;
     QString mSceneName;
     std::unique_ptr<JwLegend> mJwLegend;
+    std::unique_ptr<QgsPrintLayout> mLayout;
     QVariantMap mImageSpec;
     double mMapWidth;
     double mMapHeight;
