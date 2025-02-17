@@ -53,7 +53,7 @@ public:
      * @return QgsFeatureRenderer 指针
      */
     static QgsFeatureRenderer* get2dSimpleRenderer(
-            const QColor& color, float opacity);
+            const QColor& color, double opacity);
 
     /**
      * @brief 根据图层样式获取 2D 简单渲染器
@@ -83,7 +83,7 @@ public:
      * @param opacity 不透明度
      * @return QgsAbstract3DRenderer 指针
      */
-    static QgsAbstract3DRenderer* get3dSymbolRenderer(const QColor& color, float opacity);
+    static QgsAbstract3DRenderer* get3dSymbolRenderer(const QColor& color, double opacity);
 
     /**
      * @brief 获取 3D 单符号渲染器

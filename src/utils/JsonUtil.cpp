@@ -74,6 +74,41 @@ QJsonDocument JsonUtil::variantMapToJson(QVariantMap& variantMap) {
     return QJsonDocument(jsonObject);
 }
 
+// 将QList<QList<QList<double>>>转换为JSON字符串的函数
+QJsonDocument JsonUtil::convertQListNest3ToJson(const QList<QList<QList<double>>>& data) {
+    // 最外层的JSON数组
+    QJsonArray outerArray;
+
+    // 遍历最外层的QList
+    for (const auto& middleList : data) {
+        // 中间层的JSON数组
+        QJsonArray middleArray;
+
+        // 遍历中间层的QList
+        for (const auto& innerList : middleList) {
+            // 内层的JSON数组
+            QJsonArray innerArray;
+
+            // 遍历内层的QList，将double值添加到内层JSON数组中
+            for (double value : innerList) {
+                innerArray.append(value);
+            }
+
+            // 将内层JSON数组添加到中间层JSON数组中
+            middleArray.append(innerArray);
+        }
+
+        // 将中间层JSON数组添加到最外层JSON数组中
+        outerArray.append(middleArray);
+    }
+
+    // 创建QJsonDocument对象，将最外层JSON数组传入
+    QJsonDocument doc(outerArray);
+
+    // 将QJsonDocument对象转换为JSON字符串
+    return doc;
+}
+
 QJsonArray JsonUtil::processVariantList(const QVariantList& list) {
     QJsonArray jsonArray;
     for (const auto& item : list) {

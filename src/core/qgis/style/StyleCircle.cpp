@@ -4,7 +4,7 @@
 
 #include "StyleCircle.h"
 
-QgsFeatureRenderer *StyleCircle::get2dSimpleRenderer(const QColor &color, float opacity) {
+QgsFeatureRenderer *StyleCircle::get2dSimpleRenderer(const QColor &color, double opacity) {
     QgsSymbol *symbol = QgsSymbol::defaultSymbol(Qgis::GeometryType::Polygon);
     symbol->setColor(color);
     symbol->setOpacity(opacity);
@@ -77,7 +77,7 @@ QgsFeatureRenderer *StyleCircle::get2dCategoriesRenderer(
  * @param opacity 不透明度
  * @return QgsAbstract3DRenderer 指针
  */
-QgsAbstract3DRenderer* StyleCircle::get3dSymbolRenderer(const QColor &color, float opacity) {
+QgsAbstract3DRenderer* StyleCircle::get3dSymbolRenderer(const QColor &color, double opacity) {
     auto symbol = std::make_unique<QgsPolygon3DSymbol>();
     symbol->setEdgeColor(color);
     auto renderer = std::make_unique<QgsVectorLayer3DRenderer>();

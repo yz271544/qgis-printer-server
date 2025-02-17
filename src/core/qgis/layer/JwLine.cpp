@@ -56,13 +56,14 @@ void JwLine::addLines(
     qDebug() << "line size: " << lines.size();
     for (int i=0; i < lines.size(); ++i) {
         qDebug() << "line: " << i;
-    //for (auto it = lines.begin(); it != lines.end(); ++it) {
         const auto& line = lines[i];
-        //const auto& line = *it;
         try {
             QgsPolyline polyline;
+            auto numPoint = line.numPoints();
+            qDebug() << "numPoint: " << numPoint;
             for (int j=0; j < line.numPoints(); ++j) {
                 auto point = line.pointN(j);
+                qDebug() << "pointOfLine -> x:" << point.x() << ", y:" << point.y() << ", z:" << point.z() << ", j:", j;
                 auto qgsPointOfLine = transformPoint(point, *transformer);
                 polyline.append(*qgsPointOfLine);
             }

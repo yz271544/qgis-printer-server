@@ -149,7 +149,9 @@ std::unique_ptr<QgsVectorLayer> QgsUtil::writePersistedLayer(
     QgsFeatureIterator it = layer->getFeatures();
     QgsFeature feature;
     while (it.nextFeature(feature)) {
-        if (writer->addFeature(feature) != QgsVectorFileWriter::NoError) {
+        auto attributeMap = feature.attributeMap();
+        auto attr_map_json = JsonUtil::variantMapToJson(attributeMap);
+        if (!writer->addFeature(feature)) {
             spdlog::debug("Failed to write feature ID: {}", feature.id());
         }
     }

@@ -11,6 +11,7 @@
 #include <qgspoint.h>
 #include <qgslinestring.h>
 #include <qgspolygon.h>
+#include <qgsgeometry.h>
 
 #include "core/handler/dto/plotting.h"
 #include "core/fetch/PlottingFetch.h"
@@ -74,7 +75,7 @@ TEST_F(GeometryWktTest, testQgsPolygon) {
         std::cout << "Point " << i << ": (" << point.x() << ", " << point.y() << ")" << std::endl;
     }
 
-    std::cout << "LineString: " << ShowDataUtil::lineStringPointsToString(lineString);
+    std::cout << "LineString: " << ShowDataUtil::lineStringToString(lineString);
 
     auto startPoint = lineString.startPoint();
     auto endPoint = lineString.endPoint();
@@ -83,3 +84,44 @@ TEST_F(GeometryWktTest, testQgsPolygon) {
     GTEST_LOG_(INFO) << "endPoint x: " << endPoint.x() << ", y: " << endPoint.y() << " z:" << startPoint.z();
 
 }
+
+
+TEST_F(GeometryWktTest, testQgsPolygon2) {
+    // 步骤1: 创建多个QgsPoint对象
+    QgsPoint point1(111.45614558807182, 40.718542891344214, 1022.00);
+    QgsPoint point2(111.45614558807182, 40.73911269545787, 1022.00);
+    QgsPoint point3(111.51314153018527, 40.73911269545787, 1022.00);
+    QgsPoint point4(111.51314153018527, 40.718542891344214, 1022.00);
+    // 步骤2: 创建QgsLineString对象
+    QgsLineString lineString;
+    lineString.addVertex(point1);
+    lineString.addVertex(point2);
+    lineString.addVertex(point3);
+    lineString.addVertex(point4);
+    // 确保线串是封闭的，即第一个点和最后一个点相同
+    lineString.addVertex(point1);
+    // 步骤3: 创建QgsPolygon对象
+    QgsPolygon polygon;
+    polygon.setExteriorRing(lineString.clone());
+
+    QString wkt_polygon = "POLYGON((";
+    for (auto it = polygon.vertices_begin(); it != polygon.vertices_end(); ++it) {
+        auto p = *it;
+        wkt_polygon.append(QString::number(p.x()));
+        wkt_polygon.append(" ");
+        wkt_polygon.append(QString::number(p.y()));
+        wkt_polygon.append(" ");
+        wkt_polygon.append(QString::number(p.z()));
+        wkt_polygon.append(",");
+    }
+
+    wkt_polygon.append("))");
+
+    GTEST_LOG_(INFO) << "polygon wkt: " << wkt_polygon.toStdString();
+
+    auto geometry = QgsGeometry::fromWkt(wkt_polygon);
+    GTEST_LOG_(INFO) << "geometry wkt: " << geometry.asWkt().toStdString();
+
+}
+
+

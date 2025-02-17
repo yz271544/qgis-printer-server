@@ -553,7 +553,10 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                     style_color_list,
                     style_color_opacity_list);
 
-            qDebug() << "style_grouped: " << style_grouped;
+            if (m_verbose) {
+                qDebug() << "style_grouped: " << style_grouped;
+                qDebug() << "style_grouped json: " << JsonUtil::variantMapToJson(style_grouped).toJson(QJsonDocument::JsonFormat::Compact);
+            }
 
             int circle_num = 0;
             QVariantMap::iterator it;
@@ -572,16 +575,18 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                 );
 
                 QList<QgsPoint> pointsList;
-                qDebug() << "polygon_geometry_coordinates_list: " << color_style_dict["polygon_geometry_coordinates_list"];
+                if (m_verbose) {
+                    qDebug() << "polygon_geometry_coordinates_list: " << color_style_dict["polygon_geometry_coordinates_list"];
+                }
                 auto coordPointsList = color_style_dict["polygon_geometry_coordinates_list"].toList();
-                qDebug() << "4444";
                 for (const auto &coordPoint: coordPointsList) {
-                    qDebug() << "coordPoint: " << coordPoint;
                     auto coordPointList = coordPoint.toList();
                     pointsList.append(QgsPoint(coordPointList[0].toDouble(), coordPointList[1].toDouble(),
                                                coordPointList[2].toDouble()));
                 }
-                qDebug() << "polygon_geometry_properties_radius: " << color_style_dict["polygon_geometry_properties_radius"];
+                if (m_verbose) {
+                    qDebug() << "polygon_geometry_properties_radius: " << color_style_dict["polygon_geometry_properties_radius"];
+                }
                 auto radiusQVariants = color_style_dict["polygon_geometry_properties_radius"].toList();
                 QList<double> radiusDoubleList;
                 for (const auto &radiusQVariant: radiusQVariants) {
@@ -591,7 +596,9 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                 }
 
                 QList<QColor> areasColorList;
-                qDebug() << "areas_color_list: " << color_style_dict["areas_color_list"];
+                if (m_verbose) {
+                    qDebug() << "areas_color_list: " << color_style_dict["areas_color_list"];
+                }
                 auto areas_color_list = color_style_dict["areas_color_list"].toList();
                 for (const auto &color: areas_color_list) {
                     if (color.canConvert<QString>()) {
@@ -599,7 +606,9 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                     }
                 }
                 QList<float> styleColorOpacityList;
-                qDebug() << "areas_opacity_list: " << color_style_dict["areas_opacity_list"];
+                if (m_verbose) {
+                    qDebug() << "areas_opacity_list: " << color_style_dict["areas_opacity_list"];
+                }
                 auto areas_opacity_list = color_style_dict["areas_opacity_list"].toList();
                 for (const auto &item: areas_opacity_list) {
                     if (item.canConvert<double>()) {
@@ -754,6 +763,10 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                     auto geometry_coordinates_list = color_style_dict["geometry_coordinates_list"].toList();
                     auto typed_geometry_coordinates_list = TypeConvert::convertVariant<QList<QList<QList<double>>>>(
                             geometry_coordinates_list);
+                    auto coordinate_list_json = JsonUtil::convertQListNest3ToJson(typed_geometry_coordinates_list);
+                    if (m_verbose) {
+                        qDebug() << "coordinate_list_json: " << coordinate_list_json.toJson(QJsonDocument::JsonFormat::Compact);
+                    }
                     for (const auto &coordLines: typed_geometry_coordinates_list) {
                         QgsLineString line_geometry_coordinate;
                         auto coordPoints = coordLines;
@@ -766,11 +779,12 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                         }
                         linesGeometryCoordinates.append(line_geometry_coordinate);
                     }
-                    qDebug() << "linesGeometryCoordinates size: " << linesGeometryCoordinates.size();
-                    for (const auto &line: linesGeometryCoordinates) {
-                        qDebug() << "linesGeometryCoordinates: " << QString::fromStdString(ShowDataUtil::lineStringToString(line));
+                    if (m_verbose) {
+                        qDebug() << "linesGeometryCoordinates size: " << linesGeometryCoordinates.size();
+                        for (const auto &line: linesGeometryCoordinates) {
+                            qDebug() << "linesGeometryCoordinates: " << QString::fromStdString(ShowDataUtil::lineStringToString(line));
+                        }
                     }
-                    qDebug() << "1111";
                     QList<QJsonObject> styleList;
                     auto style_list_ = color_style_dict["style_list"].toList();
                     for (const auto &item: style_list_) {
@@ -778,7 +792,6 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                             styleList.append(item.value<QJsonObject>());
                         }
                     }
-                    qDebug() << "2222";
                     jw_line->addLines(
                             lineNameList,
                             linesGeometryCoordinates,
@@ -786,7 +799,6 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                             layer_style,
                             styleList
                     );
-                    qDebug() << "3333";
                     line_num++;
                 }
             }
@@ -839,11 +851,12 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                         qgsPolygon.setExteriorRing(lineString.clone());
                         polygonGeometryCoordinates.append(qgsPolygon);
                     }
-                    qDebug() << "polygonGeometryCoordinates size: " << polygonGeometryCoordinates.size();
-                    for (const auto &polygon: polygonGeometryCoordinates) {
-                        qDebug() << "polygonGeometryCoordinates: " << QString::fromStdString(ShowDataUtil::polygonToString(polygon));
+                    if (m_verbose) {
+                        qDebug() << "polygonGeometryCoordinates size: " << polygonGeometryCoordinates.size();
+                        for (const auto &polygon: polygonGeometryCoordinates) {
+                            qDebug() << "polygonGeometryCoordinates: " << QString::fromStdString(ShowDataUtil::polygonToString(polygon));
+                        }
                     }
-
                     QList<QJsonObject> styleList;
                     auto style_list_ = color_style_dict["style_list"].toList();
                     for (const auto &item: style_list_) {
@@ -851,7 +864,6 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                             styleList.append(item.value<QJsonObject>());
                         }
                     }
-
                     jw_polygon->addPolygons(
                             polygonNameList,
                             polygonGeometryCoordinates,
@@ -996,7 +1008,7 @@ QVariantMap Processor::_grouped_circle_by_color_grouped(
             for (const auto &coord: polygon_geometry_coordinates_list[i]) {
                 nestedList.append(coord);
             }
-            coordinatesList.append(nestedList);
+            coordinatesList.insert(coordinatesList.size(), QVariant(nestedList));
             mergedMap["polygon_geometry_coordinates_list"] = coordinatesList;
 
             // 更新 polygon_geometry_properties_radius
@@ -1010,7 +1022,7 @@ QVariantMap Processor::_grouped_circle_by_color_grouped(
             for (const auto &percent: style_percents[i]) {
                 percents.append(percent);
             }
-            percentsList.append(percents);
+            percentsList.insert(percentsList.size(), QVariant(percents));
             mergedMap["style_percents"] = percentsList;
 
             // 更新 areas_color_list
@@ -1019,7 +1031,7 @@ QVariantMap Processor::_grouped_circle_by_color_grouped(
             for (const auto &color: areas_color_list[i]) {
                 colors_.append(color);
             }
-            colorList.append(colors_);
+            colorList.insert(colorList.size(), QVariant(colors_));
             mergedMap["areas_color_list"] = colorList;
 
             // 更新 areas_opacity_list
@@ -1028,7 +1040,7 @@ QVariantMap Processor::_grouped_circle_by_color_grouped(
             for (const auto &opacity: areas_opacity_list[i]) {
                 opacities_.append(opacity);
             }
-            opacityList.append(opacities_);
+            opacityList.insert(opacityList.size(), QVariant(opacities_));
             mergedMap["areas_opacity_list"] = opacityList;
             style_grouped.insert(merged_areas_color, mergedMap);
         } else {
@@ -1039,7 +1051,7 @@ QVariantMap Processor::_grouped_circle_by_color_grouped(
             for (const auto &coord: polygon_geometry_coordinates_list[i]) {
                 coordinatesList.append(coord);
             }
-            geometryList.append(coordinatesList);
+            geometryList.insert(geometryList.size(), QVariant(coordinatesList));
             data.insert("polygon_geometry_coordinates_list", geometryList);
 
             QVariantList radiusList;
@@ -1051,7 +1063,7 @@ QVariantMap Processor::_grouped_circle_by_color_grouped(
             for (const auto &percent: style_percents[i]) {
                 percentsList.append(percent);
             }
-            stylePercentsList.append(percentsList);
+            stylePercentsList.insert(stylePercentsList.size(), QVariant(percentsList));
             data.insert("style_percents", stylePercentsList);
 
             QVariantList areasColorList;
@@ -1059,7 +1071,7 @@ QVariantMap Processor::_grouped_circle_by_color_grouped(
             for (const auto &color: areas_color_list[i]) {
                 colorList.append(color);
             }
-            areasColorList.append(colorList);
+            areasColorList.insert(areasColorList.size(), QVariant(colorList));
             data.insert("areas_color_list", areasColorList);
 
             QVariantList areasOpacityList;
@@ -1067,7 +1079,7 @@ QVariantMap Processor::_grouped_circle_by_color_grouped(
             for (const auto &opacity: areas_opacity_list[i]) {
                 opacityList.append(opacity);
             }
-            areasOpacityList.append(opacityList);
+            areasOpacityList.insert(areasOpacityList.size(), QVariant(opacityList));
             data.insert("areas_opacity_list", areasOpacityList);
 
             style_grouped.insert(merged_areas_color, data);

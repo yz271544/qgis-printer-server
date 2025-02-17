@@ -21,6 +21,7 @@
 #include <qgsvectorlayer.h>
 #include <qgsvectorlayerlabeling.h>
 #include <qthread.h>
+#include <utils/JsonUtil.h>
 
 #if defined(_WIN32)
 #include <windows.h>

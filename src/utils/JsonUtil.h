@@ -24,6 +24,8 @@ private:
     static QJsonArray processVariantList(const QVariantList& list);
 public:
     static QVariantMap jsonObjectToVariantMap(const QJsonObject& jsonObject);
+
+    static QJsonDocument convertQListNest3ToJson(const QList<QList<QList<double>>>& data);
     // create singleton ObjectMapper
     static std::shared_ptr<OBJECTMAPPERNS::ObjectMapper> getObjectMapper() {
 #if OATPP_VERSION_LESS_1_4_0

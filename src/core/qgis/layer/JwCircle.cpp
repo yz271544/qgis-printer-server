@@ -284,31 +284,32 @@ void JwCircle::addCircleKeyAreas(
 
     memCircleVectorLayer->startEditing();
     int level = 0;
-    for (const auto &radius: radii) {
+    for (const auto &radius_: radii) {
         try {
             auto center_transformed = transformPoint(centerPoint, *transformer);
             auto circle_geometry = paintCircleGeometry3d(numSegments, *center_transformed, radius);
             QgsFeature feature(fields);
-            auto name = areaNames[level];
+            feature.setGeometry(circle_geometry);
+            const auto& name_ = areaNames[level];
             QgsAttributes attribute;
-            attribute.append(name);
+            attribute.append(name_);
             attribute.append("leveled-circle");
             attribute.append(center_transformed->x());
             attribute.append(center_transformed->y());
             attribute.append(center_transformed->z());
-            attribute.append(radius);
+            attribute.append(radius_);
             feature.setAttributes(attribute);
             circleProvider->addFeature(feature);
             spdlog::debug("added circle feature {}: {}-{}-{} {}",
-                          name.toStdString(),
+                          name_.toStdString(),
                           center_transformed->x(),
                           center_transformed->y(),
                           center_transformed->z(),
-                          radius);
+                          radius_);
         } catch (const std::exception &e) {
             spdlog::error("add circle {}-{}-{} {} feature error: {}",
                           centerPoint.x(), centerPoint.y(), centerPoint.z(),
-                          radius, e.what());
+                          radius_, e.what());
         }
         level += 1;
     }
@@ -442,9 +443,10 @@ void JwCircle::addLevelKeyAreas(
             try {
                 auto circle_geometry = paintCircleGeometry3d(numSegments, *center_transformed, radius);
                 QgsFeature feature(fields);
-                auto name = area_render_names[level];
+                feature.setGeometry(circle_geometry);
+                const auto& name_ = area_render_names[level];
                 QgsAttributes attribute;
-                attribute.append(name);
+                attribute.append(name_);
                 attribute.append("leveled-circle");
                 attribute.append(center_transformed->x());
                 attribute.append(center_transformed->y());
@@ -453,7 +455,7 @@ void JwCircle::addLevelKeyAreas(
                 feature.setAttributes(attribute);
                 circleProvider->addFeature(feature);
                 spdlog::debug("added circle feature {}: {}-{}-{} {}",
-                              name.toStdString(),
+                              name_.toStdString(),
                               center_transformed->x(),
                               center_transformed->y(),
                               center_transformed->z(),

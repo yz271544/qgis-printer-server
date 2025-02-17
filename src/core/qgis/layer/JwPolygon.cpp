@@ -43,7 +43,7 @@ void JwPolygon::addPolygons(const QList<QString> &nameList,
     QList<QgsField> fields;
     fields.append(QgsField(QStringLiteral("name"), QMetaType::Type::QString, "varchar", 256));
     fields.append(QgsField("type", QMetaType::Type::QString, "varchar", 256));
-    fields.append(QgsField("vertex_count", QMetaType::Type::UInt));
+    fields.append(QgsField("vertex_count", QMetaType::Type::Int));
 
     polygonProvider->addAttributes(fields);
     memPolygonVectorLayer->updatedFields();
@@ -64,12 +64,10 @@ void JwPolygon::addPolygons(const QList<QString> &nameList,
         QgsGeometry qgsPolygon = transformPolygon2(polygon);
         QgsFeature feature(fields);
         feature.setGeometry(qgsPolygon);
-
         QgsAttributes attribute;
         attribute.append(nameList[i]);
         attribute.append("polygon");
         attribute.append(vertexCount);
-
         feature.setAttributes(attribute);
         polygonProvider->addFeature(feature);
     }
