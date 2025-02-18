@@ -6,6 +6,7 @@
 #define JINGWEIPRINTER_QCORESTARTER_H
 
 #include <QCoreApplication>
+#include <QGuiApplication>
 #include <qgs3d.h>
 #include "starter.h"
 #include <spdlog/spdlog.h>

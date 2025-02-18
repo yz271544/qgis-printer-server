@@ -958,15 +958,33 @@ JwLayout3D* Processor::add_3d_layout(
         bool write_qpt,
         const QVector<QString> &removeLayerNames,
         const QVector<QString> &removeLayerPrefixes) {
+
+    // 创建离屏表面
+    QOffscreenSurface surface;
+    surface.setFormat(m_globalGLContext->format());
+    surface.create();
+
+    spdlog::info("Offscreen surface created: {}", surface.isValid());
+
+    // 绑定上下文到离屏表面
+    if (!m_globalGLContext->makeCurrent(&surface)) {
+        spdlog::error("Failed to bind OpenGL context to offscreen surface!");
+        return nullptr;
+    }
+    spdlog::info("OpenGL context bound: {}", m_globalGLContext->isValid());
+
     auto joinedLayoutName = QString().append(layout_name).append("-").append(available_paper.getPaperName()).append(
             "-3D");
     spdlog::info("add layout: {}", joinedLayoutName.toStdString());
 
     auto canvas3d = std::make_shared<Qgs3DMapCanvas>();
     canvas3d->setSurfaceType(QSurface::OpenGLSurface);
-    if (!m_globalGLContext->makeCurrent(canvas3d.get())) {
+    canvas3d->setFormat(surface.format());
+    canvas3d->create(); // 显式创建表面
+
+    /*if (!m_globalGLContext->makeCurrent(canvas3d.get())) {
         qCritical() << "Error: Failed to make OpenGL context current!";
-    }
+    }*/
     spdlog::info("set 3d canvas done to show");
     canvas3d->show(); // 即使是无头模式，也需要调用 show() 来初始化 OpenGL 上下文
     spdlog::info("3d canvas show done");
