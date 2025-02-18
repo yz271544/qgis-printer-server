@@ -988,12 +988,14 @@ JwLayout3D* Processor::add_3d_layout(
     spdlog::info("add layout: {}", joinedLayoutName.toStdString());
 
     auto canvas3d = std::make_unique<Qgs3DMapCanvas>();
+    canvas3d->create();
+    canvas3d->show();
     auto project = m_app->getProject();
     auto sceneName = m_app->getSceneName();
     auto projectDir = m_app->getProjectDir();
     /*JwLayout3D jwLayout3d(project, canvas, canvas3d.get(),
                           sceneName, image_spec, projectDir, joinedLayoutName);*/
-    auto jwLayout3d = std::make_unique<JwLayout3D>(project, canvas, canvas3d.get(),
+    auto jwLayout3d = std::make_unique<JwLayout3D>(project, canvas, canvas3d.release(),
                                                    sceneName, image_spec, projectDir, joinedLayoutName);
 
     auto plottingWebJsonDoc = JsonUtil::convertDtoToQJsonObject(plottingWeb);
