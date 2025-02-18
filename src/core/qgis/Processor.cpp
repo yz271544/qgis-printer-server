@@ -257,7 +257,7 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
 //        spdlog::info("invoke method to create project");
         // Qt::TimerType tempReceiver;
         QMetaObject::invokeMethod(qApp, [this, plottingWeb, plottingRespDto, layoutType, promise, &eventLoop]() {
-            //QTimer::singleShot(0, tempReceiver, [this, plottingWeb, plottingRespDto, layoutType, promise, &eventLoop]() {
+            //QTimer::singleShot(0, tempRecever, [this, plottingWeb, plottingRespDto, layoutType, promise, &eventLoop]() {
 //            spdlog::info("Inside invokeMethod lambda: start");
             auto responseDto = ResponseDto::createShared();
             try {
