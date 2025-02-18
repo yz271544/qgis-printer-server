@@ -971,6 +971,10 @@ JwLayout3D* Processor::add_3d_layout(
         spdlog::error("Failed to bind OpenGL context to offscreen surface!");
         return nullptr;
     }
+    if (!m_globalGLContext->create()) {
+        spdlog::error("Failed to create OpenGL context");
+        return nullptr;
+    }
     spdlog::info("OpenGL context bound: {}", m_globalGLContext->isValid());
 
     auto joinedLayoutName = QString().append(layout_name).append("-").append(available_paper.getPaperName()).append(
