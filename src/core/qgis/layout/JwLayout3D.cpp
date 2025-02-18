@@ -643,8 +643,15 @@ void JwLayout3D::init3DMapSettings(
 
     mCanvas3d->setMapSettings(mapSettings3d.release());
     if (!mCanvas3d->scene()) {
-        qCritical() << "Error: Qgs3DMapScene is NULL!";
+        spdlog::error("Error: Qgs3DMapScene or Root Entity is NULL!");
+        return;
     }
+    if (!mCanvas3d->engine()) {
+        spdlog::error("Error: QgsWindow3DEngine is NULL!");
+        return;
+    }
+    qDebug() << "Qgs3DMapScene created: " << (mCanvas3d->scene() != nullptr);
+    qDebug() << "QgsWindow3DEngine created: " << (mCanvas3d->engine() != nullptr);
 }
 
 void JwLayout3D::set3DCanvas() {

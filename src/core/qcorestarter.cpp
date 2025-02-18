@@ -76,14 +76,6 @@ void QCoreStarter::Init(StarterContext &context) {
         globalSurfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
         context.setSurfaceFormat(&globalSurfaceFormat);
 
-        // 创建离屏渲染环境
-        /*spdlog::info("创建离屏渲染环境");
-        auto globalOffscreenSurface = new QOffscreenSurface();
-        globalOffscreenSurface->setFormat(globalSurfaceFormat);
-        spdlog::info("create offscreen surface");
-        globalOffscreenSurface->create();
-        context.setOffscreenSurface(globalOffscreenSurface);*/
-
         // 创建OpenGL上下文
         spdlog::info("创建OpenGL上下文");
         auto globalGLContext = new QOpenGLContext();
@@ -95,13 +87,6 @@ void QCoreStarter::Init(StarterContext &context) {
         }
 
         spdlog::warn("QCoreStarter m_globalGLContext ptr: {}", static_cast<void*>(context.getOpenGLContext()));
-
-        // 设置当前上下文
-        /*spdlog::info("设置当前上下文");
-        if (!globalGLContext->makeCurrent(globalOffscreenSurface)) {
-            spdlog::error("Failed to make OpenGL context current");
-            exit(-1);
-        }*/
 
         QgsApplication::init();
         QgsApplication::initQgis();

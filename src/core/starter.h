@@ -39,9 +39,11 @@ private:
     std::map<std::string, YAML::Node*> context_;       // 上下文存储
     Processor* processor_;
 
-    std::unique_ptr<QSurfaceFormat> mQSurfaceFormat = nullptr;
+    //std::unique_shared<QSurfaceFormat> mQSurfaceFormat = nullptr;
     //std::unique_ptr<QOffscreenSurface> mQOffscreenSurface = nullptr;
-    std::unique_ptr<QOpenGLContext> mOpenGLContext = nullptr;
+
+    std::shared_ptr<QSurfaceFormat> mQSurfaceFormat = std::make_shared<QSurfaceFormat>();
+    std::shared_ptr<QOpenGLContext> mOpenGLContext = std::make_shared<QOpenGLContext>();
 
 public:
 
