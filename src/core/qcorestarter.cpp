@@ -78,7 +78,7 @@ void QCoreStarter::Init(StarterContext &context) {
 
         // 创建OpenGL上下文
         spdlog::info("创建OpenGL上下文");
-        auto globalGLContext = new QOpenGLContext();
+        auto globalGLContext = std::make_shared<QOpenGLContext>();
         globalGLContext->setFormat(globalSurfaceFormat);
         context.setOpenGLContext(globalGLContext);
         if (!globalGLContext->create()) {
@@ -86,7 +86,7 @@ void QCoreStarter::Init(StarterContext &context) {
             exit(-1);
         }
 
-        spdlog::warn("QCoreStarter m_globalGLContext ptr: {}", static_cast<void*>(context.getOpenGLContext()));
+        spdlog::warn("QCoreStarter m_globalGLContext ptr: {}", static_cast<void*>(context.getOpenGLContext().get()));
 
         QgsApplication::init();
         QgsApplication::initQgis();

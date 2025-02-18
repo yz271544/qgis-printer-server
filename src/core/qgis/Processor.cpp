@@ -4,8 +4,10 @@
 
 #include "Processor.h"
 
-Processor::Processor(const QList<QString> &argvList, YAML::Node *config, QOpenGLContext* globalGLContext) {
-    m_globalGLContext = globalGLContext;
+#include <utility>
+
+Processor::Processor(const QList<QString> &argvList, YAML::Node *config, std::shared_ptr<QOpenGLContext> globalGLContext) {
+    m_globalGLContext = std::move(globalGLContext);
     m_config = config;
     try {
         m_verbose = m_config->operator[]("logging")["verbose"].as<bool>();

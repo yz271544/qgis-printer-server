@@ -15,6 +15,7 @@
 #include <QList>
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
+#include <utility>
 
 #include "starter.h"
 #include "error/exceptions.h"
@@ -41,7 +42,7 @@ private:
 
     //std::unique_shared<QSurfaceFormat> mQSurfaceFormat = nullptr;
     //std::unique_ptr<QOffscreenSurface> mQOffscreenSurface = nullptr;
-
+    mutable std::mutex mutex_;
     std::shared_ptr<QSurfaceFormat> mQSurfaceFormat = std::make_shared<QSurfaceFormat>();
     std::shared_ptr<QOpenGLContext> mOpenGLContext = std::make_shared<QOpenGLContext>();
 
@@ -73,8 +74,9 @@ public:
     void setProcessor(Processor* processor);
 
     // 添加获取OpenGL上下文的方法
-    QOpenGLContext* getOpenGLContext() {
-        return mOpenGLContext.get();
+    std::shared_ptr<QOpenGLContext> getOpenGLContext() {
+        std::lock_guard<std::mutex> lock(mutex_);
+        return mOpenGLContext;
     }
     // 添加获取离屏表面的方法
     /*QOffscreenSurface* getOffscreenSurface() {
@@ -85,8 +87,9 @@ public:
         return mQSurfaceFormat.get();
     }
     // 添加设置OpenGL上下文的方法
-    void setOpenGLContext(QOpenGLContext* context) {
-        mOpenGLContext.reset(context);
+    void setOpenGLContext(std::shared_ptr<QOpenGLContext> openGLContext) {
+        std::lock_guard<std::mutex> lock(mutex_);
+        mOpenGLContext = std::move(openGLContext);
     }
     // 添加设置离屏表面的方法
     /*void setOffscreenSurface(QOffscreenSurface* surface) {
