@@ -495,12 +495,13 @@ void JwLayout3D::addArrowBasedOnFrontendParams(QgsLayout *layout, const QList<QV
 }
 
 void JwLayout3D::init3DLayout(const QString &layoutName) {
-    mLayout = std::make_unique<QgsPrintLayout>(mProject);
+    //mLayout = std::make_unique<QgsPrintLayout>(mProject);
+    mLayout = new QgsPrintLayout(mProject);
     mLayout->setName(layoutName);
     mLayout->setUnits(Qgis::LayoutUnit::Millimeters);
     mLayout->initializeDefaults();
-    //QgsLayoutManager *layout_manager = mProject->layoutManager();
-    //layout_manager->addLayout(layout.release());
+    QgsLayoutManager *layout_manager = mProject->layoutManager();
+    layout_manager->addLayout(mLayout);
 }
 
 // get layout from project->layoutManager()
@@ -519,7 +520,7 @@ QgsPrintLayout *JwLayout3D::getLayout(const QString &layoutName) {
 }
 
 QgsPrintLayout* JwLayout3D::getLayout3D() {
-    return mLayout.get();
+    return mLayout;
 }
 
 QgsLayoutItem3DMap *JwLayout3D::getMapItem3d() {
@@ -550,98 +551,98 @@ void JwLayout3D::init3DMapSettings(
 ) {
     QgsSettings settings;
     // 创建 3D 地图设置
-    auto mapSettings3d = std::make_shared<Qgs3DMapSettings>();
-    mapSettings3d->setCrs(mProject->crs());
+    //auto mapSettings3d = std::make_shared<Qgs3DMapSettings>();
+    mMapSettings3d = new Qgs3DMapSettings();
+    mMapSettings3d->setCrs(mProject->crs());
     // 过滤图层
-    filterMapLayers(removeLayerNames, removeLayerPrefixes, mapSettings3d.get());
+    filterMapLayers(removeLayerNames, removeLayerPrefixes, mMapSettings3d);
 
-    auto flatTerrain = std::make_shared<QgsFlatTerrainGenerator>();
+    auto flatTerrain = new QgsFlatTerrainGenerator();
 #if _QGIS_VERSION_INT >= 34100
-    flatTerrain->setCrs(mapSettings3d->crs(), mProject->transformContext());
+    flatTerrain->setCrs(mMapSettings3d->crs(), mProject->transformContext());
 #else
-    flatTerrain->setCrs( mapSettings3d->crs() );
+    flatTerrain->setCrs( mMapSettings3d->crs() );
 #endif
-    mapSettings3d->setTerrainGenerator(flatTerrain.get());
+    mMapSettings3d->setTerrainGenerator(flatTerrain);
     //mapSettings3d->setTerrainElevationOffset( project->elevationProperties()->terrainProvider()->offset() );
     QgsAbstractTerrainSettings *terrainSettings = QgsFlatTerrainSettings::create();
     terrainSettings->setElevationOffset(mProject->elevationProperties()->terrainProvider()->offset());
-    mapSettings3d->setTerrainSettings(terrainSettings);
+    mMapSettings3d->setTerrainSettings(terrainSettings);
     // mapSettings3d->setBackgroundColor(QColor("#ffffff"));
     spdlog::debug("filtered map layers");
     const QgsReferencedRectangle projectExtent = mProject->viewSettings()->fullExtent();
     const QgsRectangle fullExtent = Qgs3DUtils::tryReprojectExtent2D(projectExtent, projectExtent.crs(),
-                                                                     mapSettings3d->crs(),
+                                                                     mMapSettings3d->crs(),
                                                                      mProject->transformContext());
-    //QgsReferencedRectangle fullExtent = project->viewSettings()->fullExtent();
     spdlog::debug("get3DMapSettings fullExtent:");
     CameraUtil::ExtentInfo(fullExtent);
-    mapSettings3d->setOrigin(QgsVector3D(fullExtent.center().x(), fullExtent.center().y(), 0));
-    spdlog::debug("set origin: {}", mapSettings3d->origin().toString().toStdString());
-    mapSettings3d->setSelectionColor(mCanvas2d->selectionColor());
-    spdlog::debug("set selection color: {}", mapSettings3d->selectionColor().name().toStdString());
-    mapSettings3d->setBackgroundColor(mCanvas2d->canvasColor());
-    spdlog::debug("set backgroupdColor: {}", mapSettings3d->backgroundColor().name().toStdString());
+    mMapSettings3d->setOrigin(QgsVector3D(fullExtent.center().x(), fullExtent.center().y(), 0));
+    spdlog::debug("set origin: {}", mMapSettings3d->origin().toString().toStdString());
+    mMapSettings3d->setSelectionColor(mCanvas2d->selectionColor());
+    spdlog::debug("set selection color: {}", mMapSettings3d->selectionColor().name().toStdString());
+    mMapSettings3d->setBackgroundColor(mCanvas2d->canvasColor());
+    spdlog::debug("set backgroupdColor: {}", mMapSettings3d->backgroundColor().name().toStdString());
     //mapSettings3d->setLayers( mCanvas2d->layers( true ) );
-    mapSettings3d->setTemporalRange(mCanvas2d->temporalRange());
-    spdlog::debug("set temporal range: {}", mapSettings3d->temporalRange().isEmpty());
+    mMapSettings3d->setTemporalRange(mCanvas2d->temporalRange());
+    spdlog::debug("set temporal range: {}", mMapSettings3d->temporalRange().isEmpty());
     const Qgis::NavigationMode defaultNavMode = settings.enumValue(QStringLiteral("map3d/defaultNavigation"),
                                                                    Qgis::NavigationMode::TerrainBased,
                                                                    QgsSettings::App);
-    mapSettings3d->setCameraNavigationMode(defaultNavMode);
-    spdlog::debug("set camera navigation mode: {}", mapSettings3d->cameraNavigationMode());
-    mapSettings3d->setCameraMovementSpeed(
+    mMapSettings3d->setCameraNavigationMode(defaultNavMode);
+    spdlog::debug("set camera navigation mode: {}", mMapSettings3d->cameraNavigationMode());
+    mMapSettings3d->setCameraMovementSpeed(
             settings.value(QStringLiteral("map3d/defaultMovementSpeed"), 5, QgsSettings::App).toDouble());
-    spdlog::debug("set camera movement speed: {}", mapSettings3d->cameraMovementSpeed());
+    spdlog::debug("set camera movement speed: {}", mMapSettings3d->cameraMovementSpeed());
     const Qt3DRender::QCameraLens::ProjectionType defaultProjection = settings.enumValue(
             QStringLiteral("map3d/defaultProjection"), Qt3DRender::QCameraLens::PerspectiveProjection,
             QgsSettings::App);
-    mapSettings3d->setProjectionType(defaultProjection);
-    spdlog::debug("set project type: {}", mapSettings3d->projectionType());
-    mapSettings3d->setFieldOfView(
+    mMapSettings3d->setProjectionType(defaultProjection);
+    spdlog::debug("set project type: {}", mMapSettings3d->projectionType());
+    mMapSettings3d->setFieldOfView(
             settings.value(QStringLiteral("map3d/defaultFieldOfView"), 45, QgsSettings::App).toFloat());
-    spdlog::debug("set field of view: {}", mapSettings3d->fieldOfView());
+    spdlog::debug("set field of view: {}", mMapSettings3d->fieldOfView());
 
     Qgs3DAxisSettings axis;
     axis.setMode(Qgs3DAxisSettings::Mode::Crs);
     spdlog::debug("mapSettings3d set3DAxisSettings");
-    mapSettings3d->set3DAxisSettings(axis);
+    mMapSettings3d->set3DAxisSettings(axis);
 
-    mapSettings3d->setTransformContext(QgsProject::instance()->transformContext());
+    mMapSettings3d->setTransformContext(QgsProject::instance()->transformContext());
     spdlog::debug("set transform context");
-    mapSettings3d->setPathResolver(QgsProject::instance()->pathResolver());
+    mMapSettings3d->setPathResolver(QgsProject::instance()->pathResolver());
     spdlog::debug("set path resolver");
-    mapSettings3d->setMapThemeCollection(QgsProject::instance()->mapThemeCollection());
-    qDebug() << "set map theme collection:" << mapSettings3d->mapThemeCollection();
-    mapSettings3d->configureTerrainFromProject(QgsProject::instance()->elevationProperties(), fullExtent);
-    qDebug() << "configure terrain from project:" << mapSettings3d->terrainGenerator();
+    mMapSettings3d->setMapThemeCollection(QgsProject::instance()->mapThemeCollection());
+    qDebug() << "set map theme collection:" << mMapSettings3d->mapThemeCollection();
+    mMapSettings3d->configureTerrainFromProject(QgsProject::instance()->elevationProperties(), fullExtent);
+    qDebug() << "configure terrain from project:" << mMapSettings3d->terrainGenerator();
     // scenes default to a single directional light
     QgsPointLightSettings defaultPointLight;
     const QgsRectangle& extent = fullExtent;
     QgsPointXY center = extent.center();
     defaultPointLight.setPosition(QgsVector3D(center.x(), center.y(), 1000));
     defaultPointLight.setConstantAttenuation(0);
-    mapSettings3d->setLightSources({defaultPointLight.clone()});
+    mMapSettings3d->setLightSources({defaultPointLight.clone()});
 //    auto directionalLightSettings = std::make_unique<QgsDirectionalLightSettings>();
 //    mapSettings3d->setLightSources( QList<QgsLightSource *>() << directionalLightSettings );
-    qDebug() << "set light sources:" << mapSettings3d->lightSources();
+    qDebug() << "set light sources:" << mMapSettings3d->lightSources();
 //    mapSettings3d->setOutputDpi( QGuiApplication::primaryScreen()->logicalDotsPerInch() );
-    mapSettings3d->setOutputDpi(300);
-    spdlog::debug("set output dpi:", mapSettings3d->outputDpi());
-    mapSettings3d->setRendererUsage(Qgis::RendererUsage::View);
-    spdlog::debug("set renderer usage:", mapSettings3d->rendererUsage());
+    mMapSettings3d->setOutputDpi(300);
+    spdlog::debug("set output dpi:", mMapSettings3d->outputDpi());
+    mMapSettings3d->setRendererUsage(Qgis::RendererUsage::View);
+    spdlog::debug("set renderer usage:", mMapSettings3d->rendererUsage());
 
-    auto mapSett3d = mapSettings3d.get();
+    auto mapSett3d = mMapSettings3d;
     QObject::connect(mProject, &QgsProject::transformContextChanged, mapSett3d, [this, &mapSett3d] {
         mapSett3d->setTransformContext(mProject->transformContext());
     });
     spdlog::debug("connect project transform context changed");
     auto defaultColor = QColor(0xffffff);
-    mapSettings3d->setBackgroundColor(defaultColor);
+    mMapSettings3d->setBackgroundColor(defaultColor);
 
-    mapSettings3d->setExtent(fullExtent);
+    mMapSettings3d->setExtent(fullExtent);
     //set3DCanvas(fullExtent);
 
-    mCanvas3d->setMapSettings(mapSettings3d.get());
+    mCanvas3d->setMapSettings(mMapSettings3d);
     if (!mCanvas3d->scene()) {
         spdlog::error("Error: Qgs3DMapScene or Root Entity is NULL!");
         return;
@@ -683,9 +684,6 @@ void JwLayout3D::set3DMap(
         const QString &mapFrameColor,
         bool isDoubleFrame,
         double mapRotation) {
-
-    auto mapSettings3d = mCanvas3d->mapSettings();
-
     QDomImplementation DomImplementation;
     QDomDocumentType documentType = DomImplementation.createDocumentType(
             QStringLiteral("qgis"), QStringLiteral("http://mrcc.com/qgis.dtd"), QStringLiteral("SYSTEM")
@@ -700,7 +698,8 @@ void JwLayout3D::set3DMap(
 
     // 创建 3D 地图项
     //mapItem3d = QgsLayoutItem3DMap::create(layout);
-    auto mapItem3d = std::make_unique<QgsLayoutItem3DMap>(layout);
+    //auto mapItem3d = std::make_unique<QgsLayoutItem3DMap>(layout);
+    mMapItem3d = new QgsLayoutItem3DMap(layout);
     // spdlog::debug("mapItem3d setIsTemporal";
     // mapItem3d->setIsTemporal(true);
     spdlog::debug("mapItem3d");
@@ -708,7 +707,7 @@ void JwLayout3D::set3DMap(
     QgsPointXY center(lookAtCenterPoint.x(), lookAtCenterPoint.y());
     const QgsReferencedRectangle projectExtent = mProject->viewSettings()->fullExtent();
     const QgsRectangle fullExtent = Qgs3DUtils::tryReprojectExtent2D(projectExtent, projectExtent.crs(),
-                                                                     mapSettings3d->crs(),
+                                                                     mMapSettings3d->crs(),
                                                                      mProject->transformContext());
     const QgsRectangle& extent = fullExtent;
     auto distance = static_cast<float>(extent.width() / 1.2); // 根据场景范围调整相机距离
@@ -718,12 +717,12 @@ void JwLayout3D::set3DMap(
     mCanvas3d->setViewFromTop(center, distance, 0);
     mCanvas3d->cameraController()->setLookingAtPoint(lookAtCenterPoint, distance, pitch, yaw);
 
-    mapItem3d->setMapSettings(mapSettings3d);
+    mMapItem3d->setMapSettings(mMapSettings3d);
 
     Qgs3DAxisSettings axis;
     axis.setMode(Qgs3DAxisSettings::Mode::Crs);
     spdlog::debug("mapSettings3d set3DAxisSettings");
-    mapSettings3d->set3DAxisSettings(axis);
+    mMapSettings3d->set3DAxisSettings(axis);
 
     QgsCameraPose cameraPose;
     cameraPose.setCenterPoint(lookAtCenterPoint);
@@ -731,7 +730,7 @@ void JwLayout3D::set3DMap(
     cameraPose.setPitchAngle(pitch);
     cameraPose.setHeadingAngle(yaw);
     // set camera pose for layout
-    mapItem3d->setCameraPose(cameraPose);
+    mMapItem3d->setCameraPose(cameraPose);
     // 设置地图项大小
     mMapWidth = availablePaper.getPaperSize().second - mImageSpec["main_left_margin"].toDouble() -
                 mImageSpec["main_right_margin"].toDouble();
@@ -743,7 +742,7 @@ void JwLayout3D::set3DMap(
                   mImageSpec["main_top_margin"].toDouble(),
                   mMapWidth,
                   mMapHeight);
-    mapItem3d->attemptSetSceneRect(
+    mMapItem3d->attemptSetSceneRect(
             QRectF(mImageSpec["main_left_margin"].toDouble(), mImageSpec["main_top_margin"].toDouble(),
                    mMapWidth, mMapHeight));
     // QgsLayoutSize fixedSize(mapWidth, mapHeight, Qgis::LayoutUnit::Millimeters);
@@ -755,7 +754,7 @@ void JwLayout3D::set3DMap(
     // mapItem3d->setCameraPose(cameraPose);
     // 添加地图项到布局
     spdlog::debug("add 3d map to layout");
-    layout->addLayoutItem(mapItem3d.release());
+    layout->addLayoutItem(mMapItem3d);
     spdlog::debug("add 3d map to layout done");
 }
 
@@ -764,7 +763,8 @@ void JwLayout3D::addNorthArrow(
         QgsPrintLayout *layout,
         const QVariantMap &north) {
     // 创建指北针图片项
-    auto northArrow = std::make_unique<QgsLayoutItemPicture>(layout);
+    //auto northArrow = std::make_unique<QgsLayoutItemPicture>(layout);
+    auto northArrow =  new QgsLayoutItemPicture(layout);
 
     // 设置指北针图片路径
     QString northArrowPath;
@@ -809,7 +809,7 @@ void JwLayout3D::addNorthArrow(
     northArrow->setPictureRotation(northRotation);
 
     // 添加指北针到布局
-    layout->addLayoutItem(northArrow.release());
+    layout->addLayoutItem(northArrow);
 }
 
 void JwLayout3D::loadQptTemplate(const QString &qptFilePath, const QString &layoutTemplateName) {
@@ -1016,33 +1016,18 @@ void JwLayout3D::addPrintLayout(const QString &layoutType, const QString &layout
 //void JwLayout3D::exportLayoutToImage(QgsPrintLayout *layout, const QString &outputFilePath) {
 void JwLayout3D::exportLayoutToImage(const QString& layoutName, QString &outputFilePath) {
     spdlog::info("exportLayoutToImage layout");
-//    QgsLayoutManager *layout_manager = mProject->layoutManager();
-//    spdlog::info("11111");
-//    auto layouts = layout_manager->layouts();
-//    spdlog::info("layouts size: {}", layouts.size());
-//    for (const auto &layout: layouts) {
-//        spdlog::info("layout: {}", layout->name().toStdString());
-//    }
-//    auto layoutInterface = layout_manager->layoutByName(layoutName);
-//    spdlog::info("22222");
-//    if (layoutInterface == nullptr) {
-//        spdlog::info("layoutInterface is nullptr");
-//        return;
-//    }
-//    spdlog::info("layoutInterface: {}", layoutInterface->layoutType());
-    QgsPrintLayout *layout = mLayout.get();
     //if (layoutInterface->layoutType() == QgsMasterLayoutInterface::PrintLayout) {
-    if (layout != nullptr) {
+    if (mLayout != nullptr) {
         spdlog::info("layoutInterface is PrintLayout");
         //layout = dynamic_cast<QgsPrintLayout*>(layoutInterface);
 
-        QgsLayoutPageCollection *pageCollection = layout->pageCollection();
+        QgsLayoutPageCollection *pageCollection = mLayout->pageCollection();
         int pageCount = pageCollection->pageCount();
         spdlog::debug("pageCount: {}", pageCount);
         bool should = pageCollection->shouldExportPage(0);
         spdlog::debug("should: {}", should);
 
-        QgsLayoutRenderContext &renderContext = layout->renderContext();
+        QgsLayoutRenderContext &renderContext = mLayout->renderContext();
         QVector<qreal> scales;
         scales << 1.2;
         scales << 1.0;
@@ -1053,7 +1038,7 @@ void JwLayout3D::exportLayoutToImage(const QString& layoutName, QString &outputF
         }
 
         // 创建布局导出器
-        QgsLayoutExporter exporter(layout);
+        QgsLayoutExporter exporter(mLayout);
 
         // 设置导出选项
         QgsLayoutExporter::ImageExportSettings settings;

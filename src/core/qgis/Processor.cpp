@@ -960,21 +960,20 @@ JwLayout3D* Processor::add_3d_layout(
             "-3D");
     spdlog::info("add layout: {}", joinedLayoutName.toStdString());
 
-    //auto canvas3d = std::make_shared<Qgs3DMapCanvas>();
-    auto canvas3d = new Qgs3DMapCanvas();
+    auto canvas3d = std::make_shared<Qgs3DMapCanvas>();
     canvas3d->setSurfaceType(QSurface::OpenGLSurface);
-    //spdlog::info("create 3d canvas");
-    //canvas3d->create();
-    /*spdlog::info("make current 3d canvas");
-    spdlog::warn("m_globalGLContext ptr: {}", static_cast<void*>(m_globalGLContext));
-    m_globalGLContext->makeCurrent(canvas3d.get());
-    spdlog::info("make current 3d canvas done");*/
+    if (!m_globalGLContext->makeCurrent(canvas3d.get())) {
+        qCritical() << "Error: Failed to make OpenGL context current!";
+    }
+    spdlog::info("set 3d canvas done to show");
+    canvas3d->show(); // 即使是无头模式，也需要调用 show() 来初始化 OpenGL 上下文
+    spdlog::info("3d canvas show done");
+
     auto project = m_app->getProject();
     auto sceneName = m_app->getSceneName();
     auto projectDir = m_app->getProjectDir();
-    /*JwLayout3D jwLayout3d(project, canvas, canvas3d.get(),
-                          sceneName, image_spec, projectDir, joinedLayoutName);*/
-    auto jwLayout3d = std::make_unique<JwLayout3D>(project, canvas, canvas3d,
+
+    auto jwLayout3d = std::make_unique<JwLayout3D>(project, canvas, canvas3d.get(),
                                                    sceneName, image_spec, projectDir, joinedLayoutName);
     auto plottingWebJsonDoc = JsonUtil::convertDtoToQJsonObject(plottingWeb);
     auto plottingWebMap = JsonUtil::jsonObjectToVariantMap(plottingWebJsonDoc.object());
@@ -982,37 +981,7 @@ JwLayout3D* Processor::add_3d_layout(
     jwLayout3d->init3DMapSettings(removeLayerNames, removeLayerPrefixes);
     spdlog::info("done init 3d map settings");
     jwLayout3d->set3DCanvas();
-
-    /*if (!m_globalGLContext->makeCurrent(canvas3d.get())) {
-        qCritical() << "Failed to make OpenGL context current!";
-    }*/
-    //m_globalGLContext->makeCurrent(canvas3d.get());
-
-    /*if (!m_globalGLContext->makeCurrent(canvas3d.get())) {
-        spdlog::error("Error: Failed to make OpenGL context current!");
-    }*/
-
-    /*auto offscreenSurface = std::make_unique<QOffscreenSurface>();
-    offscreenSurface->setFormat(QSurfaceFormat::defaultFormat());
-    offscreenSurface->create();
-    if (!m_globalGLContext->makeCurrent(offscreenSurface.release())) {
-        qCritical() << "Failed to make OpenGL context current!";
-    }*/
-
-    auto offscreenSurface = new QOffscreenSurface();
-    offscreenSurface->setFormat(QSurfaceFormat::defaultFormat());
-    offscreenSurface->create();
-    m_globalGLContext->makeCurrent(offscreenSurface);
-
-    /*spdlog::info("canvas resize 800 600");
-    canvas3d->resize(800, 600);
-    spdlog::info("create 3d canvas");
-    canvas3d->create();*/
-
-    spdlog::info("set 3d canvas done to show");
-    canvas3d->show();
-//    canvas3d->showFullScreen();
-    spdlog::info("3d canvas show done");
+    spdlog::info("addPrintLayout 3d");
     jwLayout3d->addPrintLayout(QString("3d"), joinedLayoutName, plottingWebMap, available_paper, write_qpt);
     return jwLayout3d.release();
 }

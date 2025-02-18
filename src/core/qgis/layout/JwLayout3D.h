@@ -176,15 +176,17 @@ public:
 #endif
 
 private:
-    QString mLayoutName;
     QgsProject* mProject;
+    QString mLayoutName;
     QString mProjectDir;
     QgsMapCanvas* mCanvas2d;
     Qgs3DMapCanvas* mCanvas3d;
     QString mSceneName;
     std::unique_ptr<JwLegend> mJwLegend;
-    std::unique_ptr<QgsPrintLayout> mLayout;
+    QgsPrintLayout* mLayout;
     QVariantMap mImageSpec;
+    QgsLayoutItem3DMap* mMapItem3d;
+    Qgs3DMapSettings* mMapSettings3d;
     double mMapWidth;
     double mMapHeight;
 };
