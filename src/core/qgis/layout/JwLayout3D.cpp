@@ -550,18 +550,18 @@ void JwLayout3D::init3DMapSettings(
 ) {
     QgsSettings settings;
     // 创建 3D 地图设置
-    auto mapSettings3d = std::make_unique<Qgs3DMapSettings>();
+    auto mapSettings3d = std::make_shared<Qgs3DMapSettings>();
     mapSettings3d->setCrs(mProject->crs());
     // 过滤图层
     filterMapLayers(removeLayerNames, removeLayerPrefixes, mapSettings3d.get());
 
-    auto flatTerrain = std::make_unique<QgsFlatTerrainGenerator>();
+    auto flatTerrain = std::make_shared<QgsFlatTerrainGenerator>();
 #if _QGIS_VERSION_INT >= 34100
     flatTerrain->setCrs(mapSettings3d->crs(), mProject->transformContext());
 #else
     flatTerrain->setCrs( mapSettings3d->crs() );
 #endif
-    mapSettings3d->setTerrainGenerator(flatTerrain.release());
+    mapSettings3d->setTerrainGenerator(flatTerrain.get());
     //mapSettings3d->setTerrainElevationOffset( project->elevationProperties()->terrainProvider()->offset() );
     QgsAbstractTerrainSettings *terrainSettings = QgsFlatTerrainSettings::create();
     terrainSettings->setElevationOffset(mProject->elevationProperties()->terrainProvider()->offset());
@@ -641,7 +641,7 @@ void JwLayout3D::init3DMapSettings(
     mapSettings3d->setExtent(fullExtent);
     //set3DCanvas(fullExtent);
 
-    mCanvas3d->setMapSettings(mapSettings3d.release());
+    mCanvas3d->setMapSettings(mapSettings3d.get());
     if (!mCanvas3d->scene()) {
         spdlog::error("Error: Qgs3DMapScene or Root Entity is NULL!");
         return;

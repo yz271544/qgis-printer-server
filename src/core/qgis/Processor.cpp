@@ -960,7 +960,9 @@ JwLayout3D* Processor::add_3d_layout(
             "-3D");
     spdlog::info("add layout: {}", joinedLayoutName.toStdString());
 
-    auto canvas3d = std::make_shared<Qgs3DMapCanvas>();
+    //auto canvas3d = std::make_shared<Qgs3DMapCanvas>();
+    auto canvas3d = new Qgs3DMapCanvas();
+    canvas3d->setSurfaceType(QSurface::OpenGLSurface);
     //spdlog::info("create 3d canvas");
     //canvas3d->create();
     /*spdlog::info("make current 3d canvas");
@@ -972,9 +974,8 @@ JwLayout3D* Processor::add_3d_layout(
     auto projectDir = m_app->getProjectDir();
     /*JwLayout3D jwLayout3d(project, canvas, canvas3d.get(),
                           sceneName, image_spec, projectDir, joinedLayoutName);*/
-    auto jwLayout3d = std::make_unique<JwLayout3D>(project, canvas, canvas3d.get(),
+    auto jwLayout3d = std::make_unique<JwLayout3D>(project, canvas, canvas3d,
                                                    sceneName, image_spec, projectDir, joinedLayoutName);
-
     auto plottingWebJsonDoc = JsonUtil::convertDtoToQJsonObject(plottingWeb);
     auto plottingWebMap = JsonUtil::jsonObjectToVariantMap(plottingWebJsonDoc.object());
     spdlog::info("init 3d map settings");
