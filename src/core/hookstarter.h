@@ -27,14 +27,14 @@ class HookStarter : public BaseStarter {
 private:
     bool mStopped = false;
     static HookStarter* instance;
-    StarterContext context;
+    StarterContext* m_context;
     StarterRegister* starterRegister;
     std::vector<std::function<void(StarterContext&)>> callbacks;
 
 public:
     static void static_sig_handler(int sig);
 
-    HookStarter(StarterRegister *starterRegister, StarterContext context);
+    HookStarter(StarterRegister *starterRegister, StarterContext& context);
 
     ~HookStarter();
 

@@ -19,7 +19,7 @@ void ProcessorStarter::Init(StarterContext& context) {
 
 //    spdlog::info("qgis -> projects_prefix: {}", (*config)["qgis"]["projects_prefix"].as<std::string>());
 
-    m_processor = std::make_unique<Processor>(context.getArgs(), config);
+    m_processor = std::make_unique<Processor>(context.getArgs(), config, context.getOpenGLContext());
 
     context.setProcessor(m_processor.get());
 

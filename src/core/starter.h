@@ -13,6 +13,8 @@
 #include <stdexcept>
 #include <QString>
 #include <QList>
+#include <QOffscreenSurface>
+#include <QOpenGLContext>
 
 #include "starter.h"
 #include "error/exceptions.h"
@@ -36,6 +38,10 @@ private:
     static constexpr const char* KeyProps = "_conf"; // 配置键
     std::map<std::string, YAML::Node*> context_;       // 上下文存储
     Processor* processor_;
+
+    std::unique_ptr<QSurfaceFormat> mQSurfaceFormat = nullptr;
+    //std::unique_ptr<QOffscreenSurface> mQOffscreenSurface = nullptr;
+    std::unique_ptr<QOpenGLContext> mOpenGLContext = nullptr;
 
 public:
 
@@ -63,6 +69,54 @@ public:
 
     // 设置Processor实例
     void setProcessor(Processor* processor);
+
+    // 添加获取OpenGL上下文的方法
+    QOpenGLContext* getOpenGLContext() {
+        return mOpenGLContext.get();
+    }
+    // 添加获取离屏表面的方法
+    /*QOffscreenSurface* getOffscreenSurface() {
+        return mQOffscreenSurface.get();
+    }*/
+    // 添加获取SurfaceFormat的方法
+    QSurfaceFormat* getSurfaceFormat() {
+        return mQSurfaceFormat.get();
+    }
+    // 添加设置OpenGL上下文的方法
+    void setOpenGLContext(QOpenGLContext* context) {
+        mOpenGLContext.reset(context);
+    }
+    // 添加设置离屏表面的方法
+    /*void setOffscreenSurface(QOffscreenSurface* surface) {
+        mQOffscreenSurface.reset(surface);
+    }*/
+    // 添加设置SurfaceFormat的方法
+    void setSurfaceFormat(QSurfaceFormat* format) {
+        mQSurfaceFormat.reset(format);
+    }
+    // add release mOpenGLContext
+    void releaseOpenGLContext() {
+        /*if (mOpenGLContext->makeCurrent(mQOffscreenSurface.get())) {
+            mOpenGLContext->doneCurrent();
+        }*/
+        mOpenGLContext->doneCurrent();
+        mOpenGLContext->deleteLater();
+        mOpenGLContext.reset();
+    }
+    // add release mQOffscreenSurface
+    /*void releaseOffscreenSurface() {
+        if (mQOffscreenSurface) {
+            mQOffscreenSurface->destroy();
+            mQOffscreenSurface.reset();
+        }
+    }*/
+    // add release mQSurfaceFormat
+    void releaseSurfaceFormat() {
+        if (mQSurfaceFormat) {
+            mQSurfaceFormat.reset();
+        }
+        //mQSurfaceFormat.reset();
+    }
 };
 
 

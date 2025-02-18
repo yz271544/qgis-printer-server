@@ -4,7 +4,8 @@
 
 #include "Processor.h"
 
-Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
+Processor::Processor(const QList<QString> &argvList, YAML::Node *config, QOpenGLContext* globalGLContext) {
+    m_globalGLContext = globalGLContext;
     m_config = config;
     try {
         m_verbose = m_config->operator[]("logging")["verbose"].as<bool>();
@@ -371,34 +372,6 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                     }
                 }
 
-                /*auto zip_file_name = zipProject(sceneName);
-                auto imageSubDir = getImageSubDir(layoutType);
-                // 导出图像
-                QString paperName = QString::fromStdString(plottingWeb->paper);
-                QString project_zip_url = QString(m_mapping_export_nginx_url_prefix)
-                        .append("/").append(zip_file_name);
-                responseDto->project_zip_url = project_zip_url.toStdString();
-                QString imageName = "";
-                if (m_export_png_enable) {
-                    imageName = exportPNG(sceneName, layoutType, imageSubDir, paperName);
-                    QString image_url = QString(m_mapping_export_nginx_url_prefix)
-                            .append("/").append(imageSubDir).append("/").append(imageName);
-                    responseDto->image_url = image_url.toStdString();
-                }
-                QString pdfName = "";
-                if (m_export_pdf_enable) {
-                    pdfName = exportPDF(sceneName, layoutType, imageSubDir, paperName);
-                    QString pdf_url = QString(m_mapping_export_nginx_url_prefix)
-                            .append("/").append(imageSubDir).append("/").append(imageName);
-                    responseDto->pdf_url = pdf_url.toStdString();
-                }
-                QString svgName = "";
-                if (m_export_svg_enable) {
-                    svgName = exportSVG(sceneName, layoutType, imageSubDir, paperName);
-                    QString svg_url = QString(m_mapping_export_nginx_url_prefix)
-                            .append("/").append(imageSubDir).append("/").append(svgName);
-                    responseDto->svg_url = svg_url.toStdString();
-                }*/
                 responseDto->error = "";
                 promise->set_value(responseDto);
                 spdlog::info("clear layers and project");
@@ -988,21 +961,48 @@ JwLayout3D* Processor::add_3d_layout(
     spdlog::info("add layout: {}", joinedLayoutName.toStdString());
 
     auto canvas3d = std::make_unique<Qgs3DMapCanvas>();
-    canvas3d->create();
-    canvas3d->show();
+    //spdlog::info("create 3d canvas");
+    //canvas3d->create();
+    /*spdlog::info("make current 3d canvas");
+    spdlog::warn("m_globalGLContext ptr: {}", static_cast<void*>(m_globalGLContext));
+    m_globalGLContext->makeCurrent(canvas3d.get());
+    spdlog::info("make current 3d canvas done");*/
     auto project = m_app->getProject();
     auto sceneName = m_app->getSceneName();
     auto projectDir = m_app->getProjectDir();
     /*JwLayout3D jwLayout3d(project, canvas, canvas3d.get(),
                           sceneName, image_spec, projectDir, joinedLayoutName);*/
-    auto jwLayout3d = std::make_unique<JwLayout3D>(project, canvas, canvas3d.release(),
+    auto jwLayout3d = std::make_unique<JwLayout3D>(project, canvas, canvas3d.get(),
                                                    sceneName, image_spec, projectDir, joinedLayoutName);
 
     auto plottingWebJsonDoc = JsonUtil::convertDtoToQJsonObject(plottingWeb);
     auto plottingWebMap = JsonUtil::jsonObjectToVariantMap(plottingWebJsonDoc.object());
-
+    spdlog::info("init 3d map settings");
     jwLayout3d->init3DMapSettings(removeLayerNames, removeLayerPrefixes);
+    spdlog::info("done init 3d map settings");
     jwLayout3d->set3DCanvas();
+
+    if (!m_globalGLContext->makeCurrent(canvas3d.get())) {
+        qCritical() << "Failed to make OpenGL context current!";
+    }
+
+    /*auto offscreenSurface = std::make_unique<QOffscreenSurface>();
+    offscreenSurface->setFormat(QSurfaceFormat::defaultFormat());
+    offscreenSurface->create();
+    if (!m_globalGLContext->makeCurrent(offscreenSurface.release())) {
+        qCritical() << "Failed to make OpenGL context current!";
+    }*/
+
+    spdlog::info("canvas resize 800 600");
+    canvas3d->resize(800, 600);
+    spdlog::info("create 3d canvas");
+    canvas3d->create();
+
+
+
+    /*spdlog::info("set 3d canvas done to show");
+    canvas3d->show();*/
+    //spdlog::info("3d canvas show done");
     jwLayout3d->addPrintLayout(QString("3d"), joinedLayoutName, plottingWebMap, available_paper, write_qpt);
     return jwLayout3d.release();
 }

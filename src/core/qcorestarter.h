@@ -6,8 +6,6 @@
 #define JINGWEIPRINTER_QCORESTARTER_H
 
 #include <QCoreApplication>
-#include <QOffscreenSurface>
-#include <QOpenGLContext>
 #include <qgs3d.h>
 #include "starter.h"
 #include <spdlog/spdlog.h>
@@ -28,11 +26,8 @@ class QCoreStarter : public BaseStarter {
 private:
     bool mBlock;
     bool mStopped = false;
-    std::unique_ptr<QOffscreenSurface> mQOffscreenSurface;
-    std::unique_ptr<QOpenGLContext> mOpenGLContext;
     std::unique_ptr<QCoreApplication> mApp;
     std::unique_ptr<QgsApplication> mQgsApp;
-    std::unique_ptr<QSurfaceFormat> mQSurfaceFormat;
 public:
     QCoreStarter();
 

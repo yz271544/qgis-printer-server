@@ -10,17 +10,6 @@ StarterContext::StarterContext(int argc, char* argv[]) {
     }
 }
 
-/*void StarterContext::getConvertedArgs(int& argc, char**& argv) {
-    argc = args_.size();
-    argv = new char*[argc];
-    for (int i = 0; i < argc; ++i) {
-        QByteArray byteArray = args_[i].toLocal8Bit();
-        argv[i] = new char[byteArray.size() + 1];
-        std::strcpy(argv[i], byteArray.data());
-        spdlog::info("argv[{}] = {}", i, argv[i]);
-    }
-}*/
-
 void StarterContext::getConvertedArgs(int& argc, std::unique_ptr<char*[]>& argv) {
     argc = args_.size();
     argv = std::make_unique<char*[]>(argc);  // 使用智能指针管理内存

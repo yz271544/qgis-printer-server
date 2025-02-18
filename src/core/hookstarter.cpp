@@ -7,14 +7,14 @@
 HookStarter* HookStarter::instance = nullptr;
 
 // HookStarter 类的定义
-HookStarter::HookStarter(StarterRegister *starterRegister, StarterContext context)
-        : starterRegister(starterRegister), context(context) {
-
+HookStarter::HookStarter(StarterRegister *starterRegister, StarterContext& context)
+        : starterRegister(starterRegister) {
+    m_context = &context;
 }
 
 void HookStarter::static_sig_handler(int sig) {
     if (instance) {
-        instance->sig_handler(instance->context);
+        instance->sig_handler(*(instance->m_context));
     }
 }
 
@@ -73,7 +73,7 @@ void HookStarter::Init(StarterContext& context) {
 void HookStarter::Setup(StarterContext& context) {
     spdlog::info("HookStarter Setup Begin");
     instance = this;
-    this->context = context;
+    m_context = &context;
     std::signal(SIGINT, HookStarter::static_sig_handler);
     std::signal(SIGTERM, HookStarter::static_sig_handler);
     spdlog::info("HookStarter Setup End");

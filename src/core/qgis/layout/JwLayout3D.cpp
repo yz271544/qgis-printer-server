@@ -642,6 +642,9 @@ void JwLayout3D::init3DMapSettings(
     //set3DCanvas(fullExtent);
 
     mCanvas3d->setMapSettings(mapSettings3d.release());
+    if (!mCanvas3d->scene()) {
+        qCritical() << "Error: Qgs3DMapScene is NULL!";
+    }
 }
 
 void JwLayout3D::set3DCanvas() {
@@ -894,7 +897,7 @@ void JwLayout3D::addPrintLayout(const QString &layoutType, const QString &layout
                                 const QVariantMap &plottingWeb, const PaperSpecification &availablePaper,
                                 bool writeQpt) {
     // 初始化布局
-    spdlog::debug("初始化3d布局");
+    spdlog::info("初始化3d布局");
     init3DLayout(layoutName);
 
     //auto layout = getLayout(mLayoutName);
