@@ -641,7 +641,7 @@ void JwLayout3D::init3DMapSettings(
 
     mMapSettings3d->setExtent(fullExtent);
     //set3DCanvas(fullExtent);
-
+    mCanvas3d->setRootEntity(new Qt3DCore::QEntity);
     mCanvas3d->setMapSettings(mMapSettings3d);
     if (!mCanvas3d->scene()) {
         spdlog::error("Error: Qgs3DMapScene or Root Entity is NULL!");

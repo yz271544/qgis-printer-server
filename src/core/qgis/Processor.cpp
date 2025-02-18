@@ -986,9 +986,9 @@ JwLayout3D* Processor::add_3d_layout(
     canvas3d->setFormat(surface.format());
     canvas3d->create(); // 显式创建表面
 
-    /*if (!m_globalGLContext->makeCurrent(canvas3d.get())) {
+    if (!m_globalGLContext->makeCurrent(canvas3d.get())) {
         qCritical() << "Error: Failed to make OpenGL context current!";
-    }*/
+    }
     spdlog::info("set 3d canvas done to show");
     canvas3d->show(); // 即使是无头模式，也需要调用 show() 来初始化 OpenGL 上下文
     spdlog::info("3d canvas show done");

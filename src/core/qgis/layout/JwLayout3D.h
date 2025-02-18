@@ -15,7 +15,9 @@
 #include <QScreen>
 #include <QSplashScreen>
 #include <QStringLiteral>
+#include <Qt3DCore>
 
+#include <qentity.h>
 #include <qgs3dmapcanvas.h>
 #include <qgsproject.h>
 #include <qgslayout.h>

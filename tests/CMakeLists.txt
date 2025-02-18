@@ -36,6 +36,8 @@ target_link_libraries(${BINARY} PUBLIC ${CMAKE_PROJECT_NAME}_lib
         spdlog::spdlog
         oatpp::oatpp
         oatpp::oatpp-curl
-        ${QGIS_CORE_LIBRARY} ${QGIS_GUI_LIBRARY} ${QGIS_3D_LIBRARY} Qt5::Core Qt5::Gui Qt5::Qml Qt5::Quick Qt5::Widgets Qt5::Xml Qt5::Svg Qt5::Test ${Qt53DRender_LIBRARY} ${GDAL_LIBRARY} ${YAML_CPP_LIBRARIES}
+        ${QGIS_CORE_LIBRARY} ${QGIS_GUI_LIBRARY} ${QGIS_3D_LIBRARY}
+        Qt5::Core Qt5::Gui Qt5::Qml Qt5::Quick Qt5::Widgets Qt5::Xml Qt5::Svg Qt5::Test  Qt5::3DCore
+        ${Qt53DRender_LIBRARY} ${GDAL_LIBRARY} ${YAML_CPP_LIBRARIES}
         ${LIBARCHIVE_LIBRARIES} ${LIBZIP_LIBRARIES}
         gtest)
