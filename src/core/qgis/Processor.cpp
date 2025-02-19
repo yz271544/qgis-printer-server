@@ -1049,12 +1049,6 @@ void Processor::add_3d_layout(
     //canvas3d->setContext(canvasContext.get());
     //canvas3d->setScreen(surface.get()->screen());
 
-    /*try {
-        spdlog::debug("show 3d canvas");
-        canvas3d->show();
-    } catch (const std::exception &e) {
-        spdlog::error("first show 3d canvas error: {}", e.what());
-    }*/
     try {
         // 完成离屏表面的操作
         spdlog::debug("doneCurrent before makeCurrent");
