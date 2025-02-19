@@ -57,7 +57,7 @@ void QCoreStarter::Init(StarterContext &context) {
     }
 
     spdlog::info("create qgis QgsApplication");
-    mQgsApp = std::make_unique<QgsApplication>(newArgc, newArgv.release(), GUIenabled);
+    mQgsApp = std::make_unique<QgsApplication>(newArgc, argsPtrs.data(), GUIenabled);
     QString qgis_prefix_path = "/usr";
     try {
         qgis_prefix_path = QString::fromStdString((*config)["qgis"]["prefix_path"].as<std::string>());
@@ -70,28 +70,28 @@ void QCoreStarter::Init(StarterContext &context) {
     spdlog::info("init qgis app");
     try {
         // 设置OpenGL环境
-        spdlog::info("设置OpenGL环境");
+        /*spdlog::info("设置OpenGL环境");
         auto globalSurfaceFormat = QSurfaceFormat::defaultFormat();
         spdlog::info("QCoreStarter m_globalSurfaceFormat ptr: {}", static_cast<void*>(&globalSurfaceFormat));
         globalSurfaceFormat.setVersion(4, 1);
         globalSurfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
-        context.setSurfaceFormat(&globalSurfaceFormat);
+        context.setSurfaceFormat(&globalSurfaceFormat);*/
 
         // 创建OpenGL上下文
-        spdlog::info("创建OpenGL上下文");
+        /*spdlog::info("创建OpenGL上下文");
         auto globalGLContext = std::make_shared<QOpenGLContext>();
-        globalGLContext->setFormat(globalSurfaceFormat);
+        globalGLContext->setFormat(globalSurfaceFormat);*/
 
         // 设置共享上下文为全局上下文（如果后续需要共享）
         // globalGLContext->setShareContext(QOpenGLContext::globalShareContext());
 
-        context.setOpenGLContext(globalGLContext);
+        /*context.setOpenGLContext(globalGLContext);
         if (!globalGLContext->create()) {
             spdlog::error("Failed to create OpenGL context");
             exit(-1);
-        }
+        }*/
 
-        spdlog::warn("QCoreStarter m_globalGLContext ptr: {}", static_cast<void*>(context.getOpenGLContext().get()));
+        //spdlog::warn("QCoreStarter m_globalGLContext ptr: {}", static_cast<void*>(context.getOpenGLContext().get()));
 
         QgsApplication::init();
         QgsApplication::initQgis();
@@ -142,9 +142,9 @@ void QCoreStarter::Stop(StarterContext &context) {
 
 
     // 释放 OpenGL 上下文, 释放离屏表面
-    context.releaseOpenGLContext();
+    //context.releaseOpenGLContext();
 //    context.releaseOffscreenSurface();
-    context.releaseSurfaceFormat();
+    //context.releaseSurfaceFormat();
 
     spdlog::info("QCoreStarter Stop end");
 }

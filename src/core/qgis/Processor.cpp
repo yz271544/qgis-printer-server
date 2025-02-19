@@ -6,8 +6,9 @@
 
 #include <utility>
 
-Processor::Processor(const QList<QString> &argvList, YAML::Node *config, std::shared_ptr<QOpenGLContext> globalGLContext) {
-    m_globalGLContext = std::move(globalGLContext);
+//Processor::Processor(const QList<QString> &argvList, YAML::Node *config, std::shared_ptr<QOpenGLContext> globalGLContext) {
+Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
+    //m_globalGLContext = std::move(globalGLContext);
     m_config = config;
     try {
         m_verbose = m_config->operator[]("logging")["verbose"].as<bool>();
@@ -474,8 +475,8 @@ void Processor::export3DLayout(QString& sceneName,
                 .append("/").append(imageSubDir).append("/").append(imageName);
         responseDto->image_url = image_url.toStdString();
     }
-    m_globalGLContext->doneCurrent();
-    spdlog::debug("doneCurrent after export image done");
+    /*m_globalGLContext->doneCurrent();
+    spdlog::debug("doneCurrent after export image done");*/
     jwLayout3d->destroy3DCanvas();
     spdlog::debug("close 3d canvas done");
 }
@@ -1013,59 +1014,16 @@ void Processor::add_3d_layout(
         DTOWRAPPERNS::DTOWrapper<ResponseDto> &responseDto
         ) {
 
-    // 创建离屏表面
-    auto globalSurfaceFormat = m_globalGLContext->format();
-    spdlog::debug("Processor m_globalSurfaceFormat ptr: {}", static_cast<void*>(&globalSurfaceFormat));
-
+    // 设置默认格式
     auto defaultFormat = QSurfaceFormat::defaultFormat();
-    auto surface = std::make_unique<QOffscreenSurface>();
-    surface->setFormat(defaultFormat);
-    surface->create();
+    defaultFormat.setVersion(4, 1); // 设置 OpenGL 版本
+    defaultFormat.setProfile(QSurfaceFormat::CoreProfile); // 设置核心模式
+    QSurfaceFormat::setDefaultFormat(defaultFormat);
 
-    spdlog::debug("Offscreen surface created: {}", surface->isValid());
-
-    // 绑定上下文到离屏表面
-    if (!m_globalGLContext->makeCurrent(surface.get())) {
-        spdlog::error("Failed to bind OpenGL context to offscreen surface!");
-        return;
-    }
-    spdlog::debug("OpenGL context bound: {}", m_globalGLContext->isValid());
-
-    // 创建 3D 画布, 确保其上下文与全局上下文共享资源
+    // 创建 3D 画布
     auto canvas3d = std::make_unique<Qgs3DMapCanvas>();
     canvas3d->setSurfaceType(QSurface::OpenGLSurface);
     canvas3d->setFormat(defaultFormat);
-
-    // 显式设置共享上下文
-    auto canvasContext = std::make_unique<QOpenGLContext>();
-    canvasContext->setFormat(defaultFormat);
-    canvasContext->setShareContext(m_globalGLContext.get()); // 关键：设置共享上下文
-
-    if (!canvasContext->create()) {
-        spdlog::error("Failed to create shared OpenGL context for 3D canvas!");
-        return;
-    }
-
-    //canvas3d->setContext(canvasContext.get());
-    //canvas3d->setScreen(surface.get()->screen());
-
-    try {
-        // 完成离屏表面的操作
-        spdlog::debug("doneCurrent before makeCurrent");
-        m_globalGLContext->doneCurrent();
-    } catch (const std::exception &e) {
-        spdlog::error("m_globalGLContext->doneCurrent() error: {}", e.what());
-    }
-    // 切换到 3D 画布的上下文
-    try {
-        spdlog::debug("makeCurrent before show 3d canvas");
-        if (!canvasContext->makeCurrent(canvas3d.get())) {
-            spdlog::error("Failed to bind shared OpenGL context to 3D canvas!");
-            return;
-        }
-    } catch (const std::exception &e) {
-        spdlog::error("m_globalGLContext->makeCurrent(canvas3d.get()) error: {}", e.what());
-    }
 
     // 初始化 3D 画布
     try {
@@ -1073,8 +1031,10 @@ void Processor::add_3d_layout(
         canvas3d->show();
     } catch (const std::exception &e) {
         spdlog::error("first show 3d canvas error: {}", e.what());
+        return;
     }
 
+    // 创建 JwLayout3D 对象
     auto project = m_app->getProject();
     auto sceneName = m_app->getSceneName();
     auto projectDir = m_app->getProjectDir();
@@ -1094,12 +1054,6 @@ void Processor::add_3d_layout(
     m_app->saveProject();
     QString paperName = QString::fromStdString(plottingWeb->paper);
     export3DLayout(sceneName, layoutType, paperName, jwLayout3d.get(), responseDto);
-
-    // 释放 3D 画布的上下文
-    canvasContext->doneCurrent();
-
-    // 释放离屏表面
-    surface.reset();
 }
 
 QString Processor::zipProject(const QString &scene_name) {

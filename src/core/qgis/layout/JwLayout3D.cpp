@@ -553,7 +553,10 @@ void JwLayout3D::init3DMapSettings(
     // 创建 3D 地图设置
     //auto mapSettings3d = std::make_shared<Qgs3DMapSettings>();
     mMapSettings3d = new Qgs3DMapSettings();
-    mMapSettings3d->setCrs(mProject->crs());
+    if (mProject != nullptr) {
+        spdlog::info("set crs to 3d map settings: {}", mProject->crs().authid().toStdString());
+        mMapSettings3d->setCrs(mProject->crs());
+    }
     // 过滤图层
     filterMapLayers(removeLayerNames, removeLayerPrefixes, mMapSettings3d);
 
@@ -585,10 +588,10 @@ void JwLayout3D::init3DMapSettings(
     //mapSettings3d->setLayers( mCanvas2d->layers( true ) );
     mMapSettings3d->setTemporalRange(mCanvas2d->temporalRange());
     spdlog::debug("set temporal range: {}", mMapSettings3d->temporalRange().isEmpty());
-    const Qgis::NavigationMode defaultNavMode = settings.enumValue(QStringLiteral("map3d/defaultNavigation"),
+    /*const Qgis::NavigationMode defaultNavMode = settings.enumValue(QStringLiteral("map3d/defaultNavigation"),
                                                                    Qgis::NavigationMode::TerrainBased,
                                                                    QgsSettings::App);
-    mMapSettings3d->setCameraNavigationMode(defaultNavMode);
+    mMapSettings3d->setCameraNavigationMode(defaultNavMode);*/
     spdlog::debug("set camera navigation mode: {}", mMapSettings3d->cameraNavigationMode());
     mMapSettings3d->setCameraMovementSpeed(
             settings.value(QStringLiteral("map3d/defaultMovementSpeed"), 5, QgsSettings::App).toDouble());
@@ -596,6 +599,7 @@ void JwLayout3D::init3DMapSettings(
     const Qt3DRender::QCameraLens::ProjectionType defaultProjection = settings.enumValue(
             QStringLiteral("map3d/defaultProjection"), Qt3DRender::QCameraLens::PerspectiveProjection,
             QgsSettings::App);
+
     mMapSettings3d->setProjectionType(defaultProjection);
     spdlog::debug("set project type: {}", mMapSettings3d->projectionType());
     mMapSettings3d->setFieldOfView(
@@ -613,8 +617,8 @@ void JwLayout3D::init3DMapSettings(
     spdlog::debug("set path resolver");
     mMapSettings3d->setMapThemeCollection(QgsProject::instance()->mapThemeCollection());
     qDebug() << "set map theme collection:" << mMapSettings3d->mapThemeCollection();
-    mMapSettings3d->configureTerrainFromProject(QgsProject::instance()->elevationProperties(), fullExtent);
-    qDebug() << "configure terrain from project:" << mMapSettings3d->terrainGenerator();
+    /*mMapSettings3d->configureTerrainFromProject(QgsProject::instance()->elevationProperties(), fullExtent);
+    qDebug() << "configure terrain from project:" << mMapSettings3d->terrainGenerator();*/
     // scenes default to a single directional light
     QgsPointLightSettings defaultPointLight;
     const QgsRectangle& extent = fullExtent;

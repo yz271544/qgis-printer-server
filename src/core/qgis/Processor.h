@@ -58,7 +58,8 @@ private:
     std::shared_ptr<QOpenGLContext> m_globalGLContext;
 public:
     // 构造函数
-    Processor(const QList<QString> &argvList, YAML::Node *config, std::shared_ptr<QOpenGLContext> globalGLContext);
+    //Processor(const QList<QString> &argvList, YAML::Node *config, std::shared_ptr<QOpenGLContext> globalGLContext);
+    Processor(const QList<QString> &argvList, YAML::Node *config);
 
     // 析构函数
     ~Processor();
