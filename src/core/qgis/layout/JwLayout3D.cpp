@@ -1129,7 +1129,7 @@ QgsLayoutItemShape* JwLayout3D::addRect(
     rectBg->setShapeType(QgsLayoutItemShape::Rectangle);
     auto symbol = std::make_unique<QgsFillSymbol>();
     symbol->setColor(QColor(fillColor));
-    if (auto* symbolLayer = dynamic_cast<QgsSimpleMarkerSymbolLayer*>(symbol->symbolLayer(0))) {
+    if (auto* symbolLayer = dynamic_cast<QgsSimpleFillSymbolLayer*>(symbol->symbolLayer(0))) {
         symbolLayer->setStrokeColor(QColor(borderColor));
         symbolLayer->setStrokeWidth(borderWidth);
     }
