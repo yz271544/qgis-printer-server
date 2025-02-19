@@ -350,16 +350,6 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                             m_app->saveProject();
                             QString paperName = QString::fromStdString(plottingWeb->paper);
                             export3DLayout(sceneName, layoutType, paperName, jwLayout3d.get(), responseDto);
-                            /*auto project_dir = m_app->getProjectDir();
-                            QString d3_scene_png = QString().append(project_dir).append("/").append("d3_scene.png");
-                            spdlog::info("d3 scene png: {}", d3_scene_png.toStdString());
-                            jwLayout3d->exportLayoutToPng(layoutType, d3_scene_png);
-                            responseDto->image_url = d3_scene_png.toStdString();
-                            spdlog::info("ready to doneCurrent after export image");
-                            m_globalGLContext->doneCurrent();
-                            spdlog::info("doneCurrent after export image done");
-                            jwLayout3d->destroy3DCanvas();
-                            spdlog::info("close 3d canvas done");*/
                             jwLayout3d.reset();
                             spdlog::info("reset jwLayout3d");
                         } else {
