@@ -132,7 +132,7 @@ void JwLayout3D::setTitle(
             QRectF(mImageSpec["main_left_margin"].toDouble(), 0.0,
                    mMapWidth,
                    mImageSpec["main_top_margin"].toDouble() - 10));
-    layout->addLayoutItem(title.get());
+    layout->addLayoutItem(title.release());
 }
 
 // 添加图例
@@ -931,9 +931,11 @@ void JwLayout3D::addPrintLayout(const QString &layoutType, const QString &layout
     set3DMap(layout, availablePaper, mapFrameWidth, mapFrameColor, mapDoubleFrame, mapRotation);
 
     // 设置标题
+    spdlog::info("设置标题");
     if (layInfo.contains("title") && !layInfo["title"].toMap().isEmpty()) {
         QMap<QString, QVariant> titleVariants = layInfo["title"].toMap();
         qInfo() << "设置标题:" << titleVariants["text"].toString();
+        spdlog::info("设置标题: {}", titleVariants["text"].toString().toStdString());
         setTitle(layout, titleVariants);
     }
 
@@ -1078,5 +1080,14 @@ void JwLayout3D::exportLayoutToPdf(
         spdlog::debug("Layout exported successfully to: {}", outputFilePath.toStdString());
     } else {
         spdlog::warn("Failed to export layout to:", outputFilePath.toStdString());
+    }
+}
+
+void JwLayout3D::close3DCanvas() {
+    try {
+        mCanvas3d->destroy();
+        //mCanvas3d->close();
+    } catch (const std::exception &e) {
+        spdlog::error("Error closing 3D canvas: {}", e.what());
     }
 }

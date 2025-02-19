@@ -72,6 +72,7 @@ void QCoreStarter::Init(StarterContext &context) {
         // 设置OpenGL环境
         spdlog::info("设置OpenGL环境");
         auto globalSurfaceFormat = QSurfaceFormat::defaultFormat();
+        spdlog::info("QCoreStarter m_globalSurfaceFormat ptr: {}", static_cast<void*>(&globalSurfaceFormat));
         globalSurfaceFormat.setVersion(4, 1);
         globalSurfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
         context.setSurfaceFormat(&globalSurfaceFormat);

@@ -171,6 +171,8 @@ public:
 
     QgsPrintLayout* getLayout3D();
 
+    void close3DCanvas();
+
 
 #ifdef ENABLE_APP
     void create3DMapCanvasWidget(QString view3dName);

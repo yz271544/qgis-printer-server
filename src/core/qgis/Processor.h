@@ -90,7 +90,7 @@ public:
                     const QVector<QString> &removeLayerPrefixs);
 
     // 添加3d布局
-    JwLayout3D* add_3d_layout(QgsMapCanvas* canvas,
+    std::unique_ptr<JwLayout3D> add_3d_layout(QgsMapCanvas* canvas,
                     const QString &layout_name,
                     const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
                     const QMap<QString, QVariant> &image_spec,
