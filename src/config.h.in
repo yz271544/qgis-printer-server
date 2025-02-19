@@ -125,6 +125,8 @@ inline double CIRCLE_RADIUS_COEFFICIENT = getEnvDouble("CIRCLE_RADIUS_COEFFICIEN
 
 inline float FRAME_OFFSET_COEFFICIENT = getEnvFloat("FRAME_OFFSET_COEFFICIENT", 1.6);
 
+inline float PIXEL_MM_COEFFICIENT = getEnvFloat("PIXEL_MM_COEFFICIENT", 2.8);
+
 #ifdef OATPP_VERSION_LESS_1_4_0
 #define DTOWRAPPERNS oatpp::data::mapping::type
 #define OBJECTMAPPERNS oatpp::parser::json::mapping

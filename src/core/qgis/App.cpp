@@ -15,60 +15,20 @@ App::App(const QList<QString>& argvList, YAML::Node *config)
     mCanvas = nullptr;
     mMapSettings = nullptr;
     mProjectDir = "";
-    /*spdlog::info("create qgis QgsApplication");
-    bool GUIenabled = false;
-    try{
-        GUIenabled = (*mConfig)["qgis"]["gui_enabled"].as<bool>();
-    } catch (const std::exception& e) {
-        spdlog::error("get gui_enabled error: {}", e.what());
-    }
-    mQgis = new QgsApplication(mArgc, mArgv, GUIenabled);
-    QString qgis_prefix_path = "/usr";
-    try {
-        qgis_prefix_path = QString::fromStdString((*mConfig)["qgis"]["prefix_path"].as<std::string>());
-    } catch (const std::exception& e) {
-        spdlog::error("get qgis.prefix_path error: {}", e.what());
-    }
-    QgsApplication::setPrefixPath(qgis_prefix_path, true);
-
-    spdlog::info("init qgis app");
-    try {
-        QgsApplication::init();
-        QgsApplication::initQgis();
-        Qgs3D::initialize();
-    } catch (const std::exception& e) {
-        spdlog::error("init qgis error: {}", e.what());
-    }
-    spdlog::info("inited the qgs app");*/
     mPageSizeRegistry = std::unique_ptr<QgsPageSizeRegistry>(QgsApplication::pageSizeRegistry());
     //mPageSizeRegistry = QgsApplication::pageSizeRegistry();
     mAvailablePapers = PaperSpecification::getLayoutPaperList();
     for (const auto &item: mAvailablePapers) {
         spdlog::debug("paper: {}", item.getPaperName().toStdString());
-        // self.qgs_page_size_registry.add(QgsPageSize(available_paper.get_name(), QgsLayoutSize(available_paper.value[0], available_paper.value[1], Qgis.LayoutUnit.Millimeters)))
-        // spdlog::debug("QGIS_PREFIX_PATH: {}", QGIS_PREFIX_PATH);
         mPageSizeRegistry->add(QgsPageSize(item.getPaperName(), QgsLayoutSize(item.getPaperSize().first, item.getPaperSize().second)));
     }
-
-    //this->moveToThread(QCoreApplication::instance()->thread());
-
 }
 
 App::~App() {
-//    spdlog::info("App destroy start");
+    spdlog::debug("App destroy start");
     finishQgis();
-//    spdlog::info("App destroy finished");
+    spdlog::debug("App destroy finished");
 }
-
-//// 实现槽函数
-//void App::createProjectSlot(QString scene_name, QString crs) {
-//    createProject(scene_name, crs);
-//}
-
-
-//void App::projectCreated(const oatpp::data::type::DTOWrapper<ResponseDto>& responseDto) {
-//    spdlog::debug("app projectCreated");
-//}
 
 QVector<PaperSpecification>& App::getAvailablePapers() {
     return mAvailablePapers;
@@ -103,29 +63,19 @@ void App::finishQgis() {
 }
 
 void App::createProject(QString& scene_name, QString& crs) {
-//    spdlog::info("Starting createProject for scene: {}", scene_name.toStdString());
+    spdlog::info("Starting createProject for scene: {}", scene_name.toStdString());
     mSceneName = scene_name;
-//    spdlog::debug("scene_name: {}", mSceneName.toStdString());
-    /*mProject = std::make_shared<QgsProject>();
-    mCanvas = std::make_shared<QgsMapCanvas>();
-    mMapSettings = std::make_shared<QgsMapSettings>();*/
     mProjectDir = QString::fromStdString((*mConfig)["qgis"]["projects_prefix"].as<std::string>()) + "/" + mSceneName;
-//    spdlog::debug("create_project::clearLayers()");
     clearLayers();
-//    spdlog::debug("create_project::cleanProject()");
     cleanProject();
-//    spdlog::debug("create_project::create()");
     auto project = QgsProject::instance();
     mProject.reset(project);
     if (!mProject) {
         spdlog::error("QgsProject::instance() is nullptr! QGIS 未正确初始化！");
         return;
     }
-//    spdlog::debug("get QgsProject instance");
     mCanvas = std::make_unique<QgsMapCanvas>();
-//    spdlog::debug("create_canvas");
     mMapSettings = std::make_unique<QgsMapSettings>();
-//    spdlog::debug("create_map_settings");
     if (!(*mConfig)["qgis"]) {
         spdlog::error("qgis not found in the config.yaml");
         return;
@@ -137,11 +87,8 @@ void App::createProject(QString& scene_name, QString& crs) {
     QgsCoordinateTransformContext rhs;
     mProject->setTransformContext(rhs);
     mTransformContext = mProject->transformContext();
-//    spdlog::debug("get TransformContext");
-//    spdlog::debug("mProject.setCrs(QgsCoordinateReferenceSystem(qgscrs))");
     QgsCoordinateReferenceSystem qgscrs(crs);
     mProject->setCrs(qgscrs);
-//    spdlog::debug("create_directory {}", mProjectDir.toStdString());
     FileUtil::create_directory(mProjectDir.toStdString());
 }
 
@@ -201,11 +148,13 @@ void App::createCanvas(QString& crs) {
 }
 
 void App::addMapBaseTileLayer() {
-//    spdlog::debug("App::addMapBaseTileLayer");
-
     int32_t base_tile_layer_max_level = 18;
     try {
-        base_tile_layer_max_level = (*mConfig)["qgis"]["base_tile_layer_max_level"].as<std::int32_t>();
+        if (BASE_TILE_LAYER_MAX_LEVEL > 0) {
+            base_tile_layer_max_level = BASE_TILE_LAYER_MAX_LEVEL;
+        } else {
+            base_tile_layer_max_level = (*mConfig)["qgis"]["base_tile_layer_max_level"].as<std::int32_t>();
+        }
     } catch (const std::exception& e) {
         spdlog::error("get qgis.base_tile_layer_max_level error: {}", e.what());
     }
@@ -213,12 +162,14 @@ void App::addMapBaseTileLayer() {
 
     int32_t base_tile_layer_min_level = 0;
     try {
-        base_tile_layer_min_level = (*mConfig)["qgis"]["base_tile_layer_min_level"].as<std::int32_t>();
+        if (BASE_TILE_LAYER_MIN_LEVEL > 0) {
+            base_tile_layer_min_level = BASE_TILE_LAYER_MIN_LEVEL;
+        } else {
+            base_tile_layer_min_level = (*mConfig)["qgis"]["base_tile_layer_min_level"].as<std::int32_t>();
+        }
     } catch (const std::exception& e) {
         spdlog::error("get qgis.base_tile_layer_min_level error: {}", e.what());
     }
-//    spdlog::debug("base_tile_layer_min_level: {}", base_tile_layer_min_level);
-
     QString map_base_url;
     try {
         auto mapBaseUrlStdString = (*mConfig)["qgis"]["map_base_url"].as<std::string>();
@@ -226,7 +177,6 @@ void App::addMapBaseTileLayer() {
     } catch (const std::exception& e) {
         spdlog::error("get qgis.map_base_url error: {}", e.what());
     }
-//    spdlog::debug("map_base_url: {}", map_base_url.toStdString());
 
     QString map_base_prefix;
     try {
@@ -236,7 +186,6 @@ void App::addMapBaseTileLayer() {
     } catch (const std::exception& e) {
         spdlog::error("get qgis.map_base_prefix error: {}", e.what());
     }
-//    spdlog::debug("map_base_prefix: {}", map_base_prefix.toStdString());
 
     QString map_base_suffix;
     try {
@@ -308,7 +257,7 @@ void App::addMapMainTileLayer(int num, QString& orthogonalPath) {
 
     QString main_tile_url = QString().append(map_main_prefix).append(map_main_middle).append(map_main_suffix);
     QString main_tile_name = QString::fromStdString(MAIN_TILE_NAME).append(QString::number(num));
-    spdlog::debug("add main tile: {}, main_tile_url: {}", main_tile_name.toStdString(), main_tile_url.toStdString());
+    spdlog::info("add main tile: {}, main_tile_url: {}", main_tile_name.toStdString(), main_tile_url.toStdString());
     auto main_tile_layer = std::make_unique<QgsRasterLayer>(main_tile_url, main_tile_name, "wms");
     if (main_tile_layer->isValid()) {
         mProject->addMapLayer(main_tile_layer.release());
@@ -345,7 +294,7 @@ void App::addMap3dTileLayer(int num, QString& realistic3dPath) {
     map_3d_base_url = map_3d_base_url.replace("{REALISTIC3D_PATH_NAME}", realistic3dPath);
 
     QString real3d_tile_name = QString::fromStdString(REAL3D_TILE_NAME).append(QString::number(num));
-    spdlog::debug("realistic3d_tile_url: {}, real3d_tile_name: {}",
+    spdlog::info("realistic3d_tile_url: {}, real3d_tile_name: {}",
                   map_3d_base_url.toStdString(), real3d_tile_name.toStdString());
 
     auto tiled_scene_layer = std::make_unique<QgsTiledSceneLayer>(map_3d_base_url, real3d_tile_name, CESIUM_TILES_PROVIDER);
@@ -410,7 +359,7 @@ QgsRectangle App::resetCanvas(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto>&
                 double minY = *std::min_element(yList.begin(), yList.end());
                 double maxY = *std::max_element(yList.begin(), yList.end());
 
-                spdlog::info("web_canvas_coordinates ---> min_x: {}, min_y: {}, max_x: {}, max_y: {}", minX, minY, maxX, maxY);
+                spdlog::debug("web_canvas_coordinates ---> min_x: {}, min_y: {}, max_x: {}, max_y: {}", minX, minY, maxX, maxY);
 
                 // 设置地图范围
                 extent = QgsRectangle(minX, minY, maxX, maxY);

@@ -75,7 +75,7 @@ float QgsUtil::d300PixelToMm(float pixel_size) {
     float target_dpi = 300;
 
     // 转换为毫米
-    auto font_size_mm = static_cast<float>((pixel_size / web_dpi) * 25.4 * 2); // 先转换为毫米
+    auto font_size_mm = static_cast<float>((pixel_size / web_dpi) * 25.4 * PIXEL_MM_COEFFICIENT); // 先转换为毫米
     // 缩小比例
     float shrink_ratio = web_dpi / target_dpi;
     return font_size_mm * shrink_ratio; // 缩小字体

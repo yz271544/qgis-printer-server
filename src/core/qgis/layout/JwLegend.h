@@ -14,9 +14,11 @@
 #include <qgssymbol.h>
 #include <qgsproject.h>
 #include <QPair>
+#include <qgslinesymbol.h>
 
-#include "../../../config.h"
+#include "config.h"
 #include "utils/FontUtil.h"
+#include "utils/ShowDataUtil.h"
 
 class JwLegend {
 public:

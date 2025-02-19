@@ -21,6 +21,8 @@ public:
 
     static std::string formatQListDoubleToString(const QList<double>& list);
 
+    static std::string formatQListIntToString(const QList<int>& list);
+
     static std::string formatQListDoubleToString(const QList<QList<double>>& list);
 
     static std::string lineStringToString(const QgsLineString& lineString);
