@@ -101,12 +101,29 @@ inline double getEnvDouble(const char* envVarName, double defaultValue = 0.0) {
     }
 }
 
+inline float getEnvFloat(const char* envVarName, float defaultValue = 0.0) {
+    const char* envValue = getenv(envVarName);
+    if (envValue == nullptr) {
+        return defaultValue;
+    }
+    try {
+        return std::stof(envValue);
+    } catch (const std::invalid_argument& e) {
+        return defaultValue;
+    } catch (const std::out_of_range& e) {
+        return defaultValue;
+    }
+}
+
+
 // Get ENABLE_POINT_CLUSTER from environment variable, default to false
 inline bool ENABLE_POINT_CLUSTER = getEnvBool("ENABLE_POINT_CLUSTER", false);
 
 inline bool ENABLE_3D = getEnvBool("ENABLE_3D", true);
 
 inline double CIRCLE_RADIUS_COEFFICIENT = getEnvDouble("CIRCLE_RADIUS_COEFFICIENT", 2.0);
+
+inline float FRAME_OFFSET_COEFFICIENT = getEnvFloat("FRAME_OFFSET_COEFFICIENT", 1.6);
 
 #ifdef OATPP_VERSION_LESS_1_4_0
 #define DTOWRAPPERNS oatpp::data::mapping::type

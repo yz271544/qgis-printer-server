@@ -58,7 +58,7 @@ private:
     std::shared_ptr<QOpenGLContext> m_globalGLContext;
 public:
     // 构造函数
-    Processor(const QList<QString>& argvList, YAML::Node* config, std::shared_ptr<QOpenGLContext> globalGLContext);
+    Processor(const QList<QString> &argvList, YAML::Node *config, std::shared_ptr<QOpenGLContext> globalGLContext);
 
     // 析构函数
     ~Processor();
@@ -84,32 +84,32 @@ public:
                     const QString &layout_name,
                     const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
                     const QMap<QString, QVariant> &image_spec,
-                    const PaperSpecification& available_paper,
+                    const PaperSpecification &available_paper,
                     bool write_qpt,
                     const QVector<QString> &removeLayerNames,
                     const QVector<QString> &removeLayerPrefixs);
 
     // 添加3d布局
-    std::unique_ptr<JwLayout3D> add_3d_layout(QgsMapCanvas* canvas,
-                    const QString &layout_name,
-                    const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
-                    const QMap<QString, QVariant> &image_spec,
-                    const PaperSpecification& available_paper,
-                    bool write_qpt,
-                    const QVector<QString> &removeLayerNames,
-                    const QVector<QString> &removeLayerPrefixes);
+    std::unique_ptr<JwLayout3D> add_3d_layout(QgsMapCanvas *canvas,
+                                              const QString &layout_name,
+                                              const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
+                                              const QMap<QString, QVariant> &image_spec,
+                                              const PaperSpecification &available_paper,
+                                              bool write_qpt,
+                                              const QVector<QString> &removeLayerNames,
+                                              const QVector<QString> &removeLayerPrefixes);
 
     // 导出PNG
     QString exportPNG(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
-                 const QString &paperName);
+                      const QString &paperName);
 
     // 导出PDF
     QString exportPDF(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
-                        const QString &paperName);
+                      const QString &paperName);
 
     // 导出SVG
     QString exportSVG(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
-                        const QString &paperName);
+                      const QString &paperName);
 
     // 压缩项目的静态方法
     QString zipProject(const QString &scene_name);
@@ -143,12 +143,12 @@ public:
         }
      */
     static QVariantMap _grouped_circle_by_color_grouped(
-            QMap<QString, int>& grouped_color,
-            QList<QList<double>>& polygon_geometry_coordinates_list,
-            QList<int>& polygon_geometry_properties_radius,
-            QList<QList<double>>& style_percents,
-            QList<QList<QString>>& areas_color_list,
-            QList<QList<double>>& areas_opacity_list);
+            QMap<QString, int> &grouped_color,
+            QList<QList<double>> &polygon_geometry_coordinates_list,
+            QList<int> &polygon_geometry_properties_radius,
+            QList<QList<double>> &style_percents,
+            QList<QList<QString>> &areas_color_list,
+            QList<QList<double>> &areas_opacity_list);
 
     // 按相同颜色分组的函数
     /**
@@ -180,9 +180,15 @@ public:
             QList<QList<QList<QList<double>>>> &geometry_coordinates_list,
             QList<QJsonObject> &style_list);
 
-    void export2DLayout(QString& sceneName,
-                        const QString& layoutType,
+    void export2DLayout(QString &sceneName,
+                        const QString &layoutType,
                         const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
+                        DTOWRAPPERNS::DTOWrapper<ResponseDto> responseDto);
+
+    void export3DLayout(QString &sceneName,
+                        const QString &layoutType,
+                        QString &paperSpecName,
+                        JwLayout3D* jwLayout3d,
                         DTOWRAPPERNS::DTOWrapper<ResponseDto> responseDto);
 };
 

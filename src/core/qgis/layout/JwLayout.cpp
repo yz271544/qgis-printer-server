@@ -574,7 +574,7 @@ void JwLayout::setMap(
     double frameWidthPixelMm = QgsUtil::d300PixelToMm(static_cast<float>(mapFrameWidth));
     if (isDoubleFrame) {
         mapItem->setFrameStrokeWidth(QgsLayoutMeasurement(0.4, Qgis::LayoutUnit::Millimeters));
-        float margin_offset = DOUBLE_FRAME_OFFSET_COEFFICIENT;
+        float margin_offset = FRAME_OFFSET_COEFFICIENT;
         float width_offset = margin_offset * 2;
         QString fillColor = mImageSpec["main_double_frame_fill_color"].toString();
         qreal remarksX = mImageSpec["main_left_margin"].toDouble() - margin_offset;

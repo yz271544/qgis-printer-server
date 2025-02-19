@@ -68,6 +68,7 @@
 #include "utils/QgsUtil.h"
 #include "utils/ColorTransformUtil.h"
 #include "core/qgis/d3/CameraUtil.h"
+#include "config.h"
 
 class JwLayout3D {
 public:
@@ -153,14 +154,17 @@ public:
     void updateLayoutExtent(const QString& layoutName);
     QPair<double, double> getLegendDimensions(const QString& layoutName);
 
-    void exportLayoutToImage(
-            //QgsPrintLayout* layout,
+    void exportLayoutToPng(
             const QString& layoutName,
-            QString &outputFilePath);
+            QString& outputFilePath);
 
     void exportLayoutToPdf(
-            QgsPrintLayout* layout,
-            const QString &outputFilePath);
+            const QString& layoutName,
+            QString& outputFilePath);
+
+    void exportLayoutToSvg(
+            const QString& layoutName,
+            QString& outputFilePath);
 
     QgsPrintLayout* getLayout(const QString& layoutName);
 
@@ -172,7 +176,7 @@ public:
 
     QgsPrintLayout* getLayout3D();
 
-    void close3DCanvas();
+    void destroy3DCanvas();
 
     QgsLayoutItemShape* addRect(
             QString& fillColor,

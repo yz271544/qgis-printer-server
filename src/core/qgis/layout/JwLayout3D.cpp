@@ -747,7 +747,7 @@ void JwLayout3D::set3DMap(
     double frameWidthPixelMm = QgsUtil::d300PixelToMm(static_cast<float>(mapFrameWidth));
     if (isDoubleFrame) {
         mMapItem3d->setFrameStrokeWidth(QgsLayoutMeasurement(0.4, Qgis::LayoutUnit::Millimeters));
-        float margin_offset = DOUBLE_FRAME_OFFSET_COEFFICIENT;
+        float margin_offset = FRAME_OFFSET_COEFFICIENT;
         float width_offset = margin_offset * 2;
         QString fillColor = mImageSpec["main_double_frame_fill_color"].toString();
         qreal remarksX = mImageSpec["main_left_margin"].toDouble() - margin_offset;
@@ -1038,19 +1038,13 @@ void JwLayout3D::addPrintLayout(const QString &layoutType, const QString &layout
     }
 }
 
-//void JwLayout3D::exportLayoutToImage(QgsPrintLayout *layout, const QString &outputFilePath) {
-void JwLayout3D::exportLayoutToImage(const QString& layoutName, QString &outputFilePath) {
-    spdlog::info("exportLayoutToImage layout");
-    //if (layoutInterface->layoutType() == QgsMasterLayoutInterface::PrintLayout) {
+void JwLayout3D::exportLayoutToPng(
+        const QString& layoutName,
+        QString &outputFilePath) {
     if (mLayout != nullptr) {
-        spdlog::info("layoutInterface is PrintLayout");
-        //layout = dynamic_cast<QgsPrintLayout*>(layoutInterface);
-
         QgsLayoutPageCollection *pageCollection = mLayout->pageCollection();
         int pageCount = pageCollection->pageCount();
-        spdlog::debug("pageCount: {}", pageCount);
         bool should = pageCollection->shouldExportPage(0);
-        spdlog::debug("should: {}", should);
 
         QgsLayoutRenderContext &renderContext = mLayout->renderContext();
         QVector<qreal> scales;
@@ -1085,28 +1079,87 @@ void JwLayout3D::exportLayoutToImage(const QString& layoutName, QString &outputF
 }
 
 void JwLayout3D::exportLayoutToPdf(
-        QgsPrintLayout *layout,
-        const QString &outputFilePath) {
-    // 创建布局导出器
-    QgsLayoutExporter exporter(layout);
+        const QString& layoutName,
+        QString &outputFilePath) {
+    if (mLayout != nullptr) {
+        QgsLayoutPageCollection *pageCollection = mLayout->pageCollection();
+        int pageCount = pageCollection->pageCount();
+        bool should = pageCollection->shouldExportPage(0);
 
-    // 设置导出选项
-    QgsLayoutExporter::PdfExportSettings settings;
-    settings.dpi = 300; // 设置DPI
-    settings.flags |= QgsLayoutRenderContext::FlagAntialiasing; // 启用抗锯齿
+        QgsLayoutRenderContext &renderContext = mLayout->renderContext();
+        QVector<qreal> scales;
+        scales << 1.2;
+        scales << 1.0;
+        renderContext.setPredefinedScales(scales);
+        QVector<qreal> predefinedScales = renderContext.predefinedScales();
+        for (const auto &item: predefinedScales) {
+            spdlog::debug("predefinedScales: {}", item);
+        }
 
-    spdlog::debug("export to pdf: {}", outputFilePath.toStdString());
-    // 导出为PNG图片
-    QgsLayoutExporter::ExportResult result = exporter.exportToPdf(outputFilePath, settings);
+        // 创建布局导出器
+        QgsLayoutExporter exporter(mLayout);
 
-    if (result == QgsLayoutExporter::Success) {
-        spdlog::debug("Layout exported successfully to: {}", outputFilePath.toStdString());
+        // 设置导出选项
+        QgsLayoutExporter::PdfExportSettings settings;
+        settings.dpi = 300; // 设置DPI
+        settings.flags |= QgsLayoutRenderContext::FlagAntialiasing; // 启用抗锯齿
+
+        spdlog::debug("export to pdf: {}", outputFilePath.toStdString());
+        // 导出为PDF
+        QgsLayoutExporter::ExportResult result = exporter.exportToPdf(outputFilePath, settings);
+
+        if (result == QgsLayoutExporter::Success) {
+            spdlog::debug("Layout exported successfully to: {}", outputFilePath.toStdString());
+        } else {
+            spdlog::warn("Failed to export layout to:", outputFilePath.toStdString());
+        }
     } else {
-        spdlog::warn("Failed to export layout to:", outputFilePath.toStdString());
+        spdlog::warn("not fount the layout: {}", layoutName.toStdString());
     }
 }
 
-void JwLayout3D::close3DCanvas() {
+void JwLayout3D::exportLayoutToSvg(
+        const QString& layoutName,
+        QString &outputFilePath) {
+    if (mLayout != nullptr) {
+        QgsLayoutPageCollection *pageCollection = mLayout->pageCollection();
+        int pageCount = pageCollection->pageCount();
+        bool should = pageCollection->shouldExportPage(0);
+
+        QgsLayoutRenderContext &renderContext = mLayout->renderContext();
+        QVector<qreal> scales;
+        scales << 1.2;
+        scales << 1.0;
+        renderContext.setPredefinedScales(scales);
+        QVector<qreal> predefinedScales = renderContext.predefinedScales();
+        for (const auto &item: predefinedScales) {
+            spdlog::debug("predefinedScales: {}", item);
+        }
+
+        // 创建布局导出器
+        QgsLayoutExporter exporter(mLayout);
+
+        // 设置导出选项
+        QgsLayoutExporter::SvgExportSettings settings;
+        settings.dpi = 300; // 设置DPI
+        settings.flags |= QgsLayoutRenderContext::FlagAntialiasing; // 启用抗锯齿
+
+        spdlog::debug("export to svg: {}", outputFilePath.toStdString());
+        // 导出为SVG图片
+        QgsLayoutExporter::ExportResult result = exporter.exportToSvg(outputFilePath, settings);
+
+        if (result == QgsLayoutExporter::Success) {
+            spdlog::debug("Layout exported successfully to: {}", outputFilePath.toStdString());
+        } else {
+            spdlog::warn("Failed to export layout to:", outputFilePath.toStdString());
+        }
+    } else {
+        spdlog::warn("not fount the layout: {}", layoutName.toStdString());
+    }
+
+}
+
+void JwLayout3D::destroy3DCanvas() {
     try {
         mCanvas3d->destroy();
         //mCanvas3d->close();

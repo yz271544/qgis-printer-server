@@ -348,16 +348,18 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                                                             removeLayerNames3D, removeLayerPrefixes3D);
                             spdlog::info("save project");
                             m_app->saveProject();
-                            auto project_dir = m_app->getProjectDir();
+                            QString paperName = QString::fromStdString(plottingWeb->paper);
+                            export3DLayout(sceneName, layoutType, paperName, jwLayout3d.get(), responseDto);
+                            /*auto project_dir = m_app->getProjectDir();
                             QString d3_scene_png = QString().append(project_dir).append("/").append("d3_scene.png");
                             spdlog::info("d3 scene png: {}", d3_scene_png.toStdString());
-                            jwLayout3d->exportLayoutToImage(layoutType, d3_scene_png);
+                            jwLayout3d->exportLayoutToPng(layoutType, d3_scene_png);
                             responseDto->image_url = d3_scene_png.toStdString();
                             spdlog::info("ready to doneCurrent after export image");
                             m_globalGLContext->doneCurrent();
                             spdlog::info("doneCurrent after export image done");
-                            jwLayout3d->close3DCanvas();
-                            spdlog::info("close 3d canvas done");
+                            jwLayout3d->destroy3DCanvas();
+                            spdlog::info("close 3d canvas done");*/
                             jwLayout3d.reset();
                             spdlog::info("reset jwLayout3d");
                         } else {
@@ -387,7 +389,7 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                 spdlog::info("clear layers and project");
                 m_app->clearLayers();
                 spdlog::info("clean the project");
-                //m_app->cleanProject();
+                m_app->cleanProject();
                 spdlog::info("exit invokeMethod lambda");
                 eventLoop.quit(); // 退出事件循环
             } catch (const std::exception &e) {
@@ -437,6 +439,56 @@ void Processor::export2DLayout(QString& sceneName,
         responseDto->svg_url = svg_url.toStdString();
     }
 }
+
+
+void Processor::export3DLayout(QString& sceneName,
+                               const QString& layoutType,
+                               QString& paperSpecName,
+                               JwLayout3D* jwLayout3d,
+                               DTOWRAPPERNS::DTOWrapper<ResponseDto> responseDto) {
+    auto zip_file_name = zipProject(sceneName);
+    auto imageSubDir = getImageSubDir(layoutType);
+    // 导出图像
+    QString project_zip_url = QString(m_mapping_export_nginx_url_prefix)
+            .append("/").append(zip_file_name);
+    responseDto->project_zip_url = project_zip_url.toStdString();
+    QString imageName = "";
+    QString outputPath = "";
+    if (m_export_png_enable) {
+        imageName = QString("%1-%2-%3-3D.png").arg(sceneName, layoutType, paperSpecName);
+        outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, imageName);
+        FileUtil::delete_file(outputPath);
+        jwLayout3d->exportLayoutToPng(layoutType, outputPath);
+        QString image_url = QString(m_mapping_export_nginx_url_prefix)
+                .append("/").append(imageSubDir).append("/").append(imageName);
+        responseDto->image_url = image_url.toStdString();
+    }
+    QString pdfName = "";
+    if (m_export_pdf_enable) {
+        imageName = QString("%1-%2-%3-3D.pdf").arg(sceneName, layoutType, paperSpecName);
+        outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, imageName);
+        FileUtil::delete_file(outputPath);
+        jwLayout3d->exportLayoutToPdf(layoutType, outputPath);
+        QString image_url = QString(m_mapping_export_nginx_url_prefix)
+                .append("/").append(imageSubDir).append("/").append(imageName);
+        responseDto->image_url = image_url.toStdString();
+    }
+    QString svgName = "";
+    if (m_export_svg_enable) {
+        imageName = QString("%1-%2-%3-3D.svg").arg(sceneName, layoutType, paperSpecName);
+        outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, imageName);
+        FileUtil::delete_file(outputPath);
+        jwLayout3d->exportLayoutToSvg(layoutType, outputPath);
+        QString image_url = QString(m_mapping_export_nginx_url_prefix)
+                .append("/").append(imageSubDir).append("/").append(imageName);
+        responseDto->image_url = image_url.toStdString();
+    }
+    m_globalGLContext->doneCurrent();
+    spdlog::info("doneCurrent after export image done");
+    jwLayout3d->destroy3DCanvas();
+    spdlog::info("close 3d canvas done");
+}
+
 
 
 void Processor::checkDealWithClosedGeometry(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto> &geojson) {
