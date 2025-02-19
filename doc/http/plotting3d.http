@@ -99,16 +99,30 @@ Authorization: Bearer {{token}}
       }
     ],
     "north": {
-      "position": [97, 0, 2, 8],
+      "position": [
+        97,
+        0,
+        2,
+        8
+      ],
       "rotate": 30
     },
     "arrows": [
       {
-        "position": [80, 80, 10, 2],
+        "position": [
+          80,
+          80,
+          10,
+          2
+        ],
         "rotate": 30
       }
     ],
-    "scaleBar": true
+    "scaleBar": true,
+    "bgPic": {
+      "borderColor": "#0000ff",
+      "doubleFrame": true
+    }
   },
   "paper": "a3",
   "pictureUnit": "制图单位：xxx 制",

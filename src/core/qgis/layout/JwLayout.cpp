@@ -569,16 +569,23 @@ void JwLayout::setMap(
     mMapWidth = availablePaper.getPaperSize().second - mImageSpec["main_left_margin"].toDouble() - mImageSpec["main_right_margin"].toDouble();
     mMapHeight = availablePaper.getPaperSize().first - mImageSpec["main_top_margin"].toDouble() - mImageSpec["main_bottom_margin"].toDouble();
 
-
-
+    mapItem->setFrameEnabled(true);
+    mapItem->setFrameStrokeColor(QColor(mapFrameColor));
+    double frameWidthPixelMm = QgsUtil::d300PixelToMm(static_cast<float>(mapFrameWidth));
     if (isDoubleFrame) {
         mapItem->setFrameStrokeWidth(QgsLayoutMeasurement(0.4, Qgis::LayoutUnit::Millimeters));
+        float margin_offset = DOUBLE_FRAME_OFFSET_COEFFICIENT;
+        float width_offset = margin_offset * 2;
+        QString fillColor = mImageSpec["main_double_frame_fill_color"].toString();
+        qreal remarksX = mImageSpec["main_left_margin"].toDouble() - margin_offset;
+        qreal remarksY = mImageSpec["main_top_margin"].toDouble() - margin_offset;
+        qreal remarksWidth = mMapWidth + width_offset;
+        qreal remarksHeight = mMapHeight + width_offset;
+        auto outerFrame = addRect(fillColor, mapFrameColor, frameWidthPixelMm, remarksX, remarksY, remarksWidth, remarksHeight);
+        layout->addLayoutItem(outerFrame);
     } else {
-        double frameWidthPixelMm = mapFrameWidth; // 假设 QgsUtil::d300PixelToMm 已实现
         mapItem->setFrameStrokeWidth(QgsLayoutMeasurement(frameWidthPixelMm, Qgis::LayoutUnit::Millimeters));
     }
-    mapItem->setFrameStrokeColor(QColor(mapFrameColor));
-    mapItem->setFrameEnabled(true);
 
     mapItem->attemptSetSceneRect(QRectF(mImageSpec["main_left_margin"].toDouble(), mImageSpec["main_top_margin"].toDouble(),
                                         mMapWidth, mMapHeight));
@@ -850,4 +857,31 @@ void JwLayout::addPrintLayout(const QString& layoutType, const QString& layoutNa
     if (writeQpt) {
         saveQptTemplate(layout);
     }
+}
+
+QgsLayoutItemShape* JwLayout::addRect(
+        QString& fillColor,
+        const QString& borderColor,
+        double borderWidth,
+        qreal remarksX,
+        qreal remarksY,
+        qreal remarksWidth,
+        qreal remarksHeight
+        ) {
+    auto layout = getLayout(mLayoutName);
+    auto rectBg = std::make_unique<QgsLayoutItemShape>(layout);
+    rectBg->setShapeType(QgsLayoutItemShape::Rectangle);
+    auto symbol = std::make_unique<QgsFillSymbol>();
+    symbol->setColor(QColor(fillColor));
+    if (auto* symbolLayer = dynamic_cast<QgsSimpleMarkerSymbolLayer*>(symbol->symbolLayer(0))) {
+        symbolLayer->setStrokeColor(QColor(borderColor));
+        symbolLayer->setStrokeWidth(borderWidth);
+    }
+    rectBg->setSymbol(symbol.release());
+    rectBg->setReferencePoint(QgsLayoutItem::ReferencePoint::LowerLeft);
+    spdlog::debug("remarksX: {}, remarksY: {}, remarksWidth: {}, remarksHeight: {}",
+                  remarksX, remarksY, remarksWidth, remarksHeight);
+    rectBg->attemptSetSceneRect(QRectF(remarksX, remarksY, remarksWidth, remarksHeight));
+    rectBg->setZValue(0);
+    return rectBg.release();
 }

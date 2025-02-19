@@ -57,8 +57,8 @@
 class JwLayout {
 public:
 
-    JwLayout(QgsProject* project,
-             QgsMapCanvas* canvas,
+    JwLayout(QgsProject *project,
+             QgsMapCanvas *canvas,
              QString sceneName,
              const QVariantMap &imageSpec,
              QString projectDir,
@@ -67,63 +67,80 @@ public:
     ~JwLayout() = default;
 
     void filterMapLayers(
-            QgsLayoutItemMap* mapItem,
-            const QVector<QString>& removeLayerNames = QVector<QString>(),
-            const QVector<QString>& removeLayerPrefixes = QVector<QString>());
+            QgsLayoutItemMap *mapItem,
+            const QVector<QString> &removeLayerNames = QVector<QString>(),
+            const QVector<QString> &removeLayerPrefixes = QVector<QString>());
 
-    static void setPageOrientation(QgsPrintLayout* layout, const PaperSpecification& availablePaper, int pageNum,
-                            QgsLayoutItemPage::Orientation orientation = QgsLayoutItemPage::Landscape);
-    void setTitle(QgsPrintLayout* layout, const QVariantMap& titleOfLayinfo);
-    void setLegend(QgsPrintLayout* layout, const QVariantMap& imageSpec, int legendWidth = 40, int legendHeight = 80,
-                   const QString& borderColor = "#000000", const QSet<QString>& filteredLegendItems = QSet<QString>());
+    static void setPageOrientation(QgsPrintLayout *layout, const PaperSpecification &availablePaper, int pageNum,
+                                   QgsLayoutItemPage::Orientation orientation = QgsLayoutItemPage::Landscape);
 
-    void setRemarks(QgsPrintLayout* layout, const QVariantMap& remarkOfLayinfo, const bool writeQpt);
+    void setTitle(QgsPrintLayout *layout, const QVariantMap &titleOfLayinfo);
 
-    void addRightSideLabel(QgsPrintLayout* layout, const QVariantMap& subTitle, int rightSideLabelWidth, int rightSideLabelHeight);
+    void setLegend(QgsPrintLayout *layout, const QVariantMap &imageSpec, int legendWidth = 40, int legendHeight = 80,
+                   const QString &borderColor = "#000000", const QSet<QString> &filteredLegendItems = QSet<QString>());
 
-    void addSignatureLabel(QgsPrintLayout* layout, const QString& signatureText);
+    void setRemarks(QgsPrintLayout *layout, const QVariantMap &remarkOfLayinfo, const bool writeQpt);
 
-    void addScaleBar(QgsPrintLayout* layout);
+    void addRightSideLabel(QgsPrintLayout *layout, const QVariantMap &subTitle, int rightSideLabelWidth,
+                           int rightSideLabelHeight);
 
-    static void addArrowToLayout(QgsLayout* layout, const QVector<QgsPointXY>& points, const QColor& color, double width);
+    void addSignatureLabel(QgsPrintLayout *layout, const QString &signatureText);
 
-    void addArrowBasedOnFrontendParams(QgsPrintLayout* layout, const QList<QVariant>& position, double rotate);
+    void addScaleBar(QgsPrintLayout *layout);
 
-    void init2DLayout(const QString& layoutName);
+    static void
+    addArrowToLayout(QgsLayout *layout, const QVector<QgsPointXY> &points, const QColor &color, double width);
+
+    void addArrowBasedOnFrontendParams(QgsPrintLayout *layout, const QList<QVariant> &position, double rotate);
+
+    void init2DLayout(const QString &layoutName);
+
     void setMap(
-            QgsPrintLayout* layout,
-            const PaperSpecification& availablePaper,
+            QgsPrintLayout *layout,
+            const PaperSpecification &availablePaper,
             int mapFrameWidth = 1,
-            const QString& mapFrameColor = "#000000",
+            const QString &mapFrameColor = "#000000",
             bool isDoubleFrame = false,
-            const QVector<QString>& removeLayerNames = QVector<QString>(),
-            const QVector<QString>& removeLayerPrefixes = QVector<QString>(),
+            const QVector<QString> &removeLayerNames = QVector<QString>(),
+            const QVector<QString> &removeLayerPrefixes = QVector<QString>(),
             double mapRotation = 0.0);
 
     void addNorthArrow(
-            QgsPrintLayout* layout,
-            const QVariantMap& northArrowPath);
+            QgsPrintLayout *layout,
+            const QVariantMap &northArrowPath);
 
-    void addPrintLayout(const QString& layoutType, const QString& layoutName,
-                        const QVariantMap& plottingWeb, const PaperSpecification& availablePaper,
-                        bool writeQpt = false, const QVector<QString>& removeLayerNames = QVector<QString>(),
-                        const QVector<QString>& removeLayerPrefixes = QVector<QString>());
+    void addPrintLayout(const QString &layoutType, const QString &layoutName,
+                        const QVariantMap &plottingWeb, const PaperSpecification &availablePaper,
+                        bool writeQpt = false, const QVector<QString> &removeLayerNames = QVector<QString>(),
+                        const QVector<QString> &removeLayerPrefixes = QVector<QString>());
 
-    void loadQptTemplate(const QString& qptFilePath, const QString& layoutTemplateName);
-    void updateLayoutExtent(const QString& layoutName);
-    QPair<double, double> getLegendDimensions(const QString& layoutName);
+    void loadQptTemplate(const QString &qptFilePath, const QString &layoutTemplateName);
 
-    QgsPrintLayout* getLayout(const QString& layoutName);
+    void updateLayoutExtent(const QString &layoutName);
 
-    QgsLayoutItemMap* getMapItem();
+    QPair<double, double> getLegendDimensions(const QString &layoutName);
 
-    void saveQptTemplate(QgsPrintLayout* layout);
+    QgsPrintLayout *getLayout(const QString &layoutName);
+
+    QgsLayoutItemMap *getMapItem();
+
+    void saveQptTemplate(QgsPrintLayout *layout);
+
+    QgsLayoutItemShape *addRect(
+            QString& fillColor,
+            const QString& borderColor,
+            double borderWidth,
+            qreal remarksX,
+            qreal remarksY,
+            qreal remarksWidth,
+            qreal remarksHeight
+    );
 
 private:
     QString mLayoutName;
-    QgsProject* mProject;
+    QgsProject *mProject;
     QString mProjectDir;
-    QgsMapCanvas* mCanvas;
+    QgsMapCanvas *mCanvas;
     QString mSceneName;
     std::unique_ptr<JwLegend> mJwLegend;
     QVariantMap mImageSpec;

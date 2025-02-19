@@ -173,7 +173,15 @@ public:
 
     void close3DCanvas();
 
-
+    QgsLayoutItemShape* addRect(
+            QString& fillColor,
+            const QString& borderColor,
+            double borderWidth,
+            qreal remarksX,
+            qreal remarksY,
+            qreal remarksWidth,
+            qreal remarksHeight
+    );
 #ifdef ENABLE_APP
     void create3DMapCanvasWidget(QString view3dName);
     void write3DMapViewSettings( Qgs3DMapCanvasWidget *widget, QDomDocument &doc, QDomElement &elem3DMap );

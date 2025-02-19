@@ -742,6 +742,24 @@ void JwLayout3D::set3DMap(
                   mImageSpec["main_top_margin"].toDouble(),
                   mMapWidth,
                   mMapHeight);
+    mMapItem3d->setFrameEnabled(true);
+    mMapItem3d->setFrameStrokeColor(QColor(mapFrameColor));
+    double frameWidthPixelMm = QgsUtil::d300PixelToMm(static_cast<float>(mapFrameWidth));
+    if (isDoubleFrame) {
+        mMapItem3d->setFrameStrokeWidth(QgsLayoutMeasurement(0.4, Qgis::LayoutUnit::Millimeters));
+        float margin_offset = DOUBLE_FRAME_OFFSET_COEFFICIENT;
+        float width_offset = margin_offset * 2;
+        QString fillColor = mImageSpec["main_double_frame_fill_color"].toString();
+        qreal remarksX = mImageSpec["main_left_margin"].toDouble() - margin_offset;
+        qreal remarksY = mImageSpec["main_top_margin"].toDouble() - margin_offset;
+        qreal remarksWidth = mMapWidth + width_offset;
+        qreal remarksHeight = mMapHeight + width_offset;
+        auto outerFrame = addRect(fillColor, mapFrameColor, frameWidthPixelMm, remarksX, remarksY, remarksWidth, remarksHeight);
+        layout->addLayoutItem(outerFrame);
+    } else {
+        mMapItem3d->setFrameStrokeWidth(QgsLayoutMeasurement(frameWidthPixelMm, Qgis::LayoutUnit::Millimeters));
+    }
+
     mMapItem3d->attemptSetSceneRect(
             QRectF(mImageSpec["main_left_margin"].toDouble(), mImageSpec["main_top_margin"].toDouble(),
                    mMapWidth, mMapHeight));
@@ -903,6 +921,10 @@ QPair<double, double> JwLayout3D::getLegendDimensions(const QString &layoutName)
 void JwLayout3D::addPrintLayout(const QString &layoutType, const QString &layoutName,
                                 const QVariantMap &plottingWeb, const PaperSpecification &availablePaper,
                                 bool writeQpt) {
+
+    auto plottingJson = JsonUtil::variantMapToJson(const_cast<QVariantMap &>(plottingWeb));
+    spdlog::info("添加打印布局: {}", plottingJson.toJson());
+
     // 初始化布局
     spdlog::info("初始化3d布局");
     init3DLayout(layoutName);
@@ -925,7 +947,8 @@ void JwLayout3D::addPrintLayout(const QString &layoutType, const QString &layout
                                                         : mImageSpec["main_double_frame"].toBool();
     double mapRotation = layInfo.contains("north") ? layInfo["north"].toMap()["rotate"].toDouble()
                                                    : mImageSpec["north_rotate"].toDouble();
-
+    spdlog::info("mapFrameColor: {}, mapFrameWidth: {}, mapDoubleFrame: {}, mapRotation: {}",
+                 mapFrameColor.toStdString(), mapFrameWidth, mapDoubleFrame, mapRotation);
     // 设置地图
     qInfo() << "Added 3D map to layout";
     set3DMap(layout, availablePaper, mapFrameWidth, mapFrameColor, mapDoubleFrame, mapRotation);
@@ -1090,4 +1113,31 @@ void JwLayout3D::close3DCanvas() {
     } catch (const std::exception &e) {
         spdlog::error("Error closing 3D canvas: {}", e.what());
     }
+}
+
+QgsLayoutItemShape* JwLayout3D::addRect(
+        QString& fillColor,
+        const QString& borderColor,
+        double borderWidth,
+        qreal remarksX,
+        qreal remarksY,
+        qreal remarksWidth,
+        qreal remarksHeight
+) {
+    auto layout = getLayout(mLayoutName);
+    auto rectBg = std::make_unique<QgsLayoutItemShape>(layout);
+    rectBg->setShapeType(QgsLayoutItemShape::Rectangle);
+    auto symbol = std::make_unique<QgsFillSymbol>();
+    symbol->setColor(QColor(fillColor));
+    if (auto* symbolLayer = dynamic_cast<QgsSimpleMarkerSymbolLayer*>(symbol->symbolLayer(0))) {
+        symbolLayer->setStrokeColor(QColor(borderColor));
+        symbolLayer->setStrokeWidth(borderWidth);
+    }
+    rectBg->setSymbol(symbol.release());
+    rectBg->setReferencePoint(QgsLayoutItem::ReferencePoint::LowerLeft);
+    spdlog::debug("remarksX: {}, remarksY: {}, remarksWidth: {}, remarksHeight: {}",
+                  remarksX, remarksY, remarksWidth, remarksHeight);
+    rectBg->attemptSetSceneRect(QRectF(remarksX, remarksY, remarksWidth, remarksHeight));
+    rectBg->setZValue(0);
+    return rectBg.release();
 }

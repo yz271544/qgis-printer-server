@@ -128,6 +128,14 @@ class ArrowDto : public oatpp::DTO {
   DTO_FIELD(Int32, rotate);
 };
 
+class BgPic : public oatpp::DTO {
+    DTO_INIT(BgPic, DTO)
+
+    DTO_FIELD(String, borderColor);
+    DTO_FIELD(Int32, borderWidth);
+    DTO_FIELD(Boolean, doubleFrame);
+};
+
 /**
  * 定义LayInfo DTO
  */
@@ -140,6 +148,7 @@ class LayInfoDto : public oatpp::DTO {
   DTO_FIELD(Object<NorthDto>, north);
   DTO_FIELD(oatpp::Vector<Object<ArrowDto>>, arrows);
   DTO_FIELD(Boolean, scaleBar);
+  DTO_FIELD(Object<BgPic>, bgPic);
 };
 
 /**
