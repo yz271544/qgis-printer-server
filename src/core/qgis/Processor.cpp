@@ -986,13 +986,15 @@ std::unique_ptr<JwLayout3D> Processor::add_3d_layout(
     spdlog::info("OpenGL context bound: {}", m_globalGLContext->isValid());
     auto canvas3d = std::make_unique<Qgs3DMapCanvas>();
     canvas3d->setSurfaceType(QSurface::OpenGLSurface);
+    spdlog::info("set 3d canvas format");
     canvas3d->setFormat(defaultFormat);
     //canvas3d->create();
-
+    spdlog::info("set 3d canvas done");
     // 绑定上下文到 3D 画布
-    if (!m_globalGLContext->makeCurrent(canvas3d.get())) {
-        qCritical() << "Error: Failed to make OpenGL context current!";
-    }
+    /*if (!m_globalGLContext->makeCurrent(canvas3d.get())) {
+        spdlog::error("Error: Failed to make OpenGL context current!");
+        return nullptr;
+    }*/
     try {
         spdlog::info("first show");
         canvas3d->show();
@@ -1004,13 +1006,13 @@ std::unique_ptr<JwLayout3D> Processor::add_3d_layout(
     } catch (const std::exception &e) {
         spdlog::error("m_globalGLContext->doneCurrent() error: {}", e.what());
     }
-    try {
+    /*try {
         spdlog::info("second show");
         canvas3d->show();
         spdlog::info("3d canvas show done");
     } catch (const std::exception &e) {
         spdlog::error("second show 3d canvas error: {}", e.what());
-    }
+    }*/
     try {
         m_globalGLContext->makeCurrent(canvas3d.get());
     } catch (const std::exception &e) {
