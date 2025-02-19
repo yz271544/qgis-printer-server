@@ -343,15 +343,16 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                             auto upperPaperSpec = Formula::toUpperCase(paperSpec);
                             PaperSpecification availablePaper3D(QString::fromStdString(upperPaperSpec));
                             auto canvas2d = m_app->getCanvas();
-                            auto jwLayout3d = add_3d_layout(canvas2d, layoutType, plottingWeb, image_spec, availablePaper3D,
-                                                            false,
-                                                            removeLayerNames3D, removeLayerPrefixes3D);
-                            spdlog::debug("save project");
+                            add_3d_layout(canvas2d, layoutType, plottingWeb,
+                                                  image_spec, availablePaper3D, false,
+                                                  removeLayerNames3D, removeLayerPrefixes3D,
+                                                  layoutType, responseDto);
+                            /*spdlog::debug("save project");
                             m_app->saveProject();
                             QString paperName = QString::fromStdString(plottingWeb->paper);
-                            export3DLayout(sceneName, layoutType, paperName, jwLayout3d.get(), responseDto);
-                            jwLayout3d.reset();
-                            spdlog::debug("reset jwLayout3d");
+                            export3DLayout(sceneName, layoutType, paperName, jwLayout3d.get(), responseDto);*/
+                            /*jwLayout3d.reset();
+                            spdlog::debug("reset jwLayout3d");*/
                         } else {
                             responseDto->error = "enable_3d in config.yaml is false";
                         }
@@ -999,7 +1000,7 @@ void Processor::add_layout(
 }
 
 // 添加3d布局
-std::unique_ptr<JwLayout3D> Processor::add_3d_layout(
+void Processor::add_3d_layout(
         QgsMapCanvas *canvas,
         const QString &layout_name,
         const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
@@ -1007,7 +1008,10 @@ std::unique_ptr<JwLayout3D> Processor::add_3d_layout(
         const PaperSpecification &available_paper,
         bool write_qpt,
         const QVector<QString> &removeLayerNames,
-        const QVector<QString> &removeLayerPrefixes) {
+        const QVector<QString> &removeLayerPrefixes,
+        const QString& layoutType,
+        DTOWRAPPERNS::DTOWrapper<ResponseDto> &responseDto
+        ) {
 
     // 创建离屏表面
     auto globalSurfaceFormat = m_globalGLContext->format();
@@ -1021,30 +1025,62 @@ std::unique_ptr<JwLayout3D> Processor::add_3d_layout(
     spdlog::debug("Offscreen surface created: {}", surface->isValid());
 
     // 绑定上下文到离屏表面
-    if (!m_globalGLContext->makeCurrent(surface.release())) {
+    if (!m_globalGLContext->makeCurrent(surface.get())) {
         spdlog::error("Failed to bind OpenGL context to offscreen surface!");
-        return nullptr;
+        return;
     }
     spdlog::debug("OpenGL context bound: {}", m_globalGLContext->isValid());
+
+    // 创建 3D 画布, 确保其上下文与全局上下文共享资源
     auto canvas3d = std::make_unique<Qgs3DMapCanvas>();
     canvas3d->setSurfaceType(QSurface::OpenGLSurface);
     canvas3d->setFormat(defaultFormat);
-    try {
+
+    // 显式设置共享上下文
+    auto canvasContext = std::make_unique<QOpenGLContext>();
+    canvasContext->setFormat(defaultFormat);
+    canvasContext->setShareContext(m_globalGLContext.get()); // 关键：设置共享上下文
+
+    if (!canvasContext->create()) {
+        spdlog::error("Failed to create shared OpenGL context for 3D canvas!");
+        return;
+    }
+
+    //canvas3d->setContext(canvasContext.get());
+    //canvas3d->setScreen(surface.get()->screen());
+
+    /*try {
+        spdlog::debug("show 3d canvas");
         canvas3d->show();
     } catch (const std::exception &e) {
         spdlog::error("first show 3d canvas error: {}", e.what());
-    }
+    }*/
     try {
+        // 完成离屏表面的操作
+        spdlog::debug("doneCurrent before makeCurrent");
         m_globalGLContext->doneCurrent();
     } catch (const std::exception &e) {
         spdlog::error("m_globalGLContext->doneCurrent() error: {}", e.what());
     }
+    // 切换到 3D 画布的上下文
     try {
-        m_globalGLContext->makeCurrent(canvas3d.get());
+        spdlog::debug("makeCurrent before show 3d canvas");
+        if (!canvasContext->makeCurrent(canvas3d.get())) {
+            spdlog::error("Failed to bind shared OpenGL context to 3D canvas!");
+            return;
+        }
     } catch (const std::exception &e) {
         spdlog::error("m_globalGLContext->makeCurrent(canvas3d.get()) error: {}", e.what());
     }
-    spdlog::debug("OpenGL context bound: {}", m_globalGLContext->isValid());
+
+    // 初始化 3D 画布
+    try {
+        spdlog::debug("show 3d canvas");
+        canvas3d->show();
+    } catch (const std::exception &e) {
+        spdlog::error("first show 3d canvas error: {}", e.what());
+    }
+
     auto project = m_app->getProject();
     auto sceneName = m_app->getSceneName();
     auto projectDir = m_app->getProjectDir();
@@ -1060,7 +1096,16 @@ std::unique_ptr<JwLayout3D> Processor::add_3d_layout(
     jwLayout3d->set3DCanvas();
     spdlog::debug("addPrintLayout 3d");
     jwLayout3d->addPrintLayout(QString("3d"), joinedLayoutName, plottingWebMap, available_paper, write_qpt);
-    return jwLayout3d;
+    spdlog::debug("save project");
+    m_app->saveProject();
+    QString paperName = QString::fromStdString(plottingWeb->paper);
+    export3DLayout(sceneName, layoutType, paperName, jwLayout3d.get(), responseDto);
+
+    // 释放 3D 画布的上下文
+    canvasContext->doneCurrent();
+
+    // 释放离屏表面
+    surface.reset();
 }
 
 QString Processor::zipProject(const QString &scene_name) {
@@ -1377,3 +1422,4 @@ QVariantMap Processor::_grouped_color_polygons(
     }
     return color_dict;
 }
+

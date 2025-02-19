@@ -81,6 +81,10 @@ void QCoreStarter::Init(StarterContext &context) {
         spdlog::info("创建OpenGL上下文");
         auto globalGLContext = std::make_shared<QOpenGLContext>();
         globalGLContext->setFormat(globalSurfaceFormat);
+
+        // 设置共享上下文为全局上下文（如果后续需要共享）
+        // globalGLContext->setShareContext(QOpenGLContext::globalShareContext());
+
         context.setOpenGLContext(globalGLContext);
         if (!globalGLContext->create()) {
             spdlog::error("Failed to create OpenGL context");

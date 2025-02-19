@@ -90,14 +90,17 @@ public:
                     const QVector<QString> &removeLayerPrefixs);
 
     // 添加3d布局
-    std::unique_ptr<JwLayout3D> add_3d_layout(QgsMapCanvas *canvas,
-                                              const QString &layout_name,
-                                              const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
-                                              const QMap<QString, QVariant> &image_spec,
-                                              const PaperSpecification &available_paper,
-                                              bool write_qpt,
-                                              const QVector<QString> &removeLayerNames,
-                                              const QVector<QString> &removeLayerPrefixes);
+    void add_3d_layout(
+            QgsMapCanvas *canvas,
+            const QString &layout_name,
+            const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
+            const QMap<QString, QVariant> &image_spec,
+            const PaperSpecification &available_paper,
+            bool write_qpt,
+            const QVector<QString> &removeLayerNames,
+            const QVector<QString> &removeLayerPrefixes,
+            const QString& layoutType,
+            DTOWRAPPERNS::DTOWrapper<ResponseDto> &responseDto);
 
     // 导出PNG
     QString exportPNG(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
@@ -188,7 +191,7 @@ public:
     void export3DLayout(QString &sceneName,
                         const QString &layoutType,
                         QString &paperSpecName,
-                        JwLayout3D* jwLayout3d,
+                        JwLayout3D *jwLayout3d,
                         DTOWRAPPERNS::DTOWrapper<ResponseDto> responseDto);
 };
 
