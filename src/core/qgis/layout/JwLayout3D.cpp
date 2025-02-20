@@ -554,6 +554,7 @@ void JwLayout3D::onTerrainInitialized() {
                                                                      mProject->transformContext());
     spdlog::debug("get3DMapSettings fullExtent:");
     CameraUtil::ExtentInfo(fullExtent);
+    mMapSettings3d->setCrs(mProject->crs());
     mMapSettings3d->setOrigin(QgsVector3D(fullExtent.center().x(), fullExtent.center().y(), 0));
     spdlog::debug("set origin: {}", mMapSettings3d->origin().toString().toStdString());
     mMapSettings3d->setSelectionColor(mCanvas2d->selectionColor());
@@ -687,7 +688,7 @@ void JwLayout3D::set3DCanvas() {
     const QgsReferencedRectangle projectExtent = mProject->viewSettings()->fullExtent();
     auto mapSettings3d = mCanvas3d->mapSettings();
     const QgsRectangle fullExtent = Qgs3DUtils::tryReprojectExtent2D(projectExtent, projectExtent.crs(),
-                                                                     mapSettings3d->crs(),
+                                                                     mProject->crs(),
                                                                      mProject->transformContext());
     const QgsRectangle& extent = fullExtent;
     spdlog::debug("set3DCanvas fullExtent:");

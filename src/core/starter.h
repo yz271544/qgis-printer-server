@@ -32,7 +32,6 @@ enum PriorityGroup {
     AppGroup = 10
 };
 
-
 class StarterContext {
 private:
     QList<QString> args_;                             // 命令行参数
@@ -48,7 +47,7 @@ private:
 
 public:
 
-    StarterContext(int argc, char* argv[]);
+    StarterContext(int argc, char *argv[]);
 
     // 添加一个方法，用于获取转换后的参数
     void getConvertedArgs(int& argc, std::unique_ptr<char*[]>& argv);
@@ -140,7 +139,6 @@ public:
     // 添加获取启动器实例的抽象方法，方便后续在其他启动器中查找特定启动器实例
     virtual Starter* GetInstance() = 0;
 };
-
 
 class BaseStarter : public Starter {
 public:
