@@ -16,6 +16,7 @@
 #include <QSplashScreen>
 #include <QStringLiteral>
 #include <Qt3DCore>
+#include <QtConcurrent/QtConcurrent>
 
 #include <qentity.h>
 #include <qgs3dmapcanvas.h>
@@ -70,7 +71,15 @@
 #include "core/qgis/d3/CameraUtil.h"
 #include "config.h"
 
-class JwLayout3D {
+class JwLayout3D : public QObject {
+Q_OBJECT
+    // 添加信号和槽
+signals:
+    void terrainInitialized();
+
+private slots:
+    void onTerrainInitialized();
+
 public:
     JwLayout3D(QgsProject* project,
                QgsMapCanvas* canvas2d,
