@@ -5,19 +5,7 @@
 #ifndef JINGWEIPRINTER_QCORESTARTER_H
 #define JINGWEIPRINTER_QCORESTARTER_H
 
-#include <QCoreApplication>
-#include <QGuiApplication>
-#include <qgs3d.h>
 #include "starter.h"
-#include <spdlog/spdlog.h>
-#include "yaml-cpp/yaml.h"
-
-
-#include "confstarter.h"
-#include "starter.h"
-#include "starterregister.h"
-
-
 
 #if defined(_WIN32) && defined(_MSC_VER)
 #include "oatpp/core/base/Environment.hpp"

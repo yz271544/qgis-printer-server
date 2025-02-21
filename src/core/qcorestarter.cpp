@@ -33,13 +33,15 @@ void QCoreStarter::Init(StarterContext &context) {
     std::unique_ptr<char *[]> newArgv;
     context.getConvertedArgs(newArgc, newArgv);
 
-    // 确保 newArgv 的内存有效性
+    // 确保 newArgv 的内存有效性, 确保 newArgv 的最后一个元素是 nullptr
     std::vector<std::string> argsStorage(newArgc);
-    std::vector<char *> argsPtrs(newArgc);
+    std::vector<char *> argsPtrs(newArgc + 1);
     for (int i = 0; i < newArgc; ++i) {
+        spdlog::info("argv[{}]: {}", i, newArgv[i]);
         argsStorage[i] = newArgv[i];  // 复制字符串
         argsPtrs[i] = &argsStorage[i][0];  // 获取 C 风格字符串指针
     }
+    argsPtrs[newArgc] = nullptr;  // 结束符
 
     bool GUIenabled = false;
     try {
@@ -69,33 +71,18 @@ void QCoreStarter::Init(StarterContext &context) {
 
     spdlog::info("init qgis app");
     try {
-        // 设置OpenGL环境
-        /*spdlog::info("设置OpenGL环境");
-        auto globalSurfaceFormat = QSurfaceFormat::defaultFormat();
-        spdlog::info("QCoreStarter m_globalSurfaceFormat ptr: {}", static_cast<void*>(&globalSurfaceFormat));
-        globalSurfaceFormat.setVersion(4, 1);
-        globalSurfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
-        context.setSurfaceFormat(&globalSurfaceFormat);*/
-
-        // 创建OpenGL上下文
-        /*spdlog::info("创建OpenGL上下文");
-        auto globalGLContext = std::make_shared<QOpenGLContext>();
-        globalGLContext->setFormat(globalSurfaceFormat);*/
-
-        // 设置共享上下文为全局上下文（如果后续需要共享）
-        // globalGLContext->setShareContext(QOpenGLContext::globalShareContext());
-
-        /*context.setOpenGLContext(globalGLContext);
-        if (!globalGLContext->create()) {
-            spdlog::error("Failed to create OpenGL context");
-            exit(-1);
-        }*/
-
-        //spdlog::warn("QCoreStarter m_globalGLContext ptr: {}", static_cast<void*>(context.getOpenGLContext().get()));
-
-        QgsApplication::init();
-        QgsApplication::initQgis();
-        Qgs3D::initialize();
+        try {
+            spdlog::info("Initializing QgsApplication...");
+            QgsApplication::init();
+            spdlog::info("Initializing QGIS...");
+            QgsApplication::initQgis();
+            spdlog::info("QGIS initialization complete.");
+            Qgs3D::initialize();
+            spdlog::info("Qgs3D initialized complete.");
+        } catch (const std::exception &e) {
+            spdlog::error("QGIS initialization failed: {}", e.what());
+            throw;  // 重新抛出异常，避免继续执行
+        }
     } catch (const std::exception &e) {
         spdlog::error("init qgis error: {}", e.what());
     }
@@ -114,11 +101,18 @@ void QCoreStarter::Start(StarterContext &context) {
     spdlog::info("start qgis app, guiEnable: {}", guiEnable);
     if (guiEnable) {
         spdlog::info("enable gui, start gui application");
-        QApplication::exec();
+        try {
+            QApplication::exec();
+        } catch (const std::exception &e) {
+            spdlog::error("QApplication::exec() failed: {}", e.what());
+        }
     } else {
         spdlog::info("not enable gui, start core application");
-        //QCoreApplication::exec();
-        QGuiApplication::exec();
+        try {
+            QGuiApplication::exec();
+        } catch (const std::exception &e) {
+            spdlog::error("QGuiApplication::exec() failed: {}", e.what());
+        }
     }
     spdlog::info("QCoreStarter Start end");
 }
@@ -139,12 +133,6 @@ void QCoreStarter::Stop(StarterContext &context) {
         //QCoreApplication::quit();
         QCoreApplication::exit(0);
     }
-
-
-    // 释放 OpenGL 上下文, 释放离屏表面
-    //context.releaseOpenGLContext();
-//    context.releaseOffscreenSurface();
-    //context.releaseSurfaceFormat();
 
     spdlog::info("QCoreStarter Stop end");
 }
