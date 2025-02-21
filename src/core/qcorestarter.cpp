@@ -13,12 +13,6 @@ QCoreStarter::QCoreStarter() {}
 
 QCoreStarter::~QCoreStarter() {
 
-    if (mQgsApp) {
-        mQgsApp.reset();
-    }
-    if (mApp) {
-        mApp.reset();
-    }
 }
 
 BaseStarter *QCoreStarter::GetInstance() {
@@ -28,20 +22,20 @@ BaseStarter *QCoreStarter::GetInstance() {
 void QCoreStarter::Init(StarterContext &context) {
     spdlog::info("QCoreStarter Init start");
     auto config = context.Props();
-    int newArgc;
-    //char** newArgv;
-    std::unique_ptr<char *[]> newArgv;
-    context.getConvertedArgs(newArgc, newArgv);
-
-    // 确保 newArgv 的内存有效性, 确保 newArgv 的最后一个元素是 nullptr
-    std::vector<std::string> argsStorage(newArgc);
-    std::vector<char *> argsPtrs(newArgc + 1);
-    for (int i = 0; i < newArgc; ++i) {
-        spdlog::info("argv[{}]: {}", i, newArgv[i]);
-        argsStorage[i] = newArgv[i];  // 复制字符串
-        argsPtrs[i] = &argsStorage[i][0];  // 获取 C 风格字符串指针
-    }
-    argsPtrs[newArgc] = nullptr;  // 结束符
+    // int newArgc;
+    // //char** newArgv;
+    // std::unique_ptr<char *[]> newArgv;
+    // context.getConvertedArgs(newArgc, newArgv);
+    //
+    // // 确保 newArgv 的内存有效性, 确保 newArgv 的最后一个元素是 nullptr
+    // std::vector<std::string> argsStorage(newArgc);
+    // std::vector<char *> argsPtrs(newArgc + 1);
+    // for (int i = 0; i < newArgc; ++i) {
+    //     spdlog::info("argv[{}]: {}", i, newArgv[i]);
+    //     argsStorage[i] = newArgv[i];  // 复制字符串
+    //     argsPtrs[i] = &argsStorage[i][0];  // 获取 C 风格字符串指针
+    // }
+    // argsPtrs[newArgc] = nullptr;  // 结束符
 
     bool GUIenabled = false;
     try {
@@ -52,14 +46,14 @@ void QCoreStarter::Init(StarterContext &context) {
     }
 
     // Initialize QApplication if GUI is enabled, otherwise QCoreApplication
-    if (GUIenabled) {
-        mApp = std::make_unique<QApplication>(newArgc, argsPtrs.data());
-    } else {
-        mApp = std::make_unique<QGuiApplication>(newArgc, argsPtrs.data());
-    }
-
-    spdlog::info("create qgis QgsApplication");
-    mQgsApp = std::make_unique<QgsApplication>(newArgc, argsPtrs.data(), GUIenabled);
+    // if (GUIenabled) {
+    //     mApp = std::make_unique<QApplication>(newArgc, argsPtrs.data());
+    // } else {
+    //     mApp = std::make_unique<QGuiApplication>(newArgc, argsPtrs.data());
+    // }
+    //
+    // spdlog::info("create qgis QgsApplication");
+    // mQgsApp = std::make_unique<QgsApplication>(newArgc, argsPtrs.data(), GUIenabled);
     QString qgis_prefix_path = "/usr";
     try {
         qgis_prefix_path = QString::fromStdString((*config)["qgis"]["prefix_path"].as<std::string>());

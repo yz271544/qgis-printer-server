@@ -55,10 +55,10 @@ QgsCoordinateTransformContext& App::getTransformContext() {
 }
 
 void App::finishQgis() {
-    //QgsApplication::exitQgis();
-    if (QgsApplication::instance()) {
-        QgsApplication::exitQgis();
-    }
+    // QgsApplication::exitQgis();
+    // if (QgsApplication::instance()) {
+    //     QgsApplication::exitQgis();
+    // }
 //    spdlog::debug("finished qgis");
 }
 

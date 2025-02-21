@@ -16,6 +16,7 @@
 
 int main(int argc, char* argv[]) {
     // 启动 Qt 事件循环
+    QgsApplication app(argc, argv, false);
     // QCoreApplication app(argc, argv);
     // 创建并注册不同的Starter实例
     ConfStarter confStarter;

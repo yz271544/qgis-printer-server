@@ -15,8 +15,6 @@ class QCoreStarter : public BaseStarter {
 private:
     bool mBlock;
     bool mStopped = false;
-    std::unique_ptr<QCoreApplication> mApp;
-    std::unique_ptr<QgsApplication> mQgsApp;
 public:
     QCoreStarter();
 
