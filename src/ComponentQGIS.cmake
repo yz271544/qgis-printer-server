@@ -123,7 +123,7 @@ elseif(UNIX)
     message("NIX system - QGISSOURCE: ${QGISSOURCE}")
     if (NOT DEFINED $ENV{QGISSOURCE} AND $ENV{QGISSOURCE} STREQUAL "")
         message("release env")
-        set(CMAKE_MODULE_PATH /usr/share/qgis)
+        set(CMAKE_MODULE_PATH /usr/share/qgis /usr/local/share/qgis)
         message("CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
 
         message("find yaml-cpp")
@@ -162,10 +162,16 @@ elseif(UNIX)
 
 
     # 检查 CMAKE_BUILD_TYPE 的值
+    message("CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set(QGIS_PREFIX_PATH "/lyndon/iProject/cpath/QGIS/output")
+        message("111")
+        set(QGIS_PREFIX_PATH "/usr/local")
+        #        set(QGIS_PREFIX_PATH "/lyndon/iProject/cpath/QGIS/output")
     elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
-        set(QGIS_PREFIX_PATH "/usr")
+        message("222")
+        set(QGIS_PREFIX_PATH "/usr/local")
+        #        set(QGIS_PREFIX_PATH "/lyndon/iProject/cpath/QGIS/output")
+        #        set(QGIS_PREFIX_PATH "/usr")
     else()
         # 可以添加一个默认值或错误处理
         message(FATAL_ERROR "Unsupported CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
