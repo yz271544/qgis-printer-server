@@ -6,8 +6,9 @@
 
 #include <utility>
 
-Processor::Processor(const QList<QString> &argvList, YAML::Node *config, std::shared_ptr<QOpenGLContext> globalGLContext) {
-    m_globalGLContext = std::move(globalGLContext);
+//Processor::Processor(const QList<QString> &argvList, YAML::Node *config, std::shared_ptr<QOpenGLContext> globalGLContext) {
+Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
+    //m_globalGLContext = std::move(globalGLContext);
     m_config = config;
     try {
         m_verbose = m_config->operator[]("logging")["verbose"].as<bool>();
@@ -67,7 +68,7 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config, std::sh
     jingwei_server_url = jingwei_server_url.replace("{JINGWEI_SERVER_HOST}", jingwei_server_host);
     jingwei_server_url = jingwei_server_url.replace("{JINGWEI_SERVER_PORT}", QString::number(jingwei_server_port));
     jingwei_server_url = jingwei_server_url.replace("{JINGWEI_SERVER_API_PREFIX}", jingwei_server_api_prefix);
-//    spdlog::info("jingwei_server_url: {}", jingwei_server_url.toStdString());
+    spdlog::debug("jingwei_server_url: {}", jingwei_server_url.toStdString());
 
     QString mapping_export_nginx_host = "localhost";
     try {
@@ -110,7 +111,7 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config, std::sh
                                                                                           QString::number(
                                                                                                   mapping_export_nginx_port));
         }
-//        spdlog::info("mapping_export_nginx_url_prefix: {}", m_mapping_export_nginx_url_prefix.toStdString());
+        spdlog::debug("mapping_export_nginx_url_prefix: {}", m_mapping_export_nginx_url_prefix.toStdString());
     } catch (const std::exception &e) {
         spdlog::warn("get mapping_export_nginx_url_prefix error: {}", e.what());
     }
@@ -124,7 +125,7 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config, std::sh
 
     // 读取图像规格
     m_setting_image_spec = std::make_unique<QVariantMap>();
-//    spdlog::info("read the image spec");
+    spdlog::debug("read the image spec");
     auto specification = (*m_config)["specification"];
     QList<QVariant> specList = NodeToMap::sequenceToVariantList(specification);
     for (const auto &item: specList) {
@@ -144,7 +145,7 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config, std::sh
 }
 
 Processor::~Processor() {
-//    spdlog::info("Processor destroyed");
+    spdlog::debug("Processor destroyed");
 }
 
 std::future<DTOWRAPPERNS::DTOWrapper<PlottingRespDto>>
@@ -157,7 +158,7 @@ Processor::fetchPlotting(const oatpp::String &token, const oatpp::String &scene_
         if (envProfile != nullptr) {
             std::string profile(envProfile);
             if (profile == "test") {
-//                spdlog::info("ENV_PROFILE: {}", profile);
+                spdlog::debug("ENV_PROFILE: {}", profile);
                 // open the file and read the json
                 QFile file("/lyndon/iProject/cpath/jingweiprinter/common/input/topicMap.json");
                 if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -254,11 +255,11 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
             spdlog::error(errorMsg);
             throw XServerRequestError(errorMsg);
         }
-//        spdlog::info("invoke method to create project");
+        spdlog::debug("invoke method to create project");
         // Qt::TimerType tempReceiver;
         QMetaObject::invokeMethod(qApp, [this, plottingWeb, plottingRespDto, layoutType, promise, &eventLoop]() {
             //QTimer::singleShot(0, tempRecever, [this, plottingWeb, plottingRespDto, layoutType, promise, &eventLoop]() {
-//            spdlog::info("Inside invokeMethod lambda: start");
+            spdlog::debug("Inside invokeMethod lambda: start");
             auto responseDto = ResponseDto::createShared();
             try {
                 QString sceneName = QString::fromStdString(plottingWeb->sceneName);
@@ -331,7 +332,7 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                         spdlog::warn("get mapType.is3D error: {}", e.what());
                     }
                     if (is3D) {
-                        spdlog::info("add and export 3d layout");
+                        spdlog::debug("add and export 3d layout");
                         if (m_enable_3d) {
                             // add 3d layout
                             spdlog::debug("add 3d layout");
@@ -343,32 +344,33 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                             auto upperPaperSpec = Formula::toUpperCase(paperSpec);
                             PaperSpecification availablePaper3D(QString::fromStdString(upperPaperSpec));
                             auto canvas2d = m_app->getCanvas();
-                            auto jwLayout3d = add_3d_layout(canvas2d, layoutType, plottingWeb, image_spec, availablePaper3D,
-                                                            false,
-                                                            removeLayerNames3D, removeLayerPrefixes3D);
-                            spdlog::info("save project");
+                            add_3d_layout(canvas2d, layoutType, plottingWeb,
+                                                  image_spec, availablePaper3D, false,
+                                                  removeLayerNames3D, removeLayerPrefixes3D,
+                                                  layoutType, responseDto);
+                            /*spdlog::debug("save project");
                             m_app->saveProject();
                             QString paperName = QString::fromStdString(plottingWeb->paper);
-                            export3DLayout(sceneName, layoutType, paperName, jwLayout3d.get(), responseDto);
-                            jwLayout3d.reset();
-                            spdlog::info("reset jwLayout3d");
+                            export3DLayout(sceneName, layoutType, paperName, jwLayout3d.get(), responseDto);*/
+                            /*jwLayout3d.reset();
+                            spdlog::debug("reset jwLayout3d");*/
                         } else {
                             responseDto->error = "enable_3d in config.yaml is false";
                         }
                     } else {
-                        spdlog::info("add and export 2d layout");
+                        spdlog::debug("add and export 2d layout");
                         auto appAvailablePapers = m_app->getAvailablePapers();
                         QVector<QString> removeLayerNames = QVector<QString>();
                         QVector<QString> removeLayerPrefixes = QVector<QString>();
                         removeLayerPrefixes.append(REAL3D_TILE_NAME);
                         for (const auto &availablePaper: appAvailablePapers) {
-                            spdlog::info("image_spec_name: {}, available_paper: {}", layoutType.toStdString(),
+                            spdlog::debug("image_spec_name: {}, available_paper: {}", layoutType.toStdString(),
                                          availablePaper.getPaperName().toStdString());
                             auto canvas2d = m_app->getCanvas();
                             add_layout(canvas2d, layoutType, plottingWeb, image_spec, availablePaper, false,
                                        removeLayerNames, removeLayerPrefixes);
                         }
-                        spdlog::info("save project");
+                        spdlog::debug("save project");
                         m_app->saveProject();
                         export2DLayout(sceneName, layoutType, plottingWeb, responseDto);
                     }
@@ -376,11 +378,11 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
 
                 responseDto->error = "";
                 promise->set_value(responseDto);
-                spdlog::info("clear layers and project");
+                spdlog::debug("clear layers and project");
                 m_app->clearLayers();
-                spdlog::info("clean the project");
+                spdlog::debug("clean the project");
                 m_app->cleanProject();
-                spdlog::info("exit invokeMethod lambda");
+                spdlog::debug("exit invokeMethod lambda");
                 eventLoop.quit(); // 退出事件循环
             } catch (const std::exception &e) {
                 spdlog::error("Exception in invokeMethod lambda: {}", e.what());
@@ -473,10 +475,10 @@ void Processor::export3DLayout(QString& sceneName,
                 .append("/").append(imageSubDir).append("/").append(imageName);
         responseDto->image_url = image_url.toStdString();
     }
-    m_globalGLContext->doneCurrent();
-    spdlog::info("doneCurrent after export image done");
+    /*m_globalGLContext->doneCurrent();
+    spdlog::debug("doneCurrent after export image done");*/
     jwLayout3d->destroy3DCanvas();
-    spdlog::info("close 3d canvas done");
+    spdlog::debug("close 3d canvas done");
 }
 
 
@@ -503,11 +505,11 @@ void Processor::checkDealWithClosedGeometry(const DTOWRAPPERNS::DTOWrapper<GeoPo
             // 处理闭合几何图形
             geojson->geometry->coordinates[0]->push_back(geojson->geometry->coordinates[0][0]);
         } else {
-//            spdlog::info("first point x: {}, y: {}", geojson->geometry->coordinates[0][0][0],
-//                         geojson->geometry->coordinates[0][0][1]);
-//            spdlog::info("last point x: {}, y: {}",
-//                         geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() - 1][0],
-//                         geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() - 1][1]);
+            spdlog::debug("first point x: {}, y: {}", geojson->geometry->coordinates[0][0][0],
+                         geojson->geometry->coordinates[0][0][1]);
+            spdlog::debug("last point x: {}, y: {}",
+                         geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() - 1][0],
+                         geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() - 1][1]);
         }
     }
 }
@@ -532,7 +534,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
             shape_list.append(plotting->getShapeJson());
         }
 
-//        spdlog::info("plotting pcode:{} code:{}", payloads->pcode->c_str(), payloads->code->c_str());
+        spdlog::debug("plotting pcode:{} code:{}", payloads->pcode->c_str(), payloads->code->c_str());
 
         auto shapeType = layer_style.contains("shapeType") ? layer_style["shapeType"].toString() : "";
 
@@ -999,7 +1001,7 @@ void Processor::add_layout(
 }
 
 // 添加3d布局
-std::unique_ptr<JwLayout3D> Processor::add_3d_layout(
+void Processor::add_3d_layout(
         QgsMapCanvas *canvas,
         const QString &layout_name,
         const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
@@ -1007,45 +1009,32 @@ std::unique_ptr<JwLayout3D> Processor::add_3d_layout(
         const PaperSpecification &available_paper,
         bool write_qpt,
         const QVector<QString> &removeLayerNames,
-        const QVector<QString> &removeLayerPrefixes) {
+        const QVector<QString> &removeLayerPrefixes,
+        const QString& layoutType,
+        DTOWRAPPERNS::DTOWrapper<ResponseDto> &responseDto
+        ) {
 
-    // 创建离屏表面
-    auto globalSurfaceFormat = m_globalGLContext->format();
-    spdlog::info("Processor m_globalSurfaceFormat ptr: {}", static_cast<void*>(&globalSurfaceFormat));
-
+    // 设置默认格式
     auto defaultFormat = QSurfaceFormat::defaultFormat();
-    auto surface = std::make_unique<QOffscreenSurface>();
-    surface->setFormat(defaultFormat);
-    surface->create();
+    defaultFormat.setVersion(4, 1); // 设置 OpenGL 版本
+    defaultFormat.setProfile(QSurfaceFormat::CoreProfile); // 设置核心模式
+    QSurfaceFormat::setDefaultFormat(defaultFormat);
 
-    spdlog::info("Offscreen surface created: {}", surface->isValid());
-
-    // 绑定上下文到离屏表面
-    if (!m_globalGLContext->makeCurrent(surface.release())) {
-        spdlog::error("Failed to bind OpenGL context to offscreen surface!");
-        return nullptr;
-    }
-    spdlog::info("OpenGL context bound: {}", m_globalGLContext->isValid());
+    // 创建 3D 画布
     auto canvas3d = std::make_unique<Qgs3DMapCanvas>();
     canvas3d->setSurfaceType(QSurface::OpenGLSurface);
     canvas3d->setFormat(defaultFormat);
+
+    // 初始化 3D 画布
     try {
+        spdlog::debug("show 3d canvas");
         canvas3d->show();
     } catch (const std::exception &e) {
         spdlog::error("first show 3d canvas error: {}", e.what());
+        return;
     }
-    try {
-        m_globalGLContext->doneCurrent();
-    } catch (const std::exception &e) {
-        spdlog::error("m_globalGLContext->doneCurrent() error: {}", e.what());
-    }
-    try {
-        m_globalGLContext->makeCurrent(canvas3d.get());
-    } catch (const std::exception &e) {
-        spdlog::error("m_globalGLContext->makeCurrent(canvas3d.get()) error: {}", e.what());
-    }
-    spdlog::info("OpenGL context bound: {}", m_globalGLContext->isValid());
 
+    // 创建 JwLayout3D 对象
     auto project = m_app->getProject();
     auto sceneName = m_app->getSceneName();
     auto projectDir = m_app->getProjectDir();
@@ -1055,18 +1044,21 @@ std::unique_ptr<JwLayout3D> Processor::add_3d_layout(
                                                    sceneName, image_spec, projectDir, joinedLayoutName);
     auto plottingWebJsonDoc = JsonUtil::convertDtoToQJsonObject(plottingWeb);
     auto plottingWebMap = JsonUtil::jsonObjectToVariantMap(plottingWebJsonDoc.object());
-    spdlog::info("init 3d map settings");
+    spdlog::debug("init 3d map settings");
     jwLayout3d->init3DMapSettings(removeLayerNames, removeLayerPrefixes);
-    spdlog::info("done init 3d map settings");
+    spdlog::debug("done init 3d map settings");
     jwLayout3d->set3DCanvas();
-    spdlog::info("addPrintLayout 3d");
+    spdlog::debug("addPrintLayout 3d");
     jwLayout3d->addPrintLayout(QString("3d"), joinedLayoutName, plottingWebMap, available_paper, write_qpt);
-    return jwLayout3d;
+    spdlog::debug("save project");
+    m_app->saveProject();
+    QString paperName = QString::fromStdString(plottingWeb->paper);
+    export3DLayout(sceneName, layoutType, paperName, jwLayout3d.get(), responseDto);
 }
 
 QString Processor::zipProject(const QString &scene_name) {
     QString targetZipFile = QString("%1/%2.zip").arg(m_export_prefix, scene_name);
-    spdlog::info("zip project: {}", targetZipFile.toStdString());
+    spdlog::debug("zip project: {}", targetZipFile.toStdString());
     CompressUtil::create_zip(m_app->getProjectDir().toStdString(), targetZipFile.toStdString());
     QString zip_file_name = QString().append(scene_name).append(".zip");
     return zip_file_name;
@@ -1088,9 +1080,9 @@ QString Processor::exportPNG(const QString &sceneName, const QString &layoutName
     QString imageName = QString("%1-%2-%3.png").arg(sceneName, layoutName, paperName);
     QString outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, imageName);
     FileUtil::delete_file(outputPath);
-    spdlog::info("export image -> outputPath: {}", outputPath.toStdString());
+    spdlog::debug("export image -> outputPath: {}", outputPath.toStdString());
     auto isExportStatus = m_app->exportLayoutAsPng(layoutName, outputPath, paperName);
-    spdlog::info("export status: {}", isExportStatus);
+    spdlog::debug("export status: {}", isExportStatus);
     return imageName;
 }
 
@@ -1099,9 +1091,9 @@ QString Processor::exportPDF(const QString &sceneName, const QString &layoutName
     QString imageName = QString("%1-%2-%3.pdf").arg(sceneName, layoutName, paperName);
     QString outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, imageName);
     FileUtil::delete_file(outputPath);
-    spdlog::info("export image -> outputPath: {}", outputPath.toStdString());
+    spdlog::debug("export image -> outputPath: {}", outputPath.toStdString());
     auto isExportStatus = m_app->exportLayoutAsPdf(layoutName, outputPath, paperName);
-    spdlog::info("export status: {}", isExportStatus);
+    spdlog::debug("export status: {}", isExportStatus);
     return imageName;
 }
 
@@ -1110,9 +1102,9 @@ QString Processor::exportSVG(const QString &sceneName, const QString &layoutName
     QString imageName = QString("%1-%2-%3.svg").arg(sceneName, layoutName, paperName);
     QString outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, imageName);
     FileUtil::delete_file(outputPath);
-    spdlog::info("export image -> outputPath: {}", outputPath.toStdString());
+    spdlog::debug("export image -> outputPath: {}", outputPath.toStdString());
     auto isExportStatus = m_app->exportLayoutAsSvg(layoutName, outputPath, paperName);
-    spdlog::info("export status: {}", isExportStatus);
+    spdlog::debug("export status: {}", isExportStatus);
     return imageName;
 }
 
@@ -1378,3 +1370,4 @@ QVariantMap Processor::_grouped_color_polygons(
     }
     return color_dict;
 }
+

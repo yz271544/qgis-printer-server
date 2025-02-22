@@ -29,7 +29,7 @@
 
 #include "core/enums/PaperSpecification.h"
 #include "core/handler/dto/plotting.h"
-#include "../../config.h"
+#include "config.h"
 #include "utils/FileUtil.h"
 #include "utils/UrlUtil.h"
 #include "utils/JsonUtil.h"

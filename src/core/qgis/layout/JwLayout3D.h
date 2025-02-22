@@ -16,6 +16,7 @@
 #include <QSplashScreen>
 #include <QStringLiteral>
 #include <Qt3DCore>
+#include <QtConcurrent/QtConcurrent>
 
 #include <qentity.h>
 #include <qgs3dmapcanvas.h>
@@ -71,6 +72,7 @@
 #include "config.h"
 
 class JwLayout3D {
+
 public:
     JwLayout3D(QgsProject* project,
                QgsMapCanvas* canvas2d,

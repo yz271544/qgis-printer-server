@@ -4,7 +4,9 @@
 
 #include "starter.h"
 
-StarterContext::StarterContext(int argc, char* argv[]) {
+StarterContext::StarterContext(int argc, char *argv[]) {
+    processor_ = nullptr;
+    context_.clear();
     for (int i = 0; i < argc; i++) {
         args_.append(argv[i]);
     }

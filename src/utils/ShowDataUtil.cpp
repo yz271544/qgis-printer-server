@@ -16,6 +16,18 @@ std::string ShowDataUtil::formatQListToString(const QList<QString>& list) {
     return result;
 }
 
+std::string ShowDataUtil::formatQListIntToString(const QList<int>& list) {
+    std::string result = "[";
+    for (int i = 0; i < list.size(); ++i) {
+        if (i > 0) {
+            result += ",";
+        }
+        result += std::to_string(list[i]);
+    }
+    result += "]";
+    return result;
+}
+
 std::string ShowDataUtil::formatQListDoubleToString(const QList<double>& list) {
     std::string result = "[";
     for (int i = 0; i < list.size(); ++i) {
