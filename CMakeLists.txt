@@ -24,6 +24,10 @@ if (MSVC)
     set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} /ignore:4099")
     add_definitions(-D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING)
     add_compile_options(/wd4267)
+    set(CMAKE_PREFIX_PATH D:/iProject/cpath/vcpkg/packages/oatpp_x64-windows 
+    D:/iProject/cpath/vcpkg/packages/oatpp-curl_x64-windows
+    D:/iProject/cpath/vcpkg/packages/curl_x64-windows
+    D:/iProject/cpath/vcpkg/packages/zlib_x64-windows)
 endif()
 #if (MSVC)
 #    target_compile_options(${PROJECT_NAME} PRIVATE /wd4267)
