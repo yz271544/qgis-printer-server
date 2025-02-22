@@ -71,14 +71,7 @@
 #include "core/qgis/d3/CameraUtil.h"
 #include "config.h"
 
-class JwLayout3D : public QObject {
-Q_OBJECT
-    // 添加信号和槽
-signals:
-    void terrainInitialized();
-
-private slots:
-    void onTerrainInitialized();
+class JwLayout3D {
 
 public:
     JwLayout3D(QgsProject* project,

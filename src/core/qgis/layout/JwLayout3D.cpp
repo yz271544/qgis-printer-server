@@ -545,16 +545,37 @@ Qgs3DMapSettings *JwLayout3D::getMapSettings3d() {
     return mCanvas3d->mapSettings();
 }
 
-// 新增槽函数处理后续操作
-void JwLayout3D::onTerrainInitialized() {
-    // 主线程继续设置
+void JwLayout3D::init3DMapSettings(
+        const QVector<QString> &removeLayerNames,
+        const QVector<QString> &removeLayerPrefixes
+) {
+    QgsSettings settings;
+    // 创建 3D 地图设置
+    //auto mapSettings3d = std::make_shared<Qgs3DMapSettings>();
+    mMapSettings3d = new Qgs3DMapSettings();
+    mMapSettings3d->setCrs(mProject->crs());
+    // 过滤图层
+    filterMapLayers(removeLayerNames, removeLayerPrefixes, mMapSettings3d);
+
+    auto flatTerrain = new QgsFlatTerrainGenerator();
+#if _QGIS_VERSION_INT >= 34100
+    flatTerrain->setCrs(mMapSettings3d->crs(), mProject->transformContext());
+#else
+    flatTerrain->setCrs( mMapSettings3d->crs() );
+#endif
+    mMapSettings3d->setTerrainGenerator(flatTerrain);
+    //mapSettings3d->setTerrainElevationOffset( project->elevationProperties()->terrainProvider()->offset() );
+    QgsAbstractTerrainSettings *terrainSettings = QgsFlatTerrainSettings::create();
+    terrainSettings->setElevationOffset(mProject->elevationProperties()->terrainProvider()->offset());
+    mMapSettings3d->setTerrainSettings(terrainSettings);
+    // mapSettings3d->setBackgroundColor(QColor("#ffffff"));
+    spdlog::debug("filtered map layers");
     const QgsReferencedRectangle projectExtent = mProject->viewSettings()->fullExtent();
     const QgsRectangle fullExtent = Qgs3DUtils::tryReprojectExtent2D(projectExtent, projectExtent.crs(),
                                                                      mMapSettings3d->crs(),
                                                                      mProject->transformContext());
     spdlog::debug("get3DMapSettings fullExtent:");
     CameraUtil::ExtentInfo(fullExtent);
-    mMapSettings3d->setCrs(mProject->crs());
     mMapSettings3d->setOrigin(QgsVector3D(fullExtent.center().x(), fullExtent.center().y(), 0));
     spdlog::debug("set origin: {}", mMapSettings3d->origin().toString().toStdString());
     mMapSettings3d->setSelectionColor(mCanvas2d->selectionColor());
@@ -564,19 +585,17 @@ void JwLayout3D::onTerrainInitialized() {
     //mapSettings3d->setLayers( mCanvas2d->layers( true ) );
     mMapSettings3d->setTemporalRange(mCanvas2d->temporalRange());
     spdlog::debug("set temporal range: {}", mMapSettings3d->temporalRange().isEmpty());
-    /*const Qgis::NavigationMode defaultNavMode = settings.enumValue(QStringLiteral("map3d/defaultNavigation"),
+    const Qgis::NavigationMode defaultNavMode = settings.enumValue(QStringLiteral("map3d/defaultNavigation"),
                                                                    Qgis::NavigationMode::TerrainBased,
                                                                    QgsSettings::App);
-    mMapSettings3d->setCameraNavigationMode(defaultNavMode);*/
+    mMapSettings3d->setCameraNavigationMode(defaultNavMode);
     spdlog::debug("set camera navigation mode: {}", mMapSettings3d->cameraNavigationMode());
-    QgsSettings settings;
     mMapSettings3d->setCameraMovementSpeed(
             settings.value(QStringLiteral("map3d/defaultMovementSpeed"), 5, QgsSettings::App).toDouble());
     spdlog::debug("set camera movement speed: {}", mMapSettings3d->cameraMovementSpeed());
     const Qt3DRender::QCameraLens::ProjectionType defaultProjection = settings.enumValue(
             QStringLiteral("map3d/defaultProjection"), Qt3DRender::QCameraLens::PerspectiveProjection,
             QgsSettings::App);
-
     mMapSettings3d->setProjectionType(defaultProjection);
     spdlog::debug("set project type: {}", mMapSettings3d->projectionType());
     mMapSettings3d->setFieldOfView(
@@ -594,8 +613,8 @@ void JwLayout3D::onTerrainInitialized() {
     spdlog::debug("set path resolver");
     mMapSettings3d->setMapThemeCollection(QgsProject::instance()->mapThemeCollection());
     qDebug() << "set map theme collection:" << mMapSettings3d->mapThemeCollection();
-    /*mMapSettings3d->configureTerrainFromProject(QgsProject::instance()->elevationProperties(), fullExtent);
-    qDebug() << "configure terrain from project:" << mMapSettings3d->terrainGenerator();*/
+    mMapSettings3d->configureTerrainFromProject(QgsProject::instance()->elevationProperties(), fullExtent);
+    qDebug() << "configure terrain from project:" << mMapSettings3d->terrainGenerator();
     // scenes default to a single directional light
     QgsPointLightSettings defaultPointLight;
     const QgsRectangle& extent = fullExtent;
@@ -634,69 +653,20 @@ void JwLayout3D::onTerrainInitialized() {
     }
     qDebug() << "Qgs3DMapScene created: " << (mCanvas3d->scene() != nullptr);
     qDebug() << "QgsWindow3DEngine created: " << (mCanvas3d->engine() != nullptr);
-    // 触发set3DCanvas
-    set3DCanvas();
-}
-
-void JwLayout3D::init3DMapSettings(
-        const QVector<QString> &removeLayerNames,
-        const QVector<QString> &removeLayerPrefixes
-) {
-    // 创建 3D 地图设置
-    //auto mapSettings3d = std::make_shared<Qgs3DMapSettings>();
-    mMapSettings3d = new Qgs3DMapSettings();
-    if (mProject) {
-        mMapSettings3d->setCrs(mProject->crs());
-    }
-
-    // 同步执行图层过滤和地形设置
-    filterMapLayers(removeLayerNames, removeLayerPrefixes, mMapSettings3d);
-
-    auto* flatTerrain = new QgsFlatTerrainGenerator();
-#if _QGIS_VERSION_INT >= 34100
-    flatTerrain->setCrs(mMapSettings3d->crs(), mProject->transformContext());
-#else
-    flatTerrain->setCrs(mMapSettings3d->crs());
-#endif
-    mMapSettings3d->setTerrainGenerator(flatTerrain);
-
-    QgsAbstractTerrainSettings* terrainSettings = QgsFlatTerrainSettings::create();
-    terrainSettings->setElevationOffset(mProject->elevationProperties()->terrainProvider()->offset());
-    mMapSettings3d->setTerrainSettings(terrainSettings);
-
-    auto maxScreenError = terrainSettings->maximumScreenError();
-    spdlog::info("maxScreenError: {}", maxScreenError);
-    terrainSettings->setMaximumScreenError(8.0);
-
-    /*    QMetaObject::invokeMethod(this, [this, flatTerrain, terrainSettings]() {
-            mMapSettings3d->setTerrainGenerator(flatTerrain);
-            mMapSettings3d->setTerrainSettings(terrainSettings);
-            emit terrainInitialized(); // 通知初始化完成
-        }, Qt::QueuedConnection);*/
-
-    // 分帧处理地形生成
-    QTimer::singleShot(0, this, [this]() {
-        emit terrainInitialized();
-    });
-
 }
 
 void JwLayout3D::set3DCanvas() {
-    //检查set3DCanvas中的UI相关调用（如setCameraPose），确保其在主线程：
-    Q_ASSERT(QThread::currentThread() == qApp->thread());
-    // 设置 3D 地图视图
     const QgsReferencedRectangle projectExtent = mProject->viewSettings()->fullExtent();
     auto mapSettings3d = mCanvas3d->mapSettings();
     const QgsRectangle fullExtent = Qgs3DUtils::tryReprojectExtent2D(projectExtent, projectExtent.crs(),
-                                                                     mProject->crs(),
+                                                                     mapSettings3d->crs(),
                                                                      mProject->transformContext());
     const QgsRectangle& extent = fullExtent;
     spdlog::debug("set3DCanvas fullExtent:");
     CameraUtil::ExtentInfo(extent);
 
-    // 初始低分辨率设置
     spdlog::debug("JwLayout3D::set3DCanvas");
-    mCanvas3d->setMapSettings(mMapSettings3d);
+    //mCanvas3d->setMapSettings(mMapSettings3d.get());
 
     QgsVector3D lookAtCenterPoint = QgsVector3D(100, 500, 220.0);
     QgsPointXY center(lookAtCenterPoint.x(), lookAtCenterPoint.y());
@@ -705,12 +675,6 @@ void JwLayout3D::set3DCanvas() {
     float yaw = 20.0;
     mCanvas3d->setViewFromTop(center, distance, 0);
     mCanvas3d->cameraController()->setLookingAtPoint(lookAtCenterPoint, distance, pitch, yaw);
-
-    // 延迟细化地形
-    /*QTimer::singleShot(100, this, [this]() {
-        mMapSettings3d->setMaxTerrainScreenError(8.0); // 提高细节
-        mCanvas3d->scheduleRedraw();
-    });*/
 }
 
 void JwLayout3D::set3DMap(
