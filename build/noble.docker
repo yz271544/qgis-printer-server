@@ -5,7 +5,7 @@ ARG CODE_VERSION=v1.0.0
 RUN echo "Building with code version: $CODE_VERSION"
 
 RUN apt update
-RUN apt install -y cmake cmake-curses-gui
+RUN apt install -y cmake cmake-curses-gui pkg-config libcurl4-openssl-dev
 
 RUN mkdir /lyndon/iProject/cpath -p
 WORKDIR /lyndon/iProject/cpath
@@ -63,7 +63,7 @@ COPY --from=builder /usr/local/include /usr/local/include
 COPY --from=builder /usr/local/bin /usr/local/bin
 COPY --from=builder /usr/local/share /usr/local/share
 
-COPY conf /usr/local/bin
+COPY conf /usr/local/bin/conf
 
 RUN apt update
 RUN apt install -y net-tools telnet dnsutils
