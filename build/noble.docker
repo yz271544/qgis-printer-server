@@ -29,11 +29,11 @@ RUN make install
 WORKDIR /lyndon/iProject/cpath
 # build and install oatpp-curl
 RUN git clone http://172.31.100.21/zhengyang.hu/oatpp-curl.git
-WORKDIR lyndon/iProject/cpath/oatpp-curl
+WORKDIR /lyndon/iProject/cpath/oatpp-curl
 RUN git checkout -b 1.4.0 1.4.0
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
 RUN cmake --build build
-WORKDIR lyndon/iProject/cpath/oatpp-curl/build
+WORKDIR /lyndon/iProject/cpath/oatpp-curl/build
 RUN make install
 WORKDIR /lyndon/iProject/cpath
 # build and install spdlog
