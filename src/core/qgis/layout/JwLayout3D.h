@@ -60,7 +60,6 @@
 #include <qgssettings.h>
 #include <qgsdirectionallightsettings.h>
 #include <qgslayoutexporter.h>
-#include <qgsflatterrainsettings.h>
 #include <qgsfillsymbollayer.h>
 
 //#include <qgis/app/3d/qgs3dmapcanvaswidget.h>
