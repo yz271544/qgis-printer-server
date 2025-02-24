@@ -1,0 +1,71 @@
+FROM qgis/qgis:3.40.4-noble AS builder
+LABEL authors="Lyndon"
+
+ARG CODE_VERSION=v1.0.0
+RUN echo "Building with code version: $CODE_VERSION"
+
+RUN apt update
+RUN apt install -y cmake cmake-curses-gui
+
+RUN mkdir /lyndon/iProject/cpath -p
+RUN cd /lyndon/iProject/cpath
+# build and install yaml-cpp
+RUN git clone http://172.31.100.21/zhengyang.hu/yaml-cpp.git
+RUN cd /lyndon/iProject/cpath/yaml-cpp
+RUN git checkout -b 0.8.0 0.8.0
+RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
+RUN cmake --build build
+RUN cd build
+RUN make install
+RUN cd /lyndon/iProject/cpath
+# build and install oatpp
+RUN git clone http://172.31.100.21/zhengyang.hu/oatpp.git
+RUN cd /lyndon/iProject/cpath/oatpp
+RUN git checkout -b 1.4.0 1.4.0
+RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
+RUN cmake --build build
+RUN cd build
+RUN make install
+RUN cd /lyndon/iProject/cpath
+# build and install oatpp-curl
+RUN git clone http://172.31.100.21/zhengyang.hu/oatpp-curl.git
+RUN cd /lyndon/iProject/cpath/oatpp-curl
+RUN git checkout -b 1.4.0 1.4.0
+RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
+RUN cmake --build build
+RUN cd build
+RUN make install
+RUN cd /lyndon/iProject/cpath
+# build and install spdlog
+RUN git clone http://172.31.100.21/zhengyang.hu/spdlog.git
+RUN cd /lyndon/iProject/cpath/spdlog
+RUN git checkout -b v1.9.2 v1.9.2
+RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
+RUN cmake --build build
+RUN cd build
+RUN make install
+RUN cd /lyndon/iProject/cpath
+# build and install jingweiprinter
+RUN git clone http://172.31.100.21/zhengyang.hu/jingweiprinter.git
+RUN cd /lyndon/iProject/cpath/jingweiprinter
+RUN git checkout -b $CODE_VERSION $CODE_VERSION
+RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
+RUN cmake --build build
+RUN cd build
+RUN make install
+RUN cd /lyndon/iProject/cpath
+
+FROM qgis/qgis:3.40.4-noble AS runner
+LABEL authors="Lyndon"
+
+COPY --from=builder /usr/local/lib /usr/local/lib
+COPY --from=builder /usr/local/include /usr/local/include
+COPY --from=builder /usr/local/bin /usr/local/bin
+COPY --from=builder /usr/local/share /usr/local/share
+
+COPY conf /usr/local/bin
+
+RUN apt update
+RUN apt install -y net-tools telnet dnsutils
+
+ENTRYPOINT ["/usr/local/bin/jingweiprinter"]
