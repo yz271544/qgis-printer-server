@@ -565,9 +565,10 @@ void JwLayout3D::init3DMapSettings(
 #endif
     mMapSettings3d->setTerrainGenerator(flatTerrain);
     //mapSettings3d->setTerrainElevationOffset( project->elevationProperties()->terrainProvider()->offset() );
-    QgsAbstractTerrainSettings *terrainSettings = QgsFlatTerrainSettings::create();
-    terrainSettings->setElevationOffset(mProject->elevationProperties()->terrainProvider()->offset());
-    mMapSettings3d->setTerrainSettings(terrainSettings);
+//    QgsAbstractTerrainSettings *terrainSettings = QgsFlatTerrainSettings::create();
+//    terrainSettings->setElevationOffset(mProject->elevationProperties()->terrainProvider()->offset());
+//    mMapSettings3d->setTerrainSettings(terrainSettings);
+    mMapSettings3d->setTerrainElevationOffset(mProject->elevationProperties()->terrainProvider()->offset());
     // mapSettings3d->setBackgroundColor(QColor("#ffffff"));
     spdlog::debug("filtered map layers");
     const QgsReferencedRectangle projectExtent = mProject->viewSettings()->fullExtent();
