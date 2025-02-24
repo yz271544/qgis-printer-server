@@ -102,7 +102,7 @@ void App::cleanProject() {
 
 void App::saveProject() {
     try {
-        QString project_file = QString().append(mProjectDir).append("/").append(mSceneName).append(".qgz");
+        QString project_file = QString("%1/%2.qgz").arg(mProjectDir, mSceneName);
         mProject->write(project_file);
     } catch (const std::exception& e) {
         spdlog::error("save_project error: {}", e.what());
@@ -198,7 +198,7 @@ void App::addMapBaseTileLayer() {
     }
     spdlog::debug("map_base_suffix: {}", map_base_suffix.toStdString());
 
-    QString base_tile_url = QString().append(map_base_prefix).append(map_base_suffix);
+    QString base_tile_url = QString("%1%2").arg(map_base_prefix, map_base_suffix);
     spdlog::info("add base tile: {}, base_tile_url: {}", BASE_TILE_NAME, base_tile_url.toStdString());
     auto base_tile_layer = std::make_unique<QgsRasterLayer>(base_tile_url, BASE_TILE_NAME, "wms");
     if (base_tile_layer->isValid()) {
@@ -255,7 +255,7 @@ void App::addMapMainTileLayer(int num, QString& orthogonalPath) {
     map_main_middle = map_main_middle.replace("{ORTHOGONAL_PATH_NAME}", orthogonalPath);
     UrlUtil::urlEncode(map_main_middle);
 
-    QString main_tile_url = QString().append(map_main_prefix).append(map_main_middle).append(map_main_suffix);
+    QString main_tile_url = QString("%1%2%3").arg(map_main_prefix, map_main_middle, map_main_suffix);
     QString main_tile_name = QString::fromStdString(MAIN_TILE_NAME).append(QString::number(num));
     spdlog::info("add main tile: {}, main_tile_url: {}", main_tile_name.toStdString(), main_tile_url.toStdString());
     auto main_tile_layer = std::make_unique<QgsRasterLayer>(main_tile_url, main_tile_name, "wms");

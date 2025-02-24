@@ -25,12 +25,12 @@ TEST(starter, order) {
     QCoreStarter qCoreStarter;
     qCoreStarter.SetBlocking(true);
     // 创建StarterContext实例
-    StarterContext* starterContext = new StarterContext(newArgc, newArgv, <#initializer#>);
+    StarterContext* starterContext = new StarterContext(newArgc, newArgv);
     auto starter_register = StarterRegister::getInstance();
     // 创建BootApplication实例
     BootApplication* boot = new BootApplication(false, *starterContext, starter_register);
     // 创建HookStarter实例
-    HookStarter hookStarter(starter_register, StarterContext(0, nullptr, <#initializer#>));
+    HookStarter hookStarter(starter_register, *starterContext);
     // 注册Starter实例
     starter_register->Register(&confStarter);
     starter_register->Register(&loggerStarter);

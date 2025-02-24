@@ -836,6 +836,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                     auto color_style_dict = grouped_color.value(color_style).toMap();
                     QString layerPrefix = QString::fromStdString(payloads->name);
                     QString layerName = QString("%1%2").arg(layerPrefix, QString::number(line_num));
+                    spdlog::debug("add LineString layerPrefix: {}, layerName: {}", layerPrefix.toStdString(), layerName.toStdString());
                     auto jw_line = std::make_unique<JwLine>(
                             m_app->getSceneName(),
                             layerName,
@@ -911,6 +912,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                     auto color_style_dict = grouped_color.value(color_style).toMap();
                     QString layerPrefix = QString::fromStdString(payloads->name);
                     QString layerName = QString("%1%2").arg(layerPrefix, QString::number(polygon_num));
+                    spdlog::debug("add Polygon layerPrefix: {}, layerName: {}", layerPrefix.toStdString(), layerName.toStdString());
                     auto jw_polygon = std::make_unique<JwPolygon>(
                             m_app->getSceneName(),
                             layerName,
@@ -1038,8 +1040,7 @@ void Processor::add_3d_layout(
     auto project = m_app->getProject();
     auto sceneName = m_app->getSceneName();
     auto projectDir = m_app->getProjectDir();
-    auto joinedLayoutName = QString().append(layout_name).append("-").append(available_paper.getPaperName()).append(
-            "-3D");
+    auto joinedLayoutName = QString("%1-%2-3D").arg(layout_name, available_paper.getPaperName());
     auto jwLayout3d = std::make_unique<JwLayout3D>(project, canvas, canvas3d.release(),
                                                    sceneName, image_spec, projectDir, joinedLayoutName);
     auto plottingWebJsonDoc = JsonUtil::convertDtoToQJsonObject(plottingWeb);
@@ -1060,7 +1061,7 @@ QString Processor::zipProject(const QString &scene_name) {
     QString targetZipFile = QString("%1/%2.zip").arg(m_export_prefix, scene_name);
     spdlog::debug("zip project: {}", targetZipFile.toStdString());
     CompressUtil::create_zip(m_app->getProjectDir().toStdString(), targetZipFile.toStdString());
-    QString zip_file_name = QString().append(scene_name).append(".zip");
+    QString zip_file_name = QString("%1.zip").arg(scene_name);
     return zip_file_name;
 }
 
