@@ -37,22 +37,24 @@ endif()
 message("CMAKE_HOME_DIRECTORY: ${CMAKE_HOME_DIRECTORY}")
 configure_file(${CMAKE_HOME_DIRECTORY}/src/config.h.in ${CMAKE_HOME_DIRECTORY}/src/config.h)
 
-# 使用 FetchContent 下载并构建 yaml-cpp
-FetchContent_Declare(
-        yaml-cpp
-        GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
-        GIT_TAG 0.8.0
-)
-FetchContent_MakeAvailable(yaml-cpp)
+## 使用 FetchContent 下载并构建 yaml-cpp
+#FetchContent_Declare(
+#        yaml-cpp
+#        GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+#        GIT_TAG 0.8.0
+#)
+#FetchContent_MakeAvailable(yaml-cpp)
+#
+## 使用 FetchContent 下载并构建 spdlog
+#FetchContent_Declare(
+#        spdlog
+#        GIT_REPOSITORY https://github.com/gabime/spdlog.git
+#        GIT_TAG v1.9.2
+#)
+#FetchContent_MakeAvailable(spdlog)
 
-# 使用 FetchContent 下载并构建 spdlog
-FetchContent_Declare(
-        spdlog
-        GIT_REPOSITORY https://github.com/gabime/spdlog.git
-        GIT_TAG v1.9.2
-)
-FetchContent_MakeAvailable(spdlog)
-
+find_package(yaml-cpp REQUIRED)
+find_package(spdlog REQUIRED)
 find_package(oatpp REQUIRED)
 find_package(oatpp-curl REQUIRED)
 #find_package(gtest REQUIRED)
