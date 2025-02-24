@@ -100,17 +100,10 @@ std::unique_ptr<QgsVectorLayer> QgsUtil::writePersistedLayer(
 
     spdlog::debug("CRS: {}", crs.toWkt().toStdString());
     spdlog::debug("Number of features in layer: {}", layer->featureCount());
-    // QgsFeatureIterator it = layer->getFeatures();
-    // QgsFeature feature;
-    // while (it.nextFeature(feature)) {
-    // 	qDebug() << "Feature ID:" << feature.id();
-    // 	qDebug() << "Geometry:" << feature.geometry().asWkt();
-    // 	qDebug() << "Attributes:" << feature.attributes();
-    // }
-
-    QString file_prefix = QString().append(project_dir).append("/").append(layer_name);
-    QString file_path = QString().append(file_prefix).append(".geojson");
-    QString temp_file_path = QString().append(file_prefix).append(".tmp");
+    spdlog::debug("project_dir: {}, layer_name: {}", project_dir.toStdString(), layer_name.toStdString());
+    QString file_prefix = QString("%1/%2").arg(project_dir, layer_name);
+    QString file_path = QString("%1.geojson").arg(file_prefix);
+    QString temp_file_path = QString("%1.tmp").arg(file_prefix);
 
     spdlog::debug("GeoJSON file path: {}", file_path.toStdString());
 
