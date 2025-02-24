@@ -8,52 +8,52 @@ RUN apt update
 RUN apt install -y cmake cmake-curses-gui
 
 RUN mkdir /lyndon/iProject/cpath -p
-RUN cd /lyndon/iProject/cpath
+WORKDIR /lyndon/iProject/cpath
 # build and install yaml-cpp
 RUN git clone http://172.31.100.21/zhengyang.hu/yaml-cpp.git
-RUN cd /lyndon/iProject/cpath/yaml-cpp
+WORKDIR /lyndon/iProject/cpath/yaml-cpp
 RUN git checkout -b 0.8.0 0.8.0
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
 RUN cmake --build build
-RUN cd build
+WORKDIR /lyndon/iProject/cpath/yaml-cpp/build
 RUN make install
-RUN cd /lyndon/iProject/cpath
+WORKDIR /lyndon/iProject/cpath
 # build and install oatpp
 RUN git clone http://172.31.100.21/zhengyang.hu/oatpp.git
-RUN cd /lyndon/iProject/cpath/oatpp
+WORKDIR /lyndon/iProject/cpath/oatpp
 RUN git checkout -b 1.4.0 1.4.0
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
 RUN cmake --build build
-RUN cd build
+WORKDIR /lyndon/iProject/cpath/oatpp/build
 RUN make install
-RUN cd /lyndon/iProject/cpath
+WORKDIR /lyndon/iProject/cpath
 # build and install oatpp-curl
 RUN git clone http://172.31.100.21/zhengyang.hu/oatpp-curl.git
-RUN cd /lyndon/iProject/cpath/oatpp-curl
+WORKDIR lyndon/iProject/cpath/oatpp-curl
 RUN git checkout -b 1.4.0 1.4.0
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
 RUN cmake --build build
-RUN cd build
+WORKDIR lyndon/iProject/cpath/oatpp-curl/build
 RUN make install
-RUN cd /lyndon/iProject/cpath
+WORKDIR /lyndon/iProject/cpath
 # build and install spdlog
 RUN git clone http://172.31.100.21/zhengyang.hu/spdlog.git
-RUN cd /lyndon/iProject/cpath/spdlog
+WORKDIR /lyndon/iProject/cpath/spdlog
 RUN git checkout -b v1.9.2 v1.9.2
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
 RUN cmake --build build
-RUN cd build
+WORKDIR /lyndon/iProject/cpath/spdlog/build
 RUN make install
-RUN cd /lyndon/iProject/cpath
+WORKDIR /lyndon/iProject/cpath
 # build and install jingweiprinter
 RUN git clone http://172.31.100.21/zhengyang.hu/jingweiprinter.git
-RUN cd /lyndon/iProject/cpath/jingweiprinter
+WORKDIR /lyndon/iProject/cpath/jingweiprinter
 RUN git checkout -b $CODE_VERSION $CODE_VERSION
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
 RUN cmake --build build
-RUN cd build
+WORKDIR /lyndon/iProject/cpath/jingweiprinter/build
 RUN make install
-RUN cd /lyndon/iProject/cpath
+WORKDIR /lyndon/iProject/cpath
 
 FROM qgis/qgis:3.40.4-noble AS runner
 LABEL authors="Lyndon"

@@ -3,7 +3,7 @@
     <deployment type="dockerfile">
       <settings>
         <option name="imageTag" value="registry.cn-beijing.aliyuncs.com/dc_huzy/jingweiprinter:v1.0.0" />
-        <option name="command" value="--build-arg CODE_VERSION=v1.0.0 --no-cache --progress=plain" />
+        <option name="buildCliOptions" value="--build-arg CODE_VERSION=v1.0.0 --no-cache --progress=plain" />
         <option name="containerName" value="jingweiprinter" />
         <option name="contextFolderPath" value="." />
         <option name="sourceFilePath" value="build/noble.docker" />
