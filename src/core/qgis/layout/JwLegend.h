@@ -36,8 +36,8 @@ public:
 
     static QString get_type(QgsVectorLayer* layer);
 private:
-    QString legendTitle;
-    QgsProject* project;
+    QString mLegendTitle;
+    QgsProject* mProject;
 };
 
 

@@ -52,9 +52,9 @@ public:
                   int line_width = 1);
 
 private:
-    QString mSceneName;
-    QString mLayerName;
-    QString mProjectDir;
+    QString& mSceneName;
+    QString& mLayerName;
+    QString& mProjectDir;
     QgsCoordinateTransformContext mTransformContext;
     QgsProject* mProject;
 };

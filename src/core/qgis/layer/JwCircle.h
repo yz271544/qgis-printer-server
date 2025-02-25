@@ -108,9 +108,9 @@ public:
             const QList<float>& areasOpacityList,
             int numSegments = 36);
 private:
-    QString mSceneName;
-    QString mLayerName;
-    QString mProjectDir;
+    QString& mSceneName;
+    QString& mLayerName;
+    QString& mProjectDir;
     QgsCoordinateTransformContext mTransformContext;
     QgsProject* mProject;
 };

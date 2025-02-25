@@ -53,9 +53,9 @@ public:
                    const QString& iconBase64 = "");
 
 private:
-    QString mSceneName;
-    QString mLayerName;
-    QString mProjectDir;
+    QString& mSceneName;
+    QString& mLayerName;
+    QString& mProjectDir;
     QgsCoordinateTransformContext mTransformContext;
     QgsProject* mProject;
 

@@ -142,6 +142,14 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
             spdlog::debug("local: {}", value["local"].toString().toStdString());
         }
     }
+
+    m_qgis_prefix_path = "/usr";
+    try {
+        m_qgis_prefix_path = QString::fromStdString((*m_config)["qgis"]["prefix_path"].as<std::string>());
+        spdlog::info("m_qgis_prefix_path: {}", m_qgis_prefix_path.toStdString());
+    } catch (const std::exception &e) {
+        spdlog::error("get qgis.prefix_path error: {}", e.what());
+    }
 }
 
 Processor::~Processor() {
@@ -992,7 +1000,7 @@ void Processor::add_layout(
     auto project = m_app->getProject();
     auto sceneName = m_app->getSceneName();
     auto projectDir = m_app->getProjectDir();
-    JwLayout jwLayout(project, canvas, sceneName, image_spec, projectDir, joinedLayoutName);
+    JwLayout jwLayout(project, canvas, sceneName, image_spec, projectDir, joinedLayoutName, m_qgis_prefix_path);
 
     auto plottingWebJsonDoc = JsonUtil::convertDtoToQJsonObject(plottingWeb);
     auto plottingWebMap = JsonUtil::jsonObjectToVariantMap(plottingWebJsonDoc.object());
@@ -1042,7 +1050,7 @@ void Processor::add_3d_layout(
     auto projectDir = m_app->getProjectDir();
     auto joinedLayoutName = QString("%1-%2-3D").arg(layout_name, available_paper.getPaperName());
     auto jwLayout3d = std::make_unique<JwLayout3D>(project, canvas, canvas3d.release(),
-                                                   sceneName, image_spec, projectDir, joinedLayoutName);
+                                                   sceneName, image_spec, projectDir, joinedLayoutName, m_qgis_prefix_path);
     auto plottingWebJsonDoc = JsonUtil::convertDtoToQJsonObject(plottingWeb);
     auto plottingWebMap = JsonUtil::jsonObjectToVariantMap(plottingWebJsonDoc.object());
     spdlog::debug("init 3d map settings");

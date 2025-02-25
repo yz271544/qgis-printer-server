@@ -76,10 +76,11 @@ public:
     JwLayout3D(QgsProject* project,
                QgsMapCanvas* canvas2d,
                Qgs3DMapCanvas* canvas3d,
-               QString  sceneName,
+               QString& sceneName,
                const QVariantMap& imageSpec,
-               QString  projectDir,
-               QString  layoutName);
+               QString& projectDir,
+               QString& layoutName,
+               QString& qgisPrefixPath);
 
     ~JwLayout3D() = default;
 
@@ -195,16 +196,17 @@ public:
 
 private:
     QgsProject* mProject;
-    QString mLayoutName;
-    QString mProjectDir;
+    QString& mLayoutName;
+    QString& mProjectDir;
     QgsMapCanvas* mCanvas2d;
     Qgs3DMapCanvas* mCanvas3d;
-    QString mSceneName;
+    QString& mSceneName;
     std::unique_ptr<JwLegend> mJwLegend;
     QgsPrintLayout* mLayout;
     QVariantMap mImageSpec;
     QgsLayoutItem3DMap* mMapItem3d;
     Qgs3DMapSettings* mMapSettings3d;
+    QString& mQgisPrefixPath;
     double mMapWidth;
     double mMapHeight;
 };

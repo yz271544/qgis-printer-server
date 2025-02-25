@@ -11,8 +11,8 @@ web:
 qgis:
   enable_3d: true
   gui_enabled: false
-#  prefix_path: "/lyndon/iProject/cpath/QGIS/output"
-  prefix_path: "/usr/local"
+  prefix_path: "/lyndon/iProject/cpath/QGIS/output"
+#  prefix_path: "/usr/local"
 #  qgis_project_path: "/lyndon/iProject/cpath/qgis_demo1/common/project"
   projects_prefix: "/opt/anbao/map/qgz"
   projects_temp_prefix: "{PROJECTS_PREFIX}/temp"
@@ -36,7 +36,6 @@ qgis:
   mapping_export_nginx_host: "localhost"
   mapping_export_nginx_port: 80
   mapping_export_nginx_url_prefix: "http://{MAPPING_EXPORT_NGINX_HOST}:{MAPPING_EXPORT_NGINX_PORT}/map/qgz"
-  north_arrow_path: "/usr/share/qgis/svg/arrows/NorthArrow_10.svg"
   export_png_enable: true
   export_pdf_enable: false
   export_svg_enable: false
@@ -137,6 +136,8 @@ specification:
     north_rotate: 0.0
     north_width: 20
     north_height: 20
+    north_arrow_path: "share/qgis/svg/arrows/NorthArrow_02.svg"
+    north_arrow_color: "#f30101"
   - name: "警力部署图"
     local: "deploy"
     title_font_family: "SimSun"
@@ -233,6 +234,8 @@ specification:
     north_rotate: 0.0
     north_width: 20
     north_height: 20
+    north_arrow_path: "share/qgis/svg/arrows/NorthArrow_02.svg"
+    north_arrow_color: "#f30101"
   - name: "紧急疏散图"
     local: "evacuation"
     title_font_family: "SimSun"
@@ -329,3 +332,5 @@ specification:
     north_rotate: 0.0
     north_width: 20
     north_height: 20
+    north_arrow_path: "share/qgis/svg/arrows/NorthArrow_02.svg"
+    north_arrow_color: "#f30101"

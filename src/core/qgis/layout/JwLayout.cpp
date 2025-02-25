@@ -9,20 +9,23 @@
 // 构造函数
 JwLayout::JwLayout(QgsProject* project,
                    QgsMapCanvas* canvas,
-                   QString  sceneName,
+                   QString& sceneName,
                    const QVariantMap& imageSpec,
-                   QString  projectDir,
-                   QString  layoutName)
+                   QString& projectDir,
+                   QString& layoutName,
+                   QString& qgisPrefixPath)
         : mProject(project),
         mCanvas(canvas),
-        mSceneName(std::move(sceneName)),
+        mSceneName(sceneName),
         mImageSpec(imageSpec),
-        mProjectDir(std::move(projectDir)),
-        mLayoutName(std::move(layoutName)),
+        mProjectDir(projectDir),
+        mLayoutName(layoutName),
+        mQgisPrefixPath(qgisPrefixPath),
         mMapWidth(0),
         mMapHeight(0)
 {
     QString legendTitle = imageSpec["legend_title"].toString();
+    spdlog::debug("construct legendTitle: {}", legendTitle.toStdString());
     this->mJwLegend = std::make_unique<JwLegend>(legendTitle, project);
 }
 
@@ -598,21 +601,26 @@ void JwLayout::setMap(
 void JwLayout::addNorthArrow(QgsPrintLayout* layout, const QVariantMap& north) {
     // 创建指北针图片项
     auto northArrow = std::make_unique<QgsLayoutItemPicture>(layout);
-
     // 设置指北针图片路径
-    QString northArrowPath;
+    QString northArrowPath = "";
     if (mImageSpec.contains("north_arrow_path")) {
-        // write icon file to project directory from base64
-        northArrowPath = mProjectDir + "/north_arrow.png";
+        northArrowPath = QString("%1/%2").arg(mQgisPrefixPath, mImageSpec["north_arrow_path"].toString());
         QFile file(northArrowPath);
-        if (file.open(QIODevice::WriteOnly)) {
+        if (file.exists() && file.open(QIODevice::WriteOnly)) {
             file.write(QByteArray::fromBase64(mImageSpec["north_arrow_path"].toByteArray()));
             file.close();
         }
     } else {
-        northArrowPath = mProjectDir + mImageSpec["system_north_arrow_path"].toString();
+        spdlog::error("the north arrow path is not set in config.yaml");
+        return;
     }
     northArrow->setPicturePath(northArrowPath);
+
+    QString northArrowFillColor = "#f30101";
+    if (mImageSpec.contains("north_arrow_color")) {
+        northArrowFillColor = mImageSpec["north_arrow_color"].toString();
+    }
+    northArrow->setSvgFillColor(QColor(northArrowFillColor));
 
     // 设置指北针大小和位置
     double northWidth = mImageSpec["north_arrow_width"].toDouble();

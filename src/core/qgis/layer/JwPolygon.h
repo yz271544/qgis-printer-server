@@ -52,9 +52,9 @@ public:
                     const QList<QJsonObject>& styleList);
 
 private:
-    QString mSceneName;
-    QString mLayerName;
-    QString mProjectDir;
+    QString& mSceneName;
+    QString& mLayerName;
+    QString& mProjectDir;
     QgsCoordinateTransformContext mTransformContext;
     QgsProject* mProject;
 

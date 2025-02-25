@@ -55,6 +55,7 @@ private:
     QString m_export_prefix;
     QString m_mapping_export_nginx_port;
     QString m_mapping_export_nginx_url_prefix;
+    QString m_qgis_prefix_path;
     std::shared_ptr<QOpenGLContext> m_globalGLContext;
 public:
     // 构造函数

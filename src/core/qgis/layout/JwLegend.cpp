@@ -5,7 +5,9 @@
 #include "JwLegend.h"
 
 JwLegend::JwLegend(QString& legendTitle, QgsProject* project)
-: legendTitle(legendTitle), project(project) {}
+: mProject(project) {
+    mLegendTitle = std::move(legendTitle);
+}
 
 JwLegend::~JwLegend() = default;
 
@@ -16,9 +18,9 @@ QPair<int, int> JwLegend::customize(
         int legendHeight,
         const QSet<QString>& filteredLegendItems)
 {
-    spdlog::debug("customize legend, title: {}", legendTitle.toStdString());
+    spdlog::debug("customize legend, title: {}", mLegendTitle.toStdString());
     // Set the legend title
-    legend->setTitle(legendTitle);
+    legend->setTitle(mLegendTitle);
     // Control which layers are included in the legend
     legend->setAutoUpdateModel(false);
     // Remove all existing layers from the legend
@@ -34,7 +36,7 @@ QPair<int, int> JwLegend::customize(
     QSet<QString> level_domain_text_set;
 
     // Add specific layers to the legend, excluding BaseTile and MainTile
-    QMap<QString, QgsMapLayer*> layers = project->mapLayers();
+    QMap<QString, QgsMapLayer*> layers = mProject->mapLayers();
 
     if (!filteredLegendItems.empty())
     {

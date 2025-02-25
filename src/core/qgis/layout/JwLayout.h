@@ -59,10 +59,11 @@ public:
 
     JwLayout(QgsProject *project,
              QgsMapCanvas *canvas,
-             QString sceneName,
+             QString& sceneName,
              const QVariantMap &imageSpec,
-             QString projectDir,
-             QString layoutName);
+             QString& projectDir,
+             QString& layoutName,
+             QString& qgisPrefixPath);
 
     ~JwLayout() = default;
 
@@ -137,12 +138,13 @@ public:
     );
 
 private:
-    QString mLayoutName;
+    QString& mLayoutName;
     QgsProject *mProject;
-    QString mProjectDir;
+    QString& mProjectDir;
     QgsMapCanvas *mCanvas;
-    QString mSceneName;
+    QString& mSceneName;
     std::unique_ptr<JwLegend> mJwLegend;
+    QString& mQgisPrefixPath;
     QVariantMap mImageSpec;
     double mMapWidth;
     double mMapHeight;
