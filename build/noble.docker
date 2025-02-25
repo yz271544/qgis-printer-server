@@ -1,11 +1,11 @@
 FROM qgis/qgis:3.40.4-noble AS builder
 LABEL authors="Lyndon"
 
-ARG CODE_VERSION=v1.0.0
+ARG CODE_VERSION
 RUN echo "Building with code version: $CODE_VERSION"
 
-RUN apt update
-RUN apt install -y bison build-essential ca-certificates ccache cmake cmake-curses-gui dh-python \
+RUN apt-get update
+RUN apt-get install -y bison build-essential ca-certificates ccache cmake cmake-curses-gui dh-python \
     doxygen expect flex flip gdal-bin git graphviz grass-dev libdraco-dev libexiv2-dev libexpat1-dev \
     libfcgi-dev libgdal-dev libgeos-dev libgsl-dev libpq-dev libproj-dev libprotobuf-dev libqca-qt5-2-dev \
     libqca-qt5-2-plugins libqscintilla2-qt5-dev libqt5opengl5-dev libqt5serialport5-dev libqt5sql5-sqlite \
@@ -19,7 +19,7 @@ RUN apt install -y bison build-essential ca-certificates ccache cmake cmake-curs
     python3-yaml qt3d-assimpsceneimport-plugin qt3d-defaultgeometryloader-plugin qt3d-gltfsceneio-plugin \
     qt3d-scene2d-plugin qt3d5-dev qtbase5-dev qtbase5-private-dev qtkeychain-qt5-dev qtmultimedia5-dev \
     qtpositioning5-dev qttools5-dev qttools5-dev-tools sip-tools spawn-fcgi xauth xfonts-100dpi xfonts-75dpi \
-    xfonts-base xfonts-scalable xvfb libcurl4-openssl-dev libarchive libqgis-dev
+    xfonts-base xfonts-scalable xvfb libcurl4-openssl-dev libarchive13t64 libarchive-dev libqgis-dev
 
 RUN mkdir /lyndon/iProject/cpath -p
 WORKDIR /lyndon/iProject/cpath
@@ -79,8 +79,8 @@ COPY --from=builder /usr/local/share /usr/local/share
 
 COPY conf /usr/local/bin/conf
 
-RUN apt update
-RUN apt install -y bison build-essential ca-certificates ccache cmake cmake-curses-gui dh-python \
+RUN apt-get update
+RUN apt-get install -y bison build-essential ca-certificates ccache cmake cmake-curses-gui dh-python \
     doxygen expect flex flip gdal-bin git graphviz grass-dev libdraco-dev libexiv2-dev libexpat1-dev \
     libfcgi-dev libgdal-dev libgeos-dev libgsl-dev libpq-dev libproj-dev libprotobuf-dev libqca-qt5-2-dev \
     libqca-qt5-2-plugins libqscintilla2-qt5-dev libqt5opengl5-dev libqt5serialport5-dev libqt5sql5-sqlite \
@@ -94,7 +94,7 @@ RUN apt install -y bison build-essential ca-certificates ccache cmake cmake-curs
     python3-yaml qt3d-assimpsceneimport-plugin qt3d-defaultgeometryloader-plugin qt3d-gltfsceneio-plugin \
     qt3d-scene2d-plugin qt3d5-dev qtbase5-dev qtbase5-private-dev qtkeychain-qt5-dev qtmultimedia5-dev \
     qtpositioning5-dev qttools5-dev qttools5-dev-tools sip-tools spawn-fcgi xauth xfonts-100dpi xfonts-75dpi \
-    xfonts-base xfonts-scalable xvfb libcurl4-openssl-dev libarchive libqgis-dev
+    xfonts-base xfonts-scalable xvfb libcurl4-openssl-dev libarchive13t64 libarchive-dev libqgis-dev
 RUN apt install -y net-tools telnet dnsutils
 
 ENTRYPOINT ["/usr/local/bin/jingweiprinter"]
