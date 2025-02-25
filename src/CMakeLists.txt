@@ -16,13 +16,13 @@ set_target_properties(${PROJECT_NAME}_lib PROPERTIES AUTOMOC ON)
 message("set target_compile_definitions OATPP_VERSION_LESS_1_4_0 oatpp_VERSION: ${oatpp_VERSION}")
 # 获取 oatpp 的版本号
 if(${oatpp_VERSION} VERSION_LESS "1.4.0")
-    message("${oatpp_VERSION} < 1.4.0")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE OATPP_VERSION_LESS_1_4_0)
-    target_compile_definitions(${PROJECT_NAME}_lib PRIVATE OATPP_VERSION_LESS_1_4_0)
+  message("${oatpp_VERSION} < 1.4.0")
+  target_compile_definitions(${PROJECT_NAME} PRIVATE OATPP_VERSION_LESS_1_4_0)
+  target_compile_definitions(${PROJECT_NAME}_lib PRIVATE OATPP_VERSION_LESS_1_4_0)
 else()
-    message("${oatpp_VERSION} >= 1.4.0")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE OATPP_VERSION_GREATER_EQUAL_1_4_0)
-    target_compile_definitions(${PROJECT_NAME}_lib PRIVATE OATPP_VERSION_GREATER_EQUAL_1_4_0)
+  message("${oatpp_VERSION} >= 1.4.0")
+  target_compile_definitions(${PROJECT_NAME} PRIVATE OATPP_VERSION_GREATER_EQUAL_1_4_0)
+  target_compile_definitions(${PROJECT_NAME}_lib PRIVATE OATPP_VERSION_GREATER_EQUAL_1_4_0)
 endif()
 
 
@@ -67,3 +67,10 @@ target_link_libraries(${PROJECT_NAME}_lib
         ${GDAL_LIBRARY} ${YAML_CPP_LIBRARIES}
         ${LIBARCHIVE_LIBRARIES} ${LIBZIP_LIBRARIES}
 )
+
+# install
+install(TARGETS ${PROJECT_NAME}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib)
+
