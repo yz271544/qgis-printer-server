@@ -1,4 +1,4 @@
-VERSION=$(git describe --tags)
+VERSION=$(shell git describe --tags)
 
 .PHONY: version
 version:
