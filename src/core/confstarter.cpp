@@ -26,6 +26,7 @@ void ConfStarter::Init(StarterContext& context) {
 //        spdlog::info("CONF SERVER: {}, port: {}", config["app"]["name"].as<std::string>(), config["web"]["port"].as<int>());
     } catch (const YAML::BadFile& e) {
         std::cerr << "Error loading config file: " << e.what() << std::endl;
+        exit(1);
     }
 //    spdlog::info("ConfStarter Init end");
 }

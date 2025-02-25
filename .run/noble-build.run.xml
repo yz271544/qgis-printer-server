@@ -6,6 +6,26 @@
         <option name="buildCliOptions" value="--build-arg CODE_VERSION=v1.0.3" />
         <option name="containerName" value="jingweiprinter" />
         <option name="contextFolderPath" value="." />
+        <option name="envVars">
+          <list>
+            <DockerEnvVarImpl>
+              <option name="name" value="DISPLAY" />
+              <option name="value" value="172.25.0.1:0" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="ENV_PROFILE" />
+              <option name="value" value="test" />
+            </DockerEnvVarImpl>
+          </list>
+        </option>
+        <option name="portBindings">
+          <list>
+            <DockerPortBindingImpl>
+              <option name="containerPort" value="5890" />
+              <option name="hostPort" value="5890" />
+            </DockerPortBindingImpl>
+          </list>
+        </option>
         <option name="sourceFilePath" value="building/noble.docker" />
       </settings>
     </deployment>
