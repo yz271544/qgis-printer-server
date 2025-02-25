@@ -1,9 +1,9 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="noble-build-nocache" type="docker-deploy" factoryName="dockerfile" server-name="docker-default">
+  <configuration default="false" name="noble-build-plain" type="docker-deploy" factoryName="dockerfile" server-name="docker-default">
     <deployment type="dockerfile">
       <settings>
         <option name="imageTag" value="registry.cn-beijing.aliyuncs.com/dc_huzy/jingweiprinter:v1.0.2" />
-        <option name="buildCliOptions" value="--build-arg CODE_VERSION=v1.0.2 --no-cache --progress=plain" />
+        <option name="buildCliOptions" value="--build-arg CODE_VERSION=v1.0.2 --progress=plain" />
         <option name="containerName" value="jingweiprinter" />
         <option name="contextFolderPath" value="." />
         <option name="sourceFilePath" value="build/noble.docker" />
