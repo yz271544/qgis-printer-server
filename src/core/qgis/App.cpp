@@ -460,7 +460,7 @@ bool App::exportLayoutAsPng(const QString& layoutName, const QString& outputPath
     QFileInfo fileInfo(outputPath);
     QDir dir = fileInfo.dir();
     if (!dir.exists()) {
-        spdlog::critical("Directory does not exist: {}", dir.path().toStdString());
+        spdlog::warn("Directory does not exist: {}", dir.path().toStdString());
         if (!dir.mkpath(".")) {
             spdlog::critical("Failed to create directory: {}", dir.path().toStdString());
             return false;
@@ -477,14 +477,14 @@ bool App::exportLayoutAsPng(const QString& layoutName, const QString& outputPath
         spdlog::info("export.exportToImage -> outputPath: {}", outputPath.toStdString());
         QgsLayoutExporter::ExportResult result = exporter.exportToImage(outputPath, exportSettings);
         if (result != QgsLayoutExporter::Success) {
-            spdlog::critical("Error during export: {}", result);
+            spdlog::error("Error during export: {}", result);
             return false;
         } else {
             spdlog::debug("Export to image completed");
             return true;
         }
     } catch (const std::exception& e) {
-        spdlog::critical("Error during export: {}", e.what());
+        spdlog::error("Error during export: {}", e.what());
         return false;
     }
 }

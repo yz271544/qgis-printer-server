@@ -1,0 +1,35 @@
+services:
+  jingweipy:
+    image: "registry.cn-beijing.aliyuncs.com/dc_huzy/jingweipy:v1.0.0-35-ge279b46"
+    container_name: jingwei-jingweipy
+    privileged: true
+    environment:
+      PATH: "/opt/anbao/jingweipy/venv/bin:$PATH"
+      DISPLAY: ":0"
+      QT_QPA_PLATFORM: "xcb"
+      XDG_RUNTIME_DIR: "/tmp/runtime-root"
+      JINGWEIPY_PROFILE: "prod"
+      PROJECT_VENV_PREFIX: "python3.10"
+      JINGWEI_SERVER_HOST: "192.168.241.1"
+      JINGWEI_SERVER_PORT: 8089
+      MAPPING_EXPORT_NGINX_HOST: "192.168.241.1"
+      MAPPING_EXPORT_NGINX_PORT: 80
+      PYTHONPATH: "/usr/lib/python3/dist-packages:/opt/anbao/venv/lib/python3.10/opt/anbao/venv/lib/python3.10/site-packages:$PYTHONPATH"
+    ports:
+      - "5888:5888"
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /opt/anbao/map/qgz:/opt/anbao/map/qgz
+      - /dev/dri/card0:/dev/dri/card0
+    deploy:
+      resources:
+        limits:
+          cpus: '0.8'
+          memory: 2048M
+        reservations:
+          cpus: '0.5'
+          memory: 1500M
+          devices:
+            - driver: "nvidia"
+              device_ids: ["0"]
+              capabilities: [gpu]
