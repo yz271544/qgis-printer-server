@@ -4,6 +4,8 @@ LABEL authors="Lyndon"
 ARG CODE_VERSION
 RUN echo "Building with code version: $CODE_VERSION"
 
+ENV MASTER_RELEASE=true
+
 RUN apt-get update
 RUN apt-get install -y bison build-essential ca-certificates ccache cmake cmake-curses-gui dh-python \
     doxygen expect flex flip gdal-bin git graphviz grass-dev libdraco-dev libexiv2-dev libexpat1-dev \
