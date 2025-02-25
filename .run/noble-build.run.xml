@@ -6,7 +6,7 @@
         <option name="buildCliOptions" value="--build-arg CODE_VERSION=v1.0.2" />
         <option name="containerName" value="jingweiprinter" />
         <option name="contextFolderPath" value="." />
-        <option name="sourceFilePath" value="build/noble.docker" />
+        <option name="sourceFilePath" value="building/noble.docker" />
       </settings>
     </deployment>
     <method v="2" />
