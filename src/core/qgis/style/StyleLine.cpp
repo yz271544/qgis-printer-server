@@ -21,7 +21,7 @@ QgsFeatureRenderer *StyleLine::get2dRuleBasedRenderer(
     baseSymbolLayer->setPenStyle(Qt::SolidLine);
     baseSymbolLayer->setColor(lineColor);
     auto widthOfLayerStyle = layerStyle.contains("width") ? layerStyle.value("width").toDouble() : 1.0;
-    float layerWidth = QgsUtil::d300PixelToMm(widthOfLayerStyle);
+    float layerWidth = QgsUtil::d300PixelToMm(static_cast<float>(widthOfLayerStyle));
     baseSymbolLayer->setWidth(layerWidth);
     baseSymbol->changeSymbolLayer(0, baseSymbolLayer.release());
 
@@ -32,7 +32,7 @@ QgsFeatureRenderer *StyleLine::get2dRuleBasedRenderer(
         arrowSymbolLayer->setIsCurved(false);
         arrowSymbolLayer->setArrowType(QgsArrowSymbolLayer::ArrowLeftHalf);
         arrowSymbolLayer->setColor(lineColor);
-        layerWidth = QgsUtil::d300PixelToMm(widthOfLayerStyle);
+        layerWidth = QgsUtil::d300PixelToMm(static_cast<float>(widthOfLayerStyle));
         baseSymbolLayer->setWidth(layerWidth);
         baseSymbol->changeSymbolLayer(0, arrowSymbolLayer.release());
     } else if (typeOfLayerStyle == "02") {
@@ -52,7 +52,7 @@ QgsFeatureRenderer *StyleLine::get2dRuleBasedRenderer(
     // Add additional widths with different colors and opacities
     if (!additionalWidths.isEmpty() && !additionalColors.isEmpty() && !additionalOpacities.isEmpty()) {
         for (int i = 0; i < additionalWidths.size(); ++i) {
-            QgsLineSymbol *addSymbol = dynamic_cast<QgsLineSymbol *>(QgsSymbol::defaultSymbol(
+            auto addSymbol = dynamic_cast<QgsLineSymbol *>(QgsSymbol::defaultSymbol(
                     Qgis::GeometryType::Line));
             addSymbol->setColor(QColor(additionalColors[i]));
             float addLayerWidth = QgsUtil::d300PixelToMm(additionalWidths[i]);
@@ -93,8 +93,13 @@ QgsAbstract3DRenderer *StyleLine::get3dSingleSymbolRenderer(
         const QList<float> &additionalOpacities) {
     auto symbol = std::make_unique<QgsLine3DSymbol>();
     symbol->setRenderAsSimpleLines(true);
-    float layerWidth = QgsUtil::d300PixelToMm(
-            layerStyle.contains("width") ? layerStyle.value("width").toDouble() : 1.0);
+
+    float width = 1.0;
+    if (layerStyle.contains("width")) {
+        width = static_cast<float>(layerStyle.value("width").toDouble());
+    }
+
+    float layerWidth = QgsUtil::d300PixelToMm(width);
     symbol->setWidth(layerWidth);
 
     auto materialSettings = std::make_unique<QgsSimpleLineMaterialSettings>();
