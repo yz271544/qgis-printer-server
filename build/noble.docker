@@ -99,7 +99,7 @@ RUN apt install -y net-tools telnet dnsutils
 
 RUN mkdir /root/.fonts
 COPY build/simhei.ttf /root/.fonts/simhei.ttf
-COPY build/simsumb.ttf /root/.fonts/simsumb.ttf
+COPY build/simsunb.ttf /root/.fonts/simsunb.ttf
 RUN fc-cache -fv
 
 ENTRYPOINT ["/usr/local/bin/jingweiprinter"]
