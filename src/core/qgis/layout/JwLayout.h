@@ -54,6 +54,7 @@
 #include "core/enums/PaperSpecification.h"
 #include "utils/QgsUtil.h"
 #include "utils/ColorTransformUtil.h"
+#include "utils/ImageUtil.h"
 
 class JwLayout {
 public:

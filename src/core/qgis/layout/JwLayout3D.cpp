@@ -789,13 +789,17 @@ void JwLayout3D::addNorthArrow(
 
     // 设置指北针图片路径
     QString northArrowPath = "";
-    if (mImageSpec.contains("north_arrow_path")) {
-        northArrowPath = QString("%1/%2").arg(mQgisPrefixPath, mImageSpec["north_arrow_path"].toString());
+    if (mImageSpec.contains("north_base64")) {
+        northArrowPath = QString("%1/%2").arg(mProjectDir, "/north_arrow.png");
+        QString northBase64 = mImageSpec["north_base64"].toString();
+        std::pair<QString, QByteArray> base64_image = ImageUtil::parse_base64_image(northBase64);
         QFile file(northArrowPath);
-        if (file.exists() && file.open(QIODevice::WriteOnly)) {
-            file.write(QByteArray::fromBase64(mImageSpec["north_arrow_path"].toByteArray()));
+        if (file.open(QIODevice::WriteOnly)) {
+            file.write(base64_image.second);
             file.close();
         }
+    } else if (mImageSpec.contains("north_arrow_path")) {
+        northArrowPath = QString("%1/%2").arg(mQgisPrefixPath, mImageSpec["north_arrow_path"].toString());
     } else {
         spdlog::error("the north arrow path is not set in config.yaml");
         return;

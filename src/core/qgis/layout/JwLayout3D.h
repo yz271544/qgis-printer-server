@@ -67,6 +67,7 @@
 #include "core/enums/PaperSpecification.h"
 #include "utils/QgsUtil.h"
 #include "utils/ColorTransformUtil.h"
+#include "utils/ImageUtil.h"
 #include "core/qgis/d3/CameraUtil.h"
 #include "config.h"
 
