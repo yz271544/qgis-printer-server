@@ -159,15 +159,15 @@ public:
 
     void exportLayoutToPng(
             const QString& layoutName,
-            QString& outputFilePath);
+            QString& outputPath);
 
     void exportLayoutToPdf(
             const QString& layoutName,
-            QString& outputFilePath);
+            QString& outputPath);
 
     void exportLayoutToSvg(
             const QString& layoutName,
-            QString& outputFilePath);
+            QString& outputPath);
 
     QgsPrintLayout* getLayout(const QString& layoutName);
 

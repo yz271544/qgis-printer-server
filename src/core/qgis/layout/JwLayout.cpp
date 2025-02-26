@@ -4,8 +4,6 @@
 
 #include "JwLayout.h"
 
-#include <utility>
-
 // 构造函数
 JwLayout::JwLayout(QgsProject* project,
                    QgsMapCanvas* canvas,
@@ -900,8 +898,13 @@ QgsLayoutItemShape* JwLayout::addRect(
 
 
 void JwLayout::exportLayoutAsPng(const QString& layoutName,
-                                 const QString& outputPath,
-                                 int dpi) {
+                                 const QString& outputPath) {
+    double dpi = 150;
+    if (mImageSpec.contains("main_dpi")) {
+        dpi = mImageSpec["main_dpi"].toDouble();
+    } else {
+        spdlog::info("not found main_dpi in config.yaml, default 150");
+    }
     // 检查目录是否存在，如果不存在则创建
     QFileInfo fileInfo(outputPath);
     QDir dir = fileInfo.dir();
@@ -912,37 +915,42 @@ void JwLayout::exportLayoutAsPng(const QString& layoutName,
             return;
         }
     }
-    if (mLayout != nullptr) {
-        // 创建布局导出器
-        QgsLayoutExporter exporter(mLayout);
 
-        // 设置导出参数
-        QgsLayoutExporter::ImageExportSettings settings;
-        settings.dpi = dpi;
-        spdlog::debug("Export settings: {}", settings.dpi);
-        settings.flags |= QgsLayoutRenderContext::FlagAntialiasing; // 启用抗锯齿
-
-        // 导出图像
-        try {
-            spdlog::info("export.exportToImage -> outputPath: {}", outputPath.toStdString());
-            QgsLayoutExporter::ExportResult result = exporter.exportToImage(outputPath, settings);
-            if (result != QgsLayoutExporter::Success) {
-                spdlog::error("Error during export: {}", result);
-            } else {
-                spdlog::debug("Export to image completed");
-            }
-        } catch (const std::exception& e) {
-            spdlog::error("Error during export: {}", e.what());
+    if (!mLayout) {
+        spdlog::warn("布局未找到: {}", layoutName.toStdString());
+        return;
+    }
+    // 创建布局导出器
+    QgsLayoutExporter exporter(mLayout);
+    // 设置导出参数
+    QgsLayoutExporter::ImageExportSettings settings;
+    settings.dpi = dpi;
+    settings.flags |= QgsLayoutRenderContext::FlagAntialiasing;
+    // 导出图像
+    try {
+        spdlog::debug("开始导出PNG: {}", outputPath.toStdString());
+        QgsLayoutExporter::ExportResult result = exporter.exportToImage(outputPath, settings);
+        if (result == QgsLayoutExporter::Success) {
+            spdlog::info("导出成功: {}", outputPath.toStdString());
+        } else {
+            spdlog::error("导出失败，错误码: {}", static_cast<int>(result));
         }
-    } else {
-        spdlog::warn("not fount the layout: {}", layoutName.toStdString());
+    } catch (const std::exception& e) {
+        spdlog::error("导出异常: {}", e.what());
+    } catch (...) {
+        spdlog::error("未知异常");
     }
 }
 
 
 void JwLayout::exportLayoutAsPdf(const QString& layoutName,
-                                 const QString& outputPath,
-                                 int dpi) {
+                                 const QString& outputPath) {
+    double dpi = 150;
+    if (mImageSpec.contains("main_dpi")) {
+        dpi = mImageSpec["main_dpi"].toDouble();
+    } else {
+        spdlog::info("not found main_dpi in config.yaml, default 150");
+    }
     // 检查目录是否存在，如果不存在则创建
     QFileInfo fileInfo(outputPath);
     QDir dir = fileInfo.dir();
@@ -953,36 +961,45 @@ void JwLayout::exportLayoutAsPdf(const QString& layoutName,
             return;
         }
     }
-    if (mLayout != nullptr) {
-        // 创建布局导出器
-        QgsLayoutExporter exporter(mLayout);
 
-        // 设置导出参数
-        QgsLayoutExporter::PdfExportSettings settings;
-        settings.dpi = dpi;
-        spdlog::debug("Export settings: {}", settings.dpi);
-        settings.flags |= QgsLayoutRenderContext::FlagAntialiasing; // 启用抗锯齿
+    if (!mLayout) {
+        spdlog::warn("布局未找到: {}", layoutName.toStdString());
+        return;
+    }
 
-        // 导出图像
-        try {
-            spdlog::info("export.exportToImage -> outputPath: {}", outputPath.toStdString());
-            QgsLayoutExporter::ExportResult result = exporter.exportToPdf(outputPath, settings);
-            if (result != QgsLayoutExporter::Success) {
-                spdlog::error("Error during export: {}", result);
-            } else {
-                spdlog::debug("Export to image completed");
-            }
-        } catch (const std::exception& e) {
-            spdlog::error("Error during export: {}", e.what());
+    // 创建布局导出器
+    QgsLayoutExporter exporter(mLayout);
+    // 设置导出参数
+    QgsLayoutExporter::PdfExportSettings settings;
+    settings.dpi = dpi;
+    spdlog::debug("Export settings: {}", settings.dpi);
+    settings.flags |= QgsLayoutRenderContext::FlagAntialiasing; // 启用抗锯齿
+
+    // 导出图像
+    try {
+        spdlog::debug("开始导出PDF...");
+        QgsLayoutExporter::ExportResult result = exporter.exportToPdf(outputPath, settings);
+        if (result == QgsLayoutExporter::Success) {
+            spdlog::info("导出成功: {}", outputPath.toStdString());
+        } else {
+            spdlog::error("导出失败，错误码: {}", static_cast<int>(result));
         }
-    } else {
-        spdlog::warn("not fount the layout: {}", layoutName.toStdString());
+    } catch (const std::exception& e) {
+        spdlog::error("导出异常: {}", e.what());
+    } catch (...) {
+        spdlog::error("未知异常");
     }
 }
 
 void JwLayout::exportLayoutAsSvg(const QString& layoutName,
-                                 const QString& outputPath,
-                                 int dpi) {
+                                 const QString& outputPath) {
+    double dpi = 150;
+    if (mImageSpec.contains("main_dpi")) {
+        dpi = mImageSpec["main_dpi"].toDouble();
+    } else {
+        spdlog::info("not found main_dpi in config.yaml, default 150");
+    }
+
     // 检查目录是否存在，如果不存在则创建
     QFileInfo fileInfo(outputPath);
     QDir dir = fileInfo.dir();
@@ -993,29 +1010,33 @@ void JwLayout::exportLayoutAsSvg(const QString& layoutName,
             return;
         }
     }
-    if (mLayout != nullptr) {
-        // 创建布局导出器
-        QgsLayoutExporter exporter(mLayout);
 
-        // 设置导出参数
-        QgsLayoutExporter::SvgExportSettings settings;
-        settings.dpi = dpi;
-        spdlog::debug("Export settings: {}", settings.dpi);
-        settings.flags |= QgsLayoutRenderContext::FlagAntialiasing; // 启用抗锯齿
-
-        // 导出图像
-        try {
-            spdlog::info("export.exportToImage -> outputPath: {}", outputPath.toStdString());
-            QgsLayoutExporter::ExportResult result = exporter.exportToSvg(outputPath, settings);
-            if (result != QgsLayoutExporter::Success) {
-                spdlog::error("Error during export: {}", result);
-            } else {
-                spdlog::debug("Export to image completed");
-            }
-        } catch (const std::exception& e) {
-            spdlog::error("Error during export: {}", e.what());
-        }
-    } else {
-        spdlog::warn("not fount the layout: {}", layoutName.toStdString());
+    if (!mLayout) {
+        spdlog::warn("布局未找到: {}", layoutName.toStdString());
+        return;
     }
+
+    // 创建布局导出器
+    QgsLayoutExporter exporter(mLayout);
+
+    // 设置导出参数
+    QgsLayoutExporter::SvgExportSettings settings;
+    settings.dpi = dpi;
+    settings.flags |= QgsLayoutRenderContext::FlagAntialiasing; // 启用抗锯齿
+
+    // 导出图像
+    try {
+        spdlog::debug("开始导出SVG...");
+        QgsLayoutExporter::ExportResult result = exporter.exportToSvg(outputPath, settings);
+        if (result == QgsLayoutExporter::Success) {
+            spdlog::info("导出成功: {}", outputPath.toStdString());
+        } else {
+            spdlog::error("导出失败，错误码: {}", static_cast<int>(result));
+        }
+    } catch (const std::exception& e) {
+        spdlog::error("导出异常: {}", e.what());
+    } catch (...) {
+        spdlog::error("未知异常");
+    }
+
 }

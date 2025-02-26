@@ -177,13 +177,13 @@ public:
                         const QString &layoutType,
                         QString& paperSpecName,
                         JwLayout* jwLayout,
-                        DTOWRAPPERNS::DTOWrapper<ResponseDto> responseDto);
+                        DTOWRAPPERNS::DTOWrapper<ResponseDto>& responseDto);
 
     void export3DLayout(QString &sceneName,
                         const QString &layoutType,
                         QString &paperSpecName,
                         JwLayout3D *jwLayout3d,
-                        DTOWRAPPERNS::DTOWrapper<ResponseDto> responseDto);
+                        DTOWRAPPERNS::DTOWrapper<ResponseDto>& responseDto);
 };
 
 

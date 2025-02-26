@@ -49,6 +49,9 @@
 #include <qgspointlightsettings.h>
 #include <qgs3dmapscene.h>
 #include <qgslayoutexporter.h>
+#include <utility>
+#include <QtConcurrent/QtConcurrent>
+
 
 #include "JwLegend.h"
 #include "core/enums/PaperSpecification.h"
@@ -140,16 +143,13 @@ public:
     );
 
     void exportLayoutAsPng(const QString& layoutName,
-                      const QString& outputPath,
-                      int dpi);
+                      const QString& outputPath);
 
     void exportLayoutAsPdf(const QString& layoutName,
-                      const QString& outputPath,
-                      int dpi);
+                      const QString& outputPath);
 
     void exportLayoutAsSvg(const QString& layoutName,
-                      const QString& outputPath,
-                      int dpi);
+                      const QString& outputPath);
 
 private:
     QString& mLayoutName;

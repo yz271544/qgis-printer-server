@@ -412,7 +412,7 @@ void Processor::export2DLayout(QString& sceneName,
                                const QString& layoutType,
                                QString& paperSpecName,
                                JwLayout* jwLayout,
-                               DTOWRAPPERNS::DTOWrapper<ResponseDto> responseDto) {
+                               DTOWRAPPERNS::DTOWrapper<ResponseDto>& responseDto) {
     auto zip_file_name = zipProject(sceneName);
     auto imageSubDir = getImageSubDir(layoutType);
     // 导出图像
@@ -422,33 +422,30 @@ void Processor::export2DLayout(QString& sceneName,
     QString imageName = "";
     QString outputPath = "";
     if (m_export_png_enable) {
-        //imageName = exportPNG(sceneName, layoutType, imageSubDir, paperName);
         imageName = QString("%1-%2-%3.png").arg(sceneName, layoutType, paperSpecName);
         outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, imageName);
         FileUtil::delete_file(outputPath);
-        jwLayout->exportLayoutAsPng(layoutType, outputPath, 300);
+        jwLayout->exportLayoutAsPng(layoutType, outputPath);
         QString image_url = QString(m_mapping_export_nginx_url_prefix)
                 .append("/").append(imageSubDir).append("/").append(imageName);
         responseDto->image_url = image_url.toStdString();
     }
     QString pdfName = "";
     if (m_export_pdf_enable) {
-        //pdfName = exportPDF(sceneName, layoutType, imageSubDir, paperName);
-        imageName = QString("%1-%2-%3.pdf").arg(sceneName, layoutType, paperSpecName);
-        outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, imageName);
+        pdfName = QString("%1-%2-%3.pdf").arg(sceneName, layoutType, paperSpecName);
+        outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, pdfName);
         FileUtil::delete_file(outputPath);
-        jwLayout->exportLayoutAsPdf(layoutType, outputPath, 300);
+        jwLayout->exportLayoutAsPdf(layoutType, outputPath);
         QString pdf_url = QString(m_mapping_export_nginx_url_prefix)
-                .append("/").append(imageSubDir).append("/").append(imageName);
+                .append("/").append(imageSubDir).append("/").append(pdfName);
         responseDto->pdf_url = pdf_url.toStdString();
     }
     QString svgName = "";
     if (m_export_svg_enable) {
-        //svgName = exportSVG(sceneName, layoutType, imageSubDir, paperName);
-        imageName = QString("%1-%2-%3.svg").arg(sceneName, layoutType, paperSpecName);
-        outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, imageName);
+        svgName = QString("%1-%2-%3.svg").arg(sceneName, layoutType, paperSpecName);
+        outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, svgName);
         FileUtil::delete_file(outputPath);
-        jwLayout->exportLayoutAsSvg(layoutType, outputPath, 300);
+        jwLayout->exportLayoutAsSvg(layoutType, outputPath);
         QString svg_url = QString(m_mapping_export_nginx_url_prefix)
                 .append("/").append(imageSubDir).append("/").append(svgName);
         responseDto->svg_url = svg_url.toStdString();
@@ -460,7 +457,7 @@ void Processor::export3DLayout(QString& sceneName,
                                const QString& layoutType,
                                QString& paperSpecName,
                                JwLayout3D* jwLayout3d,
-                               DTOWRAPPERNS::DTOWrapper<ResponseDto> responseDto) {
+                               DTOWRAPPERNS::DTOWrapper<ResponseDto>& responseDto) {
     auto zip_file_name = zipProject(sceneName);
     auto imageSubDir = getImageSubDir(layoutType);
     // 导出图像
@@ -480,22 +477,22 @@ void Processor::export3DLayout(QString& sceneName,
     }
     QString pdfName = "";
     if (m_export_pdf_enable) {
-        imageName = QString("%1-%2-%3-3D.pdf").arg(sceneName, layoutType, paperSpecName);
-        outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, imageName);
+        pdfName = QString("%1-%2-%3-3D.pdf").arg(sceneName, layoutType, paperSpecName);
+        outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, pdfName);
         FileUtil::delete_file(outputPath);
         jwLayout3d->exportLayoutToPdf(layoutType, outputPath);
         QString image_url = QString(m_mapping_export_nginx_url_prefix)
-                .append("/").append(imageSubDir).append("/").append(imageName);
+                .append("/").append(imageSubDir).append("/").append(pdfName);
         responseDto->image_url = image_url.toStdString();
     }
     QString svgName = "";
     if (m_export_svg_enable) {
-        imageName = QString("%1-%2-%3-3D.svg").arg(sceneName, layoutType, paperSpecName);
-        outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, imageName);
+        svgName = QString("%1-%2-%3-3D.svg").arg(sceneName, layoutType, paperSpecName);
+        outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, svgName);
         FileUtil::delete_file(outputPath);
         jwLayout3d->exportLayoutToSvg(layoutType, outputPath);
         QString image_url = QString(m_mapping_export_nginx_url_prefix)
-                .append("/").append(imageSubDir).append("/").append(imageName);
+                .append("/").append(imageSubDir).append("/").append(svgName);
         responseDto->image_url = image_url.toStdString();
     }
     /*m_globalGLContext->doneCurrent();
