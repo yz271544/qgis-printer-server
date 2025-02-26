@@ -332,6 +332,10 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
 
                 auto image_spec = m_setting_image_spec->value(layoutType).toMap();
 
+                auto paperSpec = plottingWeb->paper;
+                auto upperPaperSpec = Formula::toUpperCase(paperSpec);
+                PaperSpecification availablePaper(QString::fromStdString(upperPaperSpec));
+
                 if (!image_spec.isEmpty()) {
                     bool is3D = false;
                     try {
@@ -348,39 +352,37 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                             QVector<QString> removeLayerPrefixes3D = QVector<QString>();
                             removeLayerNames3D.append(BASE_TILE_NAME);
                             removeLayerPrefixes3D.append(MAIN_TILE_NAME);
-                            auto paperSpec = plottingWeb->paper;
-                            auto upperPaperSpec = Formula::toUpperCase(paperSpec);
-                            PaperSpecification availablePaper3D(QString::fromStdString(upperPaperSpec));
                             auto canvas2d = m_app->getCanvas();
-                            add_3d_layout(canvas2d, layoutType, plottingWeb,
-                                                  image_spec, availablePaper3D, false,
+                            add_3d_layout(canvas2d, plottingWeb,
+                                                  image_spec, availablePaper, false,
                                                   removeLayerNames3D, removeLayerPrefixes3D,
                                                   layoutType, responseDto);
-                            /*spdlog::debug("save project");
-                            m_app->saveProject();
-                            QString paperName = QString::fromStdString(plottingWeb->paper);
-                            export3DLayout(sceneName, layoutType, paperName, jwLayout3d.get(), responseDto);*/
-                            /*jwLayout3d.reset();
-                            spdlog::debug("reset jwLayout3d");*/
                         } else {
                             responseDto->error = "enable_3d in config.yaml is false";
                         }
                     } else {
                         spdlog::debug("add and export 2d layout");
-                        auto appAvailablePapers = m_app->getAvailablePapers();
                         QVector<QString> removeLayerNames = QVector<QString>();
                         QVector<QString> removeLayerPrefixes = QVector<QString>();
                         removeLayerPrefixes.append(REAL3D_TILE_NAME);
+
+                        auto canvas2d = m_app->getCanvas();
+                        add_layout(canvas2d, plottingWeb, image_spec, availablePaper, false,
+                                   removeLayerNames, removeLayerPrefixes,layoutType,
+                                   responseDto);
+
+                        /*auto appAvailablePapers = m_app->getAvailablePapers();
+
                         for (const auto &availablePaper: appAvailablePapers) {
                             spdlog::debug("image_spec_name: {}, available_paper: {}", layoutType.toStdString(),
                                          availablePaper.getPaperName().toStdString());
                             auto canvas2d = m_app->getCanvas();
                             add_layout(canvas2d, layoutType, plottingWeb, image_spec, availablePaper, false,
                                        removeLayerNames, removeLayerPrefixes);
-                        }
-                        spdlog::debug("save project");
+                        }*/
+                        /*spdlog::debug("save project");
                         m_app->saveProject();
-                        export2DLayout(sceneName, layoutType, plottingWeb, responseDto);
+                        export2DLayout(sceneName, layoutType, plottingWeb, responseDto);*/
                     }
                 }
 
@@ -408,32 +410,45 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
 
 void Processor::export2DLayout(QString& sceneName,
                                const QString& layoutType,
-                               const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
+                               QString& paperSpecName,
+                               JwLayout* jwLayout,
                                DTOWRAPPERNS::DTOWrapper<ResponseDto> responseDto) {
     auto zip_file_name = zipProject(sceneName);
     auto imageSubDir = getImageSubDir(layoutType);
     // 导出图像
-    QString paperName = QString::fromStdString(plottingWeb->paper);
     QString project_zip_url = QString(m_mapping_export_nginx_url_prefix)
             .append("/").append(zip_file_name);
     responseDto->project_zip_url = project_zip_url.toStdString();
     QString imageName = "";
+    QString outputPath = "";
     if (m_export_png_enable) {
-        imageName = exportPNG(sceneName, layoutType, imageSubDir, paperName);
+        //imageName = exportPNG(sceneName, layoutType, imageSubDir, paperName);
+        imageName = QString("%1-%2-%3.png").arg(sceneName, layoutType, paperSpecName);
+        outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, imageName);
+        FileUtil::delete_file(outputPath);
+        jwLayout->exportLayoutAsPng(layoutType, outputPath, 300);
         QString image_url = QString(m_mapping_export_nginx_url_prefix)
                 .append("/").append(imageSubDir).append("/").append(imageName);
         responseDto->image_url = image_url.toStdString();
     }
     QString pdfName = "";
     if (m_export_pdf_enable) {
-        pdfName = exportPDF(sceneName, layoutType, imageSubDir, paperName);
+        //pdfName = exportPDF(sceneName, layoutType, imageSubDir, paperName);
+        imageName = QString("%1-%2-%3.pdf").arg(sceneName, layoutType, paperSpecName);
+        outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, imageName);
+        FileUtil::delete_file(outputPath);
+        jwLayout->exportLayoutAsPdf(layoutType, outputPath, 300);
         QString pdf_url = QString(m_mapping_export_nginx_url_prefix)
                 .append("/").append(imageSubDir).append("/").append(imageName);
         responseDto->pdf_url = pdf_url.toStdString();
     }
     QString svgName = "";
     if (m_export_svg_enable) {
-        svgName = exportSVG(sceneName, layoutType, imageSubDir, paperName);
+        //svgName = exportSVG(sceneName, layoutType, imageSubDir, paperName);
+        imageName = QString("%1-%2-%3.svg").arg(sceneName, layoutType, paperSpecName);
+        outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, imageName);
+        FileUtil::delete_file(outputPath);
+        jwLayout->exportLayoutAsSvg(layoutType, outputPath, 300);
         QString svg_url = QString(m_mapping_export_nginx_url_prefix)
                 .append("/").append(imageSubDir).append("/").append(svgName);
         responseDto->svg_url = svg_url.toStdString();
@@ -987,33 +1002,37 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
 // 添加2d布局
 void Processor::add_layout(
         QgsMapCanvas *canvas,
-        const QString &layout_name,
         const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
         const QMap<QString, QVariant> &image_spec,
         const PaperSpecification &available_paper,
         bool write_qpt,
         const QVector<QString> &removeLayerNames,
-        const QVector<QString> &removeLayerPrefixs) {
-    auto joinedLayoutName = layout_name + "-" + available_paper.getPaperName();
+        const QVector<QString> &removeLayerPrefixes,
+        const QString &layoutType,
+        DTOWRAPPERNS::DTOWrapper<ResponseDto> &responseDto) {
+    auto joinedLayoutName = QString("%1-%2").arg(layoutType, available_paper.getPaperName());
     spdlog::info("add layout: {}", joinedLayoutName.toStdString());
 
     auto project = m_app->getProject();
     auto sceneName = m_app->getSceneName();
     auto projectDir = m_app->getProjectDir();
-    JwLayout jwLayout(project, canvas, sceneName, image_spec, projectDir, joinedLayoutName, m_qgis_prefix_path);
+    auto jwLayout = std::make_unique<JwLayout>(project, canvas, sceneName, image_spec, projectDir,
+                                               joinedLayoutName, m_qgis_prefix_path);
 
     auto plottingWebJsonDoc = JsonUtil::convertDtoToQJsonObject(plottingWeb);
     auto plottingWebMap = JsonUtil::jsonObjectToVariantMap(plottingWebJsonDoc.object());
 
-    jwLayout.addPrintLayout(QString("2d"), joinedLayoutName, plottingWebMap, available_paper, write_qpt,
-                            removeLayerNames, removeLayerPrefixs);
-    spdlog::debug("add_2d_layout done");
+    jwLayout->addPrintLayout(QString("2d"), joinedLayoutName, plottingWebMap, available_paper, write_qpt,
+                            removeLayerNames, removeLayerPrefixes);
+    spdlog::debug("save project");
+    m_app->saveProject();
+    QString paperName = QString::fromStdString(plottingWeb->paper);
+    export2DLayout(sceneName, layoutType, paperName, jwLayout.get(), responseDto);
 }
 
 // 添加3d布局
 void Processor::add_3d_layout(
         QgsMapCanvas *canvas,
-        const QString &layout_name,
         const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
         const QMap<QString, QVariant> &image_spec,
         const PaperSpecification &available_paper,
@@ -1048,7 +1067,7 @@ void Processor::add_3d_layout(
     auto project = m_app->getProject();
     auto sceneName = m_app->getSceneName();
     auto projectDir = m_app->getProjectDir();
-    auto joinedLayoutName = QString("%1-%2-3D").arg(layout_name, available_paper.getPaperName());
+    auto joinedLayoutName = QString("%1-%2-3D").arg(layoutType, available_paper.getPaperName());
     auto jwLayout3d = std::make_unique<JwLayout3D>(project, canvas, canvas3d.release(),
                                                    sceneName, image_spec, projectDir, joinedLayoutName, m_qgis_prefix_path);
     auto plottingWebJsonDoc = JsonUtil::convertDtoToQJsonObject(plottingWeb);
@@ -1082,39 +1101,6 @@ QString Processor::getImageSubDir(const QString &layout_name) {
         return "";
     }
     return image_spec["local"].toString();
-}
-
-QString Processor::exportPNG(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
-                             const QString &paperName) {
-    QString imageName = QString("%1-%2-%3.png").arg(sceneName, layoutName, paperName);
-    QString outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, imageName);
-    FileUtil::delete_file(outputPath);
-    spdlog::debug("export image -> outputPath: {}", outputPath.toStdString());
-    auto isExportStatus = m_app->exportLayoutAsPng(layoutName, outputPath, paperName);
-    spdlog::debug("export status: {}", isExportStatus);
-    return imageName;
-}
-
-QString Processor::exportPDF(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
-                             const QString &paperName) {
-    QString imageName = QString("%1-%2-%3.pdf").arg(sceneName, layoutName, paperName);
-    QString outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, imageName);
-    FileUtil::delete_file(outputPath);
-    spdlog::debug("export image -> outputPath: {}", outputPath.toStdString());
-    auto isExportStatus = m_app->exportLayoutAsPdf(layoutName, outputPath, paperName);
-    spdlog::debug("export status: {}", isExportStatus);
-    return imageName;
-}
-
-QString Processor::exportSVG(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
-                             const QString &paperName) {
-    QString imageName = QString("%1-%2-%3.svg").arg(sceneName, layoutName, paperName);
-    QString outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, imageName);
-    FileUtil::delete_file(outputPath);
-    spdlog::debug("export image -> outputPath: {}", outputPath.toStdString());
-    auto isExportStatus = m_app->exportLayoutAsSvg(layoutName, outputPath, paperName);
-    spdlog::debug("export status: {}", isExportStatus);
-    return imageName;
 }
 
 QVariantMap Processor::_grouped_circle_by_color_grouped(

@@ -48,6 +48,7 @@
 #include <qgsterrainprovider.h>
 #include <qgspointlightsettings.h>
 #include <qgs3dmapscene.h>
+#include <qgslayoutexporter.h>
 
 #include "JwLegend.h"
 #include "core/enums/PaperSpecification.h"
@@ -137,6 +138,18 @@ public:
             qreal remarksHeight
     );
 
+    void exportLayoutAsPng(const QString& layoutName,
+                      const QString& outputPath,
+                      int dpi);
+
+    void exportLayoutAsPdf(const QString& layoutName,
+                      const QString& outputPath,
+                      int dpi);
+
+    void exportLayoutAsSvg(const QString& layoutName,
+                      const QString& outputPath,
+                      int dpi);
+
 private:
     QString& mLayoutName;
     QgsProject *mProject;
@@ -144,6 +157,7 @@ private:
     QgsMapCanvas *mCanvas;
     QString& mSceneName;
     std::unique_ptr<JwLegend> mJwLegend;
+    QgsPrintLayout* mLayout;
     QString& mQgisPrefixPath;
     QVariantMap mImageSpec;
     double mMapWidth;

@@ -83,18 +83,18 @@ public:
 
     // 添加2d布局
     void add_layout(QgsMapCanvas *canvas,
-                    const QString &layout_name,
                     const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
                     const QMap<QString, QVariant> &image_spec,
                     const PaperSpecification &available_paper,
                     bool write_qpt,
                     const QVector<QString> &removeLayerNames,
-                    const QVector<QString> &removeLayerPrefixs);
+                    const QVector<QString> &removeLayerPrefixes,
+                    const QString &layoutType,
+                    DTOWRAPPERNS::DTOWrapper<ResponseDto> &responseDto);
 
     // 添加3d布局
     void add_3d_layout(
             QgsMapCanvas *canvas,
-            const QString &layout_name,
             const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
             const QMap<QString, QVariant> &image_spec,
             const PaperSpecification &available_paper,
@@ -103,18 +103,6 @@ public:
             const QVector<QString> &removeLayerPrefixes,
             const QString& layoutType,
             DTOWRAPPERNS::DTOWrapper<ResponseDto> &responseDto);
-
-    // 导出PNG
-    QString exportPNG(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
-                      const QString &paperName);
-
-    // 导出PDF
-    QString exportPDF(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
-                      const QString &paperName);
-
-    // 导出SVG
-    QString exportSVG(const QString &sceneName, const QString &layoutName, const QString &imageSubDir,
-                      const QString &paperName);
 
     // 压缩项目的静态方法
     QString zipProject(const QString &scene_name);
@@ -187,7 +175,8 @@ public:
 
     void export2DLayout(QString &sceneName,
                         const QString &layoutType,
-                        const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingWeb,
+                        QString& paperSpecName,
+                        JwLayout* jwLayout,
                         DTOWRAPPERNS::DTOWrapper<ResponseDto> responseDto);
 
     void export3DLayout(QString &sceneName,

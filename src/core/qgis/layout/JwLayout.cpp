@@ -520,12 +520,12 @@ void JwLayout::addArrowBasedOnFrontendParams(QgsPrintLayout* layout, const QList
 
 // 初始化 2D 布局
 void JwLayout::init2DLayout(const QString& layoutName) {
-    auto layout = std::make_unique<QgsPrintLayout>(mProject);
-    layout->setName(layoutName);
-    layout->setUnits(Qgis::LayoutUnit::Millimeters);
-    layout->initializeDefaults();
+    mLayout = new QgsPrintLayout(mProject);
+    mLayout->setName(layoutName);
+    mLayout->setUnits(Qgis::LayoutUnit::Millimeters);
+    mLayout->initializeDefaults();
     QgsLayoutManager* layout_manager = mProject->layoutManager();
-    layout_manager->addLayout(layout.release());
+    layout_manager->addLayout(mLayout);
 }
 
 // get layout from project->layoutManager()
@@ -892,4 +892,126 @@ QgsLayoutItemShape* JwLayout::addRect(
     rectBg->attemptSetSceneRect(QRectF(remarksX, remarksY, remarksWidth, remarksHeight));
     rectBg->setZValue(0);
     return rectBg.release();
+}
+
+
+void JwLayout::exportLayoutAsPng(const QString& layoutName,
+                                 const QString& outputPath,
+                                 int dpi) {
+    // 检查目录是否存在，如果不存在则创建
+    QFileInfo fileInfo(outputPath);
+    QDir dir = fileInfo.dir();
+    if (!dir.exists()) {
+        spdlog::warn("Directory does not exist: {}", dir.path().toStdString());
+        if (!dir.mkpath(".")) {
+            spdlog::error("Failed to create directory: {}", dir.path().toStdString());
+            return;
+        }
+    }
+    if (mLayout != nullptr) {
+        // 创建布局导出器
+        QgsLayoutExporter exporter(mLayout);
+
+        // 设置导出参数
+        QgsLayoutExporter::ImageExportSettings settings;
+        settings.dpi = dpi;
+        spdlog::debug("Export settings: {}", settings.dpi);
+        settings.flags |= QgsLayoutRenderContext::FlagAntialiasing; // 启用抗锯齿
+
+        // 导出图像
+        try {
+            spdlog::info("export.exportToImage -> outputPath: {}", outputPath.toStdString());
+            QgsLayoutExporter::ExportResult result = exporter.exportToImage(outputPath, settings);
+            if (result != QgsLayoutExporter::Success) {
+                spdlog::error("Error during export: {}", result);
+            } else {
+                spdlog::debug("Export to image completed");
+            }
+        } catch (const std::exception& e) {
+            spdlog::error("Error during export: {}", e.what());
+        }
+    } else {
+        spdlog::warn("not fount the layout: {}", layoutName.toStdString());
+    }
+}
+
+
+void JwLayout::exportLayoutAsPdf(const QString& layoutName,
+                                 const QString& outputPath,
+                                 int dpi) {
+    // 检查目录是否存在，如果不存在则创建
+    QFileInfo fileInfo(outputPath);
+    QDir dir = fileInfo.dir();
+    if (!dir.exists()) {
+        spdlog::warn("Directory does not exist: {}", dir.path().toStdString());
+        if (!dir.mkpath(".")) {
+            spdlog::error("Failed to create directory: {}", dir.path().toStdString());
+            return;
+        }
+    }
+    if (mLayout != nullptr) {
+        // 创建布局导出器
+        QgsLayoutExporter exporter(mLayout);
+
+        // 设置导出参数
+        QgsLayoutExporter::PdfExportSettings settings;
+        settings.dpi = dpi;
+        spdlog::debug("Export settings: {}", settings.dpi);
+        settings.flags |= QgsLayoutRenderContext::FlagAntialiasing; // 启用抗锯齿
+
+        // 导出图像
+        try {
+            spdlog::info("export.exportToImage -> outputPath: {}", outputPath.toStdString());
+            QgsLayoutExporter::ExportResult result = exporter.exportToPdf(outputPath, settings);
+            if (result != QgsLayoutExporter::Success) {
+                spdlog::error("Error during export: {}", result);
+            } else {
+                spdlog::debug("Export to image completed");
+            }
+        } catch (const std::exception& e) {
+            spdlog::error("Error during export: {}", e.what());
+        }
+    } else {
+        spdlog::warn("not fount the layout: {}", layoutName.toStdString());
+    }
+}
+
+void JwLayout::exportLayoutAsSvg(const QString& layoutName,
+                                 const QString& outputPath,
+                                 int dpi) {
+    // 检查目录是否存在，如果不存在则创建
+    QFileInfo fileInfo(outputPath);
+    QDir dir = fileInfo.dir();
+    if (!dir.exists()) {
+        spdlog::warn("Directory does not exist: {}", dir.path().toStdString());
+        if (!dir.mkpath(".")) {
+            spdlog::error("Failed to create directory: {}", dir.path().toStdString());
+            return;
+        }
+    }
+    if (mLayout != nullptr) {
+        // 创建布局导出器
+        QgsLayoutExporter exporter(mLayout);
+
+        // 设置导出参数
+        QgsLayoutExporter::SvgExportSettings settings;
+        settings.dpi = dpi;
+        spdlog::debug("Export settings: {}", settings.dpi);
+        settings.flags |= QgsLayoutRenderContext::FlagAntialiasing; // 启用抗锯齿
+
+        // 导出图像
+        try {
+            spdlog::info("export.exportToImage -> outputPath: {}", outputPath.toStdString());
+            QgsLayoutExporter::ExportResult result = exporter.exportToSvg(outputPath, settings);
+            if (result != QgsLayoutExporter::Success) {
+                spdlog::error("Error during export: {}", result);
+            } else {
+                spdlog::debug("Export to image completed");
+            }
+        } catch (const std::exception& e) {
+            spdlog::error("Error during export: {}", e.what());
+        }
+    } else {
+        spdlog::warn("not fount the layout: {}", layoutName.toStdString());
+    }
 }

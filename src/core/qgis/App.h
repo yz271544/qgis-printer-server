@@ -84,36 +84,6 @@ public:
 
     QgsPointXY transform4326To3857(double x, double y);
 
-    /**
-     * 导出布局为PNG
-     * @param layoutName
-     * @param outputPath
-     * @param paperName
-     * @param dpi
-     * @return
-     */
-    bool exportLayoutAsPng(const QString& layoutName, const QString& outputPath, const QString& paperName, int dpi = 300);
-
-    /**
-     * 导出布局为PDF
-     * @param layoutName
-     * @param outputPath
-     * @param paperName
-     * @param dpi
-     * @return
-     */
-    bool exportLayoutAsPdf(const QString& layoutName, const QString& outputPath, const QString& paperName, int dpi = 300);
-
-    /**
-     * 导出布局为SVG
-     * @param layoutName
-     * @param outputPath
-     * @param paperName
-     * @param dpi
-     * @return
-     */
-    bool exportLayoutAsSvg(const QString& layoutName, const QString& outputPath, const QString& paperName, int dpi = 300);
-
     QVector<PaperSpecification>& getAvailablePapers();
 
     QgsMapCanvas* getCanvas();
