@@ -6,6 +6,10 @@ RUN echo "Building with code version: $CODE_VERSION"
 
 ENV MASTER_RELEASE=true
 
+ARG PARALLEL_LEVEL
+RUN echo "Building with parallel level: $PARALLEL_LEVEL"
+ENV CMAKE_BUILD_PARALLEL_LEVEL=$PARALLEL_LEVEL
+
 RUN cp /etc/apt/sources.list.d/ubuntu.sources /etc/apt/sources.list.d/ubuntu.sources.bak
 RUN sed -i "s/archive.ubuntu.com/mirrors.aliyun.com/g" /etc/apt/sources.list.d/ubuntu.sources
 RUN sed -i "s/security.ubuntu.com/mirrors.aliyun.com/g" /etc/apt/sources.list.d/ubuntu.sources
