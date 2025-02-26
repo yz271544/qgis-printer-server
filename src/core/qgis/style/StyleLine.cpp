@@ -33,10 +33,12 @@ QgsFeatureRenderer *StyleLine::get2dRuleBasedRenderer(
         arrowSymbolLayer->setArrowType(QgsArrowSymbolLayer::ArrowLeftHalf);
         arrowSymbolLayer->setColor(lineColor);
         layerWidth = QgsUtil::d300PixelToMm(static_cast<float>(widthOfLayerStyle));
-        baseSymbolLayer->setWidth(layerWidth);
+        arrowSymbolLayer->setWidth(layerWidth);
         baseSymbol->changeSymbolLayer(0, arrowSymbolLayer.release());
     } else if (typeOfLayerStyle == "02") {
-        baseSymbolLayer->setPenStyle(Qt::DashLine);
+        if (auto lineSymbolLayer = dynamic_cast<QgsSimpleLineSymbolLayer*>(baseSymbol->symbolLayer(0))) {
+            lineSymbolLayer->setPenStyle(Qt::DashLine);
+        }
     } else if (typeOfLayerStyle == "03") {
         // 流动线
         baseSymbol = SymbolCompose::createInterpolateLineSymbolLayer(widthOfLayerStyle);
