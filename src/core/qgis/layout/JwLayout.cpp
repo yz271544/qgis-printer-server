@@ -898,7 +898,8 @@ QgsLayoutItemShape* JwLayout::addRect(
 
 
 void JwLayout::exportLayoutAsPng(const QString& layoutName,
-                                 const QString& outputPath) {
+                                 const QString& outputPath,
+                                 bool forceEvent) {
     double dpi = 150;
     if (mImageSpec.contains("main_dpi")) {
         dpi = mImageSpec["main_dpi"].toDouble();
@@ -920,6 +921,11 @@ void JwLayout::exportLayoutAsPng(const QString& layoutName,
         spdlog::warn("布局未找到: {}", layoutName.toStdString());
         return;
     }
+
+    // 强制处理事件循环
+    if (forceEvent){
+        QCoreApplication::processEvents();
+    }
     // 创建布局导出器
     QgsLayoutExporter exporter(mLayout);
     // 设置导出参数
@@ -940,11 +946,16 @@ void JwLayout::exportLayoutAsPng(const QString& layoutName,
     } catch (...) {
         spdlog::error("未知异常");
     }
+    // 再次处理事件循环
+    if (forceEvent){
+        QCoreApplication::processEvents();
+    }
 }
 
 
 void JwLayout::exportLayoutAsPdf(const QString& layoutName,
-                                 const QString& outputPath) {
+                                 const QString& outputPath,
+                                 bool forceEvent) {
     double dpi = 150;
     if (mImageSpec.contains("main_dpi")) {
         dpi = mImageSpec["main_dpi"].toDouble();
@@ -992,7 +1003,8 @@ void JwLayout::exportLayoutAsPdf(const QString& layoutName,
 }
 
 void JwLayout::exportLayoutAsSvg(const QString& layoutName,
-                                 const QString& outputPath) {
+                                 const QString& outputPath,
+                                 bool forceEvent) {
     double dpi = 150;
     if (mImageSpec.contains("main_dpi")) {
         dpi = mImageSpec["main_dpi"].toDouble();

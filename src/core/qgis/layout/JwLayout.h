@@ -64,11 +64,11 @@ public:
 
     JwLayout(QgsProject *project,
              QgsMapCanvas *canvas,
-             QString& sceneName,
+             QString &sceneName,
              const QVariantMap &imageSpec,
-             QString& projectDir,
-             QString& layoutName,
-             QString& qgisPrefixPath);
+             QString &projectDir,
+             QString &layoutName,
+             QString &qgisPrefixPath);
 
     ~JwLayout() = default;
 
@@ -133,8 +133,8 @@ public:
     void saveQptTemplate(QgsPrintLayout *layout);
 
     QgsLayoutItemShape *addRect(
-            QString& fillColor,
-            const QString& borderColor,
+            QString &fillColor,
+            const QString &borderColor,
             double borderWidth,
             qreal remarksX,
             qreal remarksY,
@@ -142,24 +142,27 @@ public:
             qreal remarksHeight
     );
 
-    void exportLayoutAsPng(const QString& layoutName,
-                      const QString& outputPath);
+    void exportLayoutAsPng(const QString &layoutName,
+                           const QString &outputPath,
+                           bool forceEvent);
 
-    void exportLayoutAsPdf(const QString& layoutName,
-                      const QString& outputPath);
+    void exportLayoutAsPdf(const QString &layoutName,
+                           const QString &outputPath,
+                           bool forceEvent);
 
-    void exportLayoutAsSvg(const QString& layoutName,
-                      const QString& outputPath);
+    void exportLayoutAsSvg(const QString &layoutName,
+                           const QString &outputPath,
+                           bool forceEvent);
 
 private:
-    QString& mLayoutName;
+    QString &mLayoutName;
     QgsProject *mProject;
-    QString& mProjectDir;
+    QString &mProjectDir;
     QgsMapCanvas *mCanvas;
-    QString& mSceneName;
+    QString &mSceneName;
     std::unique_ptr<JwLegend> mJwLegend;
-    QgsPrintLayout* mLayout;
-    QString& mQgisPrefixPath;
+    QgsPrintLayout *mLayout;
+    QString &mQgisPrefixPath;
     QVariantMap mImageSpec;
     double mMapWidth;
     double mMapHeight;

@@ -9,6 +9,7 @@ web:
   port: 5890
   route_prefix: /
 qgis:
+  force_event: false
   enable_3d: true
   gui_enabled: false
 #  prefix_path: "/lyndon/iProject/cpath/QGIS/output"

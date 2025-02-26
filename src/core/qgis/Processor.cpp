@@ -150,6 +150,12 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
     } catch (const std::exception &e) {
         spdlog::error("get qgis.prefix_path error: {}", e.what());
     }
+
+    try {
+        m_force_event = m_config->operator[]("qgis")["force_event"].as<bool>();
+    } catch (const std::exception &e) {
+        spdlog::error("get qgis.force_event error: {}", e.what());
+    }
 }
 
 Processor::~Processor() {
@@ -425,7 +431,7 @@ void Processor::export2DLayout(QString& sceneName,
         imageName = QString("%1-%2-%3.png").arg(sceneName, layoutType, paperSpecName);
         outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, imageName);
         FileUtil::delete_file(outputPath);
-        jwLayout->exportLayoutAsPng(layoutType, outputPath);
+        jwLayout->exportLayoutAsPng(layoutType, outputPath, m_force_event);
         QString image_url = QString(m_mapping_export_nginx_url_prefix)
                 .append("/").append(imageSubDir).append("/").append(imageName);
         responseDto->image_url = image_url.toStdString();
@@ -435,7 +441,7 @@ void Processor::export2DLayout(QString& sceneName,
         pdfName = QString("%1-%2-%3.pdf").arg(sceneName, layoutType, paperSpecName);
         outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, pdfName);
         FileUtil::delete_file(outputPath);
-        jwLayout->exportLayoutAsPdf(layoutType, outputPath);
+        jwLayout->exportLayoutAsPdf(layoutType, outputPath, m_force_event);
         QString pdf_url = QString(m_mapping_export_nginx_url_prefix)
                 .append("/").append(imageSubDir).append("/").append(pdfName);
         responseDto->pdf_url = pdf_url.toStdString();
@@ -445,7 +451,7 @@ void Processor::export2DLayout(QString& sceneName,
         svgName = QString("%1-%2-%3.svg").arg(sceneName, layoutType, paperSpecName);
         outputPath = QString("%1/%2/%3").arg(m_export_prefix, imageSubDir, svgName);
         FileUtil::delete_file(outputPath);
-        jwLayout->exportLayoutAsSvg(layoutType, outputPath);
+        jwLayout->exportLayoutAsSvg(layoutType, outputPath, m_force_event);
         QString svg_url = QString(m_mapping_export_nginx_url_prefix)
                 .append("/").append(imageSubDir).append("/").append(svgName);
         responseDto->svg_url = svg_url.toStdString();

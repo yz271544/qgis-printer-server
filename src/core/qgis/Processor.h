@@ -48,6 +48,7 @@ private:
     bool m_export_png_enable = true;
     bool m_export_pdf_enable = false;
     bool m_export_svg_enable = false;
+    bool m_force_event = false;
     YAML::Node *m_config;
     std::unique_ptr<PlottingFetch> m_plotting_fetch;
     std::unique_ptr<App> m_app;
