@@ -35,11 +35,13 @@ COPY common/input/topicMap.json /lyndon/iProject/cpath/jingweiprinter/common/inp
 RUN mkdir /usr/local/bin/conf
 COPY conf/config-prod.yaml /usr/local/bin/conf/config.yaml
 
-#RUN cp /etc/apt/sources.list.d/ubuntu.sources /etc/apt/sources.list.d/ubuntu.sources.bak
-#RUN sed -i "s/archive.ubuntu.com/mirrors.aliyun.com/g" /etc/apt/sources.list.d/ubuntu.sources
-#RUN sed -i "s/security.ubuntu.com/mirrors.aliyun.com/g" /etc/apt/sources.list.d/ubuntu.sources
-#
-#RUN apt-get update
+
+RUN apt-get update && apt-get install -y gnupg2 curl
+RUN curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | apt-key add -
+RUN distribution=$(. /etc/os-release;echo $ID$VERSION_ID) && \
+    curl -s -L https://nvidia.github.io/nvidia-docker/ubuntu22.04/nvidia-docker.list | tee /etc/apt/sources.list.d/nvidia-docker.list
+
+RUN apt-get install -y nvidia-container-runtime
 RUN apt-get install -y libarchive13t64
 RUN apt install -y net-tools telnet dnsutils
 
