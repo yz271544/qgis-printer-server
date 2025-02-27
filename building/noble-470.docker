@@ -37,7 +37,6 @@ COPY conf/config-prod.yaml /usr/local/bin/conf/config.yaml
 
 
 RUN apt-get update
-RUN apt-get install -y nvidia-container-runtime
 RUN apt-get install -y libarchive13t64
 RUN apt install -y net-tools telnet dnsutils
 RUN apt install -y nvidia-utils-470 libnvidia-gl-470
