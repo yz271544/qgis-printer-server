@@ -35,13 +35,12 @@ COPY common/input/topicMap.json /lyndon/iProject/cpath/jingweiprinter/common/inp
 RUN mkdir /usr/local/bin/conf
 COPY conf/config-prod.yaml /usr/local/bin/conf/config.yaml
 
-
+RUN sed -i "s/mirrors.aliyun.com/mirrors.ustc.edu.cn/g" /etc/apt/sources.list.d/ubuntu.sources
 RUN apt-get update
 RUN apt-get install -y libarchive13t64
-RUN apt install -y net-tools telnet dnsutils
-RUN apt install -y nvidia-utils-470 libnvidia-gl-470
-
-RUN apt install -y libxcb-*
+RUN apt-get install -y net-tools telnet dnsutils
+RUN apt-get install -y nvidia-utils-470 libnvidia-gl-470
+RUN apt-get install -y libxcb-*
 ENV DISPLAY=:0
 ENV QT_QPA_PLATFORM="xcb"
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
