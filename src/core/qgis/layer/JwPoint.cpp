@@ -93,6 +93,11 @@ void JwPoint::addPoints(
             this->mTransformContext,
             this->mProject->crs());
 
+    if (!persistPointVectorLayer) {
+        spdlog::error("Failed to persist layer: {}", mLayerName.toStdString());
+        return;
+    }
+
     // 处理图标
     QString icon_path = QDir(mProjectDir).filePath(iconName + ".png");
     if (!iconBase64.isEmpty()) {
