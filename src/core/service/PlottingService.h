@@ -26,22 +26,27 @@ class PlottingService {
 private:
     Processor* m_processor;
 
-    // 异步任务队列
-    struct AsyncTask {
-        oatpp::String token;
-        oatpp::web::server::api::ApiController::Object<PlottingDto> plottingDto;
-        std::shared_ptr<oatpp::async::Lock> lock;
-    };
+    oatpp::async::Lock m_taskLock; // OAT++异步锁
+    std::queue<std::function<void()>> m_taskQueue;
+    bool m_processing = false;
 
-    std::queue<AsyncTask> m_asyncQueue;
-    std::mutex m_queueMutex;
-    std::shared_ptr<ASYNCNS::Executor> m_asyncExecutor;
+    void processNextTask() {
+        if(m_processing) return;
+        m_processing = true;
+
+        auto lockGuard = oatpp::async::LockGuard();
+        lockGuard.lockAsync(&m_taskLock).next([this] {
+            if(!m_taskQueue.empty()) {
+                auto task = m_taskQueue.front();
+                m_taskQueue.pop();
+                task(); // 执行实际任务
+            }
+            m_processing = false;
+            processNextTask(); // 递归处理下一个任务
+        });
+    }
 public:
     PlottingService(Processor* processor);
-
-    PlottingService(Processor* processor,
-                    std::shared_ptr<ASYNCNS::Executor> executor)
-            : m_processor(processor), m_asyncExecutor(executor) {}
 
     ~PlottingService() = default;
 
@@ -51,9 +56,9 @@ public:
             const oatpp::web::server::api::ApiController::Object<PlottingDto>& plottingDto);
 
     // 异步处理绘图逻辑
-    ASYNCNS::CoroutineStarter processPlottingAsync(
+    oatpp::async::CoroutineStarter processPlottingAsync(
             const oatpp::String& token,
-            const oatpp::web::server::api::ApiController::Object<PlottingDto>& plottingDto);
+            const oatpp::Object<PlottingDto>& plottingDto);
 };
 
 #endif //JINGWEIPRINTER_PLOTTINGSERVICE_H

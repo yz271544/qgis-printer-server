@@ -2,7 +2,8 @@
 // Created by etl on 2/5/25.
 //
 
-
+#include <QCoreApplication>
+#include <QMetaObject>
 #include "PlottingService.h"
 
 PlottingService::PlottingService(Processor* processor) {
@@ -41,59 +42,43 @@ DTOWRAPPERNS::DTOWrapper<ResponseDto::Z__CLASS> PlottingService::processPlotting
 
 ASYNCNS::CoroutineStarter PlottingService::processPlottingAsync(
         const oatpp::String& token,
-        const oatpp::web::server::api::ApiController::Object<PlottingDto>& plottingDto)
+        const oatpp::Object<PlottingDto>& plottingDto)
 {
-    // 创建异步协程
+    // 定义协程处理类
     class ProcessCoroutine : public ASYNCNS::Coroutine<ProcessCoroutine> {
     private:
         PlottingService* m_service;
         oatpp::String m_token;
-        oatpp::web::server::api::ApiController::Object<PlottingDto> m_plottingDto;
-        std::shared_ptr<ASYNCNS::Lock> m_lock;
+        oatpp::Object<PlottingDto> m_plottingDto;
+
     public:
         ProcessCoroutine(PlottingService* service,
                          const oatpp::String& token,
-                         const auto& plottingDto)
+                         const oatpp::Object<PlottingDto>& plottingDto)
                 : m_service(service), m_token(token), m_plottingDto(plottingDto)
-        {
-            m_lock = std::make_shared<ASYNCNS::Lock>();
-        }
+        {}
 
         Action act() override {
-            // 将任务加入队列
-            std::lock_guard<std::mutex> lock(m_service->m_queueMutex);
-            m_service->m_asyncQueue.push({m_token, m_plottingDto, m_lock});
-
-            // 通知Qt主线程处理任务
-            QMetaObject::invokeMethod(qApp, [this]() {
-                std::unique_lock<std::mutex> lock(m_service->m_queueMutex);
-                if (m_service->m_asyncQueue.empty()) return;
-
-                auto task = m_service->m_asyncQueue.front();
-                m_service->m_asyncQueue.pop();
-                lock.unlock();
-
-                // 实际处理逻辑（在主线程执行）
-                try {
+            // 将任务包装进队列
+            m_service->m_taskQueue.push([this]() {
+                QMetaObject::invokeMethod(qApp, [this]() {
+                    // 在主线程执行QGIS操作
                     auto response = m_service->m_processor->processByPlottingWeb(
-                            task.token, task.plottingDto).get();
-                    task.lock->unlock();
-                } catch (...) {
-                    task.lock->unlock();
-                    //task.lock->unlockWithException(std::current_exception());
-                }
-            }, Qt::QueuedConnection);
+                            m_token, m_plottingDto).get();
+                    this->parent->setResult(response); // 设置协程结果
+                }, Qt::BlockingQueuedConnection);
+            });
 
+            m_service->processNextTask();
             return yieldTo(&ProcessCoroutine::waitResult);
         }
 
         Action waitResult() {
-            return m_lock->waitAsync();
-            //return m_lock->async().callbackTo(&ProcessCoroutine::onResponse);
+            return waitForResult().next(yieldTo(&ProcessCoroutine::onResponse));
         }
 
-        Action onResponse(const std::shared_ptr<DTOWRAPPERNS::DTOWrapper<ResponseDto::Z__CLASS>>& response) {
-            return _return(response);
+        Action onResponse() {
+            return _return(getResult<oatpp::Object<ResponseDto>>());
         }
     };
 
