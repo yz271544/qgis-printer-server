@@ -10,6 +10,9 @@
 #include <oatpp/web/server/api/ApiController.hpp>
 #include <queue>
 #include <mutex>
+#include <condition_variable>
+#include <thread>
+#include <atomic>
 #if OATPP_VERSION_LESS_1_4_0
 #include <oatpp/core/async/Executor.hpp>
 #include <oatpp/core/async/Lock.hpp>
@@ -26,39 +29,25 @@ class PlottingService {
 private:
     Processor* m_processor;
 
-    oatpp::async::Lock m_taskLock; // OAT++异步锁
-    std::queue<std::function<void()>> m_taskQueue;
-    bool m_processing = false;
-
-    void processNextTask() {
-        if(m_processing) return;
-        m_processing = true;
-
-        auto lockGuard = oatpp::async::LockGuard();
-        lockGuard.lockAsync(&m_taskLock).next([this] {
-            if(!m_taskQueue.empty()) {
-                auto task = m_taskQueue.front();
-                m_taskQueue.pop();
-                task(); // 执行实际任务
-            }
-            m_processing = false;
-            processNextTask(); // 递归处理下一个任务
-        });
-    }
+    std::queue<std::pair<oatpp::String, oatpp::web::server::api::ApiController::Object<PlottingDto>>> requestQueue;
+    std::mutex queueMutex;
+    std::condition_variable queueCV;
+    std::thread processingThread;
+    std::atomic<bool> stopProcess;
 public:
     PlottingService(Processor* processor);
 
-    ~PlottingService() = default;
+    ~PlottingService();
 
     // 处理绘图逻辑
     DTOWRAPPERNS::DTOWrapper<ResponseDto::Z__CLASS> processPlotting(
             const oatpp::String& token,
             const oatpp::web::server::api::ApiController::Object<PlottingDto>& plottingDto);
-
+    DTOWRAPPERNS::DTOWrapper<ResponseDto> processRequest(const oatpp::String& token,
+                   const oatpp::web::server::api::ApiController::Object<PlottingDto>& plottingDto);
     // 异步处理绘图逻辑
-    oatpp::async::CoroutineStarter processPlottingAsync(
-            const oatpp::String& token,
-            const oatpp::Object<PlottingDto>& plottingDto);
+    void startProcessing();
+    void stopProcessing();
 };
 
 #endif //JINGWEIPRINTER_PLOTTINGSERVICE_H
