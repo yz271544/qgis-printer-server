@@ -11,6 +11,7 @@ PlottingService::PlottingService(Processor* processor) : m_processor(processor),
 }
 
 PlottingService::~PlottingService() {
+    spdlog::warn("deconstruction PlottingService");
     stopProcessing();
 }
 
