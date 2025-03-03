@@ -34,6 +34,10 @@ private:
     std::condition_variable queueCV;
     std::thread processingThread;
     std::atomic<bool> stopProcess;
+    std::mutex responseMutex;
+    std::condition_variable responseCV;
+    bool responseReady = false;
+    DTOWRAPPERNS::DTOWrapper<ResponseDto> processedResponseDto;
 public:
     PlottingService(Processor* processor);
 
@@ -48,6 +52,9 @@ public:
     // 异步处理绘图逻辑
     void startProcessing();
     void stopProcessing();
+
+    // 设置处理后的 responseDto 并通知等待线程
+    void setProcessedResponseDto(const DTOWRAPPERNS::DTOWrapper<ResponseDto>& response);
 };
 
 #endif //JINGWEIPRINTER_PLOTTINGSERVICE_H
