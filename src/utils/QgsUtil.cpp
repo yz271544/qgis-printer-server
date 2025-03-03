@@ -102,6 +102,13 @@ std::unique_ptr<QgsVectorLayer> QgsUtil::writePersistedLayer(
     spdlog::debug("Number of features in layer: {}", layer->featureCount());
     spdlog::debug("project_dir: {}, layer_name: {}", project_dir.toStdString(), layer_name.toStdString());
     QString file_prefix = QString("%1/%2").arg(project_dir, layer_name);
+
+    QFile dir(file_prefix);
+    if (dir.exists() && !dir.isWritable()) {
+        spdlog::error("the mProjectDir can't write: {}", file_prefix.toStdString());
+        return nullptr;
+    }
+
     QString file_path = QString("%1.geojson").arg(file_prefix);
     QString temp_file_path = QString("%1.tmp").arg(file_prefix);
 

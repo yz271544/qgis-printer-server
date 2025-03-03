@@ -135,10 +135,12 @@ inline int BASE_TILE_LAYER_MIN_LEVEL = getEnvInt32("BASE_TILE_LAYER_MIN_LEVEL", 
 #define DTOWRAPPERNS oatpp::data::mapping::type
 #define OBJECTMAPPERNS oatpp::parser::json::mapping
 #define PRIMITIVENS oatpp::data::mapping::type
+#define ASYNCNS oatpp::core::async
 #else
 #define DTOWRAPPERNS oatpp::data::type
 #define OBJECTMAPPERNS oatpp::json
 #define PRIMITIVENS oatpp::data::type
+#define ASYNCNS oatpp::async
 #endif
 
 

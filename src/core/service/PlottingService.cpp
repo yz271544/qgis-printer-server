@@ -2,16 +2,46 @@
 // Created by etl on 2/5/25.
 //
 
-
+#include <QCoreApplication>
+#include <QMetaObject>
 #include "PlottingService.h"
 
-PlottingService::PlottingService(Processor* processor) {
-    m_processor = processor;
+PlottingService::PlottingService(Processor* processor) : m_processor(processor), stopProcess(false) {
+    spdlog::warn("construct PlottingService");
+    startProcessing();
 }
+
+PlottingService::~PlottingService() {
+    spdlog::warn("deconstruct PlottingService");
+    stopProcessing();
+}
+
 
 DTOWRAPPERNS::DTOWrapper<ResponseDto::Z__CLASS> PlottingService::processPlotting(
         const oatpp::String& token,
         const oatpp::web::server::api::ApiController::Object<PlottingDto>& plottingDto) {
+    {
+        std::lock_guard<std::mutex> lock(queueMutex);
+        requestQueue.emplace(token, plottingDto);
+    }
+    queueCV.notify_one();
+    //auto responseDto = processRequest(token, plottingDto);
+    DTOWRAPPERNS::DTOWrapper<ResponseDto> responseDto;
+    // 等待 responseDto 有值
+    {
+        std::unique_lock<std::mutex> lock(responseMutex);
+        responseCV.wait(lock, [this] { return responseReady; });
+        responseDto = processedResponseDto;
+        responseReady = false;
+    }
+
+    return responseDto;
+}
+
+// PlottingService.cpp
+DTOWRAPPERNS::DTOWrapper<ResponseDto>
+PlottingService::processRequest(const oatpp::String& token,
+                                     const oatpp::web::server::api::ApiController::Object<PlottingDto>& plottingDto) {
     // Implement the actual plotting logic here
     spdlog::debug("debug Processing plotting request");
 
@@ -36,5 +66,48 @@ DTOWRAPPERNS::DTOWrapper<ResponseDto::Z__CLASS> PlottingService::processPlotting
 
     spdlog::debug("processPlotting Processing plotting response, responseDto -> msg: {}", responseDto->error->c_str());
 
+    // 处理完成后的逻辑可以在这里添加
     return responseDto;
+}
+
+void PlottingService::startProcessing() {
+    processingThread = std::thread([this]() {
+        spdlog::info("stopProcess: {}", stopProcess);
+        while (!stopProcess) {
+            std::unique_lock<std::mutex> lock(queueMutex);
+            queueCV.wait(lock, [this] { return !requestQueue.empty() || stopProcess; });
+            if (stopProcess) {
+                break;
+            }
+            auto [token, plottingDto] = requestQueue.front();
+            requestQueue.pop();
+            lock.unlock();
+
+            // 处理请求
+            auto result = processRequest(token, plottingDto);
+            // 设置处理后的 responseDto 并通知等待线程
+            setProcessedResponseDto(result);
+        }
+    });
+}
+
+void PlottingService::stopProcessing() {
+//    stopProcess = false;
+    {
+        std::lock_guard<std::mutex> lock(queueMutex);
+        stopProcess = true;
+    }
+    queueCV.notify_one();
+    if (processingThread.joinable()) {
+        processingThread.join();
+    }
+}
+
+void PlottingService::setProcessedResponseDto(const DTOWRAPPERNS::DTOWrapper<ResponseDto>& response) {
+    {
+        std::lock_guard<std::mutex> lock(responseMutex);
+        processedResponseDto = response;
+        responseReady = true;
+    }
+    responseCV.notify_one();
 }
