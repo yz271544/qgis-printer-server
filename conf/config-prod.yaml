@@ -8,9 +8,13 @@ web:
   host: "0.0.0.0"
   port: 5890
   route_prefix: /
+  data_process_threads: 9
+  io_threads: 2
+  timer_threads: 1
 qgis:
   force_event: false
   enable_3d: true
+  default_distance: 1000.0
   gui_enabled: false
 #  prefix_path: "/lyndon/iProject/cpath/QGIS/output"
   prefix_path: "/usr"
