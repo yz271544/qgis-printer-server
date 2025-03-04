@@ -69,8 +69,8 @@ void WebStarter::Setup(StarterContext &context) {
 
     // 添加绘图服务控制器
     auto processor = context.getProcessor();
-    auto plottingService = std::make_shared<PlottingService>(processor);
-    auto plotting_controller = PlottingController::createShared(objectMapper, apiPrefix, plottingService.get());
+    auto plottingService = std::make_unique<PlottingService>(processor);
+    auto plotting_controller = PlottingController::createShared(objectMapper, apiPrefix, plottingService.release());
     router->addController(plotting_controller);
 
     /* create server */

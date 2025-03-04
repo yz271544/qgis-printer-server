@@ -305,9 +305,7 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                     }
                 }
 
-                //auto path3dProp = plottingWeb->Z__PROPERTY_INITIALIZER_PROXY_path3d();
-                //if (path3dProp.getPtr() && !plottingWeb->path3d->empty()) {
-                if (!plottingWeb->path3d->empty()) {
+                if (plottingWeb->path3d != nullptr && !plottingWeb->path3d->empty()) {
                     QString plottingWebPath3ds = QString::fromStdString(*plottingWeb->path3d);
                     QStringList real_3d_paths = plottingWebPath3ds.split(",");
                     for (int i = 0; i < real_3d_paths.size(); ++i) {
@@ -376,19 +374,6 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                         add_layout(canvas2d, plottingWeb, image_spec, availablePaper, false,
                                    removeLayerNames, removeLayerPrefixes,layoutType,
                                    responseDto);
-
-                        /*auto appAvailablePapers = m_app->getAvailablePapers();
-
-                        for (const auto &availablePaper: appAvailablePapers) {
-                            spdlog::debug("image_spec_name: {}, available_paper: {}", layoutType.toStdString(),
-                                         availablePaper.getPaperName().toStdString());
-                            auto canvas2d = m_app->getCanvas();
-                            add_layout(canvas2d, layoutType, plottingWeb, image_spec, availablePaper, false,
-                                       removeLayerNames, removeLayerPrefixes);
-                        }*/
-                        /*spdlog::debug("save project");
-                        m_app->saveProject();
-                        export2DLayout(sceneName, layoutType, plottingWeb, responseDto);*/
                     }
                 }
 
