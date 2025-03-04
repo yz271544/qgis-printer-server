@@ -29,7 +29,7 @@ class PlottingService {
 private:
     Processor* m_processor;
 
-    std::queue<std::pair<oatpp::String, oatpp::web::server::api::ApiController::Object<PlottingDto>>> requestQueue;
+    std::queue<std::pair<oatpp::String, DTOWRAPPERNS::DTOWrapper<PlottingDto>>> requestQueue;
     std::mutex queueMutex;
     std::condition_variable queueCV;
     std::thread processingThread;
@@ -46,9 +46,14 @@ public:
     // 处理绘图逻辑
     DTOWRAPPERNS::DTOWrapper<ResponseDto::Z__CLASS> processPlotting(
             const oatpp::String& token,
-            const oatpp::web::server::api::ApiController::Object<PlottingDto>& plottingDto);
-    DTOWRAPPERNS::DTOWrapper<ResponseDto> processRequest(const oatpp::String& token,
-                   const oatpp::web::server::api::ApiController::Object<PlottingDto>& plottingDto);
+            const DTOWRAPPERNS::DTOWrapper<PlottingDto>& plottingDto);
+    DTOWRAPPERNS::DTOWrapper<ResponseDto> processRequest(
+            const oatpp::String& token,
+            const DTOWRAPPERNS::DTOWrapper<PlottingDto>& plottingDto);
+    void processPlottingAsync(
+            const oatpp::String& token,
+            const DTOWRAPPERNS::DTOWrapper<PlottingDto>& plottingDto,
+            std::function<void(bool, const DTOWRAPPERNS::DTOWrapper<ResponseDto>&)> callback);
     // 异步处理绘图逻辑
     void startProcessing();
     void stopProcessing();

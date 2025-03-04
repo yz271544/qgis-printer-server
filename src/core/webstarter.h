@@ -20,6 +20,7 @@
 #include "oatpp/network/tcp/server/ConnectionProvider.hpp"
 #include "oatpp/network/Server.hpp"
 #include "core/qgis/Processor.h"
+#include "AppComponent.h"
 
 #if defined(_WIN32) && defined(_MSC_VER)
 #include "oatpp/core/base/Environment.hpp"
@@ -28,6 +29,7 @@
 class WebStarter : public BaseStarter {
 private:
     bool mBlock;
+    std::unique_ptr<AppComponent> appComponent;
     std::shared_ptr<oatpp::web::server::HttpConnectionHandler> connectionHandler;
     std::shared_ptr<oatpp::network::Server> server;
     std::jthread mWebServerThread;
