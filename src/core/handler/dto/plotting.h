@@ -136,6 +136,13 @@ class BgPic : public oatpp::DTO {
     DTO_FIELD(Boolean, doubleFrame);
 };
 
+class Legend : public oatpp::DTO {
+    DTO_INIT(Legend, DTO)
+
+    DTO_FIELD(String, borderColor);
+    DTO_FIELD(List<Int32>, position);
+};
+
 /**
  * 定义LayInfo DTO
  */
@@ -149,6 +156,7 @@ class LayInfoDto : public oatpp::DTO {
   DTO_FIELD(oatpp::Vector<Object<ArrowDto>>, arrows);
   DTO_FIELD(Boolean, scaleBar);
   DTO_FIELD(Object<BgPic>, bgPic);
+  DTO_FIELD(Object<Legend>, legend);
 };
 
 /**
@@ -163,6 +171,30 @@ class MapTypeDto : public oatpp::DTO {
 };
 
 /**
+ * 3d 摄像机
+ */
+class Camera3dPosition : public oatpp::DTO {
+    DTO_INIT(Camera3dPosition, DTO)
+
+    DTO_FIELD(Float64, cameraLongitude); // 摄像机经度
+    DTO_FIELD(Float64, cameraLatitude);  // 摄像机纬度
+    DTO_FIELD(Float64, cameraHeight);    // 摄像机高度
+    DTO_FIELD(Float64, cameraDirX);      // 摄像机方向向量 X 分量
+    DTO_FIELD(Float64, cameraDirY);      // 摄像机方向向量 Y 分量
+    DTO_FIELD(Float64, cameraDirZ);      // 摄像机方向向量 Z 分量
+    DTO_FIELD(Float64, cameraUpX);       // 摄像机上方向向量 X 分量
+    DTO_FIELD(Float64, cameraUpY);       // 摄像机上方向向量 Y 分量
+    DTO_FIELD(Float64, cameraUpZ);       // 摄像机上方向向量 Z 分量
+    DTO_FIELD(Float64, cameraRightX);    // 摄像机右方向向量 X 分量
+    DTO_FIELD(Float64, cameraRightY);    // 摄像机右方向向量 Y 分量
+    DTO_FIELD(Float64, cameraRightZ);    // 摄像机右方向向量 Z 分量
+    DTO_FIELD(Float64, fov);             // 垂直视场角
+    DTO_FIELD(Float64, aspectRatio);     // 长宽比
+    DTO_FIELD(Float64, nearPlane);       // 近裁剪面
+    DTO_FIELD(Float64, farPlane);        // 远裁剪面
+};
+
+/**
  * 定义主DTO
  */
 class PlottingDto : public oatpp::DTO {
@@ -171,6 +203,7 @@ class PlottingDto : public oatpp::DTO {
   DTO_FIELD(Boolean, selectPath);
   DTO_FIELD(String, path);
   DTO_FIELD(String, path3d);
+  DTO_FIELD(Object<Camera3dPosition>, camera);
   DTO_FIELD(oatpp::Vector<oatpp::Vector<oatpp::Int32>>, tileIndex);
   DTO_FIELD(String, sceneId);
   DTO_FIELD(String, sceneName);

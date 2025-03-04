@@ -34,6 +34,7 @@ class SpecialDTO : public oatpp::DTO {
     DTO_FIELD(String, color);
     DTO_FIELD(Int32, num);
     DTO_FIELD(Int32, height);
+    DTO_FIELD(Int32, radius);
 };
 
 class FontStyleDTO : public oatpp::DTO {
@@ -52,15 +53,31 @@ class BasicsPropertiesJsonDTO : public oatpp::DTO {
     DTO_INIT(BasicsPropertiesJsonDTO, DTO)
 
     DTO_FIELD(String, code);
-    DTO_FIELD(Float64, latitude);
+    DTO_FIELD(String, ethnicity);
+    DTO_FIELD(String, latitude);
     DTO_FIELD(String, typeName);
     DTO_FIELD(String, remark);
+    DTO_FIELD(String, birthTime);
+    DTO_FIELD(String, politicsStatus);
+    DTO_FIELD(String, psychologicalResult);
+    DTO_FIELD(String, post);
+    DTO_FIELD(String, tel);
+    DTO_FIELD(String, company);
+    DTO_FIELD(String, height);
+    DTO_FIELD(String, politicalReview);
+    DTO_FIELD(String, educationBackground);
+    DTO_FIELD(String, sex);
+    DTO_FIELD(String, dept);
+    DTO_FIELD(String, heathCondition);
+    DTO_FIELD(String, birthplace);
+    DTO_FIELD(String, personnelId);
+    DTO_FIELD(String, duty);
+    DTO_FIELD(String, typeValue);
     DTO_FIELD(String, type);
     DTO_FIELD(Int32, longValue, "long");
     DTO_FIELD(Int32, radius);
-    DTO_FIELD(Int32, height);
     DTO_FIELD(String, leadTel);
-    DTO_FIELD(Float64, longitude);
+    DTO_FIELD(String, longitude);
     DTO_FIELD(String, acreage);
     DTO_FIELD(String, prop7);
     DTO_FIELD(String, prop6);
@@ -136,6 +153,12 @@ public:
 class StyleInfoJsonDTO : public oatpp::DTO {
     DTO_INIT(StyleInfoJsonDTO, DTO)
 
+    DTO_FIELD(String, color);
+    DTO_FIELD(String, num);
+    DTO_FIELD(Boolean, loadFlag);
+    DTO_FIELD(String, type);
+    DTO_FIELD(Boolean, originLoadFlag);
+    DTO_FIELD(Int32, radius);
     DTO_FIELD(Boolean, dxFlag);
     DTO_FIELD(Object<LayerStyleObjDTO>, layerStyleObj);
     DTO_FIELD(String, bim);
@@ -210,11 +233,16 @@ class PlottingPayloadDto : public oatpp::DTO {
     DTO_FIELD(String, longitudeLatitude);
     DTO_FIELD(String, shape);
     DTO_FIELD(Int32, styleFlag);
+    DTO_FIELD(Int16, layerFlag);
     DTO_FIELD(String, styleInfoJson);
     DTO_FIELD(String, realityImagesOne);
     DTO_FIELD(String, realityImagesTwo);
     DTO_FIELD(String, rangeImages);
+    DTO_FIELD(String, images);
+    DTO_FIELD(Int16, sort);
+    DTO_FIELD(Boolean, delFlag);
     DTO_FIELD(String, watchPerson);
+    DTO_FIELD(String, equipment);
     DTO_FIELD(List<Object<PersonDto>>, watchPersonInfo);
     DTO_FIELD(List<String>, coverageCodes);
     DTO_FIELD(List<String>, plottingTypeQuery);

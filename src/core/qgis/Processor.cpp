@@ -156,6 +156,13 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
     } catch (const std::exception &e) {
         spdlog::error("get qgis.force_event error: {}", e.what());
     }
+
+    try {
+        m_default_distance = m_config->operator[]("qgis")["default_distance"].as<double>();
+    } catch (const std::exception &e) {
+        spdlog::error("get qgis.default_distance error: {}", e.what());
+    }
+
 }
 
 Processor::~Processor() {
@@ -1063,7 +1070,12 @@ void Processor::add_3d_layout(
     spdlog::debug("init 3d map settings");
     jwLayout3d->init3DMapSettings(removeLayerNames, removeLayerPrefixes);
     spdlog::debug("done init 3d map settings");
-    jwLayout3d->set3DCanvas();
+    if (plottingWeb->camera == nullptr) {
+        jwLayout3d->setTest3DCanvas();
+    } else {
+        auto camera = plottingWeb->camera;
+        jwLayout3d->set3DCanvas(camera, m_default_distance);
+    }
     spdlog::debug("addPrintLayout 3d");
     jwLayout3d->addPrintLayout(QString("3d"), joinedLayoutName, plottingWebMap, available_paper, write_qpt);
     spdlog::debug("save project");

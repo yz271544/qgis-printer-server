@@ -658,7 +658,7 @@ void JwLayout3D::init3DMapSettings(
     qDebug() << "QgsWindow3DEngine created: " << (mCanvas3d->engine() != nullptr);
 }
 
-void JwLayout3D::set3DCanvas() {
+void JwLayout3D::setTest3DCanvas() {
     const QgsReferencedRectangle projectExtent = mProject->viewSettings()->fullExtent();
     auto mapSettings3d = mCanvas3d->mapSettings();
     const QgsRectangle fullExtent = Qgs3DUtils::tryReprojectExtent2D(projectExtent, projectExtent.crs(),
@@ -678,6 +678,90 @@ void JwLayout3D::set3DCanvas() {
     float yaw = 20.0;
     mCanvas3d->setViewFromTop(center, distance, 0);
     mCanvas3d->cameraController()->setLookingAtPoint(lookAtCenterPoint, distance, pitch, yaw);
+}
+
+/**
+ * 设置 3D 地图相机参数
+ * @param cameraLongitude 摄像机经度
+ * @param cameraLatitude 摄像机纬度
+ * @param cameraHeight 摄像机高度
+ * @param cameraDirX 摄像机方向向量 X 分量
+ * @param cameraDirY 摄像机方向向量 Y 分量
+ * @param cameraDirZ 摄像机方向向量 Z 分量
+ * @param cameraUpX 摄像机上方向向量 X 分量
+ * @param cameraUpY 摄像机上方向向量 Y 分量
+ * @param cameraUpZ 摄像机上方向向量 Z 分量
+ * @param cameraRightX 摄像机右方向向量 X 分量
+ * @param cameraRightY 摄像机右方向向量 Y 分量
+ * @param cameraRightZ 摄像机右方向向量 Z 分量
+ * @param fov 垂直视场角
+ * @param aspectRatio 长宽比
+ * @param nearPlane 近裁剪面
+ * @param farPlane 远裁剪面
+ */
+void JwLayout3D::set3DCanvas(oatpp::data::type::DTOWrapper<Camera3dPosition>& camera, double default_distance) {
+    const QgsReferencedRectangle projectExtent = mProject->viewSettings()->fullExtent();
+    auto mapSettings3d = mCanvas3d->mapSettings();
+    const QgsRectangle fullExtent = Qgs3DUtils::tryReprojectExtent2D(projectExtent, projectExtent.crs(),
+                                                                     mapSettings3d->crs(),
+                                                                     mProject->transformContext());
+    spdlog::debug("set3DCanvas fullExtent:");
+    // CameraUtil::ExtentInfo(fullExtent);
+
+    // 转换Cesium摄像机位置到场景CRS
+    QgsPoint cameraLLA(camera->cameraLongitude, camera->cameraLatitude, camera->cameraHeight);
+    QgsCoordinateTransform llaToSceneCRS(
+            QgsCoordinateReferenceSystem("EPSG:4326"), // WGS84经纬度
+            mapSettings3d->crs(),                      // 场景CRS
+            mProject->transformContext());
+    QgsPoint* cameraScene;
+    try {
+        cameraScene = transformPoint(cameraLLA, llaToSceneCRS);
+    } catch (const QgsCsException &e) {
+        spdlog::error("摄像机位置坐标转换失败: {}", e.what().toStdString());
+        return;
+    }
+    QgsVector3D cameraPosition(cameraScene->x(), cameraScene->y(), cameraScene->z());
+
+    // 计算目标点
+    double distance = default_distance; // 假设一个距离，可根据实际情况调整
+    QgsVector3D lookAtCenterPoint(cameraPosition.x() + camera->cameraDirX * distance,
+                                  cameraPosition.y() + camera->cameraDirY * distance,
+                                  cameraPosition.z() + camera->cameraDirZ * distance);
+
+    // 计算距离
+    double dx = cameraPosition.x() - lookAtCenterPoint.x();
+    double dy = cameraPosition.y() - lookAtCenterPoint.y();
+    double dz = cameraPosition.z() - lookAtCenterPoint.z();
+    distance = std::sqrt(dx*dx + dy*dy + dz*dz);
+
+    // 计算方向向量
+    double dir_x = dx / distance;
+    double dir_y = dy / distance;
+    double dir_z = dz / distance;
+
+    // 计算俯仰角和偏航角
+    double pitch = qRadiansToDegrees(std::asin(dir_z));
+    double yaw = qRadiansToDegrees(std::atan2(dir_x, dir_y));
+    if (yaw < 0) yaw += 360.0;
+
+    // 设置QGIS摄像机参数
+    mCanvas3d->setViewFromTop(*cameraScene, static_cast<float>(distance), 0);
+    mCanvas3d->cameraController()->setLookingAtPoint(
+            lookAtCenterPoint,
+            static_cast<float>(distance),
+            static_cast<float>(pitch),
+            static_cast<float>(yaw));
+
+    // 设置垂直视场角（若支持）
+    // mCanvas3d->cameraController()->setFieldOfView(fov);
+}
+
+QgsPoint* JwLayout3D::transformPoint(const QgsPoint& point, const QgsCoordinateTransform& transformer) {
+    QgsPointXY pointXY(point.x(), point.y());
+    QgsPointXY transformedPointXY = transformer.transform(pointXY);
+    auto qgsPoint = std::make_unique<QgsPoint>(transformedPointXY.x(), transformedPointXY.y(), point.z());
+    return qgsPoint.release();
 }
 
 void JwLayout3D::set3DMap(

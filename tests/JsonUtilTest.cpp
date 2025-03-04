@@ -177,6 +177,9 @@ TEST(dtoQJson, testDeserializerTopicFile) {
             return;
         }
 
+        /*auto dtoDoc = JsonUtil::convertDtoToQJsonObject(plottingRespDto);
+        GTEST_LOG_(INFO) << "plottingRespDto json: " << dtoDoc.toJson().toStdString();*/
+
         GTEST_LOG_(INFO) << "plottingRespDto code: " << plottingRespDto->code;
         GTEST_LOG_(INFO) << "plottingRespDto msg: " << plottingRespDto->msg->c_str();
         /*QJsonDocument body = JsonUtil::convertDtoToQJsonObject(plottingRespDto);
@@ -196,17 +199,45 @@ TEST(dtoQJson, testDeserializerTopicFile) {
             // test layerStyle
             auto layerStyleDto = dataItem->getLayerStyleDto();
 
-//            auto propList = layerStyleDto.getPropertiesList();
-//            for (const auto &propItem: propList) {
-//                if (propItem->name=="scale") {
-//                    GTEST_LOG_(INFO) << "layerStyle -> scale:" << layerStyleDto->scale;
-//                }
-//            }
-
             GTEST_LOG_(INFO) << "layerStyle -> scale:" << layerStyleDto->getScale();
             // test layerStyleJson
             auto layerStyleJson = dataItem->getLayerStyleJson();
             GTEST_LOG_(INFO) << "layerStyleJson -> scale:" << layerStyleJson["scale"].toDouble();
+
+            auto plottings = dataItem->plottings;
+            for (const auto &plotting : *plottings) {
+                GTEST_LOG_(INFO) << "plotting name:" << plotting->name->c_str();
+                /*auto longitudeLatitude = plotting->getLongitudeLatitude();
+                GTEST_LOG_(INFO) << "plotting LongitudeLatitude -> type:" << longitudeLatitude->longitudeLatitude->type->c_str();
+                GTEST_LOG_(INFO) << "plotting LongitudeLatitude -> geometry -> type:" << longitudeLatitude->longitudeLatitude->geometry->type->c_str();
+                GTEST_LOG_(INFO) << "plotting LongitudeLatitude -> geometry -> coordinates:"
+                                 << longitudeLatitude->longitudeLatitude->geometry->coordinates[0]
+                                 << "," << longitudeLatitude->longitudeLatitude->geometry->coordinates[1];*/
+                auto longitudeLatitude = plotting->getLongitudeLatitudeJson();
+                GTEST_LOG_(INFO) << "plotting LongitudeLatitude -> type:" << longitudeLatitude["type"].toString().toStdString();
+                GTEST_LOG_(INFO) << "plotting LongitudeLatitude -> geometry -> type:" << longitudeLatitude["geometry"].toObject()["type"].toString().toStdString();
+                GTEST_LOG_(INFO) << "plotting LongitudeLatitude -> geometry -> coordinates:"
+                                 << longitudeLatitude["geometry"].toObject()["coordinates"].toArray().at(0).toDouble()
+                                 << "," << longitudeLatitude["geometry"].toObject()["coordinates"].toArray().at(1).toDouble();
+
+                /*auto shape = plotting->getShape();
+                GTEST_LOG_(INFO) << "plotting shape -> type:" << shape->shape->type->c_str();
+                GTEST_LOG_(INFO) << "plotting shape -> geometry -> type:" << shape->shape->geometry->type->c_str();
+                GTEST_LOG_(INFO) << "plotting shape -> geometry -> coordinates:"
+                                 << shape->shape->geometry->coordinates[0]
+                                 << "," << shape->shape->geometry->coordinates[1]
+                                 << "," << shape->shape->geometry->coordinates[2];*/
+
+                auto shape = plotting->getShapeJson();
+                GTEST_LOG_(INFO) << "plotting shape -> type:" << shape["type"].toString().toStdString();
+                GTEST_LOG_(INFO) << "plotting shape -> geometry -> type:" << shape["geometry"].toObject()["type"].toString().toStdString();
+                GTEST_LOG_(INFO) << "plotting shape -> geometry -> coordinates:"
+                                 << shape["geometry"].toObject()["coordinates"].toArray().at(0).toDouble()
+                                 << "," << shape["geometry"].toObject()["coordinates"].toArray().at(1).toDouble()
+                                 << "," << shape["geometry"].toObject()["coordinates"].toArray().at(2).toDouble();
+            }
+
+
         }
 
     } catch (const std::exception& e) {
