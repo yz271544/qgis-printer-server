@@ -217,9 +217,8 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
 
     // 创建一个 std::promise 用于存储返回值
     auto promise = std::make_shared<std::promise<DTOWRAPPERNS::DTOWrapper<ResponseDto>>>();
-
     // 使用 std::async 来实现异步操作
-    return std::async(std::launch::async, [this, token, plottingWeb, promise]() {
+    auto future = std::async(std::launch::async, [this, token, plottingWeb, promise]() {
 
         // 创建事件循环
         QEventLoop eventLoop;
@@ -305,9 +304,7 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                     }
                 }
 
-                //auto path3dProp = plottingWeb->Z__PROPERTY_INITIALIZER_PROXY_path3d();
-                //if (path3dProp.getPtr() && !plottingWeb->path3d->empty()) {
-                if (!plottingWeb->path3d->empty()) {
+                if (plottingWeb->path3d != nullptr && !plottingWeb->path3d->empty()) {
                     QString plottingWebPath3ds = QString::fromStdString(*plottingWeb->path3d);
                     QStringList real_3d_paths = plottingWebPath3ds.split(",");
                     for (int i = 0; i < real_3d_paths.size(); ++i) {
@@ -376,23 +373,10 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                         add_layout(canvas2d, plottingWeb, image_spec, availablePaper, false,
                                    removeLayerNames, removeLayerPrefixes,layoutType,
                                    responseDto);
-
-                        /*auto appAvailablePapers = m_app->getAvailablePapers();
-
-                        for (const auto &availablePaper: appAvailablePapers) {
-                            spdlog::debug("image_spec_name: {}, available_paper: {}", layoutType.toStdString(),
-                                         availablePaper.getPaperName().toStdString());
-                            auto canvas2d = m_app->getCanvas();
-                            add_layout(canvas2d, layoutType, plottingWeb, image_spec, availablePaper, false,
-                                       removeLayerNames, removeLayerPrefixes);
-                        }*/
-                        /*spdlog::debug("save project");
-                        m_app->saveProject();
-                        export2DLayout(sceneName, layoutType, plottingWeb, responseDto);*/
                     }
                 }
 
-                responseDto->error = "";
+                responseDto->error = "success";
                 promise->set_value(responseDto);
                 spdlog::debug("clear layers and project");
                 m_app->clearLayers();
@@ -409,8 +393,9 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
         }, Qt::QueuedConnection);
         // 启动事件循环，直到 lambda 执行完成
         eventLoop.exec();
-        return promise->get_future().get();
+//        return promise->get_future();
     });
+    return promise->get_future();
 }
 
 

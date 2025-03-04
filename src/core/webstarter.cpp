@@ -12,23 +12,22 @@
 // Created by etl on 24-12-18.
 //
 
-WebStarter::WebStarter() {}
+WebStarter::WebStarter() = default;
 
-WebStarter::~WebStarter() {}
+WebStarter::~WebStarter() = default;
 
 BaseStarter *WebStarter::GetInstance() {
     return this;
 }
 
 void WebStarter::Init(StarterContext &context) {
-//    spdlog::info("WebStarter Init start");
 
     // 先查找ConfStarter实例，获取配置信息
     auto config = context.Props();
     // 根据获取到的配置信息来初始化Web相关配置，比如端口号、路由等设置
-    std::string app_name = (*config)["app"]["name"].as<std::string>();
+    auto app_name = (*config)["app"]["name"].as<std::string>();
     int webPort = (*config)["web"]["port"].as<int>();  // 假设默认端口8080，如果配置中没有指定
-    std::string webRoutePrefix = (*config)["web"]["route_prefix"].as<std::string>();  // 假设默认路由前缀为 /
+    auto webRoutePrefix = (*config)["web"]["route_prefix"].as<std::string>();  // 假设默认路由前缀为 /
     // 这里可以添加更多根据配置初始化Web相关的代码，比如加载特定的中间件等
     spdlog::info("APP name: {} WebStarter Init with port: {} , route prefix: {}", app_name, webPort, webRoutePrefix);
 
@@ -40,75 +39,52 @@ void WebStarter::Init(StarterContext &context) {
     oatpp::Environment::init();
 #endif
 
-//    spdlog::info("WebStarter Init end");
 }
 
 void WebStarter::Setup(StarterContext &context) {
-//    spdlog::info("WebStarter Setup start");
-#if OATPP_VERSION_LESS_1_4_0
-    auto objectMapper = OBJECTMAPPERNS::ObjectMapper::createShared();
-    objectMapper->getSerializer()->getConfig()->escapeFlags = 0; // 禁用转义
-#else
-    auto objectMapper = std::make_shared<OBJECTMAPPERNS::ObjectMapper>();
-    objectMapper->serializerConfig().json.escapeFlags = 0;
-#endif
     auto config = context.Props();
-
+    appComponent = std::make_unique<AppComponent>(config);
+    spdlog::info("inited appComponent");
     oatpp::String apiPrefix = "/api";
     if ((*config)["qgis"]["jingwei_server_api_prefix"]) {
         apiPrefix = (*config)["qgis"]["jingwei_server_api_prefix"].as<std::string>();
     }
+    spdlog::info("apiPrefix: {}", apiPrefix->c_str());
 
     // 设置路由、中间件等相关配置
-    auto router = oatpp::web::server::HttpRouter::createShared();
-    // 这里可以添加具体的路由处理逻辑，比如：
-    // router->route("GET", "/", [](const oatpp::web::server::HttpRequestPtr& request) {
-    //     return oatpp::web::server::HttpResponse::createShared()->writeBody("Hello, Oatpp!");
-    // });
+    auto router = appComponent->httpRouter.getObject();
 
-    // 路由 GET - "/hello" 请求到处理程序
-    router->route("GET", "/hello", std::make_unique<HelloHandler>());
+    auto apiObjectMapper = appComponent->apiObjectMapper.getObject();
+
+    std::shared_ptr<OBJECTMAPPERNS::ObjectMapper> objectMapper;
+
+    if (apiObjectMapper) {
+        objectMapper = std::dynamic_pointer_cast<OBJECTMAPPERNS::ObjectMapper>(apiObjectMapper);
+    } else {
+#ifdef OATPP_VERSION_LESS_1_4_0
+        objectMapper = OBJECTMAPPERNS::ObjectMapper::createShared();
+#else
+        objectMapper = std::make_shared<OBJECTMAPPERNS::ObjectMapper>();
+#endif
+    }
 
     // 路由 add controller
-    auto helloController = HelloController::createShared(objectMapper, apiPrefix);
+    router->addController(HelloController::createShared(objectMapper, apiPrefix));
 
-    // 将控制器的端点添加到路由器
-    router->addController(helloController);
-
+    // 添加绘图服务控制器
     auto processor = context.getProcessor();
     auto plottingService = std::make_unique<PlottingService>(processor);
     auto plotting_controller = PlottingController::createShared(objectMapper, apiPrefix, plottingService.release());
-
     router->addController(plotting_controller);
 
-    // 创建 HTTP 连接处理程序
-    auto connectionHandler = oatpp::web::server::HttpConnectionHandler::createShared(router);
+    /* create server */
+    server = oatpp::network::Server::createShared(appComponent->serverConnectionProvider.getObject(),
+                                                  appComponent->serverConnectionHandler.getObject());
 
-    v_uint16 webPort = 8080;
-    if ((*config)["web"]["port"]) {
-        webPort = (*config)["web"]["port"].as<int>();
-    }
-
-    oatpp::String pHost = "localhost";
-    if ((*config)["web"]["host"]) {
-        pHost = (*config)["web"]["host"].as<std::string>();
-    }
-
-    // 创建 TCP 连接提供者
-    auto connectionProvider = oatpp::network::tcp::server::ConnectionProvider::createShared(
-            {pHost, webPort, oatpp::network::Address::IP_4});
-
-    // 创建服务器，它接受提供的 TCP 连接并将其传递给 HTTP 连接处理程序
-    server = oatpp::network::Server::createShared(connectionProvider, connectionHandler);
-
-    // 打印服务器端口
-    // OATPP_LOGI("MyApp", "Server running on port {}", static_cast<const char*>(connectionProvider->getProperty("port").getData()));
-    // OATPP_LOGI("MyApp", "Server running on port {}", connectionProvider->getProperty("port").getData());
-//    spdlog::info("WebStarter Setup end");
 }
 
 void WebStarter::Start(StarterContext &context) {
-//    spdlog::info("WebStarter Start start");
+    spdlog::info("WebStarter Start start");
     // 启动Web服务器
     try {
         if (mBlock) {
@@ -135,27 +111,19 @@ void WebStarter::Stop(StarterContext &context) {
         return;
     }
     mStopped = true;
-//    spdlog::info("WebStarter Stop start");
     // 停止Web服务器
     try {
         if (mBlock) {
             server->stop();
         } else {
-//            spdlog::info("try join web server thread: {}", threadIdToString(mWebServerThread.get_id()));
             if (mWebServerThread.joinable()) {
-//                spdlog::info("request stop web server thread");
                 mWebServerThread.request_stop();  // 请求线程停止
                 server->stop();  // 确保 `server->run()` 立即停止
-//                spdlog::info("join web server thread");
                 mWebServerThread.join();           // 等待线程结束
-//                spdlog::info("joined the web server thread");
             }
         }
-//        spdlog::info("oatpp server reset");
         server.reset();
-//        spdlog::info("Resetting connection handler");
         connectionHandler.reset();
-//        spdlog::info("Destroying oatpp environment");
 #ifdef OATPP_VERSION_LESS_1_4_0
         oatpp::base::Environment::destroy();
 #else
@@ -164,7 +132,6 @@ void WebStarter::Stop(StarterContext &context) {
     } catch (const std::exception &e) {
         spdlog::error("Web服务停止失败: {}", e.what());
     }
-//    spdlog::info("WebStarter Stop end");
 }
 
 int WebStarter::PriorityGroup() {
