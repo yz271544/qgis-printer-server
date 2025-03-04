@@ -217,9 +217,8 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
 
     // 创建一个 std::promise 用于存储返回值
     auto promise = std::make_shared<std::promise<DTOWRAPPERNS::DTOWrapper<ResponseDto>>>();
-
     // 使用 std::async 来实现异步操作
-    return std::async(std::launch::async, [this, token, plottingWeb, promise]() {
+    auto future = std::async(std::launch::async, [this, token, plottingWeb, promise]() {
 
         // 创建事件循环
         QEventLoop eventLoop;
@@ -377,7 +376,7 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                     }
                 }
 
-                responseDto->error = "";
+                responseDto->error = "success";
                 promise->set_value(responseDto);
                 spdlog::debug("clear layers and project");
                 m_app->clearLayers();
@@ -394,8 +393,9 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
         }, Qt::QueuedConnection);
         // 启动事件循环，直到 lambda 执行完成
         eventLoop.exec();
-        return promise->get_future().get();
+//        return promise->get_future();
     });
+    return promise->get_future();
 }
 
 

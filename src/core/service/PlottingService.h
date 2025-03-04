@@ -53,7 +53,7 @@ public:
     void processPlottingAsync(
             const oatpp::String& token,
             const DTOWRAPPERNS::DTOWrapper<PlottingDto>& plottingDto,
-            std::function<void(bool, const DTOWRAPPERNS::DTOWrapper<ResponseDto>&)> callback);
+            const std::function<void(bool, const DTOWRAPPERNS::DTOWrapper<ResponseDto>&)>& callback);
     // 异步处理绘图逻辑
     void startProcessing();
     void stopProcessing();

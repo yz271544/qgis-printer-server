@@ -63,12 +63,20 @@ PlottingService::processRequest(
 
     spdlog::debug("processPlotting Processing plotting request, requestBody: {}", QString::fromStdString(jsonStr).toUtf8());
 
-    auto responseDto = m_processor->processByPlottingWeb(token, plottingDto).get();
+    auto futureResponseDto = m_processor->processByPlottingWeb(token, plottingDto);
 
-    spdlog::debug("processPlotting Processing plotting response, responseDto -> msg: {}", responseDto->error->c_str());
-
-    // 处理完成后的逻辑可以在这里添加
-    return responseDto;
+    try {
+        auto responseDto = futureResponseDto.get();
+        spdlog::debug("processPlotting Processing plotting response, responseDto -> msg: {}", responseDto->error->c_str());
+        // 处理完成后的逻辑可以在这里添加
+        return responseDto;
+    } catch (const std::exception& e) {
+        spdlog::error("Error processing plotting request: {}", e.what());
+        auto responseDto = ResponseDto::createShared();
+        responseDto->error = e.what();
+        // 这里可以根据需要进行错误处理，例如返回错误响应 // 返回一个默认构造的 DTOWrapper<ResponseDto> 表示错误
+        return responseDto;
+    }
 }
 
 void PlottingService::startProcessing() {
@@ -118,7 +126,7 @@ void PlottingService::setProcessedResponseDto(const DTOWRAPPERNS::DTOWrapper<Res
 void PlottingService::processPlottingAsync(
         const oatpp::String &token,
         const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingDto,
-        std::function<void(bool, const DTOWRAPPERNS::DTOWrapper<ResponseDto>&)> callback) {
+        const std::function<void(bool, const DTOWRAPPERNS::DTOWrapper<ResponseDto>&)>& callback) {
     spdlog::info("processPlottingAsync -> token: {}, scene: {}", token->c_str(), plottingDto->sceneName->c_str());
     auto responseDto = processPlotting(token, plottingDto);
     callback(true, responseDto);
