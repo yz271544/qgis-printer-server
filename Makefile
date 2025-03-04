@@ -19,9 +19,13 @@ printerimage470:
 printerimage550:
 	docker build -t ${REPO}/jingweiprinter:${VERSION}-550 --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-550.docker .
 
+.PHONY: printerimages
+printerimages: printerimage470 printerimage550
+
 .PHONY: images
-images: baseimage printerimage470 printerimage550
+images: baseimage printerimages
 
 .PHONY: push
 push:
-	docker push ${REPO}/jingweiprinter:${VERSION}
+	docker push ${REPO}/jingweiprinter:${VERSION}-470
+	docker push ${REPO}/jingweiprinter:${VERSION}-550
