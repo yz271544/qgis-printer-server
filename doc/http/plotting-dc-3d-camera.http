@@ -6,6 +6,7 @@ Authorization: Bearer {{token}}
 {
   "selectPath": true,
   "path": "/map/test_data/正射/瑞光电厂-DOM",
+  "path3d": "瑞光电厂切片",
   "tileIndex": [
     [
       0,
@@ -107,7 +108,26 @@ Authorization: Bearer {{token}}
   "pictureUnit": "制图单位：    时间：",
   "mapType": {
     "map": true,
-    "electron": false
+    "electron": false,
+    "is3D": true
+  },
+  "camera": {
+    "cameraLongitude": 112.55359303842779,
+    "cameraLatitude": 37.65770253703779,
+    "cameraHeight": 8557.490343886406,
+    "cameraDirX": 0.36946412242647997,
+    "cameraDirY": -0.8656181412132182,
+    "cameraDirZ": 0.33793711817763383,
+    "cameraUpX": -0.12417459408805638,
+    "cameraUpY": 0.3144160748404764,
+    "cameraUpZ": 0.9411286851780549,
+    "cameraRightX": -0.9209109253465818,
+    "cameraRightY": -0.3896764882366922,
+    "cameraRightZ": 0.008677677847305817,
+    "fov": 59.99999999999999,
+    "aspectRatio": 2.1203585147247117,
+    "nearPlane":  0.1,
+    "farPlane": 10000000000
   }
 }
 

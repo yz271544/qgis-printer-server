@@ -6,6 +6,7 @@ Authorization: Bearer {{token}}
 {
   "selectPath": true,
   "path": "/map/test_data/正射/瑞光电厂-DOM",
+  "path3d": "瑞光电厂切片",
   "tileIndex": [
     [
       0,
@@ -107,7 +108,8 @@ Authorization: Bearer {{token}}
   "pictureUnit": "制图单位：    时间：",
   "mapType": {
     "map": true,
-    "electron": false
+    "electron": false,
+    "is3D": true
   }
 }
 

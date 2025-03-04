@@ -43,38 +43,16 @@ public:
                                                             oatpp::String &routePrefix,
                                                             PlottingService *plottingService);
 
-    ENDPOINT_INFO(plotting) {
-        info->summary = "Plotting endpoint";
-        info->addConsumes < Object < PlottingDto >> ("application/json");
-        info->addResponse < Object < ResponseDto >> (Status::CODE_200, "application/json");
-    }
-
-    ENDPOINT("POST", "/qgz", plotting,
-             REQUEST(std::shared_ptr<IncomingRequest>, request),
-             BODY_DTO(Object < PlottingDto > , plottingDto)) {
-        auto token = request->getHeader("Authorization");
-        spdlog::debug("Authorization header: {}", token->c_str());
-        // 调用业务逻辑服务类处理请求
-        auto responseDto = m_plottingService->processPlotting(token, plottingDto);
-        // 返回响应
-#if OATPP_VERSION_LESS_1_4_0
-        return createDtoResponse(Status::CODE_200, responseDto, this->getDefaultObjectMapper());
-#else
-        return createDtoResponse(Status::CODE_200, responseDto, this->getContentMappers()->getDefaultMapper());
-#endif
-    }
-
-
     /**
-   * async Endpoint
-   */
+     * async Endpoint
+     */
     ENDPOINT_INFO(AsyncPlotting) {
         info->summary = "Plotting endpoint";
         info->addConsumes < Object < PlottingDto >> ("application/json");
         info->addResponse < Object < ResponseDto >> (Status::CODE_200, "application/json");
     }
 
-    ENDPOINT_ASYNC("POST", "/api/async-qgz", AsyncPlotting) {
+    ENDPOINT_ASYNC("POST", "/api/qgz", AsyncPlotting) {
 
     ENDPOINT_ASYNC_INIT(AsyncPlotting)
 

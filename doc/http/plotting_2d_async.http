@@ -1,5 +1,5 @@
 ### POST plotting
-POST http://{{host}}:{{port}}/api/async-qgz
+POST http://{{host}}:{{port}}/api/qgz
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
