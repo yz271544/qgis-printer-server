@@ -174,6 +174,7 @@ void App::addMapBaseTileLayer() {
     try {
         auto mapBaseUrlStdString = (*mConfig)["qgis"]["map_base_url"].as<std::string>();
         map_base_url = QString::fromStdString(mapBaseUrlStdString);
+        map_base_url = QString::fromStdString(getEnvString("MAP_BASE_URL", map_base_url.toStdString()));
     } catch (const std::exception& e) {
         spdlog::error("get qgis.map_base_url error: {}", e.what());
     }
@@ -218,6 +219,7 @@ void App::addMapMainTileLayer(int num, QString& orthogonalPath) {
     try {
         auto mapMainPrefixStdString = (*mConfig)["qgis"]["map_main_base_url"].as<std::string>();
         map_main_base_url = QString::fromStdString(mapMainPrefixStdString);
+        map_main_base_url = QString::fromStdString(getEnvString("MAP_MAIN_BASE_URL", map_main_base_url.toStdString()));
     } catch (const std::exception& e) {
         spdlog::error("get qgis.map_main_base_url error: {}", e.what());
     }

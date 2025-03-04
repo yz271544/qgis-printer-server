@@ -28,12 +28,14 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
     QString jingwei_server_host = "127.0.0.1";
     try {
         jingwei_server_host = QString::fromStdString((*m_config)["qgis"]["jingwei_server_host"].as<std::string>());
+        jingwei_server_host = QString::fromStdString(getEnvString("JINGWEI_SERVER_HOST", jingwei_server_host.toStdString()));
     } catch (const std::exception &e) {
         spdlog::warn("get jingwei_server_host error: {}", e.what());
     }
     std::int32_t jingwei_server_port = 8080;
     try {
         jingwei_server_port = (*m_config)["qgis"]["jingwei_server_port"].as<std::int32_t>();
+        jingwei_server_port = getEnvInt32("JINGWEI_SERVER_PORT", jingwei_server_port);
     } catch (const std::exception &e) {
         spdlog::warn("get jingwei_server_port error: {}", e.what());
     }
