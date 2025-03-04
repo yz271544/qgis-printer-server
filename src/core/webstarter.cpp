@@ -12,9 +12,9 @@
 // Created by etl on 24-12-18.
 //
 
-WebStarter::WebStarter() {}
+WebStarter::WebStarter() = default;
 
-WebStarter::~WebStarter() {}
+WebStarter::~WebStarter() = default;
 
 BaseStarter *WebStarter::GetInstance() {
     return this;
@@ -25,9 +25,9 @@ void WebStarter::Init(StarterContext &context) {
     // 先查找ConfStarter实例，获取配置信息
     auto config = context.Props();
     // 根据获取到的配置信息来初始化Web相关配置，比如端口号、路由等设置
-    std::string app_name = (*config)["app"]["name"].as<std::string>();
+    auto app_name = (*config)["app"]["name"].as<std::string>();
     int webPort = (*config)["web"]["port"].as<int>();  // 假设默认端口8080，如果配置中没有指定
-    std::string webRoutePrefix = (*config)["web"]["route_prefix"].as<std::string>();  // 假设默认路由前缀为 /
+    auto webRoutePrefix = (*config)["web"]["route_prefix"].as<std::string>();  // 假设默认路由前缀为 /
     // 这里可以添加更多根据配置初始化Web相关的代码，比如加载特定的中间件等
     spdlog::info("APP name: {} WebStarter Init with port: {} , route prefix: {}", app_name, webPort, webRoutePrefix);
 
@@ -56,12 +56,16 @@ void WebStarter::Setup(StarterContext &context) {
 
     auto apiObjectMapper = appComponent->apiObjectMapper.getObject();
 
-    std::shared_ptr<oatpp::parser::json::mapping::ObjectMapper> objectMapper;
+    std::shared_ptr<OBJECTMAPPERNS::ObjectMapper> objectMapper;
 
     if (apiObjectMapper) {
-        objectMapper = std::dynamic_pointer_cast<oatpp::parser::json::mapping::ObjectMapper>(apiObjectMapper);
+        objectMapper = std::dynamic_pointer_cast<OBJECTMAPPERNS::ObjectMapper>(apiObjectMapper);
     } else {
-        objectMapper = oatpp::parser::json::mapping::ObjectMapper::createShared();
+#ifdef OATPP_VERSION_LESS_1_4_0
+        objectMapper = OBJECTMAPPERNS::ObjectMapper::createShared();
+#else
+        objectMapper = std::make_shared<OBJECTMAPPERNS::ObjectMapper>();
+#endif
     }
 
     // 路由 add controller

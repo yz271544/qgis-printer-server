@@ -28,7 +28,7 @@
 
 class WebStarter : public BaseStarter {
 private:
-    bool mBlock;
+    bool mBlock{};
     std::unique_ptr<AppComponent> appComponent;
     std::shared_ptr<oatpp::web::server::HttpConnectionHandler> connectionHandler;
     std::shared_ptr<oatpp::network::Server> server;
@@ -37,31 +37,30 @@ private:
 public:
     WebStarter();
 
-    ~WebStarter();
+    ~WebStarter() override;
 
-    BaseStarter* GetInstance();
+    BaseStarter *GetInstance() override;
 
-    void Init(StarterContext& context);
+    void Init(StarterContext &context) override;
 
-    void Setup(StarterContext& context);
+    void Setup(StarterContext &context) override;
 
-    void Start(StarterContext& context);
+    void Start(StarterContext &context) override;
 
-    void Stop(StarterContext& context);
+    void Stop(StarterContext &context) override;
 
-    int PriorityGroup();
+    int PriorityGroup() override;
 
-    bool StartBlocking();
+    bool StartBlocking() override;
 
-    std::array<int, 4> Priority();
+    std::array<int, 4> Priority() override;
 
-    std::string GetName();
+    std::string GetName() override;
 
     void SetBlocking(bool isBlock);
 
-    std::string threadIdToString(const std::thread::id& id);
+    std::string threadIdToString(const std::thread::id &id);
 };
-
 
 
 #endif //WEBSTARTER_H

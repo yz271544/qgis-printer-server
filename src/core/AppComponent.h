@@ -12,9 +12,13 @@
 #include "oatpp/web/server/HttpRouter.hpp"
 #include "oatpp/network/tcp/server/ConnectionProvider.hpp"
 
+#if OATPP_VERSION_LESS_1_4_0
 #include "oatpp/parser/json/mapping/ObjectMapper.hpp"
-
 #include "oatpp/core/macro/component.hpp"
+#else
+#include <oatpp/json/ObjectMapper.hpp>
+#include <oatpp/macro/component.hpp>
+#endif
 
 /**
  *  Class which creates and holds Application components and registers components in oatpp::base::Environment
@@ -24,16 +28,33 @@ class AppComponent {
 private:
     const YAML::Node* mConfig;
 public:
-    AppComponent(const YAML::Node* config) : mConfig(config) {}
+    explicit AppComponent(const YAML::Node* config) : mConfig(config) {}
 public:
     /**
      * Create Async Executor
      */
-    OATPP_CREATE_COMPONENT(std::shared_ptr<oatpp::async::Executor>, executor)([] {
+    OATPP_CREATE_COMPONENT(std::shared_ptr<oatpp::async::Executor>, executor)([this] {
+        v_int32 dataProcessingThreads = 9;
+        v_int32 ioThreads = 2;
+        v_int32 timerThreads = 1;
+
+        if ((*mConfig) && (*mConfig)["web"].IsDefined()) {
+            auto webConfig = (*mConfig)["web"];
+            if (webConfig["data_process_threads"].IsDefined()) {
+                dataProcessingThreads = webConfig["data_process_threads"].as<v_int32>();
+            }
+            if (webConfig["io_threads"].IsDefined()) {
+                ioThreads = webConfig["io_threads"].as<v_int32>();
+            }
+            if (webConfig["timer_threads"].IsDefined()) {
+                timerThreads = webConfig["timer_threads"].as<v_int32>();
+            }
+        }
+
         return std::make_shared<oatpp::async::Executor>(
-                9 /* Data-Processing threads */,
-                2 /* I/O threads */,
-                1 /* Timer threads */
+                dataProcessingThreads /* Data-Processing threads */,
+                ioThreads /* I/O threads */,
+                timerThreads /* Timer threads */
         );
     }());
 
@@ -86,17 +107,17 @@ public:
      *  Create ObjectMapper component to serialize/deserialize DTOs in Contoller's API
      */
     OATPP_CREATE_COMPONENT(std::shared_ptr<oatpp::data::mapping::ObjectMapper>, apiObjectMapper)([] {
+#if OATPP_VERSION_LESS_1_4_0
         auto serializerConfig = oatpp::parser::json::mapping::Serializer::Config::createShared();
         auto deserializerConfig = oatpp::parser::json::mapping::Deserializer::Config::createShared();
         deserializerConfig->allowUnknownFields = false;
-
-#if OATPP_VERSION_LESS_1_4_0
         auto objectMapper = oatpp::parser::json::mapping::ObjectMapper::createShared(serializerConfig,
                                                                                      deserializerConfig);
         objectMapper->getSerializer()->getConfig()->escapeFlags = 0; // 禁用转义
 #else
         auto objectMapper = std::make_shared<OBJECTMAPPERNS::ObjectMapper>();
         objectMapper->serializerConfig().json.escapeFlags = 0;
+        objectMapper->deserializerConfig().mapper.allowUnknownFields = false;
 #endif
         return objectMapper;
     }());
