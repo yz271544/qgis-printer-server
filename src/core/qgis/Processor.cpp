@@ -4,9 +4,7 @@
 
 #include "Processor.h"
 
-#include <utility>
 
-//Processor::Processor(const QList<QString> &argvList, YAML::Node *config, std::shared_ptr<QOpenGLContext> globalGLContext) {
 Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
     //m_globalGLContext = std::move(globalGLContext);
     m_config = config;
@@ -266,6 +264,12 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
 
         // 获取 XServer 绘图数据
         auto plottingRespDto = fetchPlotting(token, plottingWeb->sceneType, topicMapData).get();
+        if (plottingRespDto == nullptr) {
+            auto responseDto = ResponseDto::createShared();
+            responseDto->error = "Failed to fetch plotting data";
+            promise->set_value(responseDto);
+            return promise->get_future();
+        }
         if (m_verbose) {
             auto plottingRespDtoJson = JsonUtil::convertDtoToQJsonObject(plottingRespDto);
             spdlog::debug("plottingRespDtoJson: {}",
@@ -402,7 +406,7 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
         }, Qt::QueuedConnection);
         // 启动事件循环，直到 lambda 执行完成
         eventLoop.exec();
-//        return promise->get_future();
+        return promise->get_future();
     });
     return promise->get_future();
 }

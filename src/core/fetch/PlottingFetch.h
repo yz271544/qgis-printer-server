@@ -310,7 +310,7 @@ private:
     std::shared_ptr<OBJECTMAPPERNS::ObjectMapper> m_objectMapper;
 
 public:
-    PlottingFetch(const oatpp::String& baseUrl)
+    explicit PlottingFetch(const oatpp::String& baseUrl)
             : m_requestExecutor(oatpp::curl::RequestExecutor::createShared(baseUrl))
     {
 #if OATPP_VERSION_LESS_1_4_0
@@ -344,10 +344,13 @@ public:
 
         // 发送 POST 请求
         auto response = m_client->doPostPlotting(topicMapData, "application/json", m_token, m_accept, m_sceneType);
-
+        if (response == nullptr) {
+            spdlog::warn("Failed to fetch plotting response");
+            return nullptr;
+        }
         try {
             if (response->getStatusCode() == 200) {
-                DTOWRAPPERNS::DTOWrapper<PlottingRespDto> loginObj = response->readBodyToDto<oatpp::Object<PlottingRespDto>>(m_objectMapper.get());
+                auto loginObj = response->readBodyToDto<oatpp::Object<PlottingRespDto>>(m_objectMapper.get());
                 return loginObj;
             } else {
                 spdlog::error("XServer Response Failed to fetch login response: {}", response->getStatusCode());
