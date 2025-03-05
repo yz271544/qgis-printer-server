@@ -150,10 +150,9 @@ void App::createCanvas(QString& crs) {
 void App::addMapBaseTileLayer() {
     int32_t base_tile_layer_max_level = 18;
     try {
-        if (BASE_TILE_LAYER_MAX_LEVEL > 0) {
+        base_tile_layer_max_level = (*mConfig)["qgis"]["base_tile_layer_max_level"].as<std::int32_t>();
+        if (BASE_TILE_LAYER_MAX_LEVEL < base_tile_layer_max_level) {
             base_tile_layer_max_level = BASE_TILE_LAYER_MAX_LEVEL;
-        } else {
-            base_tile_layer_max_level = (*mConfig)["qgis"]["base_tile_layer_max_level"].as<std::int32_t>();
         }
     } catch (const std::exception& e) {
         spdlog::error("get qgis.base_tile_layer_max_level error: {}", e.what());
@@ -162,10 +161,9 @@ void App::addMapBaseTileLayer() {
 
     int32_t base_tile_layer_min_level = 0;
     try {
-        if (BASE_TILE_LAYER_MIN_LEVEL > 0) {
+        base_tile_layer_min_level = (*mConfig)["qgis"]["base_tile_layer_min_level"].as<std::int32_t>();
+        if (BASE_TILE_LAYER_MIN_LEVEL > base_tile_layer_min_level) {
             base_tile_layer_min_level = BASE_TILE_LAYER_MIN_LEVEL;
-        } else {
-            base_tile_layer_min_level = (*mConfig)["qgis"]["base_tile_layer_min_level"].as<std::int32_t>();
         }
     } catch (const std::exception& e) {
         spdlog::error("get qgis.base_tile_layer_min_level error: {}", e.what());
