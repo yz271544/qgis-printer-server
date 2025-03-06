@@ -16,6 +16,7 @@
 #include <string>
 #include <algorithm>
 #include <cstdlib>
+#include <memory>
 
 inline const char* QGIS_LAYER_ENCODING = "UTF-8";
 inline const char* BASE_TILE_NAME = "BaseTile";
@@ -48,92 +49,83 @@ inline const char* QGIS_PROJECT_PATH = "/lyndon/iProject/cpath/qgis_demo1/common
 inline const char* QGIS_PROJECT_FILE_NAME = "/project3d1.qgz";
 #endif
 
-// Function to get boolean value from environment variable
-inline bool getEnvBool(const char* envVarName, bool defaultValue = false) {
-    const char* envValue = getenv(envVarName);
+// 模板函数，用于获取环境变量并转换为指定类型
+template <typename T>
+inline T getEnvValue(const char* envVarName, T defaultValue = T()) {
+    const char* envValue = std::getenv(envVarName);
     if (envValue == nullptr) {
         return defaultValue;
     }
-    std::string value(envValue);
-    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) { return std::tolower(c); });
-    if (value == "true" || value == "1") {
-        return true;
-    } else if (value == "false" || value == "0") {
-        return false;
+    try {
+        if constexpr (std::is_same_v<T, std::int32_t>) {
+            return std::stoi(envValue);
+        } else if constexpr (std::is_same_v<T, double>) {
+            return std::stod(envValue);
+        } else if constexpr (std::is_same_v<T, float>) {
+            return std::stof(envValue);
+        } else if constexpr (std::is_same_v<T, bool>) {
+            std::string value(envValue);
+            std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) { return std::tolower(c); });
+            return (value == "true" || value == "1");
+        } else if constexpr (std::is_same_v<T, std::string>) {
+            return std::string(envValue);
+        }
+    } catch (const std::invalid_argument&) {
+        return defaultValue;
+    } catch (const std::out_of_range&) {
+        return defaultValue;
     }
     return defaultValue;
 }
 
-// Function to get boolean value from environment variable
-inline std::string getEnvString(const char* envVarName, const std::string& defaultValue = "") {
-    const char* envValue = getenv(envVarName);
+// 返回 std::unique_ptr 的模板函数
+template <typename T>
+inline std::unique_ptr<T> getEnvValuePtr(const char* envVarName) {
+    const char* envValue = std::getenv(envVarName);
     if (envValue == nullptr) {
-        return defaultValue;
-    }
-    return std::string(envValue);
-}
-
-inline std::int32_t getEnvInt32(const char* envVarName, std::int32_t defaultValue = 0) {
-    const char* envValue = getenv(envVarName);
-    if (envValue == nullptr) {
-        return defaultValue;
+        return nullptr;
     }
     try {
-        return std::stoi(envValue);
-    } catch (const std::invalid_argument& e) {
-        return defaultValue;
-    } catch (const std::out_of_range& e) {
-        return defaultValue;
+        if constexpr (std::is_same_v<T, std::int32_t>) {
+            return std::make_unique<T>(std::stoi(envValue));
+        } else if constexpr (std::is_same_v<T, double>) {
+            return std::make_unique<T>(std::stod(envValue));
+        } else if constexpr (std::is_same_v<T, float>) {
+            return std::make_unique<T>(std::stof(envValue));
+        } else if constexpr (std::is_same_v<T, bool>) {
+            std::string value(envValue);
+            std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) { return std::tolower(c); });
+            return std::make_unique<T>(value == "true" || value == "1");
+        } else if constexpr (std::is_same_v<T, std::string>) {
+            return std::make_unique<T>(envValue);
+        }
+    } catch (const std::invalid_argument&) {
+        return nullptr;
+    } catch (const std::out_of_range&) {
+        return nullptr;
     }
-}
-
-inline double getEnvDouble(const char* envVarName, double defaultValue = 0.0) {
-    const char* envValue = getenv(envVarName);
-    if (envValue == nullptr) {
-        return defaultValue;
-    }
-    try {
-        return std::stod(envValue);
-    } catch (const std::invalid_argument& e) {
-        return defaultValue;
-    } catch (const std::out_of_range& e) {
-        return defaultValue;
-    }
-}
-
-inline float getEnvFloat(const char* envVarName, float defaultValue = 0.0) {
-    const char* envValue = getenv(envVarName);
-    if (envValue == nullptr) {
-        return defaultValue;
-    }
-    try {
-        return std::stof(envValue);
-    } catch (const std::invalid_argument& e) {
-        return defaultValue;
-    } catch (const std::out_of_range& e) {
-        return defaultValue;
-    }
+    return nullptr;
 }
 
 
 // Get ENABLE_POINT_CLUSTER from environment variable, default to false
-inline bool ENABLE_POINT_CLUSTER = getEnvBool("ENABLE_POINT_CLUSTER", false);
+inline bool ENABLE_POINT_CLUSTER = getEnvValue<bool>("ENABLE_POINT_CLUSTER", false);
 
-inline bool ENABLE_3D = getEnvBool("ENABLE_3D", true);
+inline bool ENABLE_3D = getEnvValue<bool>("ENABLE_3D", true);
 
-inline double CIRCLE_RADIUS_COEFFICIENT = getEnvDouble("CIRCLE_RADIUS_COEFFICIENT", 2.0);
+inline double CIRCLE_RADIUS_COEFFICIENT = getEnvValue<double>("CIRCLE_RADIUS_COEFFICIENT", 2.0);
 
-inline float FRAME_OFFSET_COEFFICIENT = getEnvFloat("FRAME_OFFSET_COEFFICIENT", 1.6);
+inline float FRAME_OFFSET_COEFFICIENT = getEnvValue<float>("FRAME_OFFSET_COEFFICIENT", 1.6);
 
-inline float PIXEL_MM_COEFFICIENT = getEnvFloat("PIXEL_MM_COEFFICIENT", 2.8);
+inline float PIXEL_MM_COEFFICIENT = getEnvValue<float>("PIXEL_MM_COEFFICIENT", 2.8);
 
-inline int BASE_TILE_LAYER_MAX_LEVEL = getEnvInt32("BASE_TILE_LAYER_MAX_LEVEL", 18);
+inline int BASE_TILE_LAYER_MAX_LEVEL = getEnvValue<std::int32_t>("BASE_TILE_LAYER_MAX_LEVEL", 18);
 
-inline int BASE_TILE_LAYER_MIN_LEVEL = getEnvInt32("BASE_TILE_LAYER_MIN_LEVEL", 0);
+inline int BASE_TILE_LAYER_MIN_LEVEL = getEnvValue<std::int32_t>("BASE_TILE_LAYER_MIN_LEVEL", 0);
 
-inline bool HAS_SCENE_PREFIX = getEnvBool("HAS_SCENE_PREFIX", false);
+inline bool HAS_SCENE_PREFIX = getEnvValue<bool>("HAS_SCENE_PREFIX", false);
 
-inline bool LOG_VERBOSE = getEnvBool("VERBOSE", false);
+inline bool LOG_VERBOSE = getEnvValue<bool>("VERBOSE", false);
 
 #ifdef OATPP_VERSION_LESS_1_4_0
 #define DTOWRAPPERNS oatpp::data::mapping::type

@@ -6,11 +6,12 @@
 
 
 Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
-    //m_globalGLContext = std::move(globalGLContext);
     m_config = config;
     try {
         m_verbose = m_config->operator[]("logging")["verbose"].as<bool>();
-        m_verbose = getEnvBool("LOG_VERBOSE", m_verbose);
+        if (LOG_VERBOSE) {
+            m_verbose = LOG_VERBOSE;
+        }
     } catch (const std::exception &e) {
         spdlog::warn("get verbose error: {}", e.what());
     }
@@ -27,14 +28,14 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
     QString jingwei_server_host = "127.0.0.1";
     try {
         jingwei_server_host = QString::fromStdString((*m_config)["qgis"]["jingwei_server_host"].as<std::string>());
-        jingwei_server_host = QString::fromStdString(getEnvString("JINGWEI_SERVER_HOST", jingwei_server_host.toStdString()));
+        jingwei_server_host = QString::fromStdString(getEnvValue<std::string>("JINGWEI_SERVER_HOST", jingwei_server_host.toStdString()));
     } catch (const std::exception &e) {
         spdlog::warn("get jingwei_server_host error: {}", e.what());
     }
     std::int32_t jingwei_server_port = 8080;
     try {
         jingwei_server_port = (*m_config)["qgis"]["jingwei_server_port"].as<std::int32_t>();
-        jingwei_server_port = getEnvInt32("JINGWEI_SERVER_PORT", jingwei_server_port);
+        jingwei_server_port = getEnvValue<std::int32_t>("JINGWEI_SERVER_PORT", jingwei_server_port);
     } catch (const std::exception &e) {
         spdlog::warn("get jingwei_server_port error: {}", e.what());
     }
@@ -73,7 +74,7 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
 
     QString mapping_export_nginx_host = "localhost";
     try {
-        auto envExportNginxHost = getEnvString("MAPPING_EXPORT_NGINX_HOST");
+        auto envExportNginxHost = getEnvValue<std::string>("MAPPING_EXPORT_NGINX_HOST");
         if (!envExportNginxHost.empty()) {
             mapping_export_nginx_host = QString::fromStdString(envExportNginxHost);
         } else {
@@ -88,7 +89,7 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
 
     std::int32_t mapping_export_nginx_port = 80;
     try {
-        auto envExportNginxPort = getEnvInt32("MAPPING_EXPORT_NGINX_PORT");
+        auto envExportNginxPort = getEnvValue<std::int32_t>("MAPPING_EXPORT_NGINX_PORT");
         if (envExportNginxPort) {
             mapping_export_nginx_port = envExportNginxPort;
         } else {
@@ -166,7 +167,9 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
 
     try {
         m_has_scene_prefix = (*m_config)["qgis"]["has_scene_prefix"].as<bool>();
-        m_has_scene_prefix = getEnvBool("HAS_SCENE_PREFIX", false);
+        if (HAS_SCENE_PREFIX) {
+            m_has_scene_prefix = HAS_SCENE_PREFIX;
+        }
     } catch (const std::exception &e) {
         spdlog::warn("get has_scene_prefix error: {}", e.what());
     }
