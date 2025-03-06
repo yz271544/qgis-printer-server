@@ -131,6 +131,8 @@ inline int BASE_TILE_LAYER_MAX_LEVEL = getEnvInt32("BASE_TILE_LAYER_MAX_LEVEL", 
 
 inline int BASE_TILE_LAYER_MIN_LEVEL = getEnvInt32("BASE_TILE_LAYER_MIN_LEVEL", 0);
 
+inline bool HAS_SCENE_PREFIX = getEnvBool("HAS_SCENE_PREFIX", false);
+
 #ifdef OATPP_VERSION_LESS_1_4_0
 #define DTOWRAPPERNS oatpp::data::mapping::type
 #define OBJECTMAPPERNS oatpp::parser::json::mapping

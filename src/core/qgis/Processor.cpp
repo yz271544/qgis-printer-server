@@ -163,6 +163,12 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
         spdlog::error("get qgis.default_distance error: {}", e.what());
     }
 
+    try {
+        m_has_scene_prefix = (*m_config)["qgis"]["has_scene_prefix"].as<bool>();
+        m_has_scene_prefix = getEnvBool("HAS_SCENE_PREFIX", false);
+    } catch (const std::exception &e) {
+        spdlog::warn("get has_scene_prefix error: {}", e.what());
+    }
 }
 
 Processor::~Processor() {
@@ -312,7 +318,11 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                             orthogonal_path = orthogonal_path.split("\\").last();
                         }
                         QString plottingWebSceneId = QString::fromStdString(*plottingWeb->sceneId);
-                        orthogonal_path = plottingWebSceneId.append("-").append(orthogonal_path.trimmed());
+                        if (m_has_scene_prefix) {
+                            orthogonal_path = plottingWebSceneId.append("-").append(orthogonal_path.trimmed());
+                        } else {
+                            orthogonal_path = orthogonal_path.trimmed();
+                        }
                         m_app->addMapMainTileLayer(i, orthogonal_path);
                     }
                 }
@@ -327,7 +337,12 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                             path3d = path3d_arr[path3d_arr.size() - 2] + "/" + path3d_arr.last();
                         }
                         QString plottingWebSceneId = QString::fromStdString(*plottingWeb->sceneId);
-                        QString real_3d_path = plottingWebSceneId.append("-").append(path3d);
+                        QString real_3d_path;
+                        if (m_has_scene_prefix) {
+                            real_3d_path = plottingWebSceneId.append("-").append(path3d);
+                        } else {
+                            real_3d_path = path3d;
+                        }
                         m_app->addMap3dTileLayer(i, real_3d_path);
                     }
                 }
