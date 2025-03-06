@@ -133,6 +133,8 @@ inline int BASE_TILE_LAYER_MIN_LEVEL = getEnvInt32("BASE_TILE_LAYER_MIN_LEVEL", 
 
 inline bool HAS_SCENE_PREFIX = getEnvBool("HAS_SCENE_PREFIX", false);
 
+inline bool LOG_VERBOSE = getEnvBool("VERBOSE", false);
+
 #ifdef OATPP_VERSION_LESS_1_4_0
 #define DTOWRAPPERNS oatpp::data::mapping::type
 #define OBJECTMAPPERNS oatpp::parser::json::mapping

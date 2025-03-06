@@ -10,6 +10,7 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
     m_config = config;
     try {
         m_verbose = m_config->operator[]("logging")["verbose"].as<bool>();
+        m_verbose = getEnvBool("LOG_VERBOSE", m_verbose);
     } catch (const std::exception &e) {
         spdlog::warn("get verbose error: {}", e.what());
     }
