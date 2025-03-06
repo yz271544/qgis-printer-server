@@ -16,8 +16,8 @@ Authorization: Bearer {{token}}
       -5821555
     ]
   ],
-  "sceneId": "1895002666180853762",
-  "sceneName": "高速20250227_g",
+  "sceneId": "1897221438304206849",
+  "sceneName": "高速20250227_g_ys",
   "geojson": {
     "type": "Feature",
     "geometry": {
@@ -25,32 +25,32 @@ Authorization: Bearer {{token}}
       "coordinates": [
         [
           [
-            111.17271667439475,
-            37.78777148196848
+            112.69858601628759,
+            37.7775647250668
           ],
           [
-            111.17271667439475,
-            38.963038042599834
+            112.69858601628759,
+            37.79300198197764
           ],
           [
-            114.27044016381164,
-            38.963038042599834
+            112.73922826568773,
+            37.79300198197764
           ],
           [
-            114.27044016381164,
-            37.78777148196848
+            112.73922826568773,
+            37.7775647250668
           ]
         ]
       ]
     },
-    "properties": {}
+    "properties": { }
   },
   "handleFlag": false,
   "sceneType": "01",
   "layinfo": {
     "title": {
       "text": "标题",
-      "position": [],
+      "position": [ ],
       "borderColor": "",
       "fillColor": "",
       "fontSize": 28,
@@ -91,7 +91,7 @@ Authorization: Bearer {{token}}
         "url": ""
       }
     ],
-    "arrows": [],
+    "arrows": [ ],
     "north": {
       "position": [
         97,
@@ -99,12 +99,12 @@ Authorization: Bearer {{token}}
         2,
         8
       ],
-      "rotate": 4
+      "rotate": 0
     },
-    "scaleBar": false
+    "scaleBar": true
   },
   "paper": "a3",
-  "pictureUnit": "制图单位：    时间：",
+  "pictureUnit": "制图单位： 时间：",
   "mapType": {
     "map": true,
     "electron": false
