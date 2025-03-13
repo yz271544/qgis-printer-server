@@ -568,13 +568,44 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
         QList<QString> name_list;
         QList<QJsonObject> style_list;
         QList<QJsonObject> shape_list;
-        QJsonObject layer_style = payloads->getLayerStyleJson();
-        QJsonObject font_style = payloads->getFontStyleJson();
+
+        QJsonObject layer_style;
+        try {
+            layer_style = payloads->getLayerStyleJson();
+        } catch (const std::exception &e) {
+            spdlog::warn("load style json from payloads error: {}, data: {}", e.what(), payloads->layerStyle);
+            continue;
+        }
+
+        QJsonObject font_style;
+        try {
+            font_style = payloads->getFontStyleJson();
+        } catch (const std::exception &e) {
+            spdlog::warn("load font style from payloads error: {}, data: {}", e.what(), payloads->fontStyle);
+            continue;
+        }
+
         for (const auto &plotting: *plottings) {
             auto name = plotting->name;
+            if (name == nullptr) {
+                name_list.append(QString::fromStdString(""));
+            }
             name_list.append(QString::fromStdString(name));
-            style_list.append(plotting->getStyleInfoJson());
-            shape_list.append(plotting->getShapeJson());
+            try {
+                auto styleInfoJson = plotting->getStyleInfoJson();
+                style_list.append(styleInfoJson);
+            } catch (const std::exception &e) {
+                spdlog::warn("from plotting load style info to json error: {}, data: {}", e.what(), plotting->styleInfoJson);
+                style_list.append(QJsonObject());
+            }
+
+            try {
+                auto shapeJson = plotting->getShapeJson();
+                shape_list.append(shapeJson);
+            } catch (const std::exception &e) {
+                spdlog::warn("from plotting load shape to json error: {}, data: {}", e.what(), plotting->shape);
+                shape_list.append(QJsonObject());
+            }
         }
 
         spdlog::debug("plotting pcode:{} code:{}", payloads->pcode->c_str(), payloads->code->c_str());
@@ -599,6 +630,8 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                             circle_geometry_coordinates_list.append(circle_geometry_coordinates);
                         }
                     }
+                } else {
+                    spdlog::error("shape not contains geometry: {}", shape);
                 }
                 if (shape.contains("properties")) {
                     auto properties = shape["properties"].toObject();
@@ -606,6 +639,8 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                         auto radius = properties["radius"].toInt();
                         polygon_geometry_properties_radius.append(radius);
                     }
+                } else {
+                    spdlog::error("shape not contains properties: {}", shape);
                 }
             }
             qDebug() << "circle_geometry_coordinates_list: " << circle_geometry_coordinates_list;
@@ -781,6 +816,8 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                             }
                         }
                     }
+                } else {
+                    spdlog::warn("shape not contains properties: {}", shape);
                 }
 
                 if (shape.contains("geometry")) {
@@ -826,6 +863,8 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                             polygon_geometry_coordinates_list.append(polygon_geometry_coordinates);
                         }
                     }
+                } else {
+                    spdlog::warn("shape not contains geometry: {}", shape);
                 }
             }
 
@@ -863,6 +902,8 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                     jw_point->addPoints(iconName, name_list, pointsList, font_style, layer_style, style_list, 20,
                                         attachment);
                 }
+            } else {
+                spdlog::warn("point_geometry_coordinates_list is empty");
             }
             // paint the lineString to layer
             if (!line_geometry_coordinates_list.empty()) {
@@ -939,6 +980,8 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                     );
                     line_num++;
                 }
+            } else {
+                spdlog::warn("line_geometry_coordinates_list is empty");
             }
             // paint the polygon to layer
             if (!polygon_geometry_coordinates_list.empty()) {
@@ -1013,6 +1056,8 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                     );
                     polygon_num++;
                 }
+            } else {
+                spdlog::warn("polygon_geometry_coordinates_list is empty");
             }
         }
     }
