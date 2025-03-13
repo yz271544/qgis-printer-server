@@ -573,7 +573,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
         try {
             layer_style = payloads->getLayerStyleJson();
         } catch (const std::exception &e) {
-            spdlog::warn("load style json from payloads error: {}, data: {}", e.what(), payloads->layerStyle);
+            spdlog::warn("load style json from payloads error: {}, data: {}", e.what(), payloads->layerStyle->c_str());
             continue;
         }
 
@@ -581,7 +581,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
         try {
             font_style = payloads->getFontStyleJson();
         } catch (const std::exception &e) {
-            spdlog::warn("load font style from payloads error: {}, data: {}", e.what(), payloads->fontStyle);
+            spdlog::warn("load font style from payloads error: {}, data: {}", e.what(), payloads->fontStyle->c_str());
             continue;
         }
 
@@ -595,7 +595,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                 auto styleInfoJson = plotting->getStyleInfoJson();
                 style_list.append(styleInfoJson);
             } catch (const std::exception &e) {
-                spdlog::warn("from plotting load style info to json error: {}, data: {}", e.what(), plotting->styleInfoJson);
+                spdlog::warn("from plotting load style info to json error: {}, data: {}", e.what(), plotting->styleInfoJson->c_str());
                 style_list.append(QJsonObject());
             }
 
@@ -603,7 +603,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                 auto shapeJson = plotting->getShapeJson();
                 shape_list.append(shapeJson);
             } catch (const std::exception &e) {
-                spdlog::warn("from plotting load shape to json error: {}, data: {}", e.what(), plotting->shape);
+                spdlog::warn("from plotting load shape to json error: {}, data: {}", e.what(), plotting->shape->c_str());
                 shape_list.append(QJsonObject());
             }
         }
@@ -631,7 +631,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                         }
                     }
                 } else {
-                    spdlog::error("shape not contains geometry: {}", shape);
+                    spdlog::error("shape not contains geometry");
                 }
                 if (shape.contains("properties")) {
                     auto properties = shape["properties"].toObject();
@@ -640,7 +640,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                         polygon_geometry_properties_radius.append(radius);
                     }
                 } else {
-                    spdlog::error("shape not contains properties: {}", shape);
+                    spdlog::error("shape not contains properties");
                 }
             }
             qDebug() << "circle_geometry_coordinates_list: " << circle_geometry_coordinates_list;
@@ -817,7 +817,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                         }
                     }
                 } else {
-                    spdlog::warn("shape not contains properties: {}", shape);
+                    spdlog::warn("shape not contains properties");
                 }
 
                 if (shape.contains("geometry")) {
@@ -864,7 +864,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                         }
                     }
                 } else {
-                    spdlog::warn("shape not contains geometry: {}", shape);
+                    spdlog::warn("shape not contains geometry");
                 }
             }
 
