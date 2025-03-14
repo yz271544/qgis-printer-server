@@ -1,0 +1,144 @@
+### POST plotting
+POST http://{{host}}:{{port}}/api/qgz
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "selectPath": false,
+  "path": "",
+  "path3d": "瑞光电厂",
+  "tileIndex": [
+    [
+      0,
+      0
+    ],
+    [
+      1048576,
+      -5821555
+    ]
+  ],
+  "sceneId": "1898224049056694273",
+  "sceneName": "太原高速公路",
+  "geojson": {
+    "type": "Feature",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            112.69408771003752,
+            37.784745234354844
+          ],
+          [
+            112.69408771003752,
+            37.81054186049723
+          ],
+          [
+            112.75042039457892,
+            37.81054186049723
+          ],
+          [
+            112.75042039457892,
+            37.784745234354844
+          ]
+        ]
+      ]
+    },
+    "properties": {}
+  },
+  "handleFlag": false,
+  "sceneType": "01",
+  "layinfo": {
+    "title": {
+      "text": "标题",
+      "position": [],
+      "borderColor": "",
+      "fillColor": "",
+      "fontSize": 28,
+      "color": "rgba(0,0,0,1)",
+      "fontBorderColor": ""
+    },
+    "subTitle": {
+      "text": "",
+      "fontSize": 16,
+      "color": "rgba(0,0,0,1)"
+    },
+    "legend": {
+      "position": [
+        84,
+        20,
+        57,
+        80
+      ]
+    },
+    "bgPic": {
+      "borderColor": "#FF0000",
+      "doubleFrame": true,
+      "borderWidth": 3
+    },
+    "remark": [
+      {
+        "text": "备注",
+        "position": [
+          0,
+          80,
+          28,
+          10
+        ],
+        "borderColor": "",
+        "fillColor": "rgba(255,255,255,1)",
+        "fontSize": 18,
+        "color": "rgba(0,0,0,1)",
+        "url": ""
+      }
+    ],
+    "arrows": [],
+    "north": {
+      "position": [
+        97,
+        1,
+        2,
+        8
+      ],
+      "rotate": 357
+    },
+    "scaleBar": false
+  },
+  "paper": "a3",
+  "pictureUnit": "制图单位： 时间：",
+  "mapType": {
+    "map": true,
+    "electron": false,
+    "is3D": true
+  },
+  "camera": {
+    "cameraLongitude": 112.72002738028056,
+    "cameraLatitude": 37.77408573425415,
+    "cameraHeight": 2120.645744593307,
+    "cameraDirX": 0.3487542316888941,
+    "cameraDirY": -0.9260800190484921,
+    "cameraDirZ": 0.14403570459519266,
+    "cameraUpX": -0.08809504005148512,
+    "cameraUpY": 0.12061219980324873,
+    "cameraUpZ": 0.988783070838568,
+    "cameraRightX": -0.9330647082584447,
+    "cameraRightY": -0.3575311113424476,
+    "cameraRightZ": -0.03951904129426763,
+    "fov": 1.0471975511965976,
+    "aspectRatio": 2.0795454545454546,
+    "nearPlane": 0.1,
+    "farPlane": 10000000000
+  }
+}
+### Response
+HTTP/1.1 200 OK
+Server: TornadoServer/6.4.1
+Content-Type: application/json; charset=UTF-8
+Date: Thu, 07 Nov 2024 07:12:42 GMT
+Content-Length: 141
+
+{
+  "project_zip_url": "http://localhost:80/jingweipy/test.zip",
+  "image_url": "http://localhost:80/jingweipy/local/test-位置图.png"
+}
+###

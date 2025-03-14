@@ -285,6 +285,7 @@ void App::addMap3dTileLayer(int num, QString& realistic3dPath) {
     try {
         auto mapMainBaseUrlStdString = (*mConfig)["qgis"]["map_main_base_url"].as<std::string>();
         map_main_base_url = QString::fromStdString(mapMainBaseUrlStdString);
+        map_main_base_url = QString::fromStdString(getEnvValue<std::string>("MAP_MAIN_BASE_URL", map_main_base_url.toStdString()));
     } catch (const std::exception& e) {
         spdlog::error("get qgis.map_main_base_url error: {}", e.what());
     }
