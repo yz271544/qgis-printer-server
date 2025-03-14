@@ -631,7 +631,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                         }
                     }
                 } else {
-                    spdlog::error("shape not contains geometry");
+                    spdlog::error("shape not contains geometry, payloads.name: {}", payloads->name->c_str());
                 }
                 if (shape.contains("properties")) {
                     auto properties = shape["properties"].toObject();
@@ -640,7 +640,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                         polygon_geometry_properties_radius.append(radius);
                     }
                 } else {
-                    spdlog::error("shape not contains properties");
+                    spdlog::error("shape not contains properties, payloads.name: {}", payloads->name->c_str());
                 }
             }
             qDebug() << "circle_geometry_coordinates_list: " << circle_geometry_coordinates_list;
@@ -817,7 +817,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                         }
                     }
                 } else {
-                    spdlog::warn("shape not contains properties");
+                    spdlog::warn("shape not contains properties, payloads.name: {}", payloads->name->c_str());
                 }
 
                 if (shape.contains("geometry")) {
@@ -864,7 +864,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                         }
                     }
                 } else {
-                    spdlog::warn("shape not contains geometry");
+                    spdlog::warn("shape not contains geometry, payloads.name: {}", payloads->name->c_str());
                 }
             }
 
@@ -903,7 +903,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                                         attachment);
                 }
             } else {
-                spdlog::warn("point_geometry_coordinates_list is empty");
+                spdlog::warn("point_geometry_coordinates_list is empty, payloads.name: {}", payloads->name->c_str());
             }
             // paint the lineString to layer
             if (!line_geometry_coordinates_list.empty()) {
@@ -981,7 +981,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                     line_num++;
                 }
             } else {
-                spdlog::warn("line_geometry_coordinates_list is empty");
+                spdlog::warn("line_geometry_coordinates_list is empty, payloads.name: {}", payloads->name->c_str());
             }
             // paint the polygon to layer
             if (!polygon_geometry_coordinates_list.empty()) {
@@ -1057,7 +1057,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                     polygon_num++;
                 }
             } else {
-                spdlog::warn("polygon_geometry_coordinates_list is empty");
+                spdlog::warn("polygon_geometry_coordinates_list is empty, payloads.name: {}", payloads->name->c_str());
             }
         }
     }
