@@ -166,6 +166,9 @@ void JwLayout3D::setLegend(
                   imageSpec["main_top_margin"].toDouble(),
                   mMapHeight,
                   legendHeight);
+    if (legendHeight * 2 > mMapHeight) {
+        legend->setColumnCount(2);
+    }
     legend->setResizeToContents(true);
     legend->setReferencePoint(QgsLayoutItem::ReferencePoint::LowerRight);
     spdlog::debug("set_legend legend_x: {}, legend_y: {}, legend_width: {}, legend_height: {}",
@@ -658,6 +661,11 @@ void JwLayout3D::init3DMapSettings(
     qDebug() << "QgsWindow3DEngine created: " << (mCanvas3d->engine() != nullptr);
 }
 
+void JwLayout3D::setTestFrom2dExtent() {
+    const QgsReferencedRectangle projectExtent = mProject->viewSettings()->fullExtent();
+    mCanvas3d->setViewFrom2DExtent(projectExtent);
+}
+
 void JwLayout3D::setTest3DCanvas() {
     const QgsReferencedRectangle projectExtent = mProject->viewSettings()->fullExtent();
     auto mapSettings3d = mCanvas3d->mapSettings();
@@ -746,7 +754,10 @@ void JwLayout3D::set3DCanvas(oatpp::data::type::DTOWrapper<Camera3dPosition>& ca
     if (yaw < 0) yaw += 360.0;
 
     // 设置QGIS摄像机参数
+    spdlog::info("camera center: {} -> {}, distance: {}", cameraScene->x(), cameraScene->y(), distance);
     mCanvas3d->setViewFromTop(*cameraScene, static_cast<float>(distance), 0);
+    spdlog::info("camera look at point: {}-{}-{}", lookAtCenterPoint.x(), lookAtCenterPoint.y(), lookAtCenterPoint.z());
+    spdlog::info("camera pitch: {}, yaw: {}", pitch, yaw);
     mCanvas3d->cameraController()->setLookingAtPoint(
             lookAtCenterPoint,
             static_cast<float>(distance),

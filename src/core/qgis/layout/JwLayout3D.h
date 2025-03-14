@@ -219,10 +219,7 @@ public:
 
     static QgsPoint *transformPoint(const QgsPoint &point, const QgsCoordinateTransform &transformer);
 
-#ifdef ENABLE_APP
-    void create3DMapCanvasWidget(QString view3dName);
-    void write3DMapViewSettings( Qgs3DMapCanvasWidget *widget, QDomDocument &doc, QDomElement &elem3DMap );
-#endif
+    void setTestFrom2dExtent();
 
 private:
     QgsProject *mProject;

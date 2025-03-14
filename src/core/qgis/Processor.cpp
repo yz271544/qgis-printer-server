@@ -1144,7 +1144,9 @@ void Processor::add_3d_layout(
         jwLayout3d->setTest3DCanvas();
     } else {
         auto camera = plottingWeb->camera;
-        jwLayout3d->set3DCanvas(camera, m_default_distance);
+        jwLayout3d->setTestFrom2dExtent();
+        //jwLayout3d->set3DCanvas(camera, m_default_distance);
+        // jwLayout3d->setTest3DCanvas();
     }
     spdlog::debug("addPrintLayout 3d");
     jwLayout3d->addPrintLayout(QString("3d"), joinedLayoutName, plottingWebMap, available_paper, write_qpt);
