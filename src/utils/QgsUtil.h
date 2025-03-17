@@ -55,6 +55,7 @@ public:
 
     static QgsCoordinateTransform *coordinateTransformer4326To3857(QgsProject *project);
 
+    static QgsCoordinateTransform* coordinateTransformer3857To4326(QgsProject* project);
 
     static std::unique_ptr<QgsVectorLayer> writePersistedLayer(const QString &layer_name, QgsVectorLayer *layer,
                                                                const QString &project_dir, const QgsFields &fields,

@@ -173,6 +173,16 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
     } catch (const std::exception &e) {
         spdlog::warn("get has_scene_prefix error: {}", e.what());
     }
+
+    try {
+        m_filter_remove_3d_base = (*m_config)["qgis"]["filter_remove_3d_base"].as<bool>();
+        if (REMOVE_3D_BASE) {
+            m_filter_remove_3d_base = REMOVE_3D_BASE;
+        }
+    } catch (const std::exception &e) {
+        spdlog::warn("get qgis.filter_remove_3d_base error: {}", e.what());
+    }
+
 }
 
 Processor::~Processor() {
@@ -385,8 +395,10 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                             spdlog::debug("add 3d layout");
                             QVector<QString> removeLayerNames3D = QVector<QString>();
                             QVector<QString> removeLayerPrefixes3D = QVector<QString>();
-                            removeLayerNames3D.append(BASE_TILE_NAME);
-                            removeLayerPrefixes3D.append(MAIN_TILE_NAME);
+                            if (m_filter_remove_3d_base) {
+                                removeLayerNames3D.append(BASE_TILE_NAME);
+                                removeLayerPrefixes3D.append(MAIN_TILE_NAME);
+                            }
                             auto canvas2d = m_app->getCanvas();
                             add_3d_layout(canvas2d, plottingWeb,
                                                   image_spec, availablePaper, false,
@@ -1144,9 +1156,9 @@ void Processor::add_3d_layout(
         jwLayout3d->setTest3DCanvas();
     } else {
         auto camera = plottingWeb->camera;
-        jwLayout3d->setTestFrom2dExtent();
+        //jwLayout3d->setTestFrom2dExtent();
         //jwLayout3d->set3DCanvas(camera, m_default_distance);
-        // jwLayout3d->setTest3DCanvas();
+        jwLayout3d->setTest3DCanvas();
     }
     spdlog::debug("addPrintLayout 3d");
     jwLayout3d->addPrintLayout(QString("3d"), joinedLayoutName, plottingWebMap, available_paper, write_qpt);

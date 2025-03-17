@@ -121,7 +121,7 @@ if (WIN32)
 
 elseif(UNIX)
     message("NIX system - QGISSOURCE: ${QGISSOURCE}")
-    if (NOT DEFINED $ENV{QGISSOURCE} AND $ENV{QGISSOURCE} STREQUAL "")
+    if (NOT DEFINED $ENV{QGISSOURCE} OR $ENV{QGISSOURCE} STREQUAL "")
         message("release env")
         set(CMAKE_MODULE_PATH /usr/share/qgis /usr/local/share/qgis)
         message("CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")

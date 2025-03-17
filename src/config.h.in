@@ -127,6 +127,8 @@ inline bool HAS_SCENE_PREFIX = getEnvValue<bool>("HAS_SCENE_PREFIX", false);
 
 inline bool LOG_VERBOSE = getEnvValue<bool>("VERBOSE", false);
 
+inline bool REMOVE_3D_BASE = getEnvValue<bool>("REMOVE_3D_BASE", false);
+
 #ifdef OATPP_VERSION_LESS_1_4_0
 #define DTOWRAPPERNS oatpp::data::mapping::type
 #define OBJECTMAPPERNS oatpp::parser::json::mapping

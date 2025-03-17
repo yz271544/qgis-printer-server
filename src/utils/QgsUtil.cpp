@@ -89,6 +89,14 @@ QgsCoordinateTransform* QgsUtil::coordinateTransformer4326To3857(QgsProject* pro
     return transformer.release();
 }
 
+QgsCoordinateTransform* QgsUtil::coordinateTransformer3857To4326(QgsProject* project) {
+    // Set coordinate transform
+    QgsCoordinateReferenceSystem crs_3857("EPSG:3857"); // 假设 3857 是对应的EPSG代码
+    QgsCoordinateReferenceSystem crs_4326("EPSG:4326"); // 假设 4326 是对应的EPSG代码
+    auto transformer = std::make_unique<QgsCoordinateTransform>(crs_3857, crs_4326, project);
+    return transformer.release();
+}
+
 std::unique_ptr<QgsVectorLayer> QgsUtil::writePersistedLayer(
         const QString& layer_name,
         QgsVectorLayer* layer,

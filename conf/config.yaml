@@ -47,6 +47,7 @@ qgis:
   export_png_enable: true
   export_pdf_enable: false
   export_svg_enable: false
+  filter_remove_3d_base: true
 specification:
   - name: "现场位置图"
     local: "local"

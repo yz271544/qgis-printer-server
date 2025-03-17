@@ -50,6 +50,7 @@ private:
     bool m_export_svg_enable = false;
     bool m_force_event = false;
     bool m_has_scene_prefix = false;
+    bool m_filter_remove_3d_base = false;
     double m_default_distance = 1000;
     YAML::Node *m_config;
     std::unique_ptr<PlottingFetch> m_plotting_fetch;
