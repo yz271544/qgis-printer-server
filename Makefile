@@ -11,6 +11,11 @@ REPO ?= registry.cn-beijing.aliyuncs.com/dc_huzy
 baseimage:
 	docker build -t ${REPO}/jingweiprinter-base:3.40.4-noble --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/base.docker .
 
+# nnv
+.PHONY: printerimagennv
+printerimagennv:
+	docker build -t ${REPO}/jingweiprinter:${VERSION}-nnv --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv.docker .
+
 # 470.256
 .PHONY: printerimage460
 printerimage460:
@@ -41,13 +46,14 @@ printerimage550:
 	docker build -t ${REPO}/jingweiprinter:${VERSION}-550 --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-550.docker .
 
 .PHONY: printerimages
-printerimages: printerimage460 printerimage470 printerimage510 printerimage515 printerimage520 printerimage535 printerimage550
+printerimages: printerimagennv printerimage460 printerimage470 printerimage510 printerimage515 printerimage520 printerimage535 printerimage550
 
 .PHONY: images
 images: baseimage printerimages
 
 .PHONY: push
 push:
+	docker push ${REPO}/jingweiprinter:${VERSION}-nnv
 	docker push ${REPO}/jingweiprinter:${VERSION}-460
 	docker push ${REPO}/jingweiprinter:${VERSION}-470
 	docker push ${REPO}/jingweiprinter:${VERSION}-510
