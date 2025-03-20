@@ -348,7 +348,9 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                         QString path3d = real_3d_paths[i].trimmed();
                         QStringList path3d_arr = path3d.split("/");
                         if (path3d_arr.last() == "tileset.json") {
-                            path3d = path3d_arr[path3d_arr.size() - 2] + "/" + path3d_arr.last();
+                            path3d = path3d_arr[path3d_arr.size() - 2];
+                        } else {
+                            throw InvalidParameterException("path3d is not end with tileset.json");
                         }
                         QString plottingWebSceneId = QString::fromStdString(*plottingWeb->sceneId);
                         QString real_3d_path;

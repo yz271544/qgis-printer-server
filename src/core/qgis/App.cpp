@@ -204,6 +204,7 @@ void App::addMapBaseTileLayer() {
         mProject->addMapLayer(base_tile_layer.release());
     } else {
         spdlog::error("base_tile_layer is not valid");
+        throw DataError("base_tile_layer " + map_base_url.toStdString() + " is not valid");
     }
 }
 
@@ -263,6 +264,7 @@ void App::addMapMainTileLayer(int num, QString& orthogonalPath) {
         mProject->addMapLayer(main_tile_layer.release());
     } else {
         spdlog::error("main_tile_layer is not valid");
+        throw DataError("base_tile_layer " + main_tile_url.toStdString() + " is not valid");
     }
 }
 
@@ -306,6 +308,7 @@ void App::addMap3dTileLayer(int num, QString& realistic3dPath) {
         mProject->addMapLayer(tiled_scene_layer.release());
     } else {
         spdlog::error("tiled_scene_layer is not valid");
+        throw DataError("tiled_scene_layer " + real3d_tile_name.toStdString() + " is not valid");
     }
 }
 
