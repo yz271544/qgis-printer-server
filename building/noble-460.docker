@@ -39,6 +39,7 @@ RUN sed -i "s/mirrors.aliyun.com/mirrors.ustc.edu.cn/g" /etc/apt/sources.list.d/
 RUN apt-get update
 RUN apt-get install -y libarchive13t64
 RUN apt-get install -y net-tools telnet dnsutils
+RUN apt-get install -y mesa-utils
 RUN apt-get install -y nvidia-utils-460 libnvidia-gl-460
 RUN apt-get install -y libxcb-*
 ENV DISPLAY=:0
