@@ -22,7 +22,10 @@ RUN make install
 WORKDIR /lyndon/iProject/cpath
 
 FROM qgis/qgis:3.40.4-noble AS runner
+ARG NVIDIA_MAIN_VERSION
+ARG DRIVER_FULL_VERSION
 LABEL authors="Lyndon"
+LABEL driver.version="${DRIVER_FULL_VERSION}"
 
 COPY --from=builder /usr/local/lib /usr/local/lib
 COPY --from=builder /usr/local/include /usr/local/include
