@@ -48,6 +48,7 @@ qgis:
   export_pdf_enable: false
   export_svg_enable: false
   filter_remove_3d_base: true
+  canvas3d_type: "camera"
 specification:
   - name: "现场位置图"
     local: "local"

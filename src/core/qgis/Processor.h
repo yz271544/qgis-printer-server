@@ -61,6 +61,7 @@ private:
     QString m_mapping_export_nginx_url_prefix;
     QString m_qgis_prefix_path;
     std::shared_ptr<QOpenGLContext> m_globalGLContext;
+    QString m_canvas3d_type = "camera";
 public:
     // 构造函数
     //Processor(const QList<QString> &argvList, YAML::Node *config, std::shared_ptr<QOpenGLContext> globalGLContext);

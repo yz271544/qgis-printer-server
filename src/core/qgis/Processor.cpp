@@ -183,6 +183,15 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
         spdlog::warn("get qgis.filter_remove_3d_base error: {}", e.what());
     }
 
+    try {
+        m_canvas3d_type = QString::fromStdString((*m_config)["qgis"]["canvas3d_type"].as<std::string>());
+        if (CANVAS3D_TYPE.data()) {
+            m_canvas3d_type = QString::fromStdString(CANVAS3D_TYPE);
+        }
+    } catch (const std::exception &e) {
+        spdlog::warn("get qgis.canvas3d_type error: {}", e.what());
+    }
+
 }
 
 Processor::~Processor() {
@@ -1157,9 +1166,16 @@ void Processor::add_3d_layout(
     if (plottingWeb->camera == nullptr) {
         jwLayout3d->setTest3DCanvas();
     } else {
-        auto camera = plottingWeb->camera;
-        //jwLayout3d->setTestFrom2dExtent();
-        jwLayout3d->set3DCanvas(camera, m_default_distance);
+        if (m_canvas3d_type == "camera") {
+            auto camera = plottingWeb->camera;
+            jwLayout3d->set3DCanvas(camera, m_default_distance);
+        } else if (m_canvas3d_type == "extent2d") {
+            jwLayout3d->setTestFrom2dExtent();
+        } else if (m_canvas3d_type == "test") {
+            jwLayout3d->setTest3DCanvas();
+        } else {
+            spdlog::warn("unknown canvas3d type: {}", m_canvas3d_type.toStdString());
+        }
     }
     spdlog::debug("addPrintLayout 3d");
     jwLayout3d->addPrintLayout(QString("3d"), joinedLayoutName, plottingWebMap, available_paper, write_qpt);
