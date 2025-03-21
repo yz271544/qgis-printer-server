@@ -35,13 +35,16 @@ COPY common/input/topicMap.json /lyndon/iProject/cpath/jingweiprinter/common/inp
 RUN mkdir /usr/local/bin/conf
 COPY conf/config-prod.yaml /usr/local/bin/conf/config.yaml
 
-RUN sed -i "s/mirrors.aliyun.com/mirrors.ustc.edu.cn/g" /etc/apt/sources.list.d/ubuntu.sources
-RUN apt-get update
-RUN apt-get install -y libarchive13t64
-RUN apt-get install -y net-tools telnet dnsutils
-RUN apt-get install -y mesa-utils
-RUN apt-get install -y nvidia-utils-510 libnvidia-gl-510
-RUN apt-get install -y libxcb-*
+#RUN sed -i "s/mirrors.aliyun.com/mirrors.ustc.edu.cn/g" /etc/apt/sources.list.d/ubuntu.sources
+RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
+RUN sudo dpkg -i cuda-keyring_1.1-1_all.deb
+RUN apt update
+RUN apt install -y libarchive13t64
+RUN apt install -y net-tools telnet dnsutils
+RUN apt install -y libqapt3 libqapt3-runtime
+RUN apt install -y mesa-utils
+RUN apt install -y nvidia-utils-510 libnvidia-gl-510
+RUN apt install -y libxcb-*
 ENV DISPLAY=:0
 ENV QT_QPA_PLATFORM="xcb"
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
