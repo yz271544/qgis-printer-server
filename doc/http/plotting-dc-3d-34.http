@@ -5,26 +5,8 @@ Authorization: Bearer {{token}}
 
 {
   "selectPath": true,
-  "path": "/map/orthogonal/瑞光电厂-DOM",
-  "path3d": "/map/realistic3d/瑞光电厂切片/tileset.json",
-  "camera": {
-    "cameraLongitude": 112.7206564553031,
-    "cameraLatitude": 37.76311083914113,
-    "cameraHeight": 2943.133305511889,
-    "cameraDirX": 0.3774950189635327,
-    "cameraDirY": -0.9015178144978879,
-    "cameraDirZ": 0.2115730152941863,
-    "cameraUpX": -0.08171766809856015,
-    "cameraUpY": 0.1951547168817799,
-    "cameraUpZ": 0.9773621944802888,
-    "cameraRightX": -0.9223989014402911,
-    "cameraRightY": -0.3862386135819984,
-    "cameraRightZ": 3.26405569239796e-14,
-    "fov": 1.047197551196598,
-    "aspectRatio": 2.152466367713004,
-    "nearPlane": 0.1,
-    "farPlane": 10000000000
-  },
+  "path": "/map/test_data/正射/瑞光电厂-DOM",
+  "path3d": "/map/test_data/实景三维/瑞光电厂切片/tileset.json",
   "tileIndex": [
     [
       0,
@@ -44,27 +26,26 @@ Authorization: Bearer {{token}}
       "coordinates": [
         [
           [
-            112.6764976139788,
-            37.78165418732383
+            112.67670744963566,
+            37.78164001005692
           ],
           [
-            112.6764976139788,
-            37.82003153020722
+            112.67670744963566,
+            37.82044806148826
           ],
           [
-            112.7648152969363,
-            37.82003153020722
+            112.76460546147663,
+            37.82044806148826
           ],
           [
-            112.7648152969363,
-            37.78165418732383
+            112.76460546147663,
+            37.78164001005692
           ]
         ]
       ]
     },
     "properties": {}
   },
-  "savePath": null,
   "handleFlag": false,
   "sceneType": "01",
   "layinfo": {
@@ -85,9 +66,9 @@ Authorization: Bearer {{token}}
     "legend": {
       "position": [
         84,
-        20,
-        46,
-        80
+        61,
+        16,
+        39
       ]
     },
     "bgPic": {
@@ -119,7 +100,7 @@ Authorization: Bearer {{token}}
         2,
         8
       ],
-      "rotate": 4
+      "rotate": 0
     },
     "scaleBar": false
   },
@@ -129,5 +110,23 @@ Authorization: Bearer {{token}}
     "map": true,
     "electron": false,
     "is3D": true
+  },
+  "camera": {
+    "cameraLongitude": 112.72065645530304,
+    "cameraLatitude": 37.763576055018476,
+    "cameraHeight": 2899.752313811402,
+    "cameraDirX": 0.37749501896346305,
+    "cameraDirY": -0.9015178144979107,
+    "cameraDirZ": 0.2115730152942134,
+    "cameraUpX": -0.08171766809862688,
+    "cameraUpY": 0.19515471688178082,
+    "cameraUpZ": 0.9773621944802832,
+    "cameraRightX": -0.9223989014403137,
+    "cameraRightY": -0.3862386135819446,
+    "cameraRightZ": -4.263256414560601e-14,
+    "fov": 1.0471975511965976,
+    "aspectRatio": 2.1075740944017562,
+    "nearPlane": 0.1,
+    "farPlane": 10000000000
   }
 }

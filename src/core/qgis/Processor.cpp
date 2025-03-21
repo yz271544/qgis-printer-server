@@ -185,7 +185,7 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
 
     try {
         m_canvas3d_type = QString::fromStdString((*m_config)["qgis"]["canvas3d_type"].as<std::string>());
-        if (CANVAS3D_TYPE.data()) {
+        if (!CANVAS3D_TYPE.empty()) {
             m_canvas3d_type = QString::fromStdString(CANVAS3D_TYPE);
         }
     } catch (const std::exception &e) {
@@ -1164,8 +1164,12 @@ void Processor::add_3d_layout(
     jwLayout3d->init3DMapSettings(removeLayerNames, removeLayerPrefixes);
     spdlog::debug("done init 3d map settings");
     if (plottingWeb->camera == nullptr) {
+        spdlog::debug("plottingWeb.camera is empty");
         jwLayout3d->setTest3DCanvas();
     } else {
+        if (m_canvas3d_type != nullptr) {
+            spdlog::debug("m_canvas3d_type: {}", m_canvas3d_type.toStdString());
+        }
         if (m_canvas3d_type == "camera") {
             auto camera = plottingWeb->camera;
             jwLayout3d->set3DCanvas(camera, m_default_distance);
