@@ -1167,7 +1167,7 @@ void Processor::add_3d_layout(
         spdlog::debug("plottingWeb.camera is empty");
         jwLayout3d->setTest3DCanvas();
     } else {
-        if (m_canvas3d_type != nullptr) {
+        if (!m_canvas3d_type.isEmpty()) {
             spdlog::debug("m_canvas3d_type: {}", m_canvas3d_type.toStdString());
         }
         if (m_canvas3d_type == "camera") {

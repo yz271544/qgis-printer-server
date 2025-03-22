@@ -5,8 +5,8 @@ Authorization: Bearer {{token}}
 
 {
   "selectPath": true,
-  "path": "健康谷正射",
-  "path3d": "jkg",
+  "path": "/map/orthogonal/健康谷正射",
+  "path3d": "/map/realistic3d/jkg/tileset.json",
   "tileIndex": [
     [
       846789,

@@ -5,8 +5,8 @@ Authorization: Bearer {{token}}
 
 {
   "selectPath": true,
-  "path": "/map/test_data/正射/瑞光电厂-DOM",
-  "path3d": "/map/test_data/实景三维/瑞光电厂切片/tileset.json",
+  "path": "/map/test_data/正射/健康谷正射",
+  "path3d": "/map/mnt/fakeRoot/opt/anbao/map/test_data/实景三维/健康谷/tileset.json",
   "tileIndex": [
     [
       0,
@@ -17,8 +17,8 @@ Authorization: Bearer {{token}}
       -5821555
     ]
   ],
-  "sceneId": "1898224049056694273",
-  "sceneName": "太原高速公路",
+  "sceneId": "1899714284093489154",
+  "sceneName": "test",
   "geojson": {
     "type": "Feature",
     "geometry": {
@@ -26,20 +26,20 @@ Authorization: Bearer {{token}}
       "coordinates": [
         [
           [
-            112.67517643899885,
-            37.78172261362564
+            111.43455730164123,
+            40.72197710388511
           ],
           [
-            112.67517643899885,
-            37.81818686595956
+            111.43455730164123,
+            40.76113989554849
           ],
           [
-            112.76613647210606,
-            37.81818686595956
+            111.53653083939226,
+            40.76113989554849
           ],
           [
-            112.76613647210606,
-            37.78172261362564
+            111.53653083939226,
+            40.72197710388511
           ]
         ]
       ]
@@ -66,9 +66,9 @@ Authorization: Bearer {{token}}
     "legend": {
       "position": [
         84,
-        46,
+        65,
         16,
-        54
+        35
       ]
     },
     "bgPic": {
@@ -112,21 +112,33 @@ Authorization: Bearer {{token}}
     "is3D": true
   },
   "camera": {
-    "cameraLongitude": 112.72065645530303,
-    "cameraLatitude": 37.760638687103295,
-    "cameraHeight": 3173.676321181675,
-    "cameraDirX": 0.3774950189634977,
-    "cameraDirY": -0.9015178144978975,
-    "cameraDirZ": 0.21157301529420786,
-    "cameraUpX": -0.08171766809859378,
-    "cameraUpY": 0.19515471688178324,
-    "cameraUpZ": 0.9773621944802854,
-    "cameraRightX": -0.9223989014403022,
-    "cameraRightY": -0.3862386135819718,
-    "cameraRightZ": -4.038436252074007e-15,
+    "cameraLongitude": 111.48554407055254,
+    "cameraLatitude": 40.699324935287216,
+    "cameraHeight": 3416.683388909564,
+    "cameraDirX": 0.3615199061162859,
+    "cameraDirY": -0.9184512388035159,
+    "cameraDirZ": 0.16047018234537858,
+    "cameraUpX": -0.05877484680938394,
+    "cameraUpY": 0.1493191106472731,
+    "cameraUpZ": 0.9870406884105847,
+    "cameraRightX": -0.9305100079333943,
+    "cameraRightY": -0.36626646739197233,
+    "cameraRightZ": 3.927413949611491e-15,
     "fov": 1.0471975511965976,
     "aspectRatio": 2.391033623910336,
     "nearPlane": 0.1,
     "farPlane": 10000000000
   }
 }
+### Response
+HTTP/1.1 200 OK
+Server: TornadoServer/6.4.1
+Content-Type: application/json; charset=UTF-8
+Date: Thu, 07 Nov 2024 07:12:42 GMT
+Content-Length: 141
+
+{
+  "project_zip_url": "http://localhost:80/jingweipy/test.zip",
+  "image_url": "http://localhost:80/jingweipy/local/test-位置图.png"
+}
+###

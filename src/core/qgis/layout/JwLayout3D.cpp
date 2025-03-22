@@ -679,13 +679,15 @@ void JwLayout3D::setTest3DCanvas() {
     CameraUtil::ExtentInfo(extent);
 
     spdlog::debug("JwLayout3D::set3DCanvas");
-    //mCanvas3d->setMapSettings(mMapSettings3d.get());
-
-    QgsVector3D lookAtCenterPoint = QgsVector3D(-41966.3, -53916.1, -12671.4);
+    //mCanvas3d->setMapSettings(mMapSettings3d.get());   // jkg
+    QgsVector3D lookAtCenterPoint = QgsVector3D(100, 500, 220.0);
+    // QgsVector3D lookAtCenterPoint = QgsVector3D(-41966.3, -53916.1, -12671.4); // dc
     QgsPointXY center(lookAtCenterPoint.x(), lookAtCenterPoint.y());
     auto distance = static_cast<float>(extent.width() / 1.2); // 根据场景范围调整相机距离
-    float pitch = 57.3;
-    float yaw = 321.0;
+    float pitch = 38.0; // jkg
+    float yaw = 20.0;   // jkg
+    //float pitch = 57.3;  // dc
+    //float yaw = 321.0;   // dc
     mCanvas3d->setViewFromTop(center, distance, 0);
     mCanvas3d->cameraController()->setLookingAtPoint(lookAtCenterPoint, distance, pitch, yaw);
 }
