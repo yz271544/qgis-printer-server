@@ -302,6 +302,18 @@ void App::addMap3dTileLayer(int num, QString& realistic3dPath) {
 
     auto tiled_scene_layer = std::make_unique<QgsTiledSceneLayer>(map_3d_base_url, real3d_tile_name, CESIUM_TILES_PROVIDER);
     auto renderer3d = std::make_unique<QgsTiledSceneLayer3DRenderer>();
+
+    double max_screen_error = 10000000;
+    try {
+        max_screen_error = (*mConfig)["qgis"]["max_screen_error"].as<double>();
+        if (MAX_SCREEN_ERROR > 0 && MAX_SCREEN_ERROR < max_screen_error) {
+            max_screen_error = MAX_SCREEN_ERROR;
+        }
+    } catch (const std::exception& e) {
+        spdlog::error("get qgis.max_screen_error error: {}", e.what());
+    }
+
+    renderer3d->setMaximumScreenError(max_screen_error);
     tiled_scene_layer->setRenderer3D(renderer3d.release());
 
     if (tiled_scene_layer->isValid()) {

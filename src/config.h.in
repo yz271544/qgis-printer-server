@@ -131,6 +131,8 @@ inline bool REMOVE_3D_BASE = getEnvValue<bool>("REMOVE_3D_BASE", false);
 
 inline std::string CANVAS3D_TYPE = getEnvValue<std::string>("CANVAS3D_TYPE");
 
+inline double MAX_SCREEN_ERROR = getEnvValue<double>("MAX_SCREEN_ERROR", 10000000.0);
+
 #ifdef OATPP_VERSION_LESS_1_4_0
 #define DTOWRAPPERNS oatpp::data::mapping::type
 #define OBJECTMAPPERNS oatpp::parser::json::mapping
