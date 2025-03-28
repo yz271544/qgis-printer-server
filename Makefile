@@ -94,6 +94,10 @@ printerimage550:
     		--build-arg DRIVER_FULL_VERSION=${DRIVER_FULL_VERSION} \
     		-f building/noble-${NVIDIA_MAIN_VERSION}.docker .
 
+.PHONY: printerimage550120
+printerimage550120:
+	docker build -t ${REPO}/jingweiprinter:${VERSION}-550-120 --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-550-120.docker .
+
 .PHONY: printerimages
 printerimages: printerimagennv printerimage470 printerimage510 printerimage515 printerimage520 printerimage535 printerimage550
 
