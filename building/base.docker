@@ -10,9 +10,9 @@ ARG PARALLEL_LEVEL
 RUN echo "Building with parallel level: $PARALLEL_LEVEL"
 ENV CMAKE_BUILD_PARALLEL_LEVEL=$PARALLEL_LEVEL
 
-RUN cp /etc/apt/sources.list.d/ubuntu.sources /etc/apt/sources.list.d/ubuntu.sources.bak
-RUN sed -i "s/archive.ubuntu.com/mirrors.aliyun.com/g" /etc/apt/sources.list.d/ubuntu.sources
-RUN sed -i "s/security.ubuntu.com/mirrors.aliyun.com/g" /etc/apt/sources.list.d/ubuntu.sources
+#RUN cp /etc/apt/sources.list.d/ubuntu.sources /etc/apt/sources.list.d/ubuntu.sources.bak
+#RUN sed -i "s/archive.ubuntu.com/mirrors.aliyun.com/g" /etc/apt/sources.list.d/ubuntu.sources
+#RUN sed -i "s/security.ubuntu.com/mirrors.aliyun.com/g" /etc/apt/sources.list.d/ubuntu.sources
 
 RUN apt-get update
 RUN apt-get install -y bison build-essential ca-certificates ccache cmake cmake-curses-gui dh-python \
