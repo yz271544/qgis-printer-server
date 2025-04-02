@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="noble-470-plain-nocache" type="docker-deploy" factoryName="dockerfile" server-name="docker-default">
+  <configuration default="false" name="building/noble-470.docker: Compose 部署" type="docker-deploy" factoryName="dockerfile" server-name="docker-default">
     <deployment type="dockerfile">
       <settings>
         <option name="imageTag" value="registry.cn-beijing.aliyuncs.com/dc_huzy/jingweiprinter:v1.0.4" />

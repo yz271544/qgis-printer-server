@@ -21,7 +21,7 @@ WORKDIR /lyndon/iProject/cpath/jingweiprinter/build
 RUN make install
 WORKDIR /lyndon/iProject/cpath
 
-FROM qgis/qgis:3.40.4-noble AS runner
+FROM qgis/qgis:3.40.5-noble AS runner
 ARG NVIDIA_MAIN_VERSION
 ARG DRIVER_FULL_VERSION
 LABEL authors="Lyndon"

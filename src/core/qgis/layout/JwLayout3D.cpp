@@ -711,7 +711,7 @@ void JwLayout3D::setTest3DCanvas() {
  * @param nearPlane 近裁剪面
  * @param farPlane 远裁剪面
  */
-void JwLayout3D::set3DCanvas(oatpp::data::type::DTOWrapper<Camera3dPosition>& camera, double default_distance) {
+void JwLayout3D::set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera, double default_distance) {
     const QgsReferencedRectangle projectExtent = mProject->viewSettings()->fullExtent();
     auto mapSettings3d = mCanvas3d->mapSettings();
     const QgsRectangle fullExtent = Qgs3DUtils::tryReprojectExtent2D(projectExtent, projectExtent.crs(),

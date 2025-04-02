@@ -22,18 +22,18 @@ qgis:
   projects_prefix: "/opt/anbao/map/qgz"
   projects_temp_prefix: "{PROJECTS_PREFIX}/temp"
   icon_prefix: "/opt/anbao/map/qgz"
-  jingwei_server_host: "172.31.100.34"
-  jingwei_server_port: 38089
+  jingwei_server_host: "localhost"
+  jingwei_server_port: 8080
   jingwei_server_api_prefix: "/api"
   jingwei_server_url: "http://{JINGWEI_SERVER_HOST}:{JINGWEI_SERVER_PORT}{JINGWEI_SERVER_API_PREFIX}"
   layout_dir: "/opt/anbao/map/qgz/layout"
-  map_base_url: "http://172.31.100.34:38083"
+  map_base_url: "http://localhost:80"
   map_base_prefix: "type=xyz&url={MAP_BASE_URL}"
   map_base_suffix: "/map/lx/{z}/{x}/{y}.png&zmax={BASE_TILE_LAYER_MAX_LEVEL}&zmin={BASE_TILE_LAYER_MIN_LEVEL}"
   base_tile_layer_max_level: 17
   base_tile_layer_min_level: 0
   has_scene_prefix: false
-  map_main_base_url: "http://172.31.100.34:38083"
+  map_main_base_url: "http://localhost:80"
   map_main_prefix: "type=xyz&url={MAP_MAIN_BASE_URL}"
   map_main_middle: "/map/orthogonal/{ORTHOGONAL_PATH_NAME}"
   map_main_suffix: "/{z}/{x}/{y}.png"

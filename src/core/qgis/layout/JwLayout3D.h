@@ -155,7 +155,7 @@ public:
      * @param nearPlane 近裁剪面
      * @param farPlane 远裁剪面
      */
-    void set3DCanvas(oatpp::data::type::DTOWrapper<Camera3dPosition>& camera, double default_distance);
+    void set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera, double default_distance);
 
     void setTest3DCanvas();
 
