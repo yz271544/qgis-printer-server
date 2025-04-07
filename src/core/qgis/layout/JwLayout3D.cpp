@@ -736,7 +736,7 @@ void JwLayout3D::set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera,
     QgsVector3D cameraPosition(cameraScene->x(), cameraScene->y(), cameraScene->z());
 
     // 计算目标点
-    double distance = default_distance; // 假设一个距离，可根据实际情况调整
+    /*double distance = default_distance; // 假设一个距离，可根据实际情况调整
     QgsVector3D lookAtCenterPoint(cameraPosition.x() + camera->cameraDirX * distance,
                                   cameraPosition.y() + camera->cameraDirY * distance,
                                   cameraPosition.z() + camera->cameraDirZ * distance);
@@ -766,10 +766,51 @@ void JwLayout3D::set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera,
             lookAtCenterPoint,
             static_cast<float>(distance),
             static_cast<float>(pitch),
-            static_cast<float>(yaw));
+            static_cast<float>(yaw));*/
 
     // 设置垂直视场角（若支持）
     // mCanvas3d->cameraController()->setFieldOfView(fov);
+    // 注意：Cesium方向向量指向摄像机观察方向，QGIS需要从摄像机指向目标点
+    QgsVector3D viewDir(camera->cameraDirX, camera->cameraDirY, camera->cameraDirZ);
+    viewDir = -viewDir; // 取反，得到从摄像机指向目标的向量
+
+    // 计算目标点坐标（摄像机位置沿方向向量延伸distance距离）
+    double distance = default_distance;
+    QgsVector3D lookAtCenterPoint(
+        cameraPosition.x() + viewDir.x() * distance,
+        cameraPosition.y() + viewDir.y() * distance,
+        cameraPosition.z() + viewDir.z() * distance
+    );
+
+    // 重新计算实际距离和方向向量
+    double dx = lookAtCenterPoint.x() - cameraPosition.x();
+    double dy = lookAtCenterPoint.y() - cameraPosition.y();
+    double dz = lookAtCenterPoint.z() - cameraPosition.z();
+    distance = std::sqrt(dx*dx + dy*dy + dz*dz);
+    QgsVector3D dirNormalized(dx/distance, dy/distance, dz/distance);
+
+    // 计算俯仰角（修正Z轴方向）
+    double pitch = qRadiansToDegrees(std::asin(-dirNormalized.z())); // 注意负号
+
+    // 计算偏航角（调整坐标系旋转基准）
+    double yaw = qRadiansToDegrees(std::atan2(dirNormalized.x(), dirNormalized.y()));
+    yaw = fmod(yaw + 360.0, 360.0); // 确保角度在0-360范围内
+
+    // 校准偏航角（根据实际偏差调整）
+    yaw += 30.0; // 如果测试发现仍偏差30度，添加校准偏移
+
+    // 设置摄像机参数（优先使用精确计算）
+    mCanvas3d->cameraController()->setLookingAtPoint(
+        lookAtCenterPoint,
+        static_cast<float>(distance),
+        static_cast<float>(pitch),
+        static_cast<float>(yaw)
+    );
+
+    // 强制更新UP向量（通过RIGHT向量计算旋转补偿）
+    QgsVector3D rightVec(camera->cameraRightX, camera->cameraRightY, camera->cameraRightZ);
+    double roll = qRadiansToDegrees(std::atan2(rightVec.z(), rightVec.x()));
+    mCanvas3d->cameraController()->rotateCamera(0, roll); // 应用横滚角补偿
 }
 
 QgsPoint* JwLayout3D::transformPoint(const QgsPoint& point, const QgsCoordinateTransform& transformer) {
