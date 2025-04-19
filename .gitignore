@@ -1,9 +1,9 @@
+.cache/
 cmake-build-debug/
 cmake-build-release/
 .vscode/
 .idea/
 src/config.h
 out/
-.cache/
 compile_commands.json
 
