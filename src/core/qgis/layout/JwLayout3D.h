@@ -72,6 +72,72 @@
 #include "core/handler/dto/plotting.h"
 #include "config.h"
 
+
+
+class LookAtPoint
+{
+private:
+        QgsVector3D mLookingAtPoint;
+        float mDistance;
+        float mPitch = 0;
+        float mYaw = 0;
+
+public:
+        LookAtPoint(QgsVector3D lookingAtPoint,
+           float distance,
+           float pitch,
+           float yaw)
+        {
+                mLookingAtPoint = lookingAtPoint;
+                mDistance = distance;
+                mPitch = pitch;
+                mYaw = yaw;
+        };
+
+        ~LookAtPoint() = default;
+
+        QgsVector3D lookingAtPoint()
+        {
+                return mLookingAtPoint;
+        }
+
+        void setLookingAtPoint( QgsVector3D lookingAtPoint )
+        {
+                mLookingAtPoint = lookingAtPoint;
+        }
+
+        float distance() const
+        {
+                return mDistance;
+        }
+
+        void setDistance( float distance )
+        {
+                mDistance = distance;
+        }
+
+        float pitch() const
+        {
+                return mPitch;
+        }
+
+        void setPitch( float pitch )
+        {
+                mPitch = pitch;
+        }
+
+        float yaw() const
+        {
+                return mYaw;
+        }
+
+        void setYaw(float yaw)
+        {
+                mYaw = yaw;
+        }
+};
+
+
 class JwLayout3D {
 
 public:
@@ -155,13 +221,14 @@ public:
      * @param nearPlane 近裁剪面
      * @param farPlane 远裁剪面
      */
-    void set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera, double default_distance);
+    LookAtPoint* set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera, double default_distance);
 
     void setTest3DCanvas();
 
     void set3DMap(
             QgsPrintLayout *layout,
             const PaperSpecification &availablePaper,
+            DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera,
             int mapFrameWidth = 1,
             const QString &mapFrameColor = "#000000",
             bool isDoubleFrame = false,
@@ -175,6 +242,7 @@ public:
 
     void addPrintLayout(const QString &layoutType, const QString &layoutName,
                         const QVariantMap &plottingWeb, const PaperSpecification &availablePaper,
+                        DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera,
                         bool writeQpt = false);
 
     void loadQptTemplate(const QString &qptFilePath, const QString &layoutTemplateName);
