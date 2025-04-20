@@ -79,3 +79,12 @@ cmake options
 
 ```
 
+## test use nvidia prime Environment
+
+```shell
+cd jingweiprinter/cmake-build-debug/src
+QT_QPA_PLATFORM=xcb __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia __VK_LAYER_NV_optimus=NVIDIA_only ./jingweiprinter
+```
+```
+```
+
