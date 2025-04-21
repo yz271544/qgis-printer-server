@@ -220,6 +220,11 @@ public:
      * @param aspectRatio 长宽比
      * @param nearPlane 近裁剪面
      * @param farPlane 远裁剪面
+     * @param centerLatitude 锁定中心点纬度
+     * @param centerLongitude 锁定中心点经度
+     * @param heading 摄像机偏航角
+     * @param pitch 摄像机俯仰角
+     * @param roll 摄像机翻滚角
      */
     LookAtPoint* set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera, double default_distance);
 
