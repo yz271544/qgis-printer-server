@@ -808,6 +808,11 @@ void JwLayout3D::setTest3DCanvas()
  * @param aspectRatio 长宽比
  * @param nearPlane 近裁剪面
  * @param farPlane 远裁剪面
+ * @param centerLatitude 锁定中心点纬度
+ * @param centerLongitude 锁定中心点经度
+ * @param heading 摄像机偏航角
+ * @param pitch 摄像机俯仰角
+ * @param roll 摄像机翻滚角
  */
 LookAtPoint* JwLayout3D::set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera,
                              double default_distance)
@@ -819,7 +824,7 @@ LookAtPoint* JwLayout3D::set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>&
         projectExtent, projectExtent.crs(), mapSettings3d->crs(),
         mProject->transformContext());
     spdlog::debug("set3DCanvas fullExtent:");
-    // CameraUtil::ExtentInfo(fullExtent);
+    CameraUtil::ExtentInfo(fullExtent);
 
     // 转换Cesium摄像机位置到场景CRS
     QgsPoint cameraLLA(camera->cameraLongitude, camera->cameraLatitude,
@@ -841,13 +846,22 @@ LookAtPoint* JwLayout3D::set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>&
     QgsVector3D cameraPosition(cameraScene->x(), cameraScene->y(),
                                cameraScene->z());
 
-    QgsVector3D cameraPos(0.0f, 0.0f, 0.0f);
-
+    spdlog::info("cameraPosition: {}-{}-{}", cameraPosition.x(), cameraPosition.y(), cameraPosition.z());
+    auto extentCenter = fullExtent.center();
+    double cameraPosX = std::abs(std::abs(cameraPosition.x()) - std::abs(extentCenter.x()));
+    cameraPosX = QString::number(cameraPosX, 'f', 1).toDouble();
+    double cameraPosY = std::abs(std::abs(std::abs(cameraPosition.y()) - std::abs(extentCenter.y())) - std::abs(camera->cameraHeight));
+    cameraPosY = QString::number(cameraPosY, 'f', 1).toDouble();
+    double cameraPosZ = std::abs(std::abs(camera->cameraHeight) - std::abs(fullExtent.height()));
+    cameraPosZ = QString::number(cameraPosZ, 'f', 1).toDouble();
+    QgsVector3D cameraPos(cameraPosX, cameraPosY, cameraPosZ);
+    spdlog::debug("cameraPos: {}-{}-{}", cameraPos.x(), cameraPos.y(), cameraPos.z());
     // 计算距离
-    double dx = cameraPosition.x() - camera->cameraDirX;
-    double dy = cameraPosition.y() - camera->cameraDirY;
-    double dz = cameraPosition.z() - camera->cameraDirZ;
-    double distance = std::sqrt(dx*dx + dy*dy + dz*dz);
+    // double dx = cameraPosition.x() - camera->cameraDirX;
+    // double dy = cameraPosition.y() - camera->cameraDirY;
+    // double dz = cameraPosition.z() - camera->cameraDirZ;
+    // double distance = std::sqrt(dx*dx + dy*dy + dz*dz);
+    float distance = camera->cameraHeight;
     spdlog::info("set3DCanvas distance: {}", distance);
 
 
@@ -869,17 +883,45 @@ LookAtPoint* JwLayout3D::set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>&
     // 上轴: 现在已经有了 x 轴向量和 z 轴向量，获取一个指向摄像机的正 y 轴向量就相对简单了，把右向量和方向向量进行叉乘：
     auto cameraUp = QgsVector3D::crossProduct(cameraDirection, cameraRight);
 
-    float pitch = camera->fov;
+    float pitch = 0.0f;
+    float yaw = 0.0f;
+    float roll = 0.0f;
+    try {
+        pitch = std::stof(camera->pitch);
+        if (pitch < 0) {
+            pitch = 77 + pitch;
+        } else {
+            pitch = 77 - pitch;
+        }
+    } catch (const std::invalid_argument& e) {
+        spdlog::error("Invalid pitch value: {}", camera->pitch->c_str());
+    } catch (const std::out_of_range& e) {
+        spdlog::error("Pitch value out of range: {}", camera->pitch->c_str());
+    }
+    try {
+        yaw = std::stof(camera->heading);
+    } catch (const std::invalid_argument& e) {
+        spdlog::error("Invalid heading value: {}", camera->heading->c_str());
+    } catch (const std::out_of_range& e) {
+        spdlog::error("heading value out of range: {}", camera->heading->c_str());
+    }
+    try {
+        roll = std::stof(camera->roll);
+    } catch (const std::invalid_argument& e) {
+        spdlog::error("Invalid roll value: {}", camera->roll->c_str());
+    } catch (const std::out_of_range& e) {
+        spdlog::error("roll value out of range: {}", camera->roll->c_str());
+    }
 
-    QgsVector3D dirNormalized(dx / distance, dy / distance, dz / distance);
+    //QgsVector3D dirNormalized(dx / distance, dy / distance, dz / distance);
 
     // 计算俯仰角（修正Z轴方向）
     //pitch = qRadiansToDegrees(std::asin(-dirNormalized.z())); // 注意负号
 
     // 计算偏航角（调整坐标系旋转基准）
-    double yaw =
-        qRadiansToDegrees(std::atan2(dirNormalized.x(), dirNormalized.y()));
-    yaw = fmod(yaw + 360.0, 360.0); // 确保角度在0-360范围内
+    // double yaw =
+    //     qRadiansToDegrees(std::atan2(dirNormalized.x(), dirNormalized.y()));
+    // yaw = fmod(yaw + 360.0, 360.0); // 确保角度在0-360范围内
 
     // 校准偏航角（根据实际偏差调整）
     //yaw += 30.0; // 如果测试发现仍偏差30度，添加校准偏移
@@ -889,14 +931,15 @@ LookAtPoint* JwLayout3D::set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>&
 
     // 设置摄像机参数（优先使用精确计算）
     mCanvas3d->cameraController()->setLookingAtPoint(
-        cameraTarget, static_cast<float>(distance),
+        cameraPos, static_cast<float>(distance),
         static_cast<float>(pitch), static_cast<float>(yaw));
 
     // 强制更新UP向量（通过RIGHT向量计算旋转补偿）
-    QgsVector3D rightVec(camera->cameraRightX, camera->cameraRightY,
-                         camera->cameraRightZ);
-    double roll = qRadiansToDegrees(std::atan2(rightVec.z(), rightVec.x()));
-    mCanvas3d->cameraController()->rotateCamera(0, roll);
+    // QgsVector3D rightVec(camera->cameraRightX, camera->cameraRightY,
+    //                      camera->cameraRightZ);
+    // double roll = qRadiansToDegrees(std::atan2(rightVec.z(), rightVec.x()));
+
+    //mCanvas3d->cameraController()->rotateCamera(0, roll);
 
     auto settedCenterPoint = mCanvas3d->cameraController()->lookingAtPoint();
     spdlog::info("set3DCanvas lookAtCenterPoint: {}-{}-{}",
@@ -906,7 +949,7 @@ LookAtPoint* JwLayout3D::set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>&
                  mCanvas3d->cameraController()->pitch(),
                  mCanvas3d->cameraController()->yaw());
 
-    auto lookAtPoint = std::make_unique<LookAtPoint>(cameraTarget, static_cast<float>(distance),
+    auto lookAtPoint = std::make_unique<LookAtPoint>(cameraPos, static_cast<float>(distance),
         static_cast<float>(pitch), static_cast<float>(yaw));
 
     return lookAtPoint.release();
@@ -950,27 +993,9 @@ void JwLayout3D::set3DMap(QgsPrintLayout* layout,
     spdlog::debug("mapItem3d");
 
 
-    auto lookAtPoint = this->set3DCanvas(camera, 0);
+    auto lookAtPoint = this->set3DCanvas(camera, 1000);
 
-    QVector3D cameraPos(0.0f, 0.0f, 0.0f);
-
-
-    QgsVector3D lookAtCenterPoint = QgsVector3D(0.0, 0.0, 0.0);
-    QgsPointXY center(lookAtCenterPoint.x(), lookAtCenterPoint.y());
-    const QgsReferencedRectangle projectExtent =
-        mProject->viewSettings()->fullExtent();
-    const QgsRectangle fullExtent = Qgs3DUtils::tryReprojectExtent2D(
-        projectExtent, projectExtent.crs(), mMapSettings3d->crs(),
-        mProject->transformContext());
-    const QgsRectangle& extent = fullExtent;
-    // auto distance =
-    //     static_cast<float>(extent.width() / 1.2); // 根据场景范围调整相机距离
-    // float pitch = 38.0;
-    // float yaw = 20.0;
-    // spdlog::debug("distance: {}", distance);
-    // mCanvas3d->setViewFromTop(center, distance, 0);
-    // mCanvas3d->cameraController()->setLookingAtPoint(lookAtPoint->lookingAtPoint(), distance,
-    //                                                  pitch, yaw);
+    QgsVector3D lookAtCenterPoint = QgsVector3D(lookAtPoint->lookingAtPoint().x(), lookAtPoint->lookingAtPoint().y(), lookAtPoint->lookingAtPoint().z());
 
     mCanvas3d->cameraController()->setLookingAtPoint(lookAtPoint->lookingAtPoint(),
         lookAtPoint->distance(),
@@ -993,14 +1018,15 @@ void JwLayout3D::set3DMap(QgsPrintLayout* layout,
 
     QgsCameraPose cameraPose;
     cameraPose.setCenterPoint(lookAtCenterPoint);
-    // cameraPose.setDistanceFromCenterPoint(distance);
-    // cameraPose.setPitchAngle(pitch);
-    // cameraPose.setHeadingAngle(yaw);
     cameraPose.setDistanceFromCenterPoint(lookAtPoint->distance());
     cameraPose.setPitchAngle(lookAtPoint->pitch());
     cameraPose.setHeadingAngle(lookAtPoint->yaw());
     // set camera pose for layout
     mMapItem3d->setCameraPose(cameraPose);
+    spdlog::info("set3DMap cameraPose: {}-{}-{}, distance: {}, pitch: {}, yaw: {}",
+                 cameraPose.centerPoint().x(), cameraPose.centerPoint().y(),
+                 cameraPose.centerPoint().z(), cameraPose.distanceFromCenterPoint(),
+                 cameraPose.pitchAngle(), cameraPose.headingAngle());
     // 设置地图项大小
     mMapWidth = availablePaper.getPaperSize().second -
         mImageSpec["main_left_margin"].toDouble() -

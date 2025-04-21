@@ -127,7 +127,12 @@ Authorization: Bearer {{token}}
     "fov": 1.0471975511965976,
     "aspectRatio": 2,
     "nearPlane": 0.1,
-    "farPlane": 10000000000
+    "farPlane": 10000000000,
+    "centerLatitude": 34.40832879821675,
+    "centerLongitude": 113.10905248975922,
+    "heading": "18.91",
+    "pitch": "-11.57",
+    "roll": "90.00"
   }
 }
 ### Response
