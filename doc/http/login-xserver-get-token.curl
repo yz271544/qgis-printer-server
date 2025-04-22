@@ -1,4 +1,6 @@
-curl -X POST \
--H "Content-Type: application/json" \
--d '{"username": "jingwei","password": "gis@123"}' \
-http://172.31.100.34:38089/api/login
+token=$(curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"username": "jingwei","password": "gis@123"}' \
+  http://172.31.100.34:38089/api/login | jq -r .data.token)
+
+echo "${token}"
