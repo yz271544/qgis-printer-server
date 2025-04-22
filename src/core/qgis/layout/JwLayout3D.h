@@ -180,11 +180,15 @@ public:
             QgsPrintLayout *layout,
             const QVariantMap &subTitle,
             int rightSideLabelWidth,
-            int rightSideLabelHeight);
+            int rightSideLabelHeight,
+            bool mapDoubleFrame,
+            float margin_offset_if_double_frame);
 
     void addSignatureLabel(
             QgsPrintLayout *layout,
-            const QString &signatureText);
+            const QString &signatureText,
+            bool mapDoubleFrame,
+            float margin_offset_if_double_frame);
 
     static void addArrowToLayout(
             QgsLayout *layout,

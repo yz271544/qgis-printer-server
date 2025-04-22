@@ -307,7 +307,9 @@ void JwLayout3D::setRemarks(QgsPrintLayout* layout,
 void JwLayout3D::addRightSideLabel(QgsPrintLayout* layout,
                                    const QVariantMap& subTitle,
                                    int rightSideLabelWidth,
-                                   int rightSideLabelHeight)
+                                   int rightSideLabelHeight,
+                                   bool mapDoubleFrame,
+                                   float margin_offset_if_double_frame)
 {
     // 创建标签项
     auto label = std::make_unique<QgsLayoutItemLabel>(layout);
@@ -368,15 +370,22 @@ void JwLayout3D::addRightSideLabel(QgsPrintLayout* layout,
         mImageSpec["right_seam_seal_from_right_border_left_margin"].toDouble();
 
     // 设置标签的位置和大小
-    label->attemptSetSceneRect(
-        QRectF(labelX, labelY, textFontWidth, textFontHeight));
+    if (mapDoubleFrame) {
+        label->attemptSetSceneRect(
+    QRectF(labelX + margin_offset_if_double_frame, labelY, textFontWidth, textFontHeight));
+    } else {
+        label->attemptSetSceneRect(
+    QRectF(labelX, labelY, textFontWidth, textFontHeight));
+    }
 
     // 将标签添加到布局
     layout->addLayoutItem(label.release());
 }
 
 void JwLayout3D::addSignatureLabel(QgsPrintLayout* layout,
-                                   const QString& signatureText)
+                                   const QString& signatureText,
+                                   bool mapDoubleFrame,
+                                   float margin_offset_if_double_frame)
 {
     // 创建标签项
     auto label = std::make_unique<QgsLayoutItemLabel>(layout);
@@ -428,8 +437,13 @@ void JwLayout3D::addSignatureLabel(QgsPrintLayout* layout,
         mImageSpec["signature_from_bottom_border_top_margin"].toDouble();
 
     // 设置标签的位置和大小
-    label->attemptSetSceneRect(
-        QRectF(labelX, labelY, textFontWidth, textFontHeight));
+    if (mapDoubleFrame) {
+        label->attemptSetSceneRect(
+        QRectF(labelX, labelY + margin_offset_if_double_frame, textFontWidth, textFontHeight));
+    } else {
+        label->attemptSetSceneRect(
+           QRectF(labelX, labelY, textFontWidth, textFontHeight));
+    }
 
     // 将标签添加到布局
     layout->addLayoutItem(label.release());
@@ -538,7 +552,7 @@ void JwLayout3D::addArrowBasedOnFrontendParams(QgsLayout* layout,
 
     // 打印调试信息
     spdlog::debug("Arrow added based on frontend params -> position: "
-                  "{}-{}-{}-{}, rotate: {}",
+                  "{}:{}:{}:{}, rotate: {}",
                   position[0].toDouble(), position[1].toDouble(),
                   position[2].toDouble(), position[3].toDouble(), rotate);
 }
@@ -782,7 +796,7 @@ void JwLayout3D::setTest3DCanvas()
                                                      pitch, yaw);
 
     auto settedCenterPoint = mCanvas3d->cameraController()->lookingAtPoint();
-    spdlog::info("setTest3DCanvas lookAtCenterPoint: {}-{}-{}",
+    spdlog::info("setTest3DCanvas lookAtCenterPoint: {}:{}:{}",
                  settedCenterPoint.x(), settedCenterPoint.y(),
                  settedCenterPoint.z());
     spdlog::info("setTest3DCanvas pitch: {}, yaw: {}",
@@ -846,16 +860,16 @@ LookAtPoint* JwLayout3D::set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>&
     QgsVector3D cameraPosition(cameraScene->x(), cameraScene->y(),
                                cameraScene->z());
 
-    spdlog::info("cameraPosition: {}-{}-{}", cameraPosition.x(), cameraPosition.y(), cameraPosition.z());
+    spdlog::info("cameraPosition: {}:{}:{}", cameraPosition.x(), cameraPosition.y(), cameraPosition.z());
     auto extentCenter = fullExtent.center();
-    double cameraPosX = std::abs(std::abs(cameraPosition.x()) - std::abs(extentCenter.x()));
+    double cameraPosX = std::abs(cameraPosition.x()) - std::abs(extentCenter.x());
     cameraPosX = QString::number(cameraPosX, 'f', 1).toDouble();
-    double cameraPosY = std::abs(std::abs(std::abs(cameraPosition.y()) - std::abs(extentCenter.y())) - std::abs(camera->cameraHeight));
+    double cameraPosY = std::abs(camera->cameraHeight) - std::abs(fullExtent.height());
     cameraPosY = QString::number(cameraPosY, 'f', 1).toDouble();
-    double cameraPosZ = std::abs(std::abs(camera->cameraHeight) - std::abs(fullExtent.height()));
+    double cameraPosZ = std::abs(std::abs(cameraPosition.y()) - std::abs(extentCenter.y())) - std::abs(camera->cameraHeight);
     cameraPosZ = QString::number(cameraPosZ, 'f', 1).toDouble();
     QgsVector3D cameraPos(cameraPosX, cameraPosY, cameraPosZ);
-    spdlog::debug("cameraPos: {}-{}-{}", cameraPos.x(), cameraPos.y(), cameraPos.z());
+    spdlog::debug("cameraPos: {}:{}:{}", cameraPos.x(), cameraPos.y(), cameraPos.z());
     // 计算距离
     // double dx = cameraPosition.x() - camera->cameraDirX;
     // double dy = cameraPosition.y() - camera->cameraDirY;
@@ -926,7 +940,7 @@ LookAtPoint* JwLayout3D::set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>&
     // 校准偏航角（根据实际偏差调整）
     //yaw += 30.0; // 如果测试发现仍偏差30度，添加校准偏移
 
-    spdlog::info("set3DCanvas cameraTarget: {}-{}-{}, distance: {}, pitch: {}, yaw: {}",
+    spdlog::info("set3DCanvas cameraTarget: {}:{}:{}, distance: {}, pitch: {}, yaw: {}",
         cameraTarget.x(), cameraTarget.y(), cameraTarget.z(), distance, pitch, yaw);
 
     // 设置摄像机参数（优先使用精确计算）
@@ -942,7 +956,7 @@ LookAtPoint* JwLayout3D::set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>&
     //mCanvas3d->cameraController()->rotateCamera(0, roll);
 
     auto settedCenterPoint = mCanvas3d->cameraController()->lookingAtPoint();
-    spdlog::info("set3DCanvas lookAtCenterPoint: {}-{}-{}",
+    spdlog::info("set3DCanvas lookAtCenterPoint: {}:{}:{}",
              settedCenterPoint.x(), settedCenterPoint.y(),
              settedCenterPoint.z());
     spdlog::info("set3DCanvas pitch: {}, yaw: {}",
@@ -1003,7 +1017,7 @@ void JwLayout3D::set3DMap(QgsPrintLayout* layout,
         lookAtPoint->yaw());
 
     auto settedCenterPoint = mCanvas3d->cameraController()->lookingAtPoint();
-    spdlog::info("set3DMap lookAtCenterPoint: {}-{}-{}",
+    spdlog::info("set3DMap lookAtCenterPoint: {}:{}:{}",
              settedCenterPoint.x(), settedCenterPoint.y(),
              settedCenterPoint.z());
     spdlog::info("set3DMap pitch: {}, yaw: {}",
@@ -1023,7 +1037,7 @@ void JwLayout3D::set3DMap(QgsPrintLayout* layout,
     cameraPose.setHeadingAngle(lookAtPoint->yaw());
     // set camera pose for layout
     mMapItem3d->setCameraPose(cameraPose);
-    spdlog::info("set3DMap cameraPose: {}-{}-{}, distance: {}, pitch: {}, yaw: {}",
+    spdlog::info("set3DMap cameraPose: {}:{}:{}, distance: {}, pitch: {}, yaw: {}",
                  cameraPose.centerPoint().x(), cameraPose.centerPoint().y(),
                  cameraPose.centerPoint().z(), cameraPose.distanceFromCenterPoint(),
                  cameraPose.pitchAngle(), cameraPose.headingAngle());
@@ -1309,6 +1323,12 @@ void JwLayout3D::addPrintLayout(const QString& layoutType,
     double mapRotation = layInfo.contains("north")
                              ? layInfo["north"].toMap()["rotate"].toDouble()
                              : mImageSpec["north_rotate"].toDouble();
+
+    float margin_offset_if_double_frame = 0.0f;
+    if (mapDoubleFrame) {
+        margin_offset_if_double_frame = FRAME_OFFSET_COEFFICIENT;
+    }
+
     spdlog::info("mapFrameColor: {}, mapFrameWidth: {}, mapDoubleFrame: {}, "
                  "mapRotation: {}",
                  mapFrameColor.toStdString(), mapFrameWidth, mapDoubleFrame,
@@ -1395,7 +1415,7 @@ void JwLayout3D::addPrintLayout(const QString& layoutType,
         QMap<QString, QVariant> subTitleVariants = layInfo["subTitle"].toMap();
         spdlog::debug("添加右侧索引标题: {}",
                       subTitleVariants["text"].toString().toStdString());
-        addRightSideLabel(layout, subTitleVariants, 7, 100);
+        addRightSideLabel(layout, subTitleVariants, 7, 100, mapDoubleFrame, margin_offset_if_double_frame);
     }
 
     // 添加签名
@@ -1404,7 +1424,7 @@ void JwLayout3D::addPrintLayout(const QString& layoutType,
     {
         spdlog::debug("添加签名: {}",
                       plottingWeb["pictureUnit"].toString().toStdString());
-        addSignatureLabel(layout, plottingWeb["pictureUnit"].toString());
+        addSignatureLabel(layout, plottingWeb["pictureUnit"].toString(), mapDoubleFrame, margin_offset_if_double_frame);
     }
 
     // 添加箭头
