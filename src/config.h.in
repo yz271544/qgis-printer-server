@@ -133,6 +133,8 @@ inline std::string CANVAS3D_TYPE = getEnvValue<std::string>("CANVAS3D_TYPE");
 
 inline double MAX_SCREEN_ERROR = getEnvValue<double>("MAX_SCREEN_ERROR", 10000000.0);
 
+inline double MAX_PITCH_ANGLE = getEnvValue<double>("MAX_PITCH_ANGLE", 77.0);
+
 #ifdef OATPP_VERSION_LESS_1_4_0
 #define DTOWRAPPERNS oatpp::data::mapping::type
 #define OBJECTMAPPERNS oatpp::parser::json::mapping

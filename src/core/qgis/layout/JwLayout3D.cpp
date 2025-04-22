@@ -739,7 +739,6 @@ void JwLayout3D::init3DMapSettings(
     mMapSettings3d->setBackgroundColor(defaultColor);
 
     mMapSettings3d->setExtent(fullExtent);
-    // set3DCanvas(fullExtent);
     mCanvas3d->setRootEntity(new Qt3DCore::QEntity);
     mCanvas3d->setMapSettings(mMapSettings3d);
     if (!mCanvas3d->scene())
@@ -829,7 +828,7 @@ void JwLayout3D::setTest3DCanvas()
  * @param roll 摄像机翻滚角
  */
 LookAtPoint* JwLayout3D::set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera,
-                             double default_distance)
+                             double default_distance, double max_pitch_angle)
 {
     const QgsReferencedRectangle projectExtent =
         mProject->viewSettings()->fullExtent();
@@ -870,12 +869,45 @@ LookAtPoint* JwLayout3D::set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>&
     cameraPosZ = QString::number(cameraPosZ, 'f', 1).toDouble();
     QgsVector3D cameraPos(cameraPosX, cameraPosY, cameraPosZ);
     spdlog::debug("cameraPos: {}:{}:{}", cameraPos.x(), cameraPos.y(), cameraPos.z());
+
+
+    float pitch = 0.0f;
+    float yaw = 0.0f;
+    float roll = 0.0f;
+    try {
+        pitch = std::stof(camera->pitch);
+        if (pitch < 0) {
+            pitch = max_pitch_angle + pitch;
+        } else {
+            pitch = max_pitch_angle - pitch;
+        }
+    } catch (const std::invalid_argument& e) {
+        spdlog::error("Invalid pitch value: {}", camera->pitch->c_str());
+    } catch (const std::out_of_range& e) {
+        spdlog::error("Pitch value out of range: {}", camera->pitch->c_str());
+    }
+    try {
+        yaw = std::stof(camera->heading);
+    } catch (const std::invalid_argument& e) {
+        spdlog::error("Invalid heading value: {}", camera->heading->c_str());
+    } catch (const std::out_of_range& e) {
+        spdlog::error("heading value out of range: {}", camera->heading->c_str());
+    }
+    try {
+        roll = std::stof(camera->roll);
+    } catch (const std::invalid_argument& e) {
+        spdlog::error("Invalid roll value: {}", camera->roll->c_str());
+    } catch (const std::out_of_range& e) {
+        spdlog::error("roll value out of range: {}", camera->roll->c_str());
+    }
+
     // 计算距离
     // double dx = cameraPosition.x() - camera->cameraDirX;
     // double dy = cameraPosition.y() - camera->cameraDirY;
     // double dz = cameraPosition.z() - camera->cameraDirZ;
     // double distance = std::sqrt(dx*dx + dy*dy + dz*dz);
-    float distance = camera->cameraHeight;
+    //float distance = camera->cameraHeight;
+    float distance = calculateAdjacentSide(camera->cameraHeight, pitch);
     spdlog::info("set3DCanvas distance: {}", distance);
 
 
@@ -897,35 +929,7 @@ LookAtPoint* JwLayout3D::set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>&
     // 上轴: 现在已经有了 x 轴向量和 z 轴向量，获取一个指向摄像机的正 y 轴向量就相对简单了，把右向量和方向向量进行叉乘：
     auto cameraUp = QgsVector3D::crossProduct(cameraDirection, cameraRight);
 
-    float pitch = 0.0f;
-    float yaw = 0.0f;
-    float roll = 0.0f;
-    try {
-        pitch = std::stof(camera->pitch);
-        if (pitch < 0) {
-            pitch = 77 + pitch;
-        } else {
-            pitch = 77 - pitch;
-        }
-    } catch (const std::invalid_argument& e) {
-        spdlog::error("Invalid pitch value: {}", camera->pitch->c_str());
-    } catch (const std::out_of_range& e) {
-        spdlog::error("Pitch value out of range: {}", camera->pitch->c_str());
-    }
-    try {
-        yaw = std::stof(camera->heading);
-    } catch (const std::invalid_argument& e) {
-        spdlog::error("Invalid heading value: {}", camera->heading->c_str());
-    } catch (const std::out_of_range& e) {
-        spdlog::error("heading value out of range: {}", camera->heading->c_str());
-    }
-    try {
-        roll = std::stof(camera->roll);
-    } catch (const std::invalid_argument& e) {
-        spdlog::error("Invalid roll value: {}", camera->roll->c_str());
-    } catch (const std::out_of_range& e) {
-        spdlog::error("roll value out of range: {}", camera->roll->c_str());
-    }
+
 
     //QgsVector3D dirNormalized(dx / distance, dy / distance, dz / distance);
 
@@ -969,6 +973,22 @@ LookAtPoint* JwLayout3D::set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>&
     return lookAtPoint.release();
 }
 
+/**
+ * 计算直角三角形中已知斜边和角度的临边长度
+ * @param cameraHeight 斜边长度（摄像机高度）
+ * @param pitchDegrees 角度（摄像机俯仰角，以度为单位）
+ * @return 临边长度
+ */
+double JwLayout3D::calculateAdjacentSide(double cameraHeight, double pitchDegrees) {
+    // 将角度转换为弧度
+    double pitchRadians = pitchDegrees * M_PI / 180.0;
+
+    // 使用余弦公式计算临边: 临边 = 斜边 × cos(角度)
+    double adjacentSide = cameraHeight * std::cos(pitchRadians);
+
+    return adjacentSide;
+}
+
 QgsPoint*
 JwLayout3D::transformPoint(const QgsPoint& point,
                            const QgsCoordinateTransform& transformer)
@@ -984,7 +1004,8 @@ void JwLayout3D::set3DMap(QgsPrintLayout* layout,
                           const PaperSpecification& availablePaper,
                           DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera,
                           int mapFrameWidth, const QString& mapFrameColor,
-                          bool isDoubleFrame, double mapRotation)
+                          bool isDoubleFrame, double mapRotation,
+                          double max_pitch_angle)
 {
     QDomImplementation DomImplementation;
     QDomDocumentType documentType = DomImplementation.createDocumentType(
@@ -1007,7 +1028,7 @@ void JwLayout3D::set3DMap(QgsPrintLayout* layout,
     spdlog::debug("mapItem3d");
 
 
-    auto lookAtPoint = this->set3DCanvas(camera, 1000);
+    auto lookAtPoint = this->set3DCanvas(camera, 1000, max_pitch_angle);
 
     QgsVector3D lookAtCenterPoint = QgsVector3D(lookAtPoint->lookingAtPoint().x(), lookAtPoint->lookingAtPoint().y(), lookAtPoint->lookingAtPoint().z());
 
@@ -1291,7 +1312,8 @@ void JwLayout3D::addPrintLayout(const QString& layoutType,
                                 const QVariantMap& plottingWeb,
                                 const PaperSpecification& availablePaper,
                                 DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera,
-                                bool writeQpt)
+                                bool writeQpt,
+                                double max_pitch_angle)
 {
     auto plottingJson =
         JsonUtil::variantMapToJson(const_cast<QVariantMap&>(plottingWeb));
@@ -1336,7 +1358,7 @@ void JwLayout3D::addPrintLayout(const QString& layoutType,
     // 设置地图
     qInfo() << "Added 3D map to layout";
     set3DMap(layout, availablePaper, camera, mapFrameWidth, mapFrameColor, mapDoubleFrame,
-             mapRotation);
+             mapRotation, max_pitch_angle);
 
     // 设置标题
     spdlog::info("设置标题");

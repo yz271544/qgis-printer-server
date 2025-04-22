@@ -207,30 +207,34 @@ public:
     );
 
     /**
-     * 设置 3D 地图相机参数
-     * @param cameraLongitude 摄像机经度
-     * @param cameraLatitude 摄像机纬度
-     * @param cameraHeight 摄像机高度
-     * @param cameraDirX 摄像机方向向量 X 分量
-     * @param cameraDirY 摄像机方向向量 Y 分量
-     * @param cameraDirZ 摄像机方向向量 Z 分量
-     * @param cameraUpX 摄像机上方向向量 X 分量
-     * @param cameraUpY 摄像机上方向向量 Y 分量
-     * @param cameraUpZ 摄像机上方向向量 Z 分量
-     * @param cameraRightX 摄像机右方向向量 X 分量
-     * @param cameraRightY 摄像机右方向向量 Y 分量
-     * @param cameraRightZ 摄像机右方向向量 Z 分量
-     * @param fov 垂直视场角
-     * @param aspectRatio 长宽比
-     * @param nearPlane 近裁剪面
-     * @param farPlane 远裁剪面
-     * @param centerLatitude 锁定中心点纬度
-     * @param centerLongitude 锁定中心点经度
-     * @param heading 摄像机偏航角
-     * @param pitch 摄像机俯仰角
-     * @param roll 摄像机翻滚角
+     * @param camera 设置 3D 地图相机参数
+     * cameraLongitude 摄像机经度
+     * cameraLatitude 摄像机纬度
+     * cameraHeight 摄像机高度
+     * cameraDirX 摄像机方向向量 X 分量
+     * cameraDirY 摄像机方向向量 Y 分量
+     * cameraDirZ 摄像机方向向量 Z 分量
+     * cameraUpX 摄像机上方向向量 X 分量
+     * cameraUpY 摄像机上方向向量 Y 分量
+     * cameraUpZ 摄像机上方向向量 Z 分量
+     * cameraRightX 摄像机右方向向量 X 分量
+     * cameraRightY 摄像机右方向向量 Y 分量
+     * cameraRightZ 摄像机右方向向量 Z 分量
+     * fov 垂直视场角
+     * aspectRatio 长宽比
+     * nearPlane 近裁剪面
+     * farPlane 远裁剪面
+     * centerLatitude 锁定中心点纬度
+     * centerLongitude 锁定中心点经度
+     * heading 摄像机偏航角
+     * pitch 摄像机俯仰角
+     * roll 摄像机翻滚角
      */
-    LookAtPoint* set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera, double default_distance);
+    LookAtPoint* set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera,
+            double default_distance,
+            double max_pitch_angle=77.0);
+
+    double calculateAdjacentSide(double cameraHeight, double pitchDegrees);
 
     void setTest3DCanvas();
 
@@ -241,7 +245,8 @@ public:
             int mapFrameWidth = 1,
             const QString &mapFrameColor = "#000000",
             bool isDoubleFrame = false,
-            double mapRotation = 0.0
+            double mapRotation = 0.0,
+            double max_pitch_angle = 77.0
     );
 
 
@@ -252,7 +257,8 @@ public:
     void addPrintLayout(const QString &layoutType, const QString &layoutName,
                         const QVariantMap &plottingWeb, const PaperSpecification &availablePaper,
                         DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera,
-                        bool writeQpt = false);
+                        bool writeQpt = false,
+                        double max_pitch_angle=77.0);
 
     void loadQptTemplate(const QString &qptFilePath, const QString &layoutTemplateName);
 

@@ -192,6 +192,15 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
         spdlog::warn("get qgis.canvas3d_type error: {}", e.what());
     }
 
+    try {
+        m_max_pitch_angle = m_config->operator[]("qgis")["max_pitch_angle"].as<double>();
+        if (!MAX_PITCH_ANGLE != 77.0) {
+            m_max_pitch_angle = MAX_PITCH_ANGLE;
+        }
+    } catch (const std::exception &e) {
+        spdlog::error("get qgis.default_distance error: {}", e.what());
+    }
+
 }
 
 Processor::~Processor() {
@@ -1183,7 +1192,8 @@ void Processor::add_3d_layout(
     // }
     spdlog::debug("addPrintLayout 3d");
     auto camera = plottingWeb->camera;
-    jwLayout3d->addPrintLayout(QString("3d"), joinedLayoutName, plottingWebMap, available_paper, camera, write_qpt);
+    jwLayout3d->addPrintLayout(QString("3d"), joinedLayoutName, plottingWebMap,
+        available_paper, camera, write_qpt, m_max_pitch_angle);
     spdlog::debug("save project");
     m_app->saveProject();
     QString paperName = QString::fromStdString(plottingWeb->paper);
