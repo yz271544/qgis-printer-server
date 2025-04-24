@@ -236,6 +236,8 @@ public:
 
     double calculateAdjacentSide(double cameraHeight, double pitchDegrees);
 
+    double calculate_opposite_side(double distance, double pitchDegrees);
+
     void setTest3DCanvas();
 
     void set3DMap(

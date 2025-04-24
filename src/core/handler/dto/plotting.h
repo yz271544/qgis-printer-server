@@ -194,6 +194,7 @@ class Camera3dPosition : public oatpp::DTO {
     DTO_FIELD(Float64, farPlane);        // 远裁剪面
     DTO_FIELD(Float64, centerLatitude);  // 锁定中心点纬度
     DTO_FIELD(Float64, centerLongitude); // 锁定中心点经度
+    DTO_FIELD(Float64, centerHeight);    // 锁定中心点高度
     DTO_FIELD(String, heading);          // 摄像机偏航角
     DTO_FIELD(String, pitch);            // 摄像机俯仰角
     DTO_FIELD(String, roll);             // 摄像机翻滚角

@@ -865,10 +865,10 @@ LookAtPoint* JwLayout3D::set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>&
     cameraPosX = QString::number(cameraPosX, 'f', 1).toDouble();
     double cameraPosY = std::abs(camera->cameraHeight) - std::abs(fullExtent.height());
     cameraPosY = QString::number(cameraPosY, 'f', 1).toDouble();
-    double cameraPosZ = std::abs(std::abs(cameraPosition.y()) - std::abs(extentCenter.y())) - std::abs(camera->cameraHeight);
+    /*double cameraPosZ = std::abs(std::abs(cameraPosition.y()) - std::abs(extentCenter.y())) - std::abs(camera->cameraHeight);
     cameraPosZ = QString::number(cameraPosZ, 'f', 1).toDouble();
     QgsVector3D cameraPos(cameraPosX, cameraPosY, cameraPosZ);
-    spdlog::debug("cameraPos: {}:{}:{}", cameraPos.x(), cameraPos.y(), cameraPos.z());
+    spdlog::debug("cameraPos: {}:{}:{}", cameraPos.x(), cameraPos.y(), cameraPos.z());*/
 
 
     float pitch = 0.0f;
@@ -910,9 +910,14 @@ LookAtPoint* JwLayout3D::set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>&
     float distance = calculateAdjacentSide(camera->cameraHeight, pitch);
     spdlog::info("set3DCanvas distance: {}", distance);
 
+    // 根据斜边求得对边的长度
+    double cameraDirZ = calculate_opposite_side(distance, 90-pitch);
 
-    QgsVector3D cameraTarget(camera->cameraDirX, camera->cameraDirY,
-                        camera->cameraDirZ);
+    //double cameraPosZ = std::abs(std::abs(cameraPosition.y()) - std::abs(extentCenter.y())) - std::abs(camera->cameraHeight);
+    //cameraPosZ = QString::number(cameraPosZ, 'f', 1).toDouble();
+    QgsVector3D cameraPos(cameraPosX, cameraPosY, cameraDirZ);
+    spdlog::debug("cameraPos: {}:{}:{}", cameraPos.x(), cameraPos.y(), cameraPos.z());
+    QgsVector3D cameraTarget(camera->cameraDirX, camera->cameraDirY, camera->cameraDirZ);
 
     auto cameraDirection = cameraPos - cameraTarget;
 
@@ -988,6 +993,21 @@ double JwLayout3D::calculateAdjacentSide(double cameraHeight, double pitchDegree
 
     return adjacentSide;
 }
+
+/**
+ * 使用std::sin函数计算正弦值，最后算出对边的长度。
+ * pitch和distance。在函数内部，先把角度转换为弧度
+ * @param pitchDegrees 角度（摄像机俯仰角，以度为单位）
+ * @param distance 斜边长度
+ */
+double JwLayout3D::calculate_opposite_side(double distance, double pitchDegrees) {
+    // 将角度转换为弧度
+    double pitch_in_radians = pitchDegrees * M_PI / 180.0;
+    // 计算对边长度
+    double opposite_side = distance * std::sin(pitch_in_radians);
+    return opposite_side;
+}
+
 
 QgsPoint*
 JwLayout3D::transformPoint(const QgsPoint& point,
