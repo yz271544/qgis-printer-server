@@ -1127,6 +1127,19 @@ void Processor::add_layout(
     export2DLayout(sceneName, layoutType, paperName, jwLayout.get(), responseDto);
 }
 
+QPair<int, int> Processor::parseVersionString(const std::string& versionStr) {
+    QString qVersionStr = QString::fromStdString(versionStr);
+    QStringList parts = qVersionStr.split('.');
+
+    int major = 0, minor = 0;
+    if (!parts.isEmpty())
+        major = parts[0].toInt();
+    if (parts.size() > 1)
+        minor = parts[1].toInt();
+
+    return qMakePair(major, minor);
+}
+
 // 添加3d布局
 void Processor::add_3d_layout(
         QgsMapCanvas *canvas,
@@ -1142,7 +1155,8 @@ void Processor::add_3d_layout(
 
     // 设置默认格式
     auto defaultFormat = QSurfaceFormat::defaultFormat();
-    defaultFormat.setVersion(4, 1); // 设置 OpenGL 版本
+    QPair<int, int> mesaVersionPair = parseVersionString(MESA_GL_VERSION_OVERRIDE);
+    defaultFormat.setVersion(mesaVersionPair.first, mesaVersionPair.second); // 设置 OpenGL 版本
     defaultFormat.setProfile(QSurfaceFormat::CoreProfile); // 设置核心模式
     QSurfaceFormat::setDefaultFormat(defaultFormat);
 
