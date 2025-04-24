@@ -98,7 +98,7 @@ public:
                     const QString &layoutType,
                     DTOWRAPPERNS::DTOWrapper<ResponseDto> &responseDto);
 
-    QPair<int, int> Processor::parseVersionString(const std::string& versionStr);
+    QPair<int, int> parseVersionString(const std::string& versionStr);
     // 添加3d布局
     void add_3d_layout(
             QgsMapCanvas *canvas,
