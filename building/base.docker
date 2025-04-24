@@ -29,7 +29,7 @@ RUN apt-get install -y bison build-essential ca-certificates ccache cmake cmake-
     python3-yaml qt3d-assimpsceneimport-plugin qt3d-defaultgeometryloader-plugin qt3d-gltfsceneio-plugin \
     qt3d-scene2d-plugin qt3d5-dev qtbase5-dev qtbase5-private-dev qtkeychain-qt5-dev qtmultimedia5-dev \
     qtpositioning5-dev qttools5-dev qttools5-dev-tools sip-tools spawn-fcgi xauth xfonts-100dpi xfonts-75dpi \
-    xfonts-base xfonts-scalable xvfb libcurl4-openssl-dev libarchive13t64 libarchive-dev libqgis-dev
+    xfonts-base xfonts-scalable xvfb libcurl4-openssl-dev libarchive13t64 libarchive-dev
 
 RUN mkdir /lyndon/iProject/cpath -p
 WORKDIR /lyndon/iProject/cpath
