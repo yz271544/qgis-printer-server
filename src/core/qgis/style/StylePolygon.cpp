@@ -4,6 +4,9 @@
 
 #include "StylePolygon.h"
 
+#include <qgsfillsymbol.h>
+#include <qgsfillsymbollayer.h>
+
 
 QgsFeatureRenderer *StylePolygon::get2dRuleBasedRenderer(
         const QJsonObject &fontStyle,
@@ -21,6 +24,49 @@ QgsFeatureRenderer *StylePolygon::get2dRuleBasedRenderer(
             ColorTransformUtil::strRgbaToHex(layerStyle.contains("bordercolor") ?
                                              layerStyle["bordercolor"].toString() : "#000000");
     auto base_rule = std::make_unique<QgsRuleBasedRenderer::Rule>(base_symbol);
+    root_rule->appendChild(base_rule.release());
+    auto renderer = std::make_unique<QgsRuleBasedRenderer>(root_rule.release());
+    return renderer.release();
+}
+
+QgsFeatureRenderer *StylePolygon::get2dRuleBasedRendererInner(
+        const QJsonObject &fontStyle,
+        const QJsonObject &layerStyle,
+        const QList<QJsonObject> &styleList) {
+
+    auto innerStyle = styleList[0];
+    //spdlog::info("json: {}", QJsonDocument(innerStyle).toJson(QJsonDocument::JsonFormat::Compact).toStdString());
+    auto layerStyleObj = innerStyle.contains("layerStyleObj") ? innerStyle["layerStyleObj"].toObject() : QJsonObject();
+    // set layer style
+    auto root_rule = std::make_unique<QgsRuleBasedRenderer::Rule>(nullptr);
+
+    auto simpleFillSymbolLayer = std::make_unique<QgsSimpleFillSymbolLayer>();
+
+
+    //QgsSymbol *base_symbol = QgsSymbol::defaultSymbol(Qgis::GeometryType::Polygon);
+    auto [color, opacity] =
+            ColorTransformUtil::strRgbaToHex(layerStyleObj.contains("fillColor") ?
+                                             layerStyleObj.value("fillColor").toString() : "#000000");
+    auto qColor = std::make_unique<QColor>(color);
+
+    simpleFillSymbolLayer->setColor(*qColor);
+
+    auto [border_color, border_opacity] =
+            ColorTransformUtil::strRgbaToHex(layerStyleObj.contains("bordercolor") ?
+                                             layerStyleObj["bordercolor"].toString() : "#000000");
+    auto qBorderColor = std::make_unique<QColor>(border_color);
+    simpleFillSymbolLayer->setStrokeColor(*qBorderColor);
+    auto strokeWidth = layerStyle.contains("width") ? layerStyle["width"].toDouble() : 0.26;
+    strokeWidth = QgsUtil::d300PixelToMm(strokeWidth);
+    simpleFillSymbolLayer->setStrokeWidth(strokeWidth);
+
+    auto symbolLayerList = std::make_unique<QgsSymbolLayerList>();
+    symbolLayerList->append(simpleFillSymbolLayer.release());
+    auto symbol = std::make_unique<QgsFillSymbol>(*(symbolLayerList.release()));
+    symbol->setColor(*qColor);
+    symbol->setOpacity(opacity);
+
+    auto base_rule = std::make_unique<QgsRuleBasedRenderer::Rule>(symbol.release());
     root_rule->appendChild(base_rule.release());
     auto renderer = std::make_unique<QgsRuleBasedRenderer>(root_rule.release());
     return renderer.release();
@@ -85,4 +131,35 @@ QgsAbstract3DRenderer *StylePolygon::get3dSingleSymbolRenderer(
     return renderer.release();
 }
 
+QgsAbstract3DRenderer *StylePolygon::get3dSingleSymbolRendererInner(
+        const QJsonObject &fontStyle,
+        const QJsonObject &layerStyle,
+        const QList<QJsonObject> &styleList) {
+    auto innerStyle = styleList[0];
+    auto layerStyleObj = innerStyle.contains("layerStyleObj") ? innerStyle["layerStyleObj"].toObject() : QJsonObject();
+    auto symbol = std::make_unique<QgsPolygon3DSymbol>();
+    auto [border_color, border_opacity] =
+            ColorTransformUtil::strRgbaToHex(layerStyleObj.contains("bordercolor") ?
+                                             layerStyleObj["bordercolor"].toString() : "#000000");
 
+    auto material_settings = std::make_unique<QgsPhongMaterialSettings>();
+    auto color = QColor("#000000");
+    double opacity = 1.0;
+    if (layerStyleObj.contains("fillColor")) {
+        auto [color_, opacity_] = ColorTransformUtil::strRgbaToHex(layerStyleObj["fillColor"].toString());
+        color = QColor(color_);
+        opacity = opacity_;
+    }
+    material_settings->setOpacity(opacity);
+    material_settings->setDiffuse(color);
+    material_settings->setAmbient(color);
+    symbol->setMaterialSettings(material_settings.release());
+    symbol->setEdgeColor(border_color);
+    auto strokeWidth = layerStyle.contains("width") ? layerStyle["width"].toDouble() : 0.26;
+    strokeWidth = QgsUtil::d300PixelToMm(strokeWidth);
+    symbol->setEdgeWidth(strokeWidth);
+
+    auto renderer = std::make_unique<QgsVectorLayer3DRenderer>();
+    renderer->setSymbol(symbol.release());
+    return renderer.release();
+}

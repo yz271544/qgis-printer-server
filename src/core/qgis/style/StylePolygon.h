@@ -44,6 +44,11 @@ public:
             const QJsonObject& fontStyle,
             const QJsonObject& layerStyle);
 
+    static QgsFeatureRenderer* get2dRuleBasedRendererInner(
+        const QJsonObject &fontStyle,
+        const QJsonObject &layerStyle,
+        const QList<QJsonObject> &styleList);
+
     static QgsVectorLayerSimpleLabeling* getLabelStyle(
             const QJsonObject& fontStyle, 
             const QString& label_of_field_name);
@@ -51,6 +56,11 @@ public:
     static QgsAbstract3DRenderer* get3dSingleSymbolRenderer(
             const QJsonObject& fontStyle,
             const QJsonObject& layerStyle);
+
+    static QgsAbstract3DRenderer* get3dSingleSymbolRendererInner(
+        const QJsonObject &fontStyle,
+        const QJsonObject &layerStyle,
+        const QList<QJsonObject> &styleList);
 };
 
 

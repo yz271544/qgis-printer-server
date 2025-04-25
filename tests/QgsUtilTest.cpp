@@ -62,3 +62,11 @@ TEST(QgsUtilTest, QtFontUtil_CreateFont) {
     GTEST_LOG_(INFO) << "Font orientation: " << qt_getEnumName(text_format->orientation());
     //delete text_format;
 }
+
+TEST(QgsUtilTest, d300PixelToMm) {
+
+    auto dd = QgsUtil::d300PixelToMm(5);
+
+    GTEST_LOG_(INFO) << "dd: " << dd;
+
+}

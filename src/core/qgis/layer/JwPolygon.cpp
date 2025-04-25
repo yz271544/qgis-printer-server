@@ -90,7 +90,7 @@ void JwPolygon::addPolygons(const QList<QString> &nameList,
 
 
     // 设置2D渲染器
-    auto renderer = StylePolygon::get2dRuleBasedRenderer(fontStyle, layerStyle);
+    auto renderer = StylePolygon::get2dRuleBasedRendererInner(fontStyle, layerStyle, styleList);
     persistPointVectorLayer->setRenderer(renderer);
 
     // Set label style
@@ -101,7 +101,7 @@ void JwPolygon::addPolygons(const QList<QString> &nameList,
     // 设置3D渲染器
     if (ENABLE_3D) {
         auto renderer3d =
-                StylePolygon::get3dSingleSymbolRenderer(fontStyle, layerStyle);
+                StylePolygon::get3dSingleSymbolRendererInner(fontStyle, layerStyle, styleList);
         persistPointVectorLayer->setRenderer3D(renderer3d);
     }
     // 触发重绘
