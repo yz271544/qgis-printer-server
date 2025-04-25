@@ -2,7 +2,7 @@ app:
   name: jingweiprinter
 logging:
   level: debug
-  verbose: true
+  verbose: false
   qt_log_enable: false
 web:
   host: "0.0.0.0"
