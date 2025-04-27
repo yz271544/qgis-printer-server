@@ -804,10 +804,12 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
       projectExtent, projectExtent.crs(), mapSettings3d->crs(),
       mProject->transformContext());
   CameraUtil::ExtentInfo(fullExtent);
-  // 获取布局中心点（关键！）
+  
+  // 获取布局中心点
   auto extentCenter = fullExtent.center();
   double centerX = extentCenter.x();
   double centerY = extentCenter.y();
+
   // 转换Cesium摄像机位置到场景CRS
   QgsPoint cameraLLA(camera->cameraLongitude, camera->cameraLatitude,
                      camera->cameraHeight);
@@ -817,7 +819,8 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
       QgsCoordinateReferenceSystem("EPSG:4326"), // WGS84经纬度
       mapSettings3d->crs(),                      // 场景CRS
       mProject->transformContext());
-  // 转换Cesium坐标到墨卡托
+
+  // 转换Cesium坐标到场景坐标
   QgsPoint *cameraScene;
   QgsPoint *centerScene;
   try {
@@ -827,27 +830,27 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
     spdlog::error("摄像机位置坐标转换失败: {}", e.what().toStdString());
     return nullptr;
   }
-  spdlog::info("cameraScene: {}:{}:{}", cameraScene->x(), cameraScene->y(),
-               cameraScene->z());
-  spdlog::info("extentCenterPosition: {}:{}", fullExtent.center().x(),
-               fullExtent.center().y());
 
-  // 摄像机位置
-  double qgisCameraX = cameraScene->x() - centerX;
-  double qgisCameraY = cameraScene->z(); // 高度直接传递
-  double qgisCameraZ = cameraScene->y() - centerY;
+  // 计算摄像机到观察点的距离
+  double dx = cameraScene->x() - centerScene->x();
+  double dy = cameraScene->y() - centerScene->y();
+  double dz = cameraScene->z() - centerScene->z();
+  double distance = std::sqrt(dx*dx + dy*dy + dz*dz);
 
-  // 目标点（Looking at）
+  // 计算QGIS的pitch角
+  double horizontalDistance = std::sqrt(dx*dx + dy*dy);
+  double pitch = std::atan2(dz, horizontalDistance) * 180.0 / M_PI;
+  
+  // 计算QGIS的yaw角
+  double yaw = std::atan2(dy, dx) * 180.0 / M_PI;
+  if (yaw < 0) {
+    yaw += 360.0;
+  }
+
+  // 计算观察点相对于布局中心的位置
   double qgisCenterX = centerScene->x() - centerX;
-  double qgisCenterY = centerScene->z(); // 若目标点有高度则传递
+  double qgisCenterY = centerScene->z(); // 使用z作为高度
   double qgisCenterZ = centerScene->y() - centerY;
-
-  // double centerPosX = centerScene->x() - extentCenter.x();
-  // double directionY = centerScene->y() - extentCenter.y();
-  // double centerPosY = std::abs(directionY);
-  // double centerPosZ = centerScene->z();
-  // spdlog::info("qgs layout 3d center: {}:{}:{}", centerPosX, centerPosY,
-  // centerPosZ);
 
   // 检查目标点是否在布局范围内
   if (std::abs(qgisCenterX) > fullExtent.width() / 2 ||
@@ -855,78 +858,26 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
     spdlog::warn("目标点超出布局范围！需调整摄像机参数或检查Cesium输入坐标");
   }
 
-  float pitch = 0.0f;
-  float yaw = 0.0f;
-  float roll = 0.0f;
-  try {
-    pitch = std::stof(camera->pitch);
-    if (pitch < 0) {
-      pitch = max_pitch_angle + pitch;
-    } else {
-      pitch = max_pitch_angle - pitch;
-    }
-  } catch (const std::invalid_argument &e) {
-    spdlog::error("Invalid pitch value: {}", camera->pitch->c_str());
-  } catch (const std::out_of_range &e) {
-    spdlog::error("Pitch value out of range: {}", camera->pitch->c_str());
-  }
-  try {
-    yaw = std::stof(camera->heading);
-  } catch (const std::invalid_argument &e) {
-    spdlog::error("Invalid heading value: {}", camera->heading->c_str());
-  } catch (const std::out_of_range &e) {
-    spdlog::error("heading value out of range: {}", camera->heading->c_str());
-  }
-  try {
-    roll = std::stof(camera->roll);
-  } catch (const std::invalid_argument &e) {
-    spdlog::error("Invalid roll value: {}", camera->roll->c_str());
-  } catch (const std::out_of_range &e) {
-    spdlog::error("roll value out of range: {}", camera->roll->c_str());
-  }
-
-  // 计算直角三角形中已知斜边和角度的临边长度 // issue
-  // float distance = calculateAdjacentSide(camera->cameraHeight, pitch);
-  // float distance = DegreeUtil::calculate_opposite_side(camera->cameraHeight,
-  // std::abs(pitch));
-  float distance = DegreeUtil::calculate_opposite_side(
-      camera->cameraHeight - camera->centerHeight, std::abs(pitch));
-  spdlog::info("distance: {}", distance);
-
-  // 计算倾斜后向下拉回的偏移offset_pull_pitch度的距离
-  double offsetDir = DegreeUtil::calculate_opposite_side(
-      distance, max_pitch_angle - std::abs(pitch) - offset_pull_pitch);
-  spdlog::info("offsetDir: {}", offsetDir);
-  // QgsVector3D lookAtCenterPosition(centerPosX, centerPosY, offsetDir);
-  // if (directionY < 0) {
-  //     lookAtCenterPosition.setZ(-offsetDir);
-  // }
-
   // 若目标点超出布局，将其限制在边界内
-  qgisCenterX =
-      std::clamp(qgisCenterX, -fullExtent.width() / 2, fullExtent.width() / 2);
-  qgisCenterZ = std::clamp(qgisCenterZ, -fullExtent.height() / 2,
-                           fullExtent.height() / 2);
-  spdlog::info("布局中心: X={}, Y={}", centerX, centerY);
-  spdlog::info("摄像机相对坐标: X={}, Z={}", qgisCameraX, qgisCameraZ);
-  spdlog::info("目标点相对坐标: X={}, Z={}", qgisCenterX, qgisCenterZ);
-  QgsVector3D lookAtCenterPosition(qgisCenterX, qgisCenterY, qgisCenterZ);
-  if (qgisCenterZ < 0) {
-    lookAtCenterPosition.setZ(-offsetDir);
-  } else {
-    lookAtCenterPosition.setZ(offsetDir);
-  }
-  spdlog::info(
-      "lookAtCenterPosition: {}:{}:{}, distance: {}, pitch: {}, yaw: {}",
-      lookAtCenterPosition.x(), lookAtCenterPosition.y(),
-      lookAtCenterPosition.z(), distance, pitch, yaw);
-  mCanvas3d->cameraController()->setLookingAtPoint(
-      lookAtCenterPosition, static_cast<float>(distance),
-      static_cast<float>(pitch), static_cast<float>(yaw));
+  qgisCenterX = std::clamp(qgisCenterX, -fullExtent.width()/2, fullExtent.width()/2);
+  qgisCenterZ = std::clamp(qgisCenterZ, -fullExtent.height()/2, fullExtent.height()/2);
 
+  // 创建观察点
+  QgsVector3D lookAtCenterPosition(qgisCenterX, qgisCenterY, qgisCenterZ);
+
+  // 设置摄像机参数
+  mCanvas3d->cameraController()->setLookingAtPoint(
+      lookAtCenterPosition, 
+      static_cast<float>(distance),
+      static_cast<float>(pitch),
+      static_cast<float>(yaw));
+
+  // 创建并返回LookAtPoint对象
   auto lookAtPoint = std::make_unique<LookAtPoint>(
-      lookAtCenterPosition, static_cast<float>(distance),
-      static_cast<float>(pitch), static_cast<float>(yaw));
+      lookAtCenterPosition,
+      static_cast<float>(distance),
+      static_cast<float>(pitch),
+      static_cast<float>(yaw));
 
   return lookAtPoint.release();
 }
