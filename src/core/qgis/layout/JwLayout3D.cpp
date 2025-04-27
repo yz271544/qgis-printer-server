@@ -789,6 +789,7 @@ void JwLayout3D::setTest3DCanvas() {
  * farPlane 远裁剪面
  * centerLatitude 锁定中心点纬度
  * centerLongitude 锁定中心点经度
+ * centerHeight 锁定中心点高度
  * heading 摄像机偏航角
  * pitch 摄像机俯仰角
  * roll 摄像机翻滚角
@@ -886,12 +887,15 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
 
   // 计算直角三角形中已知斜边和角度的临边长度 // issue
   // float distance = calculateAdjacentSide(camera->cameraHeight, pitch);
-  // float distance = DegreeUtil::calculate_opposite_side(camera->cameraHeight, std::abs(pitch));
-  float distance = DegreeUtil::calculate_opposite_side(camera->cameraHeight - camera->centerHeight, std::abs(pitch));
+  // float distance = DegreeUtil::calculate_opposite_side(camera->cameraHeight,
+  // std::abs(pitch));
+  float distance = DegreeUtil::calculate_opposite_side(
+      camera->cameraHeight - camera->centerHeight, std::abs(pitch));
   spdlog::info("distance: {}", distance);
 
   // 计算倾斜后向下拉回的偏移offset_pull_pitch度的距离
-  double offsetDir = DegreeUtil::calculate_opposite_side(distance, max_pitch_angle - std::abs(pitch) - offset_pull_pitch);
+  double offsetDir = DegreeUtil::calculate_opposite_side(
+      distance, max_pitch_angle - std::abs(pitch) - offset_pull_pitch);
   spdlog::info("offsetDir: {}", offsetDir);
   // QgsVector3D lookAtCenterPosition(centerPosX, centerPosY, offsetDir);
   // if (directionY < 0) {
