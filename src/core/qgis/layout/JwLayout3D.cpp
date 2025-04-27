@@ -834,8 +834,8 @@ void JwLayout3D::setTest3DCanvas()
  * pitch 摄像机俯仰角
  * roll 摄像机翻滚角
  */
-LookAtPoint* JwLayout3D::set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera,
-                             double default_distance, double max_pitch_angle)
+LookAtPoint* JwLayout3D::set3DCanvasCamera(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera,
+                             double default_distance, double max_pitch_angle, double offset_pull_pitch)
 {
     const QgsReferencedRectangle projectExtent =
         mProject->viewSettings()->fullExtent();
@@ -849,14 +849,18 @@ LookAtPoint* JwLayout3D::set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>&
     // 转换Cesium摄像机位置到场景CRS
     QgsPoint cameraLLA(camera->cameraLongitude, camera->cameraLatitude,
                        camera->cameraHeight);
+    QgsPoint centerCesium(camera->centerLongitude, camera->centerLatitude,
+        camera->centerHeight);
     QgsCoordinateTransform llaToSceneCRS(
         QgsCoordinateReferenceSystem("EPSG:4326"), // WGS84经纬度
         mapSettings3d->crs(), // 场景CRS
         mProject->transformContext());
     QgsPoint* cameraScene;
+    QgsPoint* centerScene;
     try
     {
         cameraScene = transformPoint(cameraLLA, llaToSceneCRS);
+        centerScene = transformPoint(centerCesium, llaToSceneCRS);
     }
     catch (const QgsCsException& e)
     {
@@ -865,13 +869,17 @@ LookAtPoint* JwLayout3D::set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>&
     }
     QgsVector3D cameraPosition(cameraScene->x(), cameraScene->y(),
                                cameraScene->z());
-
     spdlog::info("cameraPosition: {}:{}:{}", cameraPosition.x(), cameraPosition.y(), cameraPosition.z());
+
+    QgsVector3D centerPosition(centerScene->x(), centerScene->y(), centerScene->z());
+    spdlog::info("centerPosition: {}:{}:{}", centerPosition.x(), centerPosition.y(), centerPosition.z());
+
     auto extentCenter = fullExtent.center();
-    double cameraPosX = std::abs(cameraPosition.x()) - std::abs(extentCenter.x());
-    cameraPosX = QString::number(cameraPosX, 'f', 1).toDouble();
-    double cameraPosY = std::abs(camera->cameraHeight) - std::abs(fullExtent.height());
-    cameraPosY = QString::number(cameraPosY, 'f', 1).toDouble();
+
+    double centerPosX = centerPosition.x() - extentCenter.x();
+    double centerPosY = centerPosition.y() - extentCenter.y();
+    double centerPosZ = centerPosition.z();
+    spdlog::info("qgs layout 3d center: {}:{}:{}", centerPosX, centerPosY, centerPosZ);
 
     float pitch = 0.0f;
     float yaw = 0.0f;
@@ -904,30 +912,20 @@ LookAtPoint* JwLayout3D::set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>&
     }
 
     // 计算直角三角形中已知斜边和角度的临边长度 // issue
-    float distance = calculateAdjacentSide(camera->cameraHeight, pitch);
+    //float distance = calculateAdjacentSide(camera->cameraHeight, pitch);
+    float distance = calculate_opposite_side(camera->cameraHeight, std::abs(pitch));
     spdlog::info("set3DCanvas distance: {}", distance);
 
-    // 根据斜边求得对边的长度
-    double cameraDirZ = calculate_opposite_side(distance, 90-pitch);
+    // 计算倾斜后向下拉回的偏移offset_pull_pitch度的距离
+    double offsetDirZ = calculate_opposite_side(distance, max_pitch_angle - std::abs(pitch) - offset_pull_pitch);
 
-    QgsVector3D cameraPos(cameraPosX, cameraPosY, cameraDirZ);
-    spdlog::debug("cameraPos: {}:{}:{}", cameraPos.x(), cameraPos.y(), cameraPos.z());
+    QgsVector3D lookAtCenterPosition(centerPosX, centerPosY, offsetDirZ);
 
-    // 设置摄像机参数（优先使用精确计算）
     mCanvas3d->cameraController()->setLookingAtPoint(
-        cameraPos, static_cast<float>(distance),
+        lookAtCenterPosition, static_cast<float>(distance),
         static_cast<float>(pitch), static_cast<float>(yaw));
 
-
-    auto settedCenterPoint = mCanvas3d->cameraController()->lookingAtPoint();
-    spdlog::info("set3DCanvas lookAtCenterPoint: {}:{}:{}",
-             settedCenterPoint.x(), settedCenterPoint.y(),
-             settedCenterPoint.z());
-    spdlog::info("set3DCanvas pitch: {}, yaw: {}",
-                 mCanvas3d->cameraController()->pitch(),
-                 mCanvas3d->cameraController()->yaw());
-
-    auto lookAtPoint = std::make_unique<LookAtPoint>(cameraPos, static_cast<float>(distance),
+    auto lookAtPoint = std::make_unique<LookAtPoint>(lookAtCenterPosition, static_cast<float>(distance),
         static_cast<float>(pitch), static_cast<float>(yaw));
 
     return lookAtPoint.release();
@@ -980,7 +978,8 @@ void JwLayout3D::set3DMap(QgsPrintLayout* layout,
                           DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera,
                           int mapFrameWidth, const QString& mapFrameColor,
                           bool isDoubleFrame, double mapRotation,
-                          double max_pitch_angle)
+                          double max_pitch_angle,
+                          double offset_pull_pitch)
 {
     QDomImplementation DomImplementation;
     QDomDocumentType documentType = DomImplementation.createDocumentType(
@@ -1003,7 +1002,7 @@ void JwLayout3D::set3DMap(QgsPrintLayout* layout,
     spdlog::debug("mapItem3d");
 
 
-    auto lookAtPoint = this->set3DCanvas(camera, 1000, max_pitch_angle);
+    auto lookAtPoint = this->set3DCanvasCamera(camera, 1000, max_pitch_angle, offset_pull_pitch);
 
     QgsVector3D lookAtCenterPoint = QgsVector3D(lookAtPoint->lookingAtPoint().x(), lookAtPoint->lookingAtPoint().y(), lookAtPoint->lookingAtPoint().z());
 
@@ -1288,7 +1287,8 @@ void JwLayout3D::addPrintLayout(const QString& layoutType,
                                 const PaperSpecification& availablePaper,
                                 DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera,
                                 bool writeQpt,
-                                double max_pitch_angle)
+                                double max_pitch_angle,
+                                double offset_pull_pitch)
 {
     auto plottingJson =
         JsonUtil::variantMapToJson(const_cast<QVariantMap&>(plottingWeb));
@@ -1333,7 +1333,7 @@ void JwLayout3D::addPrintLayout(const QString& layoutType,
     // 设置地图
     qInfo() << "Added 3D map to layout";
     set3DMap(layout, availablePaper, camera, mapFrameWidth, mapFrameColor, mapDoubleFrame,
-             mapRotation, max_pitch_angle);
+             mapRotation, max_pitch_angle, offset_pull_pitch);
 
     // 设置标题
     spdlog::info("设置标题");

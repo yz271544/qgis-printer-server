@@ -201,6 +201,15 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
         spdlog::error("get qgis.default_distance error: {}", e.what());
     }
 
+    try {
+        m_offset_pull_pitch = m_config->operator[]("qgis")["offset_pull_pitch"].as<double>();
+        if (!OFFSET_PULL_PITCH != 16.0) {
+            m_offset_pull_pitch = OFFSET_PULL_PITCH;
+        }
+    } catch (const std::exception &e) {
+        spdlog::error("get qgis.default_distance error: {}", e.what());
+    }
+
 }
 
 Processor::~Processor() {
@@ -1207,7 +1216,7 @@ void Processor::add_3d_layout(
     spdlog::debug("addPrintLayout 3d");
     auto camera = plottingWeb->camera;
     jwLayout3d->addPrintLayout(QString("3d"), joinedLayoutName, plottingWebMap,
-        available_paper, camera, write_qpt, m_max_pitch_angle);
+        available_paper, camera, write_qpt, m_max_pitch_angle, m_offset_pull_pitch);
     spdlog::debug("save project");
     m_app->saveProject();
     QString paperName = QString::fromStdString(plottingWeb->paper);

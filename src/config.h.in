@@ -135,6 +135,8 @@ inline double MAX_SCREEN_ERROR = getEnvValue<double>("MAX_SCREEN_ERROR", 1000000
 
 inline double MAX_PITCH_ANGLE = getEnvValue<double>("MAX_PITCH_ANGLE", 77.0);
 
+inline double OFFSET_PULL_PITCH = getEnvValue<double>("OFFSET_PULL_PITCH", 16);
+
 inline std::string MESA_GL_VERSION_OVERRIDE = getEnvValue<std::string>("MESA_GL_VERSION_OVERRIDE", "4.1");
 
 #ifdef OATPP_VERSION_LESS_1_4_0

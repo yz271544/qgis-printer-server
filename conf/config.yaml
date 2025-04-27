@@ -49,6 +49,7 @@ qgis:
   canvas3d_type: "camera"
   max_screen_error: 10000000
   max_pitch_angle: 77
+  offset_pull_pitch: 11
 specification:
   - name: "现场位置图"
     local: "local"

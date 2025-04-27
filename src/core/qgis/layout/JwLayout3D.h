@@ -230,9 +230,10 @@ public:
      * pitch 摄像机俯仰角
      * roll 摄像机翻滚角
      */
-    LookAtPoint* set3DCanvas(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera,
+    LookAtPoint* set3DCanvasCamera(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera,
             double default_distance,
-            double max_pitch_angle=77.0);
+            double max_pitch_angle=77.0,
+            double offset_pull_pitch=16.0);
 
     double calculateAdjacentSide(double cameraHeight, double pitchDegrees);
 
@@ -248,7 +249,8 @@ public:
             const QString &mapFrameColor = "#000000",
             bool isDoubleFrame = false,
             double mapRotation = 0.0,
-            double max_pitch_angle = 77.0
+            double max_pitch_angle = 77.0,
+            double offset_pull_pitch = 16.0
     );
 
 
@@ -260,7 +262,8 @@ public:
                         const QVariantMap &plottingWeb, const PaperSpecification &availablePaper,
                         DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera,
                         bool writeQpt = false,
-                        double max_pitch_angle=77.0);
+                        double max_pitch_angle=77.0,
+                        double offset_pull_pitch=16.0);
 
     void loadQptTemplate(const QString &qptFilePath, const QString &layoutTemplateName);
 

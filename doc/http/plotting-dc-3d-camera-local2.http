@@ -4,8 +4,8 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "selectPath": true,
-  "path": "/map/test_data/正射/瑞光电厂-DOM",
+  "selectPath": false,
+  "path": "",
   "path3d": "/map/test_data/实景三维/瑞光电厂切片/tileset.json",
   "tileIndex": [
     [
@@ -17,8 +17,8 @@ Authorization: Bearer {{token}}
       -5821555
     ]
   ],
-  "sceneId": "1898227170424176642",
-  "sceneName": "太原高速公路_cf_dr_hb",
+  "sceneId": "1914619367037911042",
+  "sceneName": "修改线面样式 后测试-20250422",
   "geojson": {
     "type": "Feature",
     "geometry": {
@@ -26,20 +26,20 @@ Authorization: Bearer {{token}}
       "coordinates": [
         [
           [
-            112.6771453756322,
-            37.78160411580123
+            112.67669698405837,
+            37.78164075262421
           ],
           [
-            112.6771453756322,
-            37.82156234963079
+            112.67669698405837,
+            37.820425927936704
           ],
           [
-            112.76416753506541,
-            37.82156234963079
+            112.76461592696866,
+            37.820425927936704
           ],
           [
-            112.76416753506541,
-            37.78160411580123
+            112.76461592696866,
+            37.78164075262421
           ]
         ]
       ]
@@ -47,7 +47,7 @@ Authorization: Bearer {{token}}
     "properties": {}
   },
   "handleFlag": false,
-  "sceneType": "undefined",
+  "sceneType": "04",
   "layinfo": {
     "title": {
       "text": "标题",
@@ -66,9 +66,9 @@ Authorization: Bearer {{token}}
     "legend": {
       "position": [
         84,
-        20,
-        36,
-        80
+        65,
+        16,
+        35
       ]
     },
     "bgPic": {
@@ -113,26 +113,27 @@ Authorization: Bearer {{token}}
   },
   "camera": {
     "cameraLongitude": 112.72065645530304,
-    "cameraLatitude": 37.764690864432595,
-    "cameraHeight": 2795.8013679575633,
-    "cameraDirX": 0.3774950189635193,
-    "cameraDirY": -0.9015178144978754,
-    "cameraDirZ": 0.21157301529426356,
-    "cameraUpX": -0.08171766809859554,
-    "cameraUpY": 0.19515471688184838,
-    "cameraUpZ": 0.9773621944802722,
-    "cameraRightX": -0.9223989014402934,
-    "cameraRightY": -0.38623861358199285,
-    "cameraRightZ": 2.4980018054066022e-14,
+    "cameraLatitude": 37.76355205413761,
+    "cameraHeight": 2901.990351242898,
+    "cameraDirX": 0.37749501896347565,
+    "cameraDirY": -0.9015178144978987,
+    "cameraDirZ": 0.2115730152942418,
+    "cameraUpX": -0.08171766809862513,
+    "cameraUpY": 0.19515471688181274,
+    "cameraUpZ": 0.9773621944802768,
+    "cameraRightX": -0.9223989014403086,
+    "cameraRightY": -0.3862386135819565,
+    "cameraRightZ": -2.556288514199423e-14,
     "fov": 1.0471975511965976,
-    "aspectRatio": 2,
+    "aspectRatio": 2.10989010989011,
     "nearPlane": 0.1,
     "farPlane": 10000000000,
-    "centerLatitude": 34.40832879821675,
-    "centerLongitude": 113.10905248975922,
-    "heading": "18.91",
-    "pitch": "-11.57",
-    "roll": "90.00"
+    "centerLongitude": 112.72065645526618,
+    "centerLatitude": 37.79469739836375,
+    "centerHeight": 916.7779084472597,
+    "heading": "0.00",
+    "pitch": "-40.02",
+    "roll": "360.00"
   }
 }
 ### Response

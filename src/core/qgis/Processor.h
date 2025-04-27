@@ -63,6 +63,7 @@ private:
     std::shared_ptr<QOpenGLContext> m_globalGLContext;
     QString m_canvas3d_type = "camera";
     double m_max_pitch_angle = 77.0;
+    double m_offset_pull_pitch = 16.0;
 public:
     // 构造函数
     //Processor(const QList<QString> &argvList, YAML::Node *config, std::shared_ptr<QOpenGLContext> globalGLContext);
