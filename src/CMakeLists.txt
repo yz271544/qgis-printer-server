@@ -6,7 +6,9 @@ message("SOURCES: ${SOURCES}")
 
 add_executable(${PROJECT_NAME} ${SOURCES}
         core/qtwebstarter.cpp
-        core/qtwebstarter.h)
+        core/qtwebstarter.h
+        utils/DegreeUtil.cpp
+        utils/DegreeUtil.h)
 add_library(${PROJECT_NAME}_lib STATIC ${SOURCES})
 
 # 为 jingweiprinter 启用 AUTOMOC
