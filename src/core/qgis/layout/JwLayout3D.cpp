@@ -837,18 +837,20 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
   double dz = cameraScene->z() - centerScene->z();
   double distance = std::sqrt(dx*dx + dy*dy + dz*dz);
 
-  // 获取Cesium的pitch角并转换为QGIS的pitch角
-  double cesiumPitch = 0.0;
+  // 计算QGIS的pitch角
+  double pitch = 0.0;
   try {
-    cesiumPitch = std::stod(camera->pitch);
-  } catch (const std::exception& e) {
-    spdlog::error("Invalid pitch value: {}", e.what());
-    cesiumPitch = 0.0;
+    pitch = std::stod(camera->pitch);
+    if (pitch < 0) {
+      pitch = max_pitch_angle + pitch;
+    } else {
+      pitch = max_pitch_angle - pitch;
+    }
+  } catch (const std::invalid_argument &e) {
+    spdlog::error("Invalid pitch value: {}", camera->pitch->c_str());
+  } catch (const std::out_of_range &e) {
+    spdlog::error("Pitch value out of range: {}", camera->pitch->c_str());
   }
-
-  // Cesium的pitch是相对于地平线的角度，需要转换为QGIS的pitch
-  // QGIS的pitch是相对于垂直方向的夹角，所以需要做90度转换
-  double pitch = 90.0 - cesiumPitch;
   
   // 获取Cesium的heading并转换为QGIS的yaw
   double yaw = 0.0;
