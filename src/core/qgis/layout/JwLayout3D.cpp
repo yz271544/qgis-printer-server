@@ -875,18 +875,14 @@ LookAtPoint* JwLayout3D::set3DCanvasCamera(DTOWRAPPERNS::DTOWrapper<Camera3dPosi
 
     auto extentCenter = fullExtent.center();
 
-    //double centerPosX = centerPosition.x() - extentCenter.x();
-    //double directionY = centerPosition.y() - extentCenter.y();
-    spdlog::info("extentCenterPosition: {}:{}", extentCenter.x(), extentCenter.y());
-    // 东西 qgs layout center x = cesium x - center x
-    double qgsLayoutCenterPosX = cameraPosition.x() - centerPosition.x();
-    // 高度 qgs layout center y = cesium z
-    double qgsLayoutCenterPosY = centerPosition.z();
-    // 南北 qgs layout center z = cesium y - center y
-    double directionZ = cameraPosition.y() - centerPosition.y();
-    double qgsLayoutCenterPosZ = std::abs(directionZ);
+    double centerPosX = centerPosition.x() - extentCenter.x();
 
-    spdlog::info("qgs layout 3d center: {}:{}:{}", qgsLayoutCenterPosX, qgsLayoutCenterPosY, qgsLayoutCenterPosZ);
+    double directionY = centerPosition.y() - extentCenter.y();
+
+    double centerPosY = std::abs(directionY);
+
+    double centerPosZ = centerPosition.z();
+    spdlog::info("qgs layout 3d center: {}:{}:{}", centerPosX, centerPosY, centerPosZ);
 
     float pitch = 0.0f;
     float yaw = 0.0f;
@@ -924,14 +920,13 @@ LookAtPoint* JwLayout3D::set3DCanvasCamera(DTOWRAPPERNS::DTOWrapper<Camera3dPosi
     spdlog::info("distance: {}", distance);
 
     // 计算倾斜后向下拉回的偏移offset_pull_pitch度的距离
-    double offsetDirZ = calculate_opposite_side(distance, max_pitch_angle - std::abs(pitch) - offset_pull_pitch);
-    QgsVector3D lookAtCenterPosition(qgsLayoutCenterPosX, qgsLayoutCenterPosY, qgsLayoutCenterPosZ);
-    if (directionZ < 0) {
-        spdlog::info("directionZ: {}", directionZ);
-        lookAtCenterPosition.setZ(-offsetDirZ);
+    double offsetDir = calculate_opposite_side(distance, max_pitch_angle - std::abs(pitch) - offset_pull_pitch);
+    spdlog::info("offsetDir: {}", offsetDir);
+    QgsVector3D lookAtCenterPosition(centerPosX, centerPosY, offsetDir);
+    if (directionY < 0) {
+        lookAtCenterPosition.setZ(-offsetDir);
     }
-    // qgs x:w-e, y:height, z:n-s
-    spdlog::info("lookAtCenterPosition: {}:{}:{}, distance: {}, pitch: {}, yaw: {}",
+    spdlog::info("lookAtCenterPosition: {}-{}-{}, distance: {}, pitch: {}, yaw: {}",
                  lookAtCenterPosition.x(), lookAtCenterPosition.y(),
                  lookAtCenterPosition.z(), distance, pitch, yaw);
     mCanvas3d->cameraController()->setLookingAtPoint(
