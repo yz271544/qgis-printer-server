@@ -872,8 +872,31 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
 
   // 计算摄像机到观察点的距离
   double heightDiff = camera->cameraHeight - camera->centerHeight;
-  double distance = heightDiff / std::sin(pitch * M_PI / 180.0);
-  distance *= 0.5;
+  double baseDistance = heightDiff / std::sin(pitch * M_PI / 180.0);
+  baseDistance *= 0.5;
+
+  // 根据heading角度调整distance
+  double distance = baseDistance;
+  double angleRad = yaw * M_PI / 180.0;
+  
+  // 计算heading角度相对于0度的偏移量（0-90度）
+  double angleOffset = std::fmod(yaw, 360.0);
+  if (angleOffset < 0) angleOffset += 360.0;
+  
+  // 根据heading角度线性调整distance
+  if (angleOffset >= 0 && angleOffset <= 90) {
+    // 0度到90度：线性递增
+    distance = baseDistance + (1000.0 * angleOffset / 90.0);
+  } else if (angleOffset > 90 && angleOffset <= 180) {
+    // 90度到180度：线性递减
+    distance = baseDistance + (1000.0 * (180.0 - angleOffset) / 90.0);
+  } else if (angleOffset > 180 && angleOffset <= 270) {
+    // 180度到270度：线性递增
+    distance = baseDistance + (1000.0 * (angleOffset - 180.0) / 90.0);
+  } else if (angleOffset > 270 && angleOffset <= 360) {
+    // 270度到360度：线性递减
+    distance = baseDistance + (1000.0 * (360.0 - angleOffset) / 90.0);
+  }
 
   // 计算视锥体参数
   double verticalFov = fov * M_PI / 180.0;
@@ -889,9 +912,6 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
   double qgisCenterZ = 0.0;
 
   // 根据heading角度和视锥体参数调整观察点位置
-  double angleRad = yaw * M_PI / 180.0;
-  
-  // 计算视锥体对角线长度
   double diagonal = std::sqrt(nearWidth * nearWidth + nearHeight * nearHeight);
   
   // 根据heading角度计算偏移量
@@ -915,8 +935,8 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
   // 创建观察点
   QgsVector3D lookAtCenterPosition(qgisCenterX, qgisCenterY, qgisCenterZ);
 
-  spdlog::info("Camera parameters - fov: {}, aspectRatio: {}, nearPlane: {}, farPlane: {}, nearHeight: {}, nearWidth: {}, diagonal: {}",
-               fov, aspectRatio, nearPlane, farPlane, nearHeight, nearWidth, diagonal);
+  spdlog::info("Camera parameters - fov: {}, aspectRatio: {}, nearPlane: {}, farPlane: {}, nearHeight: {}, nearWidth: {}, diagonal: {}, baseDistance: {}, adjustedDistance: {}, angleOffset: {}",
+               fov, aspectRatio, nearPlane, farPlane, nearHeight, nearWidth, diagonal, baseDistance, distance, angleOffset);
   spdlog::info("lookAtCenterPosition: {}:{}:{}, distance: {}, pitch: {}, yaw: {}, heightDiff: {}, offsetX: {}, offsetZ: {}",
                lookAtCenterPosition.x(), lookAtCenterPosition.y(), lookAtCenterPosition.z(), 
                distance, pitch, yaw, heightDiff, offsetX, offsetZ);
