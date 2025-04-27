@@ -875,14 +875,18 @@ LookAtPoint* JwLayout3D::set3DCanvasCamera(DTOWRAPPERNS::DTOWrapper<Camera3dPosi
 
     auto extentCenter = fullExtent.center();
 
-    double centerPosX = centerPosition.x() - extentCenter.x();
+    //double centerPosX = centerPosition.x() - extentCenter.x();
+    //double directionY = centerPosition.y() - extentCenter.y();
+    spdlog::info("extentCenterPosition: {}:{}", extentCenter.x(), extentCenter.y());
+    // 东西 qgs layout center x = cesium x - center x
+    double qgsLayoutCenterPosX = cameraPosition.x() - centerPosition.x();
+    // 高度 qgs layout center y = cesium z
+    double qgsLayoutCenterPosY = centerPosition.z();
+    // 南北 qgs layout center z = cesium y - center y
+    double directionZ = cameraPosition.y() - centerPosition.y();
+    double qgsLayoutCenterPosZ = std::abs(directionZ);
 
-    double directionY = centerPosition.y() - extentCenter.y();
-
-    double centerPosY = std::abs(directionY);
-
-    double centerPosZ = centerPosition.z();
-    spdlog::info("qgs layout 3d center: {}:{}:{}", centerPosX, centerPosY, centerPosZ);
+    spdlog::info("qgs layout 3d center: {}:{}:{}", qgsLayoutCenterPosX, qgsLayoutCenterPosY, qgsLayoutCenterPosZ);
 
     float pitch = 0.0f;
     float yaw = 0.0f;
@@ -921,12 +925,13 @@ LookAtPoint* JwLayout3D::set3DCanvasCamera(DTOWRAPPERNS::DTOWrapper<Camera3dPosi
 
     // 计算倾斜后向下拉回的偏移offset_pull_pitch度的距离
     double offsetDirZ = calculate_opposite_side(distance, max_pitch_angle - std::abs(pitch) - offset_pull_pitch);
-
-    QgsVector3D lookAtCenterPosition(centerPosX, centerPosY, offsetDirZ);
-    if (directionY < 0) {
+    QgsVector3D lookAtCenterPosition(qgsLayoutCenterPosX, qgsLayoutCenterPosY, qgsLayoutCenterPosZ);
+    if (directionZ < 0) {
+        spdlog::info("directionZ: {}", directionZ);
         lookAtCenterPosition.setZ(-offsetDirZ);
     }
-    spdlog::info("lookAtCenterPosition: {}-{}-{}, distance: {}, pitch: {}, yaw: {}",
+    // qgs x:w-e, y:height, z:n-s
+    spdlog::info("lookAtCenterPosition: {}:{}:{}, distance: {}, pitch: {}, yaw: {}",
                  lookAtCenterPosition.x(), lookAtCenterPosition.y(),
                  lookAtCenterPosition.z(), distance, pitch, yaw);
     mCanvas3d->cameraController()->setLookingAtPoint(
@@ -1098,7 +1103,8 @@ void JwLayout3D::set3DMap(QgsPrintLayout* layout,
 }
 
 void JwLayout3D::addNorthArrow(QgsPrintLayout* layout,
-                               const QVariantMap& north)
+                               const QVariantMap& north,
+                               DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera)
 {
     // 创建指北针图片项
     auto northArrow = std::make_unique<QgsLayoutItemPicture>(layout);
@@ -1168,7 +1174,8 @@ void JwLayout3D::addNorthArrow(QgsPrintLayout* layout,
     // 设置指北针旋转角度 （单位为度）
     // double northRotation = north.rotate if north and north.rotate else
     // self.image_spec.north_rotate
-    double northRotation = mImageSpec["north_rotate"].toDouble();
+    //double northRotation = mImageSpec["north_rotate"].toDouble();
+    double northRotation = std::stod(camera->heading);
     if (!north.isEmpty() and north.contains("rotate"))
     {
         northRotation = north.value("rotate").toDouble();
@@ -1411,7 +1418,7 @@ void JwLayout3D::addPrintLayout(const QString& layoutType,
     if (layInfo.contains("north"))
     {
         spdlog::debug("添加指北针");
-        addNorthArrow(layout, layInfo["north"].toMap());
+        addNorthArrow(layout, layInfo["north"].toMap(), camera);
     }
 
     // 添加右侧索引标题

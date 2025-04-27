@@ -256,7 +256,8 @@ public:
 
     void addNorthArrow(
             QgsPrintLayout *layout,
-            const QVariantMap &northArrowPath);
+            const QVariantMap &northArrowPath,
+            DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera);
 
     void addPrintLayout(const QString &layoutType, const QString &layoutName,
                         const QVariantMap &plottingWeb, const PaperSpecification &availablePaper,
