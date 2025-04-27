@@ -860,9 +860,10 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
   }
 
   // 计算观察点相对于布局中心的位置
+  // 注意：QGIS的坐标系中，Y轴向上，Z轴向前
   double qgisCenterX = centerScene->x() - centerX;
   double qgisCenterY = centerScene->z(); // 使用z作为高度
-  double qgisCenterZ = centerScene->y() - centerY;
+  double qgisCenterZ = -(centerScene->y() - centerY); // 注意这里取负值，因为QGIS的Z轴方向与Cesium相反
 
   // 检查目标点是否在布局范围内
   if (std::abs(qgisCenterX) > fullExtent.width() / 2 ||
@@ -876,6 +877,10 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
 
   // 创建观察点
   QgsVector3D lookAtCenterPosition(qgisCenterX, qgisCenterY, qgisCenterZ);
+
+  spdlog::info("lookAtCenterPosition: {}:{}:{}, distance: {}, pitch: {}, yaw: {}",
+               lookAtCenterPosition.x(), lookAtCenterPosition.y(), lookAtCenterPosition.z(), 
+               distance, pitch, yaw);
 
   // 设置摄像机参数
   mCanvas3d->cameraController()->setLookingAtPoint(
