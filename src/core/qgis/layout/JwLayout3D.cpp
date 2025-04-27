@@ -831,12 +831,6 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
     return nullptr;
   }
 
-  // 计算摄像机到观察点的距离
-  double dx = cameraScene->x() - centerScene->x();
-  double dy = cameraScene->y() - centerScene->y();
-  double dz = cameraScene->z() - centerScene->z();
-  double distance = std::sqrt(dx*dx + dy*dy + dz*dz);
-
   // 计算QGIS的pitch角
   double pitch = 0.0;
   try {
@@ -863,26 +857,24 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
 
   // 计算观察点相对于布局中心的位置
   // 注意：QGIS的坐标系中，Y轴向上，Z轴向前
-  double qgisCenterX = centerScene->x() - centerX;
+  double qgisCenterX = 0.0; // 强制设置为0，确保在中心
   double qgisCenterY = centerScene->z(); // 使用z作为高度
-  double qgisCenterZ = -(centerScene->y() - centerY); // 注意这里取负值，因为QGIS的Z轴方向与Cesium相反
+  double qgisCenterZ = 0.0; // 强制设置为0，确保在中心
 
-  // 检查目标点是否在布局范围内
-  if (std::abs(qgisCenterX) > fullExtent.width() / 2 ||
-      std::abs(qgisCenterZ) > fullExtent.height() / 2) {
-    spdlog::warn("目标点超出布局范围！需调整摄像机参数或检查Cesium输入坐标");
-  }
-
-  // 若目标点超出布局，将其限制在边界内
-  qgisCenterX = std::clamp(qgisCenterX, -fullExtent.width()/2, fullExtent.width()/2);
-  qgisCenterZ = std::clamp(qgisCenterZ, -fullExtent.height()/2, fullExtent.height()/2);
+  // 计算摄像机到观察点的距离
+  // 使用Cesium中的高度差作为基础距离
+  double heightDiff = camera->cameraHeight - camera->centerHeight;
+  // 根据pitch角调整距离
+  double distance = heightDiff / std::sin(pitch * M_PI / 180.0);
+  // 添加一个缩放因子，使距离更接近Cesium中的视觉效果
+  distance *= 0.5;
 
   // 创建观察点
   QgsVector3D lookAtCenterPosition(qgisCenterX, qgisCenterY, qgisCenterZ);
 
-  spdlog::info("lookAtCenterPosition: {}:{}:{}, distance: {}, pitch: {}, yaw: {}",
+  spdlog::info("lookAtCenterPosition: {}:{}:{}, distance: {}, pitch: {}, yaw: {}, heightDiff: {}",
                lookAtCenterPosition.x(), lookAtCenterPosition.y(), lookAtCenterPosition.z(), 
-               distance, pitch, yaw);
+               distance, pitch, yaw, heightDiff);
 
   // 设置摄像机参数
   mCanvas3d->cameraController()->setLookingAtPoint(
