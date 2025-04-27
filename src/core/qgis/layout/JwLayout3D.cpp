@@ -843,7 +843,6 @@ LookAtPoint* JwLayout3D::set3DCanvasCamera(DTOWRAPPERNS::DTOWrapper<Camera3dPosi
     const QgsRectangle fullExtent = Qgs3DUtils::tryReprojectExtent2D(
         projectExtent, projectExtent.crs(), mapSettings3d->crs(),
         mProject->transformContext());
-    spdlog::debug("set3DCanvas fullExtent:");
     CameraUtil::ExtentInfo(fullExtent);
 
     // 转换Cesium摄像机位置到场景CRS
@@ -877,7 +876,11 @@ LookAtPoint* JwLayout3D::set3DCanvasCamera(DTOWRAPPERNS::DTOWrapper<Camera3dPosi
     auto extentCenter = fullExtent.center();
 
     double centerPosX = centerPosition.x() - extentCenter.x();
-    double centerPosY = centerPosition.y() - extentCenter.y();
+
+    double directionY = centerPosition.y() - extentCenter.y();
+
+    double centerPosY = std::abs(directionY);
+
     double centerPosZ = centerPosition.z();
     spdlog::info("qgs layout 3d center: {}:{}:{}", centerPosX, centerPosY, centerPosZ);
 
@@ -914,13 +917,18 @@ LookAtPoint* JwLayout3D::set3DCanvasCamera(DTOWRAPPERNS::DTOWrapper<Camera3dPosi
     // 计算直角三角形中已知斜边和角度的临边长度 // issue
     //float distance = calculateAdjacentSide(camera->cameraHeight, pitch);
     float distance = calculate_opposite_side(camera->cameraHeight, std::abs(pitch));
-    spdlog::info("set3DCanvas distance: {}", distance);
+    spdlog::info("distance: {}", distance);
 
     // 计算倾斜后向下拉回的偏移offset_pull_pitch度的距离
     double offsetDirZ = calculate_opposite_side(distance, max_pitch_angle - std::abs(pitch) - offset_pull_pitch);
 
     QgsVector3D lookAtCenterPosition(centerPosX, centerPosY, offsetDirZ);
-
+    if (directionY < 0) {
+        lookAtCenterPosition.setZ(-offsetDirZ);
+    }
+    spdlog::info("lookAtCenterPosition: {}-{}-{}, distance: {}, pitch: {}, yaw: {}",
+                 lookAtCenterPosition.x(), lookAtCenterPosition.y(),
+                 lookAtCenterPosition.z(), distance, pitch, yaw);
     mCanvas3d->cameraController()->setLookingAtPoint(
         lookAtCenterPosition, static_cast<float>(distance),
         static_cast<float>(pitch), static_cast<float>(yaw));
