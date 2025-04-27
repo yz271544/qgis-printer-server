@@ -890,9 +890,23 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
 
   // 根据heading角度和视锥体参数调整观察点位置
   double angleRad = yaw * M_PI / 180.0;
-  // 使用视锥体参数计算偏移量
-  double offsetX = std::sin(angleRad) * nearWidth * 0.5;
-  double offsetZ = std::cos(angleRad) * nearWidth * 0.5;
+  
+  // 计算视锥体对角线长度
+  double diagonal = std::sqrt(nearWidth * nearWidth + nearHeight * nearHeight);
+  
+  // 根据heading角度计算偏移量
+  // 使用对角线长度作为基础，并考虑heading角度的影响
+  double offsetFactor = 0.3; // 调整因子，控制偏移量大小
+  double offsetX = std::sin(angleRad) * diagonal * offsetFactor;
+  double offsetZ = std::cos(angleRad) * diagonal * offsetFactor;
+  
+  // 根据heading角度调整偏移方向
+  if (yaw > 0 && yaw < 180) {
+    offsetX = -offsetX;
+  }
+  if (yaw > 90 && yaw < 270) {
+    offsetZ = -offsetZ;
+  }
   
   // 调整观察点位置
   qgisCenterX += offsetX;
@@ -901,8 +915,8 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
   // 创建观察点
   QgsVector3D lookAtCenterPosition(qgisCenterX, qgisCenterY, qgisCenterZ);
 
-  spdlog::info("Camera parameters - fov: {}, aspectRatio: {}, nearPlane: {}, farPlane: {}, nearHeight: {}, nearWidth: {}",
-               fov, aspectRatio, nearPlane, farPlane, nearHeight, nearWidth);
+  spdlog::info("Camera parameters - fov: {}, aspectRatio: {}, nearPlane: {}, farPlane: {}, nearHeight: {}, nearWidth: {}, diagonal: {}",
+               fov, aspectRatio, nearPlane, farPlane, nearHeight, nearWidth, diagonal);
   spdlog::info("lookAtCenterPosition: {}:{}:{}, distance: {}, pitch: {}, yaw: {}, heightDiff: {}, offsetX: {}, offsetZ: {}",
                lookAtCenterPosition.x(), lookAtCenterPosition.y(), lookAtCenterPosition.z(), 
                distance, pitch, yaw, heightDiff, offsetX, offsetZ);
