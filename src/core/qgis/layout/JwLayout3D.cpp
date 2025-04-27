@@ -862,10 +862,10 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
   double farPlane = 10000.0; // 默认远裁剪面
 
   try {
-    if (!camera->fov.empty()) fov = std::stod(camera->fov);
-    if (!camera->aspectRatio.empty()) aspectRatio = std::stod(camera->aspectRatio);
-    if (!camera->nearPlane.empty()) nearPlane = std::stod(camera->nearPlane);
-    if (!camera->farPlane.empty()) farPlane = std::stod(camera->farPlane);
+    if (camera->fov != nullptr && camera->fov != 45) fov = camera->fov;
+    if (camera->aspectRatio != nullptr && camera->aspectRatio != 1) aspectRatio = camera->aspectRatio;
+    if (camera->nearPlane != nullptr && camera->nearPlane != 1) nearPlane = camera->nearPlane;
+    if (camera->farPlane != nullptr && camera->farPlane != 10000) farPlane = camera->farPlane;
   } catch (const std::exception& e) {
     spdlog::error("Error parsing camera parameters: {}", e.what());
   }
