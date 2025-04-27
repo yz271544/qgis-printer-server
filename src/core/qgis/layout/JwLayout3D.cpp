@@ -857,9 +857,19 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
 
   // 计算观察点相对于布局中心的位置
   // 注意：QGIS的坐标系中，Y轴向上，Z轴向前
-  double qgisCenterX = 0.0; // 强制设置为0，确保在中心
+  double qgisCenterX = 0.0;
   double qgisCenterY = centerScene->z(); // 使用z作为高度
-  double qgisCenterZ = 0.0; // 强制设置为0，确保在中心
+  double qgisCenterZ = 0.0;
+
+  // 根据heading角度调整观察点位置
+  double angleRad = yaw * M_PI / 180.0;
+  // 计算旋转后的偏移量
+  double offsetX = std::sin(angleRad) * default_distance * 0.1;
+  double offsetZ = std::cos(angleRad) * default_distance * 0.1;
+  
+  // 调整观察点位置
+  qgisCenterX += offsetX;
+  qgisCenterZ += offsetZ;
 
   // 计算摄像机到观察点的距离
   // 使用Cesium中的高度差作为基础距离
@@ -872,9 +882,9 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
   // 创建观察点
   QgsVector3D lookAtCenterPosition(qgisCenterX, qgisCenterY, qgisCenterZ);
 
-  spdlog::info("lookAtCenterPosition: {}:{}:{}, distance: {}, pitch: {}, yaw: {}, heightDiff: {}",
+  spdlog::info("lookAtCenterPosition: {}:{}:{}, distance: {}, pitch: {}, yaw: {}, heightDiff: {}, offsetX: {}, offsetZ: {}",
                lookAtCenterPosition.x(), lookAtCenterPosition.y(), lookAtCenterPosition.z(), 
-               distance, pitch, yaw, heightDiff);
+               distance, pitch, yaw, heightDiff, offsetX, offsetZ);
 
   // 设置摄像机参数
   mCanvas3d->cameraController()->setLookingAtPoint(
