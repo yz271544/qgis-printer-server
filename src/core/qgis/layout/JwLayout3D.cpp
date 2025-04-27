@@ -855,33 +855,54 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
     yaw = 0.0;
   }
 
+  // 获取摄像机参数
+  double fov = 45.0; // 默认视场角
+  double aspectRatio = 1.0; // 默认长宽比
+  double nearPlane = 1.0; // 默认近裁剪面
+  double farPlane = 10000.0; // 默认远裁剪面
+
+  try {
+    if (!camera->fov.empty()) fov = std::stod(camera->fov);
+    if (!camera->aspectRatio.empty()) aspectRatio = std::stod(camera->aspectRatio);
+    if (!camera->nearPlane.empty()) nearPlane = std::stod(camera->nearPlane);
+    if (!camera->farPlane.empty()) farPlane = std::stod(camera->farPlane);
+  } catch (const std::exception& e) {
+    spdlog::error("Error parsing camera parameters: {}", e.what());
+  }
+
+  // 计算摄像机到观察点的距离
+  double heightDiff = camera->cameraHeight - camera->centerHeight;
+  double distance = heightDiff / std::sin(pitch * M_PI / 180.0);
+  distance *= 0.5;
+
+  // 计算视锥体参数
+  double verticalFov = fov * M_PI / 180.0;
+  double horizontalFov = 2.0 * std::atan(std::tan(verticalFov / 2.0) * aspectRatio);
+  
+  // 计算视锥体在近裁剪面的高度和宽度
+  double nearHeight = 2.0 * nearPlane * std::tan(verticalFov / 2.0);
+  double nearWidth = 2.0 * nearPlane * std::tan(horizontalFov / 2.0);
+
   // 计算观察点相对于布局中心的位置
-  // 注意：QGIS的坐标系中，Y轴向上，Z轴向前
   double qgisCenterX = 0.0;
-  double qgisCenterY = centerScene->z(); // 使用z作为高度
+  double qgisCenterY = centerScene->z();
   double qgisCenterZ = 0.0;
 
-  // 根据heading角度调整观察点位置
+  // 根据heading角度和视锥体参数调整观察点位置
   double angleRad = yaw * M_PI / 180.0;
-  // 计算旋转后的偏移量
-  double offsetX = std::sin(angleRad) * default_distance * 0.1;
-  double offsetZ = std::cos(angleRad) * default_distance * 0.1;
+  // 使用视锥体参数计算偏移量
+  double offsetX = std::sin(angleRad) * nearWidth * 0.5;
+  double offsetZ = std::cos(angleRad) * nearWidth * 0.5;
   
   // 调整观察点位置
   qgisCenterX += offsetX;
   qgisCenterZ += offsetZ;
 
-  // 计算摄像机到观察点的距离
-  // 使用Cesium中的高度差作为基础距离
-  double heightDiff = camera->cameraHeight - camera->centerHeight;
-  // 根据pitch角调整距离
-  double distance = heightDiff / std::sin(pitch * M_PI / 180.0);
-  // 添加一个缩放因子，使距离更接近Cesium中的视觉效果
-  distance *= 0.5;
-
   // 创建观察点
   QgsVector3D lookAtCenterPosition(qgisCenterX, qgisCenterY, qgisCenterZ);
 
+  spdlog::info("Camera parameters - fov: {}, aspectRatio: {}, nearPlane: {}, farPlane: {}, nearHeight: {}, nearWidth: {}",
+               fov, aspectRatio, nearPlane, farPlane, nearHeight, nearWidth);
   spdlog::info("lookAtCenterPosition: {}:{}:{}, distance: {}, pitch: {}, yaw: {}, heightDiff: {}, offsetX: {}, offsetZ: {}",
                lookAtCenterPosition.x(), lookAtCenterPosition.y(), lookAtCenterPosition.z(), 
                distance, pitch, yaw, heightDiff, offsetX, offsetZ);
