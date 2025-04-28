@@ -831,72 +831,11 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
     return nullptr;
   }
 
-  // 计算QGIS的pitch角
-  double pitch = 0.0;
-  try {
-    pitch = std::stod(camera->pitch);
-    if (pitch < 0) {
-      pitch = max_pitch_angle + pitch;
-    } else {
-      pitch = max_pitch_angle - pitch;
-    }
-  } catch (const std::invalid_argument &e) {
-    spdlog::error("Invalid pitch value: {}", camera->pitch->c_str());
-  } catch (const std::out_of_range &e) {
-    spdlog::error("Pitch value out of range: {}", camera->pitch->c_str());
-  }
-  
-  // 获取Cesium的heading并转换为QGIS的yaw
-  double yaw = 0.0;
-  try {
-    if (camera->heading != nullptr) yaw = 360 - std::stod(camera->heading);
-  } catch (const std::exception& e) {
-    spdlog::error("Invalid heading value: {}", e.what());
-    yaw = 0.0;
-  }
-
-  // 获取摄像机参数
-  double fov = 45.0; // 默认视场角
-  double aspectRatio = 1.0; // 默认长宽比
-  double nearPlane = 1.0; // 默认近裁剪面
-  double farPlane = 10000.0; // 默认远裁剪面
-
-  try {
-    if (camera->fov != nullptr && camera->fov != 45) fov = camera->fov;
-    if (camera->aspectRatio != nullptr && camera->aspectRatio != 1) aspectRatio = camera->aspectRatio;
-    if (camera->nearPlane != nullptr && camera->nearPlane != 1) nearPlane = camera->nearPlane;
-    if (camera->farPlane != nullptr && camera->farPlane != 10000) farPlane = camera->farPlane;
-  } catch (const std::exception& e) {
-    spdlog::error("Error parsing camera parameters: {}", e.what());
-  }
-
-  // 计算摄像机到观察点的距离
-  double heightDiff = camera->cameraHeight - camera->centerHeight;
-  double baseDistance = heightDiff / std::sin(pitch * M_PI / 180.0);
-  baseDistance *= 0.5;
-
-  // 根据heading角度调整distance
-  double distance = baseDistance;
-  double angleRad = yaw * M_PI / 180.0;
-  
-  // 计算heading角度相对于0度的偏移量（0-90度）
-  double angleOffset = std::fmod(yaw, 360.0);
-  if (angleOffset < 0) angleOffset += 360.0;
-  
-  // 根据heading角度线性调整distance
-  if (angleOffset >= 0 && angleOffset <= 90) {
-    // 0度到90度：线性递增
-    distance = baseDistance + (1000.0 * angleOffset / 90.0);
-  } else if (angleOffset > 90 && angleOffset <= 180) {
-    // 90度到180度：线性递减
-    distance = baseDistance + (1000.0 * (180.0 - angleOffset) / 90.0);
-  } else if (angleOffset > 180 && angleOffset <= 270) {
-    // 180度到270度：线性递增
-    distance = baseDistance + (1000.0 * (angleOffset - 180.0) / 90.0);
-  } else if (angleOffset > 270 && angleOffset <= 360) {
-    // 270度到360度：线性递减
-    distance = baseDistance + (1000.0 * (360.0 - angleOffset) / 90.0);
-  }
+  // 获取Cesium的相机参数
+  double fov = camera->fov != nullptr ? camera->fov : 45.0;
+  double aspectRatio = camera->aspectRatio != nullptr ? camera->aspectRatio : 1.0;
+  double nearPlane = camera->nearPlane != nullptr ? camera->nearPlane : 1.0;
+  double farPlane = camera->farPlane != nullptr ? camera->farPlane : 10000.0;
 
   // 计算视锥体参数
   double verticalFov = fov * M_PI / 180.0;
@@ -906,40 +845,57 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
   double nearHeight = 2.0 * nearPlane * std::tan(verticalFov / 2.0);
   double nearWidth = 2.0 * nearPlane * std::tan(horizontalFov / 2.0);
 
-  // 计算观察点相对于布局中心的位置
-  double qgisCenterX = 0.0;
-  double qgisCenterY = centerScene->z();
-  double qgisCenterZ = 0.0;
+  // 使用Cesium的方向向量计算观察点位置
+  // 注意：Cesium的Z轴向上，而QGIS的Y轴向上，需要进行坐标转换
+  double cameraDirX = camera->cameraDirX != nullptr ? camera->cameraDirX : 0.0;
+  double cameraDirY = camera->cameraDirY != nullptr ? camera->cameraDirY : 0.0;
+  double cameraDirZ = camera->cameraDirZ != nullptr ? camera->cameraDirZ : 0.0;
 
-  // 根据heading角度和视锥体参数调整观察点位置
-  double diagonal = std::sqrt(nearWidth * nearWidth + nearHeight * nearHeight);
-  
-  // 根据heading角度计算偏移量
-  // 使用对角线长度作为基础，并考虑heading角度的影响
-  double offsetFactor = 0.3; // 调整因子，控制偏移量大小
-  double offsetX = std::sin(angleRad) * diagonal * offsetFactor;
-  double offsetZ = std::cos(angleRad) * diagonal * offsetFactor;
-  
-  // 根据heading角度调整偏移方向
-  if (yaw > 0 && yaw < 180) {
-    offsetX = -offsetX;
+  // 计算观察点位置（使用远裁剪面距离）
+  double qgisCenterX = centerScene->x() + cameraDirX * farPlane;
+  double qgisCenterY = centerScene->z() + cameraDirY * farPlane; // 注意Y和Z的转换
+  double qgisCenterZ = centerScene->y() + cameraDirZ * farPlane;
+
+  // 计算QGIS的pitch角（从Cesium的pitch转换）
+  double pitch = 0.0;
+  try {
+    if (camera->pitch != nullptr) {
+      pitch = std::stod(camera->pitch);
+      if (pitch < 0) {
+        pitch = max_pitch_angle + pitch;
+      } else {
+        pitch = max_pitch_angle - pitch;
+      }
+    }
+  } catch (const std::exception& e) {
+    spdlog::error("Invalid pitch value: {}", e.what());
   }
-  if (yaw > 90 && yaw < 270) {
-    offsetZ = -offsetZ;
+
+  // 计算QGIS的yaw角（从Cesium的heading转换）
+  double yaw = 0.0;
+  try {
+    if (camera->heading != nullptr) {
+      yaw = 360 - std::stod(camera->heading); // 反转方向
+    }
+  } catch (const std::exception& e) {
+    spdlog::error("Invalid heading value: {}", e.what());
   }
-  
-  // 调整观察点位置
-  qgisCenterX += offsetX;
-  qgisCenterZ += offsetZ;
+
+  // 计算相机到观察点的距离
+  double distance = std::sqrt(
+    std::pow(qgisCenterX - cameraScene->x(), 2) +
+    std::pow(qgisCenterY - cameraScene->z(), 2) +
+    std::pow(qgisCenterZ - cameraScene->y(), 2)
+  );
 
   // 创建观察点
   QgsVector3D lookAtCenterPosition(qgisCenterX, qgisCenterY, qgisCenterZ);
 
-  spdlog::info("Camera parameters - fov: {}, aspectRatio: {}, nearPlane: {}, farPlane: {}, nearHeight: {}, nearWidth: {}, diagonal: {}, baseDistance: {}, adjustedDistance: {}, angleOffset: {}",
-               fov, aspectRatio, nearPlane, farPlane, nearHeight, nearWidth, diagonal, baseDistance, distance, angleOffset);
-  spdlog::info("lookAtCenterPosition: {}:{}:{}, distance: {}, pitch: {}, yaw: {}, heightDiff: {}, offsetX: {}, offsetZ: {}",
+  spdlog::info("Camera parameters - fov: {}, aspectRatio: {}, nearPlane: {}, farPlane: {}, nearHeight: {}, nearWidth: {}",
+               fov, aspectRatio, nearPlane, farPlane, nearHeight, nearWidth);
+  spdlog::info("lookAtCenterPosition: {}:{}:{}, distance: {}, pitch: {}, yaw: {}",
                lookAtCenterPosition.x(), lookAtCenterPosition.y(), lookAtCenterPosition.z(), 
-               distance, pitch, yaw, heightDiff, offsetX, offsetZ);
+               distance, pitch, yaw);
 
   // 设置摄像机参数
   mCanvas3d->cameraController()->setLookingAtPoint(
