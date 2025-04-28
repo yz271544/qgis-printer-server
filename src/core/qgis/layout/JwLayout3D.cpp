@@ -832,10 +832,10 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
   }
 
   // 获取Cesium的相机参数
-  double fov = camera->fov != nullptr ? camera->fov : 45.0;
-  double aspectRatio = camera->aspectRatio != nullptr ? camera->aspectRatio : 1.0;
-  double nearPlane = camera->nearPlane != nullptr ? camera->nearPlane : 1.0;
-  double farPlane = camera->farPlane != nullptr ? camera->farPlane : 10000.0;
+  double fov = camera->fov != nullptr ? static_cast<double>(camera->fov) : 45.0;
+  double aspectRatio = camera->aspectRatio != nullptr ? static_cast<double>(camera->aspectRatio) : 1.0;
+  double nearPlane = camera->nearPlane != nullptr ? static_cast<double>(camera->nearPlane) : 1.0;
+  double farPlane = camera->farPlane != nullptr ? static_cast<double>(camera->farPlane) : 10000.0;
 
   // 计算视锥体参数
   double verticalFov = fov * M_PI / 180.0;
@@ -847,9 +847,9 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
 
   // 使用Cesium的方向向量计算观察点位置
   // 注意：Cesium的Z轴向上，而QGIS的Y轴向上，需要进行坐标转换
-  double cameraDirX = camera->cameraDirX != nullptr ? camera->cameraDirX : 0.0;
-  double cameraDirY = camera->cameraDirY != nullptr ? camera->cameraDirY : 0.0;
-  double cameraDirZ = camera->cameraDirZ != nullptr ? camera->cameraDirZ : 0.0;
+  double cameraDirX = camera->cameraDirX != nullptr ? static_cast<double>(camera->cameraDirX) : 0.0;
+  double cameraDirY = camera->cameraDirY != nullptr ? static_cast<double>(camera->cameraDirY) : 0.0;
+  double cameraDirZ = camera->cameraDirZ != nullptr ? static_cast<double>(camera->cameraDirZ) : 0.0;
 
   // 计算观察点位置（使用远裁剪面距离）
   double qgisCenterX = centerScene->x() + cameraDirX * farPlane;
