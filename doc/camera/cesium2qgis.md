@@ -285,3 +285,14 @@ int main() {
 ## 4. 转换为 QGIS 的相机参数说明
 
 [QgsCameraController](https://qgis.org/pyqgis/master/_3d/QgsCameraController.html)
+
+首先，QGIS 的 LookingAtPoint 的坐标是 qgis layout 的自定义坐标，其单位应该是(米)，所以我的项目都采用了 3857 的墨卡托坐标系。
+假设 LookingAtPoint x,y,z 是 (0,0,0)，distance=2500，pitch=0，yaw=0, 则正好是正射图像的中心点位于 layout 的中心点。
+如果 x=200,则整个图像向左(西)移动 200 米，如果 x=-200,则整个图像向右(东)移动 200 米。
+如果 z=200,则整个图像向上(北)移动 200 米，如果 z=-200,则整个图像向下(南)移动 200 米。
+如果 y=200,则整个图像向外(上)移动 200 米，如果 y=-200，则整个图像向里(下)移动 200 米。
+
+其次，在生成 3DCanvas 视口的时候，QGIS 已经将 3DScene 的切片后数据全部加载到 layout 中。
+
+所以，我认为应该先根据我提供的算法计算出 cesium 的观察点坐标，然后将 cesium 摄像机的坐标与 cesium 的观察点坐标全部转换为 3857 坐标。
+再用观察点坐标减掉摄像机坐标，依次计算得出相对位置。最后利用 pitch 和坐标计算得出 distance。
