@@ -849,7 +849,7 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
   // 获取Cesium的heading并转换为QGIS的yaw
   double yaw = 0.0;
   try {
-    yaw = std::stod(camera->heading);
+    if (camera->heading != nullptr) yaw = 360 - std::stod(camera->heading);
   } catch (const std::exception& e) {
     spdlog::error("Invalid heading value: {}", e.what());
     yaw = 0.0;
