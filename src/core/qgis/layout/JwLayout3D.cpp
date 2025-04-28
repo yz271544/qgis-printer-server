@@ -815,8 +815,6 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
   // 转换Cesium摄像机位置到场景CRS
   QgsPoint cameraLLA(camera->cameraLongitude, camera->cameraLatitude,
                      camera->cameraHeight);
-  QgsPoint centerCesium(camera->centerLongitude, camera->centerLatitude,
-                        camera->centerHeight);
   QgsCoordinateTransform llaToSceneCRS(
       QgsCoordinateReferenceSystem("EPSG:4326"), // WGS84经纬度
       mapSettings3d->crs(),                      // 场景CRS
@@ -824,10 +822,8 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
 
   // 转换Cesium坐标到场景坐标
   QgsPoint *cameraScene;
-  QgsPoint *centerScene;
   try {
     cameraScene = transformPoint(cameraLLA, llaToSceneCRS);
-    centerScene = transformPoint(centerCesium, llaToSceneCRS);
   } catch (const QgsCsException &e) {
     spdlog::error("摄像机位置坐标转换失败: {}", e.what().toStdString());
     return nullptr;
@@ -853,12 +849,11 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
   double cameraDirY = camera->cameraDirY != nullptr ? static_cast<double>(camera->cameraDirY) : 0.0;
   double cameraDirZ = camera->cameraDirZ != nullptr ? static_cast<double>(camera->cameraDirZ) : 0.0;
 
-  // 计算观察点位置（使用场景中心点作为基准）
-  // 将坐标值缩放到更小的范围
-  double scaleFactor = 0.0001; // 缩放因子，将坐标值缩小到合理范围
-  double qgisCenterX = (centerScene->x() - centerX) * scaleFactor;
-  double qgisCenterY = (centerScene->z() - centerY) * scaleFactor; // 注意Y和Z的转换
-  double qgisCenterZ = centerScene->y() * scaleFactor;
+  // 计算观察点位置（使用相机位置和方向向量）
+  // 观察点 = 相机位置 + 方向向量 × 远裁剪面距离
+  double qgisCenterX = cameraScene->x() + cameraDirX * farPlane;
+  double qgisCenterY = cameraScene->y() + cameraDirZ * farPlane; // 注意Y和Z的转换
+  double qgisCenterZ = cameraScene->z() + cameraDirY * farPlane;
 
   // 计算QGIS的pitch角（从Cesium的pitch转换）
   double pitch = 0.0;
@@ -886,18 +881,8 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
   }
 
   // 计算相机到观察点的距离
-  // 使用场景范围作为参考，但将距离限制在合理范围内
-  double sceneWidth = fullExtent.width() * scaleFactor;
-  double sceneHeight = fullExtent.height() * scaleFactor;
-  double distance = std::min(std::max(sceneWidth, sceneHeight) * 2.0, 2000.0); // 限制最大距离为2000
-
-  // 如果提供了方向向量，则根据方向向量调整距离
-  if (cameraDirX != 0.0 || cameraDirY != 0.0 || cameraDirZ != 0.0) {
-    double dirLength = std::sqrt(cameraDirX * cameraDirX + cameraDirY * cameraDirY + cameraDirZ * cameraDirZ);
-    if (dirLength > 0) {
-      distance = std::min(farPlane * 0.0001, 2000.0); // 使用远裁剪面的万分之一作为距离，但不超过2000
-    }
-  }
+  // 使用远裁剪面距离，但限制在合理范围内
+  double distance = std::min(farPlane, 2000.0);
 
   // 创建观察点
   QgsVector3D lookAtCenterPosition(qgisCenterX, qgisCenterY, qgisCenterZ);
