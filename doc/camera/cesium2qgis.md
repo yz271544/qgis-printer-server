@@ -281,3 +281,7 @@ int main() {
   }
 }
 ```
+
+## 4. 转换为 QGIS 的相机参数说明
+
+[QgsCameraController](https://qgis.org/pyqgis/master/_3d/QgsCameraController.html)

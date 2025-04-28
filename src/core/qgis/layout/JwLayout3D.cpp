@@ -851,10 +851,10 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
   double cameraDirY = camera->cameraDirY != nullptr ? static_cast<double>(camera->cameraDirY) : 0.0;
   double cameraDirZ = camera->cameraDirZ != nullptr ? static_cast<double>(camera->cameraDirZ) : 0.0;
 
-  // 计算观察点位置（使用远裁剪面距离）
-  double qgisCenterX = centerScene->x() + cameraDirX * farPlane;
-  double qgisCenterY = centerScene->z() + cameraDirY * farPlane; // 注意Y和Z的转换
-  double qgisCenterZ = centerScene->y() + cameraDirZ * farPlane;
+  // 计算观察点位置（使用场景中心点作为基准）
+  double qgisCenterX = centerScene->x();
+  double qgisCenterY = centerScene->z(); // 注意Y和Z的转换
+  double qgisCenterZ = centerScene->y();
 
   // 计算QGIS的pitch角（从Cesium的pitch转换）
   double pitch = 0.0;
@@ -881,12 +881,18 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
     spdlog::error("Invalid heading value: {}", e.what());
   }
 
-  // 计算相机到观察点的距离
-  double distance = std::sqrt(
-    std::pow(qgisCenterX - cameraScene->x(), 2) +
-    std::pow(qgisCenterY - cameraScene->z(), 2) +
-    std::pow(qgisCenterZ - cameraScene->y(), 2)
-  );
+  // 计算相机到观察点的距离（使用场景范围作为参考）
+  double sceneWidth = fullExtent.width();
+  double sceneHeight = fullExtent.height();
+  double distance = std::max(sceneWidth, sceneHeight) * 1.5; // 使用场景范围的1.5倍作为默认距离
+
+  // 如果提供了方向向量，则根据方向向量调整距离
+  if (cameraDirX != 0.0 || cameraDirY != 0.0 || cameraDirZ != 0.0) {
+    double dirLength = std::sqrt(cameraDirX * cameraDirX + cameraDirY * cameraDirY + cameraDirZ * cameraDirZ);
+    if (dirLength > 0) {
+      distance = farPlane * 0.5; // 使用远裁剪面的一半作为距离
+    }
+  }
 
   // 创建观察点
   QgsVector3D lookAtCenterPosition(qgisCenterX, qgisCenterY, qgisCenterZ);
