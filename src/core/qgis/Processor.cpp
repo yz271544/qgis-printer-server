@@ -194,7 +194,7 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
 
     try {
         m_max_pitch_angle = m_config->operator[]("qgis")["max_pitch_angle"].as<double>();
-        if (!MAX_PITCH_ANGLE != 77.0) {
+        if (MAX_PITCH_ANGLE > 0) {
             m_max_pitch_angle = MAX_PITCH_ANGLE;
         }
     } catch (const std::exception &e) {

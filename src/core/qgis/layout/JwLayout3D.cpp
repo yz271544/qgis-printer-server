@@ -797,6 +797,8 @@ void JwLayout3D::setTest3DCanvas() {
 LookAtPoint *JwLayout3D::set3DCanvasCamera(
     DTOWRAPPERNS::DTOWrapper<Camera3dPosition> &camera, double default_distance,
     double max_pitch_angle, double offset_pull_pitch) {
+  spdlog::debug("default_distance: {}, max_pitch_angle: {}, offset_pull_pitch: {}",
+    default_distance, max_pitch_angle, offset_pull_pitch);
   const QgsReferencedRectangle projectExtent =
       mProject->viewSettings()->fullExtent();
   auto mapSettings3d = mCanvas3d->mapSettings();
