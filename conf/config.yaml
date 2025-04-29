@@ -48,7 +48,7 @@ qgis:
   filter_remove_3d_base: true
   canvas3d_type: "camera"
   max_screen_error: 10000000
-  max_pitch_angle: 96
+  max_pitch_angle: 86
   offset_pull_pitch: 11
 specification:
   - name: "现场位置图"

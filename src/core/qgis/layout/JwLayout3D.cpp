@@ -812,7 +812,7 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
   double centerX = extentCenter.x();
   double centerY = extentCenter.y();
 
-  // 转换Cesium摄像机位置到场景CRS
+  // 1. 转换Cesium摄像机位置到场景CRS
   QgsPoint cameraLLA(camera->cameraLongitude, camera->cameraLatitude,
                      camera->cameraHeight);
   QgsCoordinateTransform llaToSceneCRS(
@@ -820,7 +820,7 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
       mapSettings3d->crs(),                      // 场景CRS
       mProject->transformContext());
 
-  // 转换Cesium坐标到场景坐标
+  // 2. 转换Cesium坐标到场景坐标
   QgsPoint *cameraScene;
   try {
     cameraScene = transformPoint(cameraLLA, llaToSceneCRS);
@@ -835,49 +835,45 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
   double nearPlane = camera->nearPlane != nullptr ? static_cast<double>(camera->nearPlane) : 1.0;
   double farPlane = camera->farPlane != nullptr ? static_cast<double>(camera->farPlane) : 10000.0;
 
-  // 获取方向向量
+  // 3. 获取方向向量
   double cameraDirX = camera->cameraDirX != nullptr ? static_cast<double>(camera->cameraDirX) : 0.0;
   double cameraDirY = camera->cameraDirY != nullptr ? static_cast<double>(camera->cameraDirY) : 0.0;
   double cameraDirZ = camera->cameraDirZ != nullptr ? static_cast<double>(camera->cameraDirZ) : 0.0;
 
-  // 1. 使用方向向量计算远处的观察点（在Cesium坐标系下）
-  // 使用一个合理的距离，而不是直接使用farPlane（太大）
-  double observationDistance = 1000.0; // 使用更合理的观察距离
-  double obsPointX = cameraScene->x() + cameraDirX * observationDistance;
-  double obsPointY = cameraScene->y() + cameraDirY * observationDistance;
-  double obsPointZ = cameraScene->z() + cameraDirZ * observationDistance;
-  
-  // 2. 将相机位置和观察点坐标相对于场景中心进行位移
-  double relX = obsPointX - cameraScene->x();
-  double relY = obsPointY - cameraScene->y();
-  double relZ = obsPointZ - cameraScene->z();
-  
-  // 3. 应用缩放因子确保坐标值在合理范围内（小于1000）
-  double scaleFactor = 0.0001; // 比例因子，将值缩小到合适大小
-  
-  // 4. 设置QGIS布局中的观察点坐标
-  // 注意：QGIS的坐标系与Cesium不同，需要调整坐标轴
-  double qgisCenterX = relX * scaleFactor; // X轴对应东西方向
-  double qgisCenterY = relZ * scaleFactor; // Y轴对应上下方向（Cesium的Z轴）
-  double qgisCenterZ = relY * scaleFactor; // Z轴对应南北方向（Cesium的Y轴）
-  
-  // 5. 计算QGIS的pitch角（从Cesium的pitch转换）
-  double pitch = 0.0;
+  // 4. 计算QGIS的pitch角（从Cesium的pitch转换）
+  double cesiumPitch = 0.0;
+  double qgisPitch = 0.0;
   try {
     if (camera->pitch != nullptr) {
-      pitch = std::stod(camera->pitch);
+      cesiumPitch = std::abs(std::stod(camera->pitch));
       // 调整pitch范围并与QGIS角度系统对齐
-      if (pitch < 0) {
-        pitch = max_pitch_angle + pitch;
+      if (cesiumPitch < 0) {
+        qgisPitch = max_pitch_angle + cesiumPitch;
       } else {
-        pitch = max_pitch_angle - pitch;
+        qgisPitch = max_pitch_angle - cesiumPitch;
       }
     }
   } catch (const std::exception& e) {
     spdlog::error("Invalid pitch value: {}", e.what());
   }
+  // 5.计算distance
+  double pitch_rad = cesiumPitch * M_PI / 180.0;
+  double distance = camera->cameraHeight / sin(pitch_rad);
+  
+  // 6. 使用方向向量计算远处的观察点（在Cesium坐标系下）
+  double obsPointX = cameraScene->x() + cameraDirX * distance;
+  double obsPointY = cameraScene->y() + cameraDirY * distance;
+  double obsPointZ = cameraScene->z() + cameraDirZ * distance;
 
-  // 6. 计算QGIS的yaw角（从Cesium的heading转换）
+  spdlog::info("obsPoint: {}:{}:{}", obsPointX,obsPointY,obsPointZ);
+  spdlog::info("cameraScene: {}:{}:{}", cameraScene->x(),cameraScene->y(),cameraScene->z());
+
+  // 7. 将相机位置和观察点坐标相对于场景中心进行位移
+  double relX = obsPointX - cameraScene->x();
+  double relY = std::abs(obsPointY - cameraScene->y());
+  double relZ = std::abs(obsPointZ - cameraScene->z());
+
+  // 8. 计算QGIS的yaw角（从Cesium的heading转换）
   double yaw = 0.0;
   try {
     if (camera->heading != nullptr) {
@@ -887,35 +883,28 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
     spdlog::error("Invalid heading value: {}", e.what());
   }
 
-  // 7. 计算相机到观察点的距离
-  // 使用默认距离或基于相机高度计算
-  double distance = default_distance;
-  if (camera->cameraHeight != nullptr) {
-    // 基于高度和pitch角计算距离
-    distance = std::min(camera->cameraHeight * 2.0, 2000.0);
-  }
 
-  // 8. 创建观察点
-  QgsVector3D lookAtCenterPosition(qgisCenterX, qgisCenterY, qgisCenterZ);
+  // 9. 创建观察点
+  QgsVector3D lookAtCenterPosition(relX, relY, relZ);
 
   spdlog::info("原始观察点坐标: {}:{}:{}", obsPointX, obsPointY, obsPointZ);
   spdlog::info("相对位移: {}:{}:{}", relX, relY, relZ);
   spdlog::info("lookAtCenterPosition: {}:{}:{}, distance: {}, pitch: {}, yaw: {}",
                lookAtCenterPosition.x(), lookAtCenterPosition.y(), lookAtCenterPosition.z(), 
-               distance, pitch, yaw);
+               distance, qgisPitch, yaw);
 
-  // 9. 设置摄像机参数
+  // 10. 设置摄像机参数
   mCanvas3d->cameraController()->setLookingAtPoint(
       lookAtCenterPosition, 
       static_cast<float>(distance),
-      static_cast<float>(pitch),
+      static_cast<float>(qgisPitch),
       static_cast<float>(yaw));
 
-  // 10. 创建并返回LookAtPoint对象
+  // 11. 创建并返回LookAtPoint对象
   auto lookAtPoint = std::make_unique<LookAtPoint>(
       lookAtCenterPosition,
       static_cast<float>(distance),
-      static_cast<float>(pitch),
+      static_cast<float>(qgisPitch),
       static_cast<float>(yaw));
 
   return lookAtPoint.release();
