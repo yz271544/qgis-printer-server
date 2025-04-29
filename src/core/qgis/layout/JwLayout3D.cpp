@@ -829,84 +829,53 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
     return nullptr;
   }
 
-  // 获取Cesium的相机参数
-  double fov = camera->fov != nullptr ? static_cast<double>(camera->fov) : 45.0;
-  double aspectRatio = camera->aspectRatio != nullptr ? static_cast<double>(camera->aspectRatio) : 1.0;
-  double nearPlane = camera->nearPlane != nullptr ? static_cast<double>(camera->nearPlane) : 1.0;
-  double farPlane = camera->farPlane != nullptr ? static_cast<double>(camera->farPlane) : 10000.0;
 
   // 3. 获取方向向量
   double cameraDirX = camera->cameraDirX != nullptr ? static_cast<double>(camera->cameraDirX) : 0.0;
   double cameraDirY = camera->cameraDirY != nullptr ? static_cast<double>(camera->cameraDirY) : 0.0;
   double cameraDirZ = camera->cameraDirZ != nullptr ? static_cast<double>(camera->cameraDirZ) : 0.0;
 
-  // 4. 计算QGIS的pitch角（从Cesium的pitch转换）
-  double cesiumPitch = 0.0;
-  double qgisPitch = 0.0;
-  try {
-    if (camera->pitch != nullptr) {
-      cesiumPitch = std::abs(std::stod(camera->pitch));
-      // 调整pitch范围并与QGIS角度系统对齐
-      if (cesiumPitch < 0) {
-        qgisPitch = max_pitch_angle + cesiumPitch;
-      } else {
-        qgisPitch = max_pitch_angle - cesiumPitch;
-      }
-    }
-  } catch (const std::exception& e) {
-    spdlog::error("Invalid pitch value: {}", e.what());
-  }
-  // 5.计算distance
-  double pitch_rad = cesiumPitch * M_PI / 180.0;
-  double distance = camera->cameraHeight / sin(pitch_rad);
-  
-  // 6. 使用方向向量计算远处的观察点（在Cesium坐标系下）
-  double obsPointX = cameraScene->x() + cameraDirX * distance;
-  double obsPointY = cameraScene->y() + cameraDirY * distance;
-  double obsPointZ = cameraScene->z() + cameraDirZ * distance;
+  // 计算LookAt中心点，使用相机位置加上方向向量乘以一个合适的缩放因子
+  constexpr double kDirectionScale = 2000.0; // 设置观察点距离，大约2km远（根据你场景大小可以调）
 
-  spdlog::info("obsPoint: {}:{}:{}", obsPointX,obsPointY,obsPointZ);
-  spdlog::info("cameraScene: {}:{}:{}", cameraScene->x(),cameraScene->y(),cameraScene->z());
+  QgsVector3D direction(cameraDirX, cameraDirY, cameraDirZ);
+  direction.normalize(); // 保证方向向量是单位向量
 
-  // 7. 将相机位置和观察点坐标相对于场景中心进行位移
-  double relX = obsPointX - cameraScene->x();
-  double relY = std::abs(obsPointY - cameraScene->y());
-  double relZ = std::abs(obsPointZ - cameraScene->z());
+  // 计算观察点
+  double obsPointX = cameraScene->x() + direction.x() * kDirectionScale;
+  double obsPointY = cameraScene->y() + direction.y() * kDirectionScale;
+  double obsPointZ = cameraScene->z() + direction.z() * kDirectionScale;
 
-  // 8. 计算QGIS的yaw角（从Cesium的heading转换）
-  double yaw = 0.0;
-  try {
-    if (camera->heading != nullptr) {
-      yaw = 360 - std::stod(camera->heading); // 反转方向以匹配QGIS的坐标系
-    }
-  } catch (const std::exception& e) {
-    spdlog::error("Invalid heading value: {}", e.what());
-  }
+  QgsVector3D lookAtCenterPosition(obsPointX, obsPointY, obsPointZ);
 
+  // 重新计算实际distance
+  QgsVector3D cameraPos(cameraScene->x(), cameraScene->y(), cameraScene->z());
+  double distance = lookAtCenterPosition.distance(cameraPos);
 
-  // 9. 创建观察点
-  QgsVector3D lookAtCenterPosition(relX, relY, relZ);
+  // pitch处理（因为Cesium pitch是负的，QGIS是正的俯角）
+  double qgisPitch = 90.0 + std::stod(camera->pitch);  // pitch本来是-6.06，所以qgisPitch应该是 90-6.06
 
-  spdlog::info("原始观察点坐标: {}:{}:{}", obsPointX, obsPointY, obsPointZ);
-  spdlog::info("相对位移: {}:{}:{}", relX, relY, relZ);
-  spdlog::info("lookAtCenterPosition: {}:{}:{}, distance: {}, pitch: {}, yaw: {}",
-               lookAtCenterPosition.x(), lookAtCenterPosition.y(), lookAtCenterPosition.z(), 
-               distance, qgisPitch, yaw);
+  // yaw处理（Cesium heading是正北顺时针）
+  double yaw = 360.0 - std::stod(camera->heading);
 
-  // 10. 设置摄像机参数
+  // 日志打印
+  spdlog::info("New LookAtCenterPosition: {}:{}:{}, distance: {}, pitch: {}, yaw: {}",
+                lookAtCenterPosition.x(), lookAtCenterPosition.y(), lookAtCenterPosition.z(),
+                distance, qgisPitch, yaw);
+
+  // 设置QGIS 3D相机
   mCanvas3d->cameraController()->setLookingAtPoint(
-      lookAtCenterPosition, 
-      static_cast<float>(distance),
-      static_cast<float>(qgisPitch),
-      static_cast<float>(yaw));
+        lookAtCenterPosition,
+        static_cast<float>(distance),
+        static_cast<float>(qgisPitch),
+        static_cast<float>(yaw));
 
-  // 11. 创建并返回LookAtPoint对象
+    // 创建并返回LookAtPoint对象
   auto lookAtPoint = std::make_unique<LookAtPoint>(
       lookAtCenterPosition,
       static_cast<float>(distance),
       static_cast<float>(qgisPitch),
       static_cast<float>(yaw));
-
   return lookAtPoint.release();
 }
 
