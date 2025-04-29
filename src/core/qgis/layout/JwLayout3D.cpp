@@ -835,44 +835,45 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
   double cameraDirY = camera->cameraDirY != nullptr ? static_cast<double>(camera->cameraDirY) : 0.0;
   double cameraDirZ = camera->cameraDirZ != nullptr ? static_cast<double>(camera->cameraDirZ) : 0.0;
 
-  // 计算LookAt中心点，使用相机位置加上方向向量乘以一个合适的缩放因子
-  constexpr double kDirectionScale = 2000.0; // 设置观察点距离，大约2km远（根据你场景大小可以调）
+  // 使用一个合理的距离，比如2000米（在局部米制坐标系下）
+  constexpr double kRelativeDistance = 2000.0;
 
-  QgsVector3D direction(cameraDirX, cameraDirY, cameraDirZ);
-  direction.normalize(); // 保证方向向量是单位向量
+  // 获取 camera 世界坐标（scene）
+  double cameraX = cameraScene->x();
+  double cameraY = cameraScene->y();
+  double cameraZ = cameraScene->z();
 
-  // 计算观察点
-  double obsPointX = cameraScene->x() + direction.x() * kDirectionScale;
-  double obsPointY = cameraScene->y() + direction.y() * kDirectionScale;
-  double obsPointZ = cameraScene->z() + direction.z() * kDirectionScale;
+  // 使用方向向量计算目标点（仍在投影坐标系中）
+  double obsX = cameraX + cameraDirX * kRelativeDistance;
+  double obsY = cameraY + cameraDirY * kRelativeDistance;
+  double obsZ = cameraZ + cameraDirZ * kRelativeDistance;
 
-  QgsVector3D lookAtCenterPosition(obsPointX, obsPointY, obsPointZ);
+  QgsVector3D lookAtCenter(obsX, obsY, obsZ);
 
-  // 重新计算实际distance
-  QgsVector3D cameraPos(cameraScene->x(), cameraScene->y(), cameraScene->z());
-  double distance = lookAtCenterPosition.distance(cameraPos);
+  // 使用真实的相机位置和目标点计算distance
+  QgsVector3D cameraPos(cameraX, cameraY, cameraZ);
+  double distance = cameraPos.distance(lookAtCenter);
 
-  // pitch处理（因为Cesium pitch是负的，QGIS是正的俯角）
-  double qgisPitch = 90.0 + std::stod(camera->pitch);  // pitch本来是-6.06，所以qgisPitch应该是 90-6.06
+  // pitch处理（仍然是90 + pitch）
+  double qgisPitch = 90.0 + std::stod(camera->pitch);  // 例如 pitch: -6.06 -> 83.94
 
-  // yaw处理（Cesium heading是正北顺时针）
+  // yaw处理（heading方向反转）
   double yaw = 360.0 - std::stod(camera->heading);
 
-  // 日志打印
-  spdlog::info("New LookAtCenterPosition: {}:{}:{}, distance: {}, pitch: {}, yaw: {}",
-                lookAtCenterPosition.x(), lookAtCenterPosition.y(), lookAtCenterPosition.z(),
-                distance, qgisPitch, yaw);
+  // 打印日志
+  spdlog::info("QGIS LookAt: center=({}:{}:{}) distance={} pitch={} yaw={}",
+                obsX, obsY, obsZ, distance, qgisPitch, yaw);
 
-  // 设置QGIS 3D相机
+  // 设置相机
   mCanvas3d->cameraController()->setLookingAtPoint(
-        lookAtCenterPosition,
+        lookAtCenter,
         static_cast<float>(distance),
         static_cast<float>(qgisPitch),
         static_cast<float>(yaw));
 
     // 创建并返回LookAtPoint对象
   auto lookAtPoint = std::make_unique<LookAtPoint>(
-      lookAtCenterPosition,
+      lookAtCenter,
       static_cast<float>(distance),
       static_cast<float>(qgisPitch),
       static_cast<float>(yaw));
