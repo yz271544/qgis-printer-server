@@ -1065,7 +1065,11 @@ void JwLayout3D::set3DMap(
         mMapItem3d->setFrameStrokeWidth(
             QgsLayoutMeasurement(frameWidthPixelMm, Qgis::LayoutUnit::Millimeters));
     }
-
+    if (mImageSpec.contains("sky_color_3d_layout")) {
+        auto skyColor =
+                mImageSpec["sky_color_3d_layout"].toString();
+        mMapItem3d->setBackgroundColor(QColor(skyColor));
+    }
     mMapItem3d->attemptSetSceneRect(
         QRectF(mImageSpec["main_left_margin"].toDouble(),
                mImageSpec["main_top_margin"].toDouble(), mMapWidth, mMapHeight));

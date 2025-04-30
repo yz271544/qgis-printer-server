@@ -48,7 +48,7 @@ qgis:
   filter_remove_3d_base: true
   canvas3d_type: "camera"
   max_screen_error: 10000000
-  max_pitch_angle: 86
+  max_pitch_angle: 103
   offset_pull_pitch: 11
   default_ground_altitude: 810
 specification:
@@ -150,6 +150,7 @@ specification:
     north_height: 20
     north_arrow_path: "share/qgis/svg/arrows/NorthArrow_02.svg"
     north_arrow_color: "#f30101"
+    sky_color_3d_layout: "#b1e1f8"
   - name: "警力部署图"
     local: "deploy"
     title_font_family: "SimSun"
@@ -248,6 +249,7 @@ specification:
     north_height: 20
     north_arrow_path: "share/qgis/svg/arrows/NorthArrow_02.svg"
     north_arrow_color: "#f30101"
+    sky_color_3d_layout: "#b1e1f8"
   - name: "紧急疏散图"
     local: "evacuation"
     title_font_family: "SimSun"
@@ -346,3 +348,4 @@ specification:
     north_height: 20
     north_arrow_path: "share/qgis/svg/arrows/NorthArrow_02.svg"
     north_arrow_color: "#f30101"
+    sky_color_3d_layout: "#b1e1f8"
