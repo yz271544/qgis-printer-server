@@ -904,11 +904,14 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
     // 摄像机朝向向量
     QgsVector3D cameraDir(cameraDirX, cameraDirY, cameraDirZ);
     cameraDir.normalize();
-    // 推算观察点位于地面（y=0）时的位置
-    double t = cameraPos.y() / std::abs(cameraDir.y());
-    QgsVector3D lookAt = cameraPos + cameraDir * t;
+    // 推算观察点位于地面的位置
+    double t = cameraPos.z() / std::abs(centerZ);
+    QgsVector3D lookAt = cameraPos - cameraDir * t;
     // distance
     double distance = cameraPos.distance(lookAt);
+    if (distance < 10) {
+        distance = 10.0;
+    }
 
     // 使用方向向量计算目标点（仍在投影坐标系中）
     /*double obsX = cameraX + cameraDirX * kRelativeDistance;
@@ -920,7 +923,7 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
     spdlog::info("lookAt: {}:{}:{}, distance: {}",
                 lookAt.x(), lookAt.y(), lookAt.z(), distance);
 
-    QgsVector3D lookAtCenter(lookAt.x() - centerX, lookAt.y() - centerY, lookAt.z());
+    QgsVector3D LookAtDiffCenter(lookAt.x() - centerX,  lookAt.z(), lookAt.y() - centerY);
     // pitch处理（仍然是90 + pitch）
     double qgisPitch = 90.0 + std::stod(camera->pitch); // 例如 pitch: -6.06 -> 83.94
 
@@ -928,20 +931,20 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
     double yaw = 360.0 - std::stod(camera->heading);
 
     // 打印日志
-    spdlog::info("QGIS center={}:{}:{} LookAt: {}:{}:{} distance={} pitch={} yaw={}",
-                 centerX, centerY, centerZ, lookAtCenter.x(), lookAtCenter.y(), lookAtCenter.z(),
+    spdlog::info("QGIS center={}:{}:{} LookAtDiffCenter: {}:{}:{} distance={} pitch={} yaw={}",
+                 centerX, centerY, centerZ, LookAtDiffCenter.x(), LookAtDiffCenter.y(), LookAtDiffCenter.z(),
                  distance, qgisPitch, yaw);
 
     // 设置相机
     mCanvas3d->cameraController()->setLookingAtPoint(
-        lookAtCenter,
+        LookAtDiffCenter,
         static_cast<float>(distance),
         static_cast<float>(qgisPitch),
         static_cast<float>(yaw));
 
     // 创建并返回LookAtPoint对象
     auto lookAtPoint = std::make_unique<LookAtPoint>(
-        lookAtCenter,
+        LookAtDiffCenter,
         static_cast<float>(distance),
         static_cast<float>(qgisPitch),
         static_cast<float>(yaw));
