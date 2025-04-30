@@ -905,6 +905,9 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
     // 7. 推算观察点位于地面的位置
     double t = cameraPos.z() / std::abs(centerZ);
     QgsVector3D lookAt = cameraPos - cameraDir * t;
+    // double t = (cameraPos.z() - centerZ) / cameraDir.z();
+    // QgsVector3D lookAt = cameraPos - cameraDir * t;
+    spdlog::debug("dir z number: {}", t);
     // 8. distance
     double distance = cameraPos.distance(lookAt);
     if (distance < 10) {
