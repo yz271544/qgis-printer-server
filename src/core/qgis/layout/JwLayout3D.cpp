@@ -913,10 +913,12 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
         distance = 10.0;
     }
 
+    // pitch处理（仍然是90 + pitch）
+    double qgisPitch = max_pitch_angle + std::stod(camera->pitch); // 例如 pitch: -6.06 -> 83.94
+    // yaw处理（heading方向反转）
+    double yaw = 360.0 - std::stod(camera->heading);
+
     // 使用方向向量计算目标点（仍在投影坐标系中）
-    /*double obsX = cameraX + cameraDirX * kRelativeDistance;
-    double obsY = cameraY + cameraDirY * kRelativeDistance;
-    double obsZ = cameraZ + cameraDirZ * kRelativeDistance;*/
     spdlog::info("extent center: {}:{}:{} cameraPos: {}:{}:{}",
                  centerX, centerY, centerZ,
                  cameraPos.x(), cameraPos.y(), cameraPos.z());
@@ -924,12 +926,10 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
                 lookAt.x(), lookAt.y(), lookAt.z(), distance);
 
     QgsVector3D LookAtDiffCenter(lookAt.x() - centerX,  lookAt.z(), lookAt.y() - centerY);
-    // pitch处理（仍然是90 + pitch）
-    double qgisPitch = 90.0 + std::stod(camera->pitch); // 例如 pitch: -6.06 -> 83.94
-
-    // yaw处理（heading方向反转）
-    double yaw = 360.0 - std::stod(camera->heading);
-
+    if (std::abs(qgisPitch) > 45.0) {
+        spdlog::debug("qgis pitch > 45: {}", std::abs(qgisPitch));
+        LookAtDiffCenter.setZ(-LookAtDiffCenter.z());
+    }
     // 打印日志
     spdlog::info("QGIS center={}:{}:{} LookAtDiffCenter: {}:{}:{} distance={} pitch={} yaw={}",
                  centerX, centerY, centerZ, LookAtDiffCenter.x(), LookAtDiffCenter.y(), LookAtDiffCenter.z(),
