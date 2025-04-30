@@ -25,11 +25,13 @@ QgsPoint JwPolygon::transformFunction(const QgsPoint &point) {
     return *transformedPoint;
 }
 
-void JwPolygon::addPolygons(const QList<QString> &nameList,
-                           const QList<QgsPolygon> &polygons,
-                           const QJsonObject &fontStyle,
-                           const QJsonObject &layerStyle,
-                           const QList<QJsonObject> &styleList) {
+void JwPolygon::addPolygons(
+    QVariantMap& infos,
+    const QList<QString> &nameList,
+    const QList<QgsPolygon> &polygons,
+    const QJsonObject &fontStyle,
+    const QJsonObject &layerStyle,
+    const QList<QJsonObject> &styleList) {
     auto memPolygonVectorLayer = std::make_unique<QgsVectorLayer>(
             QString("PolygonZ?crs=%1").arg(MAIN_CRS), mLayerName, QStringLiteral("memory"));
     if (!memPolygonVectorLayer->isValid()) {
@@ -44,6 +46,8 @@ void JwPolygon::addPolygons(const QList<QString> &nameList,
     fields.append(QgsField(QStringLiteral("name"), QMetaType::Type::QString, "varchar", 256));
     fields.append(QgsField("type", QMetaType::Type::QString, "varchar", 256));
     fields.append(QgsField("vertex_count", QMetaType::Type::Int));
+    fields.append(QgsField("min_z", QMetaType::Type::Double));
+    fields.append(QgsField("max_z", QMetaType::Type::Double));
 
     polygonProvider->addAttributes(fields);
     memPolygonVectorLayer->updatedFields();
@@ -58,6 +62,18 @@ void JwPolygon::addPolygons(const QList<QString> &nameList,
         QgsPolygon transformedPolygon;
         auto polygon = polygons.at(i);
         auto vertexCount = polygon.vertexCount();
+        auto vertices = polygon.vertices();
+        double min_z = std::numeric_limits<double>::max();
+        double max_z = 0.0;
+        while (vertices.hasNext()) {
+            auto point = vertices.next();
+            if (point.z() < min_z) {
+                min_z = point.z();
+            }
+            if (point.z() > max_z) {
+                max_z = point.z();
+            }
+        }
         std::function<QgsPoint(const QgsPoint &)> transform = [this](
                 const QgsPoint &point) { return this->transformFunction(point); };
         polygon.transformVertices(transform);
@@ -68,6 +84,24 @@ void JwPolygon::addPolygons(const QList<QString> &nameList,
         attribute.append(nameList[i]);
         attribute.append("polygon");
         attribute.append(vertexCount);
+        attribute.append(min_z);
+        attribute.append(max_z);
+        if (infos.contains(PLOTTING_MAX_HEIGHT)) {
+            auto plotting_max_height = infos[PLOTTING_MAX_HEIGHT].toDouble();
+            if (max_z > plotting_max_height) {
+                infos.insert(PLOTTING_MAX_HEIGHT, max_z);
+            }
+        } else {
+            infos.insert(PLOTTING_MAX_HEIGHT, max_z);
+        }
+        if (infos.contains(PLOTTING_MIN_HEIGHT)) {
+            auto plotting_min_height = infos[PLOTTING_MIN_HEIGHT].toDouble();
+            if (min_z < plotting_min_height) {
+                infos.insert(PLOTTING_MIN_HEIGHT, min_z);
+            }
+        } else {
+            infos.insert(PLOTTING_MIN_HEIGHT, min_z);
+        }
         feature.setAttributes(attribute);
         polygonProvider->addFeature(feature);
     }

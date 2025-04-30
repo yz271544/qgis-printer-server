@@ -101,12 +101,13 @@ public:
      * @param numSegments 用于近似圆形的线段数量，数值越大越接近圆形
      */
     void addLevelKeyAreas(
-            const QList<QgsPoint>& areasCenterPointList,
-            const QList<double>& areasRadii,
-            const QList<QList<double>>& areasPercent,
-            const QList<QColor>& areasColorList,
-            const QList<float>& areasOpacityList,
-            int numSegments = 36);
+        QVariantMap& infos,
+        const QList<QgsPoint>& areasCenterPointList,
+        const QList<double>& areasRadii,
+        const QList<QList<double>>& areasPercent,
+        const QList<QColor>& areasColorList,
+        const QList<float>& areasOpacityList,
+        int numSegments = 36);
 private:
     QString& mSceneName;
     QString& mLayerName;

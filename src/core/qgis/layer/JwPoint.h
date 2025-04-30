@@ -43,14 +43,16 @@ public:
 
     virtual ~JwPoint();
 
-    void addPoints(const QString& iconName,
-                   const QList<QString>& pointNameList,
-                   const QList<QgsPoint>& points,
-                   const QJsonObject& fontStyle,
-                   const QJsonObject& layerStyle,
-                   const QList<QJsonObject>& styleList,
-                   int point_size = 5,
-                   const QString& iconBase64 = "");
+    void addPoints(
+        QVariantMap& infos,
+        const QString& iconName,
+        const QList<QString>& pointNameList,
+        const QList<QgsPoint>& points,
+        const QJsonObject& fontStyle,
+        const QJsonObject& layerStyle,
+        const QList<QJsonObject>& styleList,
+        int point_size = 5,
+        const QString& iconBase64 = "");
 
 private:
     QString& mSceneName;

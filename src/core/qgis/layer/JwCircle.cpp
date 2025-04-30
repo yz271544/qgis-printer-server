@@ -349,12 +349,13 @@ void JwCircle::addCircleKeyAreas(
 }
 
 void JwCircle::addLevelKeyAreas(
-        const QList<QgsPoint>& areasCenterPointList,
-        const QList<double>& areasRadii,
-        const QList<QList<double>>& areasPercent,
-        const QList<QColor>& areasColorList,
-        const QList<float>& areasOpacityList,
-        int numSegments) {
+    QVariantMap& infos,
+    const QList<QgsPoint>& areasCenterPointList,
+    const QList<double>& areasRadii,
+    const QList<QList<double>>& areasPercent,
+    const QList<QColor>& areasColorList,
+    const QList<float>& areasOpacityList,
+    int numSegments) {
     auto memCircleVectorLayer = std::make_unique<QgsVectorLayer>(
             QString("PolygonZ?crs=%1").arg(MAIN_CRS), mLayerName, QStringLiteral("memory"));
     if (!memCircleVectorLayer->isValid()) {
@@ -451,6 +452,22 @@ void JwCircle::addLevelKeyAreas(
                 attribute.append(center_transformed->x());
                 attribute.append(center_transformed->y());
                 attribute.append(center_transformed->z());
+                if (infos.contains(PLOTTING_MAX_HEIGHT)) {
+                    auto plotting_max_height = infos[PLOTTING_MAX_HEIGHT].toDouble();
+                    if (center_transformed->z() > plotting_max_height) {
+                        infos.insert(PLOTTING_MAX_HEIGHT, center_transformed->z());
+                    }
+                } else {
+                    infos.insert(PLOTTING_MAX_HEIGHT, center_transformed->z());
+                }
+                if (infos.contains(PLOTTING_MIN_HEIGHT)) {
+                    auto plotting_min_height = infos[PLOTTING_MIN_HEIGHT].toDouble();
+                    if (center_transformed->z() < plotting_min_height) {
+                        infos.insert(PLOTTING_MIN_HEIGHT, center_transformed->z());
+                    }
+                } else {
+                    infos.insert(PLOTTING_MIN_HEIGHT, center_transformed->z());
+                }
                 attribute.append(radius_);
                 feature.setAttributes(attribute);
                 circleProvider->addFeature(feature);

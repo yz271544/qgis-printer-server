@@ -25,6 +25,10 @@ inline const char* REAL3D_TILE_NAME = "Real3DTile";
 inline const char* CESIUM_TILES_PROVIDER = "cesiumtiles";
 inline const char* MAIN_CRS = "EPSG:3857";
 inline const char* REAL3D_SOURCE_CRS = "EPSG:4326";
+inline const char* TILE3D_MAX_HEIGHT = "TILE3D_MAX_HEIGHT";
+inline const char* TILE3D_MIN_HEIGHT = "TILE3D_MIN_HEIGHT";
+inline const char* PLOTTING_MAX_HEIGHT = "PLOTTING_MAX_HEIGHT";
+inline const char* PLOTTING_MIN_HEIGHT = "PLOTTING_MIN_HEIGHT";
 
 const std::vector<std::string> CIRCLE_LABELS = {"核心区", "警戒区", "控制区"};
 

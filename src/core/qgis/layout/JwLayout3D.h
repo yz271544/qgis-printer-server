@@ -61,6 +61,7 @@
 #include <qgsdirectionallightsettings.h>
 #include <qgslayoutexporter.h>
 #include <qgsfillsymbollayer.h>
+#include <qgsmaplayerelevationproperties.h>
 
 //#include <qgis/app/3d/qgs3dmapcanvaswidget.h>
 #include "JwLegend.h"
@@ -231,7 +232,9 @@ public:
      * pitch 摄像机俯仰角
      * roll 摄像机翻滚角
      */
-    LookAtPoint* set3DCanvasCamera(DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera,
+    LookAtPoint* set3DCanvasCamera(
+            QVariantMap& infos,
+            DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera,
             double default_distance,
             double max_pitch_angle=77.0,
             double offset_pull_pitch=16.0);
@@ -243,6 +246,7 @@ public:
     void setTest3DCanvas();
 
     void set3DMap(
+            QVariantMap& infos,
             QgsPrintLayout *layout,
             const PaperSpecification &availablePaper,
             DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera,
@@ -260,12 +264,16 @@ public:
             const QVariantMap &northArrowPath,
             DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera);
 
-    void addPrintLayout(const QString &layoutType, const QString &layoutName,
-                        const QVariantMap &plottingWeb, const PaperSpecification &availablePaper,
-                        DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera,
-                        bool writeQpt = false,
-                        double max_pitch_angle=77.0,
-                        double offset_pull_pitch=16.0);
+    void addPrintLayout(
+        QVariantMap& infos,
+        const QString &layoutType,
+        const QString &layoutName,
+        const QVariantMap &plottingWeb,
+        const PaperSpecification &availablePaper,
+        DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera,
+        bool writeQpt = false,
+        double max_pitch_angle=77.0,
+        double offset_pull_pitch=16.0);
 
     void loadQptTemplate(const QString &qptFilePath, const QString &layoutTemplateName);
 

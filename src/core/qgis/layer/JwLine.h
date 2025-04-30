@@ -44,12 +44,14 @@ public:
 
     ~JwLine();
 
-    void addLines(const QList<QString>& lineNameList,
-                  const QList<QgsLineString>& lines,
-                  const QJsonObject& fontStyle,
-                  const QJsonObject& layerStyle,
-                  const QList<QJsonObject>& styleList,
-                  int line_width = 1);
+    void addLines(
+        QVariantMap& infos,
+        const QList<QString>& lineNameList,
+        const QList<QgsLineString>& lines,
+        const QJsonObject& fontStyle,
+        const QJsonObject& layerStyle,
+        const QList<QJsonObject>& styleList,
+        int line_width = 1);
 
 private:
     QString& mSceneName;

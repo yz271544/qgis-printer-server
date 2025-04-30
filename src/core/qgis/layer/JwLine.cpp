@@ -20,12 +20,13 @@ JwLine::JwLine(
 JwLine::~JwLine() = default;
 
 void JwLine::addLines(
-        const QList<QString>& lineNameList,
-        const QList<QgsLineString>& lines,
-        const QJsonObject& fontStyle,
-        const QJsonObject& layerStyle,
-        const QList<QJsonObject>& styleList,
-        int line_width) {
+    QVariantMap& infos,
+    const QList<QString>& lineNameList,
+    const QList<QgsLineString>& lines,
+    const QJsonObject& fontStyle,
+    const QJsonObject& layerStyle,
+    const QList<QJsonObject>& styleList,
+    int line_width) {
 
     auto memLineVectorLayer = std::make_unique<QgsVectorLayer>(
             QString("LineStringZ?crs=%1").arg(MAIN_CRS), mLayerName, QStringLiteral("memory"));
@@ -41,6 +42,8 @@ void JwLine::addLines(
     QList<QgsField> fields;
     fields.append(QgsField(QStringLiteral("name"), QMetaType::Type::QString, "varchar", 256));
     fields.append(QgsField("type", QMetaType::Type::QString, "varchar", 256));
+    fields.append(QgsField("min_z", QMetaType::Type::Double));
+    fields.append(QgsField("max_z", QMetaType::Type::Double));
 //    qDebug() << "set fields";
     lineProvider->addAttributes(fields);
 //    qDebug() << "set addAttributes";
@@ -59,6 +62,8 @@ void JwLine::addLines(
         const auto& line = lines[i];
         try {
             QgsPolyline polyline;
+            double min_z = std::numeric_limits<double>::max();
+            double max_z = 0.0;
             auto numPoint = line.numPoints();
             qDebug() << "numPoint: " << numPoint;
             for (int j=0; j < line.numPoints(); ++j) {
@@ -66,6 +71,28 @@ void JwLine::addLines(
                 qDebug() << "pointOfLine -> x:" << point.x() << ", y:" << point.y() << ", z:" << point.z() << ", j:", j;
                 auto qgsPointOfLine = transformPoint(point, *transformer);
                 polyline.append(*qgsPointOfLine);
+                if (point.z() < min_z) {
+                    min_z = point.z();
+                }
+                if (point.z() > max_z) {
+                    max_z = point.z();
+                }
+                if (infos.contains(PLOTTING_MAX_HEIGHT)) {
+                    auto plotting_max_height = infos[PLOTTING_MAX_HEIGHT].toDouble();
+                    if (point.z() > plotting_max_height) {
+                        infos.insert(PLOTTING_MAX_HEIGHT, point.z());
+                    }
+                } else {
+                    infos.insert(PLOTTING_MAX_HEIGHT, point.z());
+                }
+                if (infos.contains(PLOTTING_MIN_HEIGHT)) {
+                    auto plotting_min_height = infos[PLOTTING_MIN_HEIGHT].toDouble();
+                    if (point.z() < plotting_min_height) {
+                        infos.insert(PLOTTING_MIN_HEIGHT, point.z());
+                    }
+                } else {
+                    infos.insert(PLOTTING_MIN_HEIGHT, point.z());
+                }
             }
 //            qDebug() << "polyline: " << polyline.isEmpty();
             QgsGeometry lineString = QgsGeometry::fromPolyline(polyline);
@@ -75,6 +102,8 @@ void JwLine::addLines(
             QgsAttributes attribute;
             attribute.push_back(lineNameList[i]);
             attribute.push_back("line");
+            attribute.push_back(min_z);
+            attribute.push_back(max_z);
 //            qDebug() << "attribute: " << attribute;
             feature.setAttributes(attribute);
 //            qDebug() << "feature: " << feature;

@@ -10,6 +10,7 @@
 #include <qgspoint.h>
 #include <qgspolygon.h>
 #include <limits>
+#include <qgsvector3d.h>
 
 #define DOUBLECOMPARENEAR(a, b) std::fabs((a) - (b)) <= std::numeric_limits<double>::epsilon() * std::max(std::fabs((a)), std::fabs((b)))
 
@@ -39,6 +40,9 @@ public:
             lineString.addVertex(startPoint);
         }
     }
+
+    // 单位向量乘标量
+    QgsVector3D scaledDir(const QgsVector3D &dir, double distance);
 };
 
 #endif //FORMULA_H

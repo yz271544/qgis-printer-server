@@ -4,6 +4,8 @@
 
 #include "App.h"
 
+#include <qgsmaplayerelevationproperties.h>
+
 
 App::App(const QList<QString>& argvList, YAML::Node *config)
 {
@@ -268,7 +270,8 @@ void App::addMapMainTileLayer(int num, QString& orthogonalPath) {
     }
 }
 
-void App::addMap3dTileLayer(int num, QString& realistic3dPath) {
+void App::addMap3dTileLayer(int num, QString& realistic3dPath, QVariantMap& infos) {
+
     if (realistic3dPath.isEmpty()) {
         spdlog::error("realistic3dPath is empty");
         return;
@@ -301,6 +304,15 @@ void App::addMap3dTileLayer(int num, QString& realistic3dPath) {
                   map_3d_base_url.toStdString(), real3d_tile_name.toStdString());
 
     auto tiled_scene_layer = std::make_unique<QgsTiledSceneLayer>(map_3d_base_url, real3d_tile_name, CESIUM_TILES_PROVIDER);
+    auto elevationProps = tiled_scene_layer->elevationProperties();
+    if (elevationProps->hasElevation()) {
+        auto tiled_3d_z_range = elevationProps->calculateZRange(tiled_scene_layer.get());
+        double minHeight = tiled_3d_z_range.lower();
+        double maxHeight = tiled_3d_z_range.upper();
+        spdlog::info("3D tiles elevation min: {}, max: {}", minHeight, maxHeight);
+        infos.insert(TILE3D_MAX_HEIGHT, maxHeight);
+        infos.insert(TILE3D_MIN_HEIGHT, minHeight);
+    }
     auto renderer3d = std::make_unique<QgsTiledSceneLayer3DRenderer>();
 
     double max_screen_error = 10000000;

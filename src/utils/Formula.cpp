@@ -21,3 +21,7 @@ std::string Formula::toLowerCase(const std::string& str) {
                    [](unsigned char c) { return std::tolower(c); });
     return result;
 }
+
+QgsVector3D Formula::scaledDir(const QgsVector3D &dir, double distance) {
+    return QgsVector3D(dir.x() * distance, dir.y() * distance, dir.z() * distance);
+}

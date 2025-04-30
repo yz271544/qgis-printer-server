@@ -335,6 +335,7 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
             spdlog::debug("Inside invokeMethod lambda: start");
             auto responseDto = ResponseDto::createShared();
             try {
+                QVariantMap infos;
                 QString sceneName = QString::fromStdString(plottingWeb->sceneName);
                 spdlog::debug("create qgis project, sceneName: {}", sceneName.toStdString());
                 QString mainCrs = QString::fromStdString(MAIN_CRS);
@@ -386,12 +387,12 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                         } else {
                             real_3d_path = path3d;
                         }
-                        m_app->addMap3dTileLayer(i, real_3d_path);
+                        m_app->addMap3dTileLayer(i, real_3d_path, infos);
                     }
                 }
 
                 // add layers
-                plottingLayers(plottingRespDto);
+                plottingLayers(plottingRespDto, infos);
 
                 // create 2d canvas
                 m_app->createCanvas(mainCrs);
@@ -432,7 +433,7 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                             add_3d_layout(canvas2d, plottingWeb,
                                                   image_spec, availablePaper, false,
                                                   removeLayerNames3D, removeLayerPrefixes3D,
-                                                  layoutType, responseDto);
+                                                  layoutType, responseDto, infos);
                         } else {
                             responseDto->error = "enable_3d in config.yaml is false";
                         }
@@ -599,7 +600,7 @@ void Processor::checkDealWithClosedGeometry(const DTOWRAPPERNS::DTOWrapper<GeoPo
 }
 
 
-void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &plotting_data) {
+void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &plotting_data, QVariantMap& infos) {
     auto map_plot_payloads = plotting_data->data;
 
     // 遍历每个 payload
@@ -828,12 +829,13 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                 }
 
                 jw_circle->addLevelKeyAreas(
-                        pointsList,
-                        radiusDoubleList,
-                        style_percents,
-                        areasColorList,
-                        styleColorOpacityList,
-                        72
+                    infos,
+                    pointsList,
+                    radiusDoubleList,
+                    style_percents,
+                    areasColorList,
+                    styleColorOpacityList,
+                    72
                 );
                 circle_num++;
             }
@@ -940,8 +942,16 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                         pointsList.append(QgsPoint(coordPoint[0], coordPoint[1], coordPoint[2]));
                     }
                     QString attachment = QString::fromStdString(payloads->attachment);
-                    jw_point->addPoints(iconName, name_list, pointsList, font_style, layer_style, style_list, 20,
-                                        attachment);
+                    jw_point->addPoints(
+                        infos,
+                        iconName,
+                        name_list,
+                        pointsList,
+                        font_style,
+                        layer_style,
+                        style_list,
+                        20,
+                        attachment);
                 }
             } else {
                 spdlog::warn("point_geometry_coordinates_list is empty, payloads.name: {}", payloads->name->c_str());
@@ -1013,11 +1023,12 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                         }
                     }
                     jw_line->addLines(
-                            lineNameList,
-                            linesGeometryCoordinates,
-                            font_style,
-                            layer_style,
-                            styleList
+                        infos,
+                        lineNameList,
+                        linesGeometryCoordinates,
+                        font_style,
+                        layer_style,
+                        styleList
                     );
                     line_num++;
                 }
@@ -1089,11 +1100,12 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                         }
                     }
                     jw_polygon->addPolygons(
-                            polygonNameList,
-                            polygonGeometryCoordinates,
-                            font_style,
-                            layer_style,
-                            styleList
+                        infos,
+                        polygonNameList,
+                        polygonGeometryCoordinates,
+                        font_style,
+                        layer_style,
+                        styleList
                     );
                     polygon_num++;
                 }
@@ -1159,7 +1171,8 @@ void Processor::add_3d_layout(
         const QVector<QString> &removeLayerNames,
         const QVector<QString> &removeLayerPrefixes,
         const QString& layoutType,
-        DTOWRAPPERNS::DTOWrapper<ResponseDto> &responseDto
+        DTOWRAPPERNS::DTOWrapper<ResponseDto> &responseDto,
+        QVariantMap& infos
         ) {
 
     // 设置默认格式
@@ -1215,7 +1228,7 @@ void Processor::add_3d_layout(
     // }
     spdlog::debug("addPrintLayout 3d");
     auto camera = plottingWeb->camera;
-    jwLayout3d->addPrintLayout(QString("3d"), joinedLayoutName, plottingWebMap,
+    jwLayout3d->addPrintLayout(infos, QString("3d"), joinedLayoutName, plottingWebMap,
         available_paper, camera, write_qpt, m_max_pitch_angle, m_offset_pull_pitch);
     spdlog::debug("save project");
     m_app->saveProject();

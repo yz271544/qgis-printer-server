@@ -86,7 +86,7 @@ public:
             const oatpp::String &token, const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingDto);
 
     // 绘制图层
-    void plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &plotting_data);
+    void plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &plotting_data, QVariantMap& infos);
 
     // 添加2d布局
     void add_layout(QgsMapCanvas *canvas,
@@ -110,7 +110,8 @@ public:
             const QVector<QString> &removeLayerNames,
             const QVector<QString> &removeLayerPrefixes,
             const QString& layoutType,
-            DTOWRAPPERNS::DTOWrapper<ResponseDto> &responseDto);
+            DTOWRAPPERNS::DTOWrapper<ResponseDto> &responseDto,
+            QVariantMap& infos);
 
     // 压缩项目的静态方法
     QString zipProject(const QString &scene_name);
