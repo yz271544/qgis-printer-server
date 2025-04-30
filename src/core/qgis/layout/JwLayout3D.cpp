@@ -844,7 +844,7 @@ void JwLayout3D::setTest3DCanvas() {
 LookAtPoint *JwLayout3D::set3DCanvasCamera(
     QVariantMap& infos,
     DTOWRAPPERNS::DTOWrapper<Camera3dPosition> &camera, double default_distance,
-    double max_pitch_angle, double offset_pull_pitch) {
+    double max_pitch_angle, double offset_pull_pitch, double default_ground_altitude) {
     spdlog::debug("default_distance: {}, max_pitch_angle: {}, offset_pull_pitch: {}",
                   default_distance, max_pitch_angle, offset_pull_pitch);
     const QgsReferencedRectangle projectExtent =
@@ -855,7 +855,7 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
         mProject->transformContext());
     CameraUtil::ExtentInfo(fullExtent);
 
-    double centerZ = 0.0;
+    double centerZ = default_ground_altitude;
     if (infos.contains(PLOTTING_MIN_HEIGHT)) {
         centerZ = infos[PLOTTING_MIN_HEIGHT].value<double>();
     }
@@ -925,26 +925,26 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
     spdlog::info("lookAt: {}:{}:{}, distance: {}",
                 lookAt.x(), lookAt.y(), lookAt.z(), distance);
 
-    QgsVector3D LookAtDiffCenter(lookAt.x() - centerX,  lookAt.z(), lookAt.y() - centerY);
+    QgsVector3D QGisLayoutLookAtDiffCenter(lookAt.x() - centerX,  lookAt.z(), lookAt.y() - centerY);
     if (std::abs(qgisPitch) > 45.0) {
         spdlog::debug("qgis pitch > 45: {}", std::abs(qgisPitch));
-        LookAtDiffCenter.setZ(-LookAtDiffCenter.z());
+        QGisLayoutLookAtDiffCenter.setZ(-QGisLayoutLookAtDiffCenter.z());
     }
     // 打印日志
-    spdlog::info("QGIS center={}:{}:{} LookAtDiffCenter: {}:{}:{} distance={} pitch={} yaw={}",
-                 centerX, centerY, centerZ, LookAtDiffCenter.x(), LookAtDiffCenter.y(), LookAtDiffCenter.z(),
+    spdlog::info("QGIS center={}:{}:{} QGisLayoutLookAtDiffCenter: {}:{}:{} distance={} pitch={} yaw={}",
+                 centerX, centerY, centerZ, QGisLayoutLookAtDiffCenter.x(), QGisLayoutLookAtDiffCenter.y(), QGisLayoutLookAtDiffCenter.z(),
                  distance, qgisPitch, yaw);
 
     // 设置相机
     mCanvas3d->cameraController()->setLookingAtPoint(
-        LookAtDiffCenter,
+        QGisLayoutLookAtDiffCenter,
         static_cast<float>(distance),
         static_cast<float>(qgisPitch),
         static_cast<float>(yaw));
 
     // 创建并返回LookAtPoint对象
     auto lookAtPoint = std::make_unique<LookAtPoint>(
-        LookAtDiffCenter,
+        QGisLayoutLookAtDiffCenter,
         static_cast<float>(distance),
         static_cast<float>(qgisPitch),
         static_cast<float>(yaw));
@@ -971,7 +971,8 @@ void JwLayout3D::set3DMap(
     bool isDoubleFrame,
     double mapRotation,
     double max_pitch_angle,
-    double offset_pull_pitch) {
+    double offset_pull_pitch,
+    double default_ground_altitude) {
 
     QDomImplementation DomImplementation;
     QDomDocumentType documentType = DomImplementation.createDocumentType(
@@ -994,7 +995,7 @@ void JwLayout3D::set3DMap(
     spdlog::debug("mapItem3d");
 
     auto lookAtPoint =
-            this->set3DCanvasCamera(infos, camera, 1000, max_pitch_angle, offset_pull_pitch);
+            this->set3DCanvasCamera(infos, camera, 1000, max_pitch_angle, offset_pull_pitch, default_ground_altitude);
 
     QgsVector3D lookAtCenterPoint = QgsVector3D(
         lookAtPoint->lookingAtPoint().x(), lookAtPoint->lookingAtPoint().y(),
@@ -1255,7 +1256,8 @@ void JwLayout3D::addPrintLayout(
     DTOWRAPPERNS::DTOWrapper<Camera3dPosition> &camera,
     bool writeQpt,
     double max_pitch_angle,
-    double offset_pull_pitch) {
+    double offset_pull_pitch,
+    double default_ground_altitude) {
 
     auto plottingJson =
             JsonUtil::variantMapToJson(const_cast<QVariantMap &>(plottingWeb));
@@ -1300,7 +1302,7 @@ void JwLayout3D::addPrintLayout(
     // 设置地图
     qInfo() << "Added 3D map to layout";
     set3DMap(infos,layout, availablePaper, camera, mapFrameWidth, mapFrameColor,
-             mapDoubleFrame, mapRotation, max_pitch_angle, offset_pull_pitch);
+             mapDoubleFrame, mapRotation, max_pitch_angle, offset_pull_pitch, default_ground_altitude);
 
     // 设置标题
     spdlog::info("设置标题");

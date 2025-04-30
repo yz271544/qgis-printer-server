@@ -237,7 +237,8 @@ public:
             DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera,
             double default_distance,
             double max_pitch_angle=77.0,
-            double offset_pull_pitch=16.0);
+            double offset_pull_pitch=16.0,
+            double default_ground_altitude=100.0);
 
     double calculateAdjacentSide(double cameraHeight, double pitchDegrees);
 
@@ -255,7 +256,8 @@ public:
             bool isDoubleFrame = false,
             double mapRotation = 0.0,
             double max_pitch_angle = 77.0,
-            double offset_pull_pitch = 16.0
+            double offset_pull_pitch = 16.0,
+            double default_ground_altitude = 100.0
     );
 
 
@@ -273,7 +275,8 @@ public:
         DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera,
         bool writeQpt = false,
         double max_pitch_angle=77.0,
-        double offset_pull_pitch=16.0);
+        double offset_pull_pitch=16.0,
+        double default_ground_altitude = 100.0);
 
     void loadQptTemplate(const QString &qptFilePath, const QString &layoutTemplateName);
 

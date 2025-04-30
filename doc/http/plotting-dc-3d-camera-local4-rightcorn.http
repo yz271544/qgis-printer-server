@@ -26,20 +26,20 @@ Authorization: Bearer {{token}}
       "coordinates": [
         [
           [
-            112.67670744963566,
-            37.78164001005692
+            111.43052062360239,
+            37.79012944694432
           ],
           [
-            112.67670744963566,
-            37.82044806148826
+            111.43052062360239,
+            38.784671226027854
           ],
           [
-            112.76460546147663,
-            37.82044806148826
+            114.0176626913159,
+            38.784671226027854
           ],
           [
-            112.76460546147663,
-            37.78164001005692
+            114.0176626913159,
+            37.79012944694432
           ]
         ]
       ]
@@ -100,7 +100,7 @@ Authorization: Bearer {{token}}
         2,
         8
       ],
-      "rotate": 0
+      "rotate": 28
     },
     "scaleBar": false
   },
@@ -112,28 +112,28 @@ Authorization: Bearer {{token}}
     "is3D": true
   },
   "camera": {
-    "cameraLongitude": 112.72065645530304,
-    "cameraLatitude": 37.763576055018476,
-    "cameraHeight": 2899.752313811402,
-    "cameraDirX": 0.37749501896346305,
-    "cameraDirY": -0.9015178144979107,
-    "cameraDirZ": 0.2115730152942134,
-    "cameraUpX": -0.08171766809862688,
-    "cameraUpY": 0.19515471688178082,
-    "cameraUpZ": 0.9773621944802832,
-    "cameraRightX": -0.9223989014403137,
-    "cameraRightY": -0.3862386135819446,
-    "cameraRightZ": -4.263256414560601e-14,
+    "cameraLongitude": 112.72409165745914,
+    "cameraLatitude": 37.78121361028904,
+    "cameraHeight": 989.4536329352418,
+    "cameraDirX": 0.6983810970640227,
+    "cameraDirY": -0.4941185490490167,
+    "cameraDirZ": 0.5177940736908317,
+    "cameraUpX": -0.13074643692515717,
+    "cameraUpY": 0.6232028835639759,
+    "cameraUpZ": 0.7710535228821159,
+    "cameraRightX": -0.7036826077821081,
+    "cameraRightY": -0.6061889354015302,
+    "cameraRightZ": 0.37062887381008447,
     "fov": 1.0471975511965976,
     "aspectRatio": 2.1075740944017562,
     "nearPlane": 0.1,
     "farPlane": 10000000000,
-    "centerLongitude": 112.72065645526622,
-    "centerLatitude": 37.79469739836374,
-    "centerHeight": 916.7779084472288,
-    "heading": "0.00",
-    "pitch": "-40.02",
-    "roll": "360.00"
+    "centerLongitude": 112.70418988237724,
+    "centerLatitude": 37.810949873407566,
+    "centerHeight": 1004.1969823990919,
+    "heading": "332.03",
+    "pitch": "-14.85",
+    "roll": "0.00"
   }
 }
 ### Response

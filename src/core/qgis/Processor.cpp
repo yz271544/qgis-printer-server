@@ -210,6 +210,15 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
         spdlog::error("get qgis.default_distance error: {}", e.what());
     }
 
+   try {
+       m_default_ground_altitude = m_config->operator[]("qgis")["default_ground_altitude"].as<double>();
+       if (!DEFAULT_GROUND_ALTITUDE != 100.0) {
+           m_default_ground_altitude = DEFAULT_GROUND_ALTITUDE;
+       }
+   } catch (const std::exception &e) {
+       spdlog::error("get qgis.default_ground_altitude error: {}", e.what());
+   }
+
 }
 
 Processor::~Processor() {
@@ -1229,7 +1238,7 @@ void Processor::add_3d_layout(
     spdlog::debug("addPrintLayout 3d");
     auto camera = plottingWeb->camera;
     jwLayout3d->addPrintLayout(infos, QString("3d"), joinedLayoutName, plottingWebMap,
-        available_paper, camera, write_qpt, m_max_pitch_angle, m_offset_pull_pitch);
+        available_paper, camera, write_qpt, m_max_pitch_angle, m_offset_pull_pitch, m_default_ground_altitude);
     spdlog::debug("save project");
     m_app->saveProject();
     QString paperName = QString::fromStdString(plottingWeb->paper);

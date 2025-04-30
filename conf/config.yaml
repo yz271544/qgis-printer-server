@@ -50,6 +50,7 @@ qgis:
   max_screen_error: 10000000
   max_pitch_angle: 86
   offset_pull_pitch: 11
+  default_ground_altitude: 810
 specification:
   - name: "现场位置图"
     local: "local"

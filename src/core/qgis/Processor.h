@@ -52,6 +52,7 @@ private:
     bool m_has_scene_prefix = false;
     bool m_filter_remove_3d_base = false;
     double m_default_distance = 1000;
+    double m_default_ground_altitude = 100;
     YAML::Node *m_config;
     std::unique_ptr<PlottingFetch> m_plotting_fetch;
     std::unique_ptr<App> m_app;
