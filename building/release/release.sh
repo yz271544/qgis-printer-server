@@ -19,8 +19,8 @@ if [ -z "$current_tag" ]; then
   exit 1
 fi
 
-if [ $(git rev-parse --abbrev-ref HEAD) != "master" ]; then
-  echo "Not on master branch"
+if [ $(git rev-parse --abbrev-ref HEAD) != "main" ]; then
+  echo "Not on main branch"
   exit 1
 fi
 
@@ -29,7 +29,7 @@ if [ -n "$(git status --porcelain)" ]; then
   exit 1
 fi
 
-if [ -n "$(git log origin/master..HEAD)" ]; then
+if [ -n "$(git log origin/main..HEAD)" ]; then
   echo "Not all changes pushed"
   exit 1
 fi
