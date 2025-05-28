@@ -6,4 +6,5 @@ cmake-build-release/
 src/config.h
 out/
 compile_commands.json
-
+building/.ssh
+building/other-party
