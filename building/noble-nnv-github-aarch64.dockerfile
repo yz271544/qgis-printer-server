@@ -154,6 +154,7 @@ COPY --from=builder /usr/local/lib /usr/local/lib
 COPY --from=builder /usr/local/include /usr/local/include
 COPY --from=builder /usr/local/bin /usr/local/bin
 COPY --from=builder /usr/local/share /usr/local/share
+RUN ldconfig
 
 RUN mkdir /lyndon/iProject/cpath/jingweiprinter/common/input/ -p
 COPY common/input/topicMap.json /lyndon/iProject/cpath/jingweiprinter/common/input/topicMap.json
