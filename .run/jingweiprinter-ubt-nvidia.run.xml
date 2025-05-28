@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="jingweiprinter-ubt-nvidia" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jingweiprinter" TARGET_NAME="jingweiprinter" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="jingweiprinter" RUN_TARGET_NAME="jingweiprinter">
+    <envs>
+      <env name="__GLX_VENDOR_LIBRARY_NAME" value="nvidia" />
+      <env name="__NV_PRIME_RENDER_OFFLOAD" value="1" />
+      <env name="__VK_LAYER_NV_optimus" value="NVIDIA_only" />
+      <env name="OFFSET_PULL_PITCH" value="20" />
+      <env name="QT_QPA_PLATFORM" value="xcb" />
+    </envs>
+    <method v="2">
+      <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+    </method>
+  </configuration>
+</component>

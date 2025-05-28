@@ -1,0 +1,133 @@
+### POST plotting
+POST http://{{host}}:{{port}}/api/qgz
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "selectPath": true,
+  "path": "健康谷正射",
+  "path3d": "jkg",
+  "tileIndex": [
+    [
+      846789,
+      407356
+    ],
+    [
+      856152,
+      402089
+    ]
+  ],
+  "sceneId": "1847168269595754497",
+  "sceneName": "test",
+  "topicCategory": "",
+  "geojson": {
+    "type": "Feature",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            111.45614558807182,
+            40.718542891344214
+          ],
+          [
+            111.45614558807182,
+            40.73911269545787
+          ],
+          [
+            111.51314153018527,
+            40.73911269545787
+          ],
+          [
+            111.51314153018527,
+            40.718542891344214
+          ],
+          [
+            111.45614558807182,
+            40.718542891344214
+          ]
+        ]
+      ]
+    },
+    "properties": {}
+  },
+  "savePath": "C:/Users/Administrator/Desktop",
+  "sceneType": "01",
+  "layinfo": {
+    "title": {
+      "text": "test title",
+      "position": [],
+      "borderColor": "rgba(0,0,0,1)",
+      "fillColor": "rgba(255,0,0,1)",
+      "fontSize": 28,
+      "color": "rgba(0,0,0,1)",
+      "fontBorderColor": ""
+    },
+    "subTitle": {
+      "text": "右侧索引标题",
+      "color": "rgba(0,0,0,1)",
+      "fontSize": 16
+    },
+    "remark": [
+      {
+        "text": "这里填写信息",
+        "position": [
+          0,
+          0,
+          28,
+          10
+        ],
+        "borderColor": "",
+        "fillColor": "rgba(0,151,233,1)",
+        "fontSize": 18,
+        "color": "rgba(0,0,0,1)",
+        "url": "C:/security2.0/ToDWG/tmp/0.png"
+      },
+      {
+        "text": "备注: 这里填写备注信息",
+        "position": [
+          0,
+          90,
+          28,
+          10
+        ],
+        "borderColor": "",
+        "fillColor": "rgba(0,51,133,1)",
+        "fontSize": 18,
+        "color": "rgba(0,0,0,1)",
+        "url": "C:/security2.0/ToDWG/tmp/0.png"
+      }
+    ],
+    "north": {
+      "position": [97, 0, 2, 8],
+      "rotate": 30
+    },
+    "arrows": [
+      {
+        "position": [80, 80, 10, 2],
+        "rotate": 30
+      }
+    ],
+    "scaleBar": true
+  },
+  "paper": "a3",
+  "pictureUnit": "制图单位：xxx 制",
+  "mapType": {
+    "map": true,
+    "electron": false
+  }
+}
+
+
+### Response
+HTTP/1.1 200 OK
+Server: TornadoServer/6.4.1
+Content-Type: application/json; charset=UTF-8
+Date: Thu, 07 Nov 2024 07:12:42 GMT
+Content-Length: 141
+
+{
+  "project_zip_url": "http://localhost:80/jingweipy/test.zip",
+  "image_url": "http://localhost:80/jingweipy/local/test-位置图.png"
+}
+###

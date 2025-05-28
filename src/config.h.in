@@ -1,0 +1,163 @@
+﻿//
+// Created by Lyndon on 2024/12/17.
+//
+
+#ifndef CONFIG_H
+#define CONFIG_H
+#if _MSC_VER >= 1600
+#pragma execution_character_set("utf-8")
+#endif
+
+#if defined(_WIN32)
+#include <windows.h>
+#endif
+
+#include <vector>
+#include <string>
+#include <algorithm>
+#include <cstdlib>
+#include <memory>
+
+inline const char* QGIS_LAYER_ENCODING = "UTF-8";
+inline const char* BASE_TILE_NAME = "BaseTile";
+inline const char* MAIN_TILE_NAME = "MainTile";
+inline const char* REAL3D_TILE_NAME = "Real3DTile";
+inline const char* CESIUM_TILES_PROVIDER = "cesiumtiles";
+inline const char* MAIN_CRS = "EPSG:3857";
+inline const char* REAL3D_SOURCE_CRS = "EPSG:4326";
+inline const char* TILE3D_MAX_HEIGHT = "TILE3D_MAX_HEIGHT";
+inline const char* TILE3D_MIN_HEIGHT = "TILE3D_MIN_HEIGHT";
+inline const char* PLOTTING_MAX_HEIGHT = "PLOTTING_MAX_HEIGHT";
+inline const char* PLOTTING_MIN_HEIGHT = "PLOTTING_MIN_HEIGHT";
+
+const std::vector<std::string> CIRCLE_LABELS = {"核心区", "警戒区", "控制区"};
+
+// 1 英寸 = 2.54 厘米
+const double CM2INCH = 25.4;
+// 宋体 黑体 每磅宽度 毫米(mm) 1磅 = 0.352778mm ， 12号字宽度 = 12 * 0.352778
+const double SIM_PER_POUND_WIDTH = 0.352778;
+// 素数
+const int DPI = 300;
+
+#if defined(_WIN32)
+// for Windows
+inline const char* CONF_FILE = "./conf/config.yaml";
+inline const char* QGIS_PREFIX_PATH = "D:/iProject/cpath/OSGeo4W/apps/qgis";
+inline const char* QGIS_PROJECT_PATH = "D:/iProject/cpath/qgis_demo1/common/project";
+inline const char* QGIS_PROJECT_FILE_NAME = "/project3d1.qgz";
+#elif defined(__linux__)
+// for Linux
+inline const char* CONF_FILE = "./conf/config.yaml";
+inline const char* QGIS_PREFIX_PATH = "/lyndon/iProject/cpath/QGIS/output";
+inline const char* QGIS_PROJECT_PATH = "/lyndon/iProject/cpath/qgis_demo1/common/project";
+inline const char* QGIS_PROJECT_FILE_NAME = "/project3d1.qgz";
+#endif
+
+// 模板函数，用于获取环境变量并转换为指定类型
+template <typename T>
+inline T getEnvValue(const char* envVarName, T defaultValue = T()) {
+    const char* envValue = std::getenv(envVarName);
+    if (envValue == nullptr) {
+        return defaultValue;
+    }
+    try {
+        if constexpr (std::is_same_v<T, std::int32_t>) {
+            return std::stoi(envValue);
+        } else if constexpr (std::is_same_v<T, double>) {
+            return std::stod(envValue);
+        } else if constexpr (std::is_same_v<T, float>) {
+            return std::stof(envValue);
+        } else if constexpr (std::is_same_v<T, bool>) {
+            std::string value(envValue);
+            std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) { return std::tolower(c); });
+            return (value == "true" || value == "1");
+        } else if constexpr (std::is_same_v<T, std::string>) {
+            return std::string(envValue);
+        }
+    } catch (const std::invalid_argument&) {
+        return defaultValue;
+    } catch (const std::out_of_range&) {
+        return defaultValue;
+    }
+    return defaultValue;
+}
+
+// 返回 std::unique_ptr 的模板函数
+template <typename T>
+inline std::unique_ptr<T> getEnvValuePtr(const char* envVarName) {
+    const char* envValue = std::getenv(envVarName);
+    if (envValue == nullptr) {
+        return nullptr;
+    }
+    try {
+        if constexpr (std::is_same_v<T, std::int32_t>) {
+            return std::make_unique<T>(std::stoi(envValue));
+        } else if constexpr (std::is_same_v<T, double>) {
+            return std::make_unique<T>(std::stod(envValue));
+        } else if constexpr (std::is_same_v<T, float>) {
+            return std::make_unique<T>(std::stof(envValue));
+        } else if constexpr (std::is_same_v<T, bool>) {
+            std::string value(envValue);
+            std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) { return std::tolower(c); });
+            return std::make_unique<T>(value == "true" || value == "1");
+        } else if constexpr (std::is_same_v<T, std::string>) {
+            return std::make_unique<T>(envValue);
+        }
+    } catch (const std::invalid_argument&) {
+        return nullptr;
+    } catch (const std::out_of_range&) {
+        return nullptr;
+    }
+    return nullptr;
+}
+
+
+// Get ENABLE_POINT_CLUSTER from environment variable, default to false
+inline bool ENABLE_POINT_CLUSTER = getEnvValue<bool>("ENABLE_POINT_CLUSTER", false);
+
+inline bool ENABLE_3D = getEnvValue<bool>("ENABLE_3D", true);
+
+inline double CIRCLE_RADIUS_COEFFICIENT = getEnvValue<double>("CIRCLE_RADIUS_COEFFICIENT", 2.0);
+
+inline float FRAME_OFFSET_COEFFICIENT = getEnvValue<float>("FRAME_OFFSET_COEFFICIENT", 1.6);
+
+inline float PIXEL_MM_COEFFICIENT = getEnvValue<float>("PIXEL_MM_COEFFICIENT", 2.8);
+
+inline int BASE_TILE_LAYER_MAX_LEVEL = getEnvValue<std::int32_t>("BASE_TILE_LAYER_MAX_LEVEL", 18);
+
+inline int BASE_TILE_LAYER_MIN_LEVEL = getEnvValue<std::int32_t>("BASE_TILE_LAYER_MIN_LEVEL", 0);
+
+inline bool HAS_SCENE_PREFIX = getEnvValue<bool>("HAS_SCENE_PREFIX", false);
+
+inline bool LOG_VERBOSE = getEnvValue<bool>("VERBOSE", false);
+
+inline bool REMOVE_3D_BASE = getEnvValue<bool>("REMOVE_3D_BASE", false);
+
+inline std::string CANVAS3D_TYPE = getEnvValue<std::string>("CANVAS3D_TYPE");
+
+inline double MAX_SCREEN_ERROR = getEnvValue<double>("MAX_SCREEN_ERROR", 300.0);
+
+inline double MAX_PITCH_ANGLE = getEnvValue<double>("MAX_PITCH_ANGLE", 0);
+
+inline double OFFSET_PULL_PITCH = getEnvValue<double>("OFFSET_PULL_PITCH", 16);
+
+inline double DEFAULT_GROUND_ALTITUDE = getEnvValue<double>("DEFAULT_GROUND_ALTITUDE", 100);
+
+inline std::string MESA_GL_VERSION_OVERRIDE = getEnvValue<std::string>("MESA_GL_VERSION_OVERRIDE", "4.1");
+
+inline double PITCH_NEGATE_THRESHOLD = getEnvValue<double>("PITCH_NEGATE_THRESHOLD", 45.0);
+
+#ifdef OATPP_VERSION_LESS_1_4_0
+#define DTOWRAPPERNS oatpp::data::mapping::type
+#define OBJECTMAPPERNS oatpp::parser::json::mapping
+#define PRIMITIVENS oatpp::data::mapping::type
+#define ASYNCNS oatpp::core::async
+#else
+#define DTOWRAPPERNS oatpp::data::type
+#define OBJECTMAPPERNS oatpp::json
+#define PRIMITIVENS oatpp::data::type
+#define ASYNCNS oatpp::async
+#endif
+
+
+#endif //CONFIG_H

@@ -1,0 +1,46 @@
+services:
+  jingweiprinter:
+    image: "registry.cn-beijing.aliyuncs.com/dc_huzy/jingweiprinter:v1.0.13-550"
+    container_name: jingwei-jingweiprinter
+    restart: unless-stopped
+    depends_on:
+      - jingwei-backend
+    privileged: true
+    environment:
+      DISPLAY: "$DISPLAY" # ":0"
+      QT_QPA_PLATFORM: "offscreen" # "offscreen" "xcb"
+      XDG_RUNTIME_DIR: "/tmp/runtime-root"
+      JINGWEI_SERVER_HOST: "jingwei-backend"
+      JINGWEI_SERVER_PORT: 8080
+      MAPPING_EXPORT_NGINX_HOST: "172.31.100.33"
+      MAPPING_EXPORT_NGINX_PORT: 38083
+      MAP_BASE_URL: "http://172.31.100.33:38083"
+      MAP_MAIN_BASE_URL: "http://172.31.100.33:38083"
+      WEB_HANDLER_TIMEOUT: 300
+      CIRCLE_RADIUS_COEFFICIENT: 1.3
+      ENABLE_POINT_CLUSTER: False
+    ports:
+      - "35890:5890"
+    volumes:
+      - /etc/localtime:/etc/localtime
+      - /opt/anbao/map/qgz:/opt/anbao/map/qgz
+      #- /opt/anbao/running/jingweipy:/opt/anbao/jingweipy
+      - /:/opt/anbao/root
+      #- /dev/dri/card0:/dev/dri/card0
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /opt/anbao/running/config-prod.yaml:/usr/local/bin/conf/config.yaml
+    networks:
+      - anbao
+    deploy:
+      resources:
+        limits:
+          cpus: '0.8'
+          memory: 2048M
+        reservations:
+          cpus: '0.5'
+          memory: 1500M
+          # if have gpu card, add below
+#          devices:
+#            - driver: "nvidia"
+#              device_ids: ["0"]
+#              capabilities: [gpu]

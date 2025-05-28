@@ -1,0 +1,133 @@
+### POST plotting
+POST http://{{host}}:{{port}}/api/qgz
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "selectPath": true,
+  "path": "/map/orthogonal/瑞光电厂-DOM",
+  "path3d": "/map/realistic3d/瑞光电厂切片/tileset.json",
+  "camera": {
+    "cameraLongitude": 112.7206564553031,
+    "cameraLatitude": 37.76311083914113,
+    "cameraHeight": 2943.133305511889,
+    "cameraDirX": 0.3774950189635327,
+    "cameraDirY": -0.9015178144978879,
+    "cameraDirZ": 0.2115730152941863,
+    "cameraUpX": -0.08171766809856015,
+    "cameraUpY": 0.1951547168817799,
+    "cameraUpZ": 0.9773621944802888,
+    "cameraRightX": -0.9223989014402911,
+    "cameraRightY": -0.3862386135819984,
+    "cameraRightZ": 3.26405569239796e-14,
+    "fov": 1.047197551196598,
+    "aspectRatio": 2.152466367713004,
+    "nearPlane": 0.1,
+    "farPlane": 10000000000
+  },
+  "tileIndex": [
+    [
+      0,
+      0
+    ],
+    [
+      1048576,
+      -5821555
+    ]
+  ],
+  "sceneId": "1898224049056694273",
+  "sceneName": "太原高速公路",
+  "geojson": {
+    "type": "Feature",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            112.6764976139788,
+            37.78165418732383
+          ],
+          [
+            112.6764976139788,
+            37.82003153020722
+          ],
+          [
+            112.7648152969363,
+            37.82003153020722
+          ],
+          [
+            112.7648152969363,
+            37.78165418732383
+          ]
+        ]
+      ]
+    },
+    "properties": {}
+  },
+  "savePath": null,
+  "handleFlag": false,
+  "sceneType": "01",
+  "layinfo": {
+    "title": {
+      "text": "标题",
+      "position": [],
+      "borderColor": "",
+      "fillColor": "",
+      "fontSize": 28,
+      "color": "rgba(0,0,0,1)",
+      "fontBorderColor": ""
+    },
+    "subTitle": {
+      "text": "",
+      "fontSize": 16,
+      "color": "rgba(0,0,0,1)"
+    },
+    "legend": {
+      "position": [
+        84,
+        20,
+        46,
+        80
+      ]
+    },
+    "bgPic": {
+      "borderColor": "#FF0000",
+      "doubleFrame": true,
+      "borderWidth": 3
+    },
+    "remark": [
+      {
+        "text": "备注",
+        "position": [
+          0,
+          80,
+          28,
+          10
+        ],
+        "borderColor": "",
+        "fillColor": "rgba(255,255,255,1)",
+        "fontSize": 18,
+        "color": "rgba(0,0,0,1)",
+        "url": ""
+      }
+    ],
+    "arrows": [],
+    "north": {
+      "position": [
+        97,
+        1,
+        2,
+        8
+      ],
+      "rotate": 4
+    },
+    "scaleBar": false
+  },
+  "paper": "a3",
+  "pictureUnit": "制图单位：    时间：",
+  "mapType": {
+    "map": true,
+    "electron": false,
+    "is3D": true
+  }
+}

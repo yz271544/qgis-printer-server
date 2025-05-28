@@ -1,0 +1,12 @@
+### POST topicMap
+POST http://{{host}}:{{port}}/api/guard/plotting/topicMap
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept: */*
+Scenetype: 04
+
+{
+  "sceneId": "1914619367037911042",
+  "scope": "{\"geometry\":{\"coordinates\":[[[112.67670744963566,37.78164001005692],[112.67670744963566,37.82044806148826],[112.76460546147663,37.82044806148826],[112.76460546147663,37.78164001005692],[112.67670744963566,37.78164001005692]]],\"type\":\"Polygon\"},\"properties\":{},\"type\":\"Feature\"}",
+  "topicCategory": ""
+}

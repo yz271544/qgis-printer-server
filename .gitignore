@@ -1,0 +1,10 @@
+.cache/
+cmake-build-debug/
+cmake-build-release/
+.vscode/
+.idea/
+src/config.h
+out/
+compile_commands.json
+building/.ssh/
+building/other-party/

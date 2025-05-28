@@ -1,0 +1,132 @@
+### POST plotting
+POST http://{{host}}:{{port}}/api/qgz
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "selectPath": true,
+  "path": "/map/test_data/正射/瑞光电厂-DOM",
+  "path3d": "/map/test_data/实景三维/瑞光电厂切片/tileset.json",
+  "tileIndex": [
+    [
+      0,
+      0
+    ],
+    [
+      1048576,
+      -5821555
+    ]
+  ],
+  "sceneId": "1898224049056694273",
+  "sceneName": "太原高速公路",
+  "geojson": {
+    "type": "Feature",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            112.67517643899885,
+            37.78172261362564
+          ],
+          [
+            112.67517643899885,
+            37.81818686595956
+          ],
+          [
+            112.76613647210606,
+            37.81818686595956
+          ],
+          [
+            112.76613647210606,
+            37.78172261362564
+          ]
+        ]
+      ]
+    },
+    "properties": {}
+  },
+  "handleFlag": false,
+  "sceneType": "01",
+  "layinfo": {
+    "title": {
+      "text": "标题",
+      "position": [],
+      "borderColor": "",
+      "fillColor": "",
+      "fontSize": 28,
+      "color": "rgba(0,0,0,1)",
+      "fontBorderColor": ""
+    },
+    "subTitle": {
+      "text": "",
+      "fontSize": 16,
+      "color": "rgba(0,0,0,1)"
+    },
+    "legend": {
+      "position": [
+        84,
+        46,
+        16,
+        54
+      ]
+    },
+    "bgPic": {
+      "borderColor": "#FF0000",
+      "doubleFrame": true,
+      "borderWidth": 3
+    },
+    "remark": [
+      {
+        "text": "备注",
+        "position": [
+          0,
+          80,
+          28,
+          10
+        ],
+        "borderColor": "",
+        "fillColor": "rgba(255,255,255,1)",
+        "fontSize": 18,
+        "color": "rgba(0,0,0,1)",
+        "url": ""
+      }
+    ],
+    "arrows": [],
+    "north": {
+      "position": [
+        97,
+        1,
+        2,
+        8
+      ],
+      "rotate": 0
+    },
+    "scaleBar": false
+  },
+  "paper": "a3",
+  "pictureUnit": "制图单位：    时间：",
+  "mapType": {
+    "map": true,
+    "electron": false,
+    "is3D": true
+  },
+  "camera": {
+    "cameraLongitude": 112.72065645530303,
+    "cameraLatitude": 37.760638687103295,
+    "cameraHeight": 3173.676321181675,
+    "cameraDirX": 0.3774950189634977,
+    "cameraDirY": -0.9015178144978975,
+    "cameraDirZ": 0.21157301529420786,
+    "cameraUpX": -0.08171766809859378,
+    "cameraUpY": 0.19515471688178324,
+    "cameraUpZ": 0.9773621944802854,
+    "cameraRightX": -0.9223989014403022,
+    "cameraRightY": -0.3862386135819718,
+    "cameraRightZ": -4.038436252074007e-15,
+    "fov": 1.0471975511965976,
+    "aspectRatio": 2.391033623910336,
+    "nearPlane": 0.1,
+    "farPlane": 10000000000
+  }
+}

@@ -1,0 +1,6 @@
+token=$(curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"password": "eyJ1c2VybmFtZSI6Imppbmd3ZWkiLCJwYXNzd29yZCI6Imdpc0AxMjMifQ=="}' \
+  http://172.31.100.34:38089/api/login | jq -r .data.token)
+
+echo "${token}"

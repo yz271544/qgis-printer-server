@@ -1,0 +1,150 @@
+### POST plotting
+POST http://{{host}}:{{port}}/api/qgz
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "selectPath": false,
+  "path": "",
+  "path3d": "/map/test_data/实景三维/瑞光电厂切片/tileset.json",
+  "tileIndex": [
+    [
+      0,
+      0
+    ],
+    [
+      1048576,
+      -5821555
+    ]
+  ],
+  "sceneId": "1914619367037911042",
+  "sceneName": "修改线面样式后测试-20250422",
+  "geojson": {
+    "type": "Feature",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            111.43052062360239,
+            37.79012944694432
+          ],
+          [
+            111.43052062360239,
+            38.784671226027854
+          ],
+          [
+            114.0176626913159,
+            38.784671226027854
+          ],
+          [
+            114.0176626913159,
+            37.79012944694432
+          ]
+        ]
+      ]
+    },
+    "properties": {}
+  },
+  "handleFlag": false,
+  "sceneType": "04",
+  "layinfo": {
+    "title": {
+      "text": "标题",
+      "position": [],
+      "borderColor": "",
+      "fillColor": "",
+      "fontSize": 28,
+      "color": "rgba(0,0,0,1)",
+      "fontBorderColor": ""
+    },
+    "subTitle": {
+      "text": "",
+      "fontSize": 16,
+      "color": "rgba(0,0,0,1)"
+    },
+    "legend": {
+      "position": [
+        84,
+        65,
+        16,
+        35
+      ]
+    },
+    "bgPic": {
+      "borderColor": "#FF0000",
+      "doubleFrame": true,
+      "borderWidth": 3
+    },
+    "remark": [
+      {
+        "text": "备注",
+        "position": [
+          0,
+          80,
+          28,
+          10
+        ],
+        "borderColor": "",
+        "fillColor": "rgba(255,255,255,1)",
+        "fontSize": 18,
+        "color": "rgba(0,0,0,1)",
+        "url": ""
+      }
+    ],
+    "arrows": [],
+    "north": {
+      "position": [
+        97,
+        1,
+        2,
+        8
+      ],
+      "rotate": 28
+    },
+    "scaleBar": false
+  },
+  "paper": "a3",
+  "pictureUnit": "制图单位：    时间：",
+  "mapType": {
+    "map": true,
+    "electron": false,
+    "is3D": true
+  },
+  "camera": {
+    "cameraLongitude": 112.72409165745914,
+    "cameraLatitude": 37.78121361028904,
+    "cameraHeight": 989.4536329352418,
+    "cameraDirX": 0.6983810970640227,
+    "cameraDirY": -0.4941185490490167,
+    "cameraDirZ": 0.5177940736908317,
+    "cameraUpX": -0.13074643692515717,
+    "cameraUpY": 0.6232028835639759,
+    "cameraUpZ": 0.7710535228821159,
+    "cameraRightX": -0.7036826077821081,
+    "cameraRightY": -0.6061889354015302,
+    "cameraRightZ": 0.37062887381008447,
+    "fov": 1.0471975511965976,
+    "aspectRatio": 2.1075740944017562,
+    "nearPlane": 0.1,
+    "farPlane": 10000000000,
+    "centerLongitude": 112.70418988237724,
+    "centerLatitude": 37.810949873407566,
+    "centerHeight": 1004.1969823990919,
+    "heading": "332.03",
+    "pitch": "-14.85",
+    "roll": "0.00"
+  }
+}
+### Response
+HTTP/1.1 200 OK
+Server: TornadoServer/6.4.1
+Content-Type: application/json; charset=UTF-8
+Date: Thu, 07 Nov 2024 07:12:42 GMT
+Content-Length: 141
+
+{
+  "project_zip_url": "http://localhost:80/jingweipy/test.zip",
+  "image_url": "http://localhost:80/jingweipy/local/test-位置图.png"
+}
+###
