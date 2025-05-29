@@ -10,7 +10,7 @@ ARG PARALLEL_LEVEL
 RUN echo "Building with parallel level: $PARALLEL_LEVEL"
 ENV CMAKE_BUILD_PARALLEL_LEVEL=$PARALLEL_LEVEL
 
-#RUN sed -i "s|ports.ubuntu.com|mirrors.tuna.tsinghua.edu.cn|g" /etc/apt/sources.list.d/ubuntu.sources
+RUN sed -i "s|ports.ubuntu.com|mirrors.tuna.tsinghua.edu.cn|g" /etc/apt/sources.list.d/ubuntu.sources
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 
@@ -128,7 +128,7 @@ WORKDIR /lyndon/iProject/cpath
 FROM ubuntu:noble AS runner
 LABEL authors="Lyndon"
 
-#RUN sed -i "s|ports.ubuntu.com|mirrors.tuna.tsinghua.edu.cn|g" /etc/apt/sources.list.d/ubuntu.sources
+RUN sed -i "s|ports.ubuntu.com|mirrors.tuna.tsinghua.edu.cn|g" /etc/apt/sources.list.d/ubuntu.sources
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 
