@@ -27,7 +27,7 @@ printergithubnnv:
 # nnv aarch64
 .PHONY: printergithubnnvarm64
 printergithubnnvarm64:
-	docker buildx build --platform linux/arm64 --no-cache -t ${REPO}/jingweiprinter:${VERSION}-nnv-arm64 --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv-github-aarch64.dockerfile --push .
+	docker buildx build --platform linux/arm64 -t ${REPO}/jingweiprinter:${VERSION}-nnv-arm64 --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv-github-aarch64.dockerfile --push .
 
 
 .PHONY: printerimage470

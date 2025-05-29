@@ -47,6 +47,9 @@ RUN cmake --install build
 RUN ln -s /usr/bin/ccache /usr/local/bin/gcc
 RUN ln -s /usr/bin/ccache /usr/local/bin/g++
 
+RUN ldconfig
+RUN apt install -y qtdeclarative5-dev
+
 WORKDIR /usr/local/src/QGIS-final-3_40_6
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local \
     -DWITH_3D=ON -DWITH_ANALYSIS=ON -DWITH_APIDOC=OFF -DWITH_ASTYLE=OFF \
