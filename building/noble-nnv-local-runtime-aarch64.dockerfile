@@ -52,7 +52,7 @@ WORKDIR /usr/local/src/QGIS-final-3_40_6
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
 
 WORKDIR /usr/local/src/QGIS-final-3_40_6/build
-RUN make -j$(nproc)
+RUN make -j$(expr $(nproc) - 2)
 RUN make install
 RUN ldconfig
 
