@@ -1,9 +1,9 @@
 ARG REPO
-FROM ${REPO}:qgis AS builder
-LABEL authors="Lyndon"
-
 ARG CODE_VERSION
 RUN echo "Building with code version: $CODE_VERSION"
+
+FROM ${REPO}/qgis:${CODE_VERSION} AS builder
+LABEL authors="Lyndon"
 
 ENV MASTER_RELEASE=true
 
@@ -25,7 +25,7 @@ WORKDIR /lyndon/iProject/cpath/jingweiprinter/build
 RUN make install
 WORKDIR /lyndon/iProject/cpath
 
-FROM ${REPO}:qgis AS runner
+FROM ${REPO}/qgis:${CODE_VERSION} AS runner
 LABEL authors="Lyndon"
 
 RUN ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
