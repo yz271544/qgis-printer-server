@@ -10,6 +10,9 @@ ARG PARALLEL_LEVEL
 RUN echo "Building with parallel level: $PARALLEL_LEVEL"
 ENV CMAKE_BUILD_PARALLEL_LEVEL=$PARALLEL_LEVEL
 
+RUN apt update
+RUN apt install -y libarchive13t64
+
 WORKDIR /lyndon/iProject/cpath
 # build and install jingweiprinter
 RUN git clone http://172.31.100.21/zhengyang.hu/jingweiprinter.git
