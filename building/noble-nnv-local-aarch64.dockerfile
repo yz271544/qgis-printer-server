@@ -1,7 +1,7 @@
 ARG REPO
 ARG CODE_VERSION
 
-FROM ${REPO}/qgis:${CODE_VERSION} AS builder
+FROM ${REPO}/qgis:${CODE_VERSION}-nnv-arm64 AS builder
 LABEL authors="Lyndon"
 
 ENV MASTER_RELEASE=true
@@ -26,7 +26,7 @@ WORKDIR /lyndon/iProject/cpath
 
 ARG REPO
 ARG CODE_VERSION
-FROM ${REPO}/qgis:${CODE_VERSION} AS runner
+FROM ${REPO}/qgis:${CODE_VERSION}-nnv-arm64 AS runner
 LABEL authors="Lyndon"
 
 RUN ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
