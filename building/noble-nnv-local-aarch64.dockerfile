@@ -16,7 +16,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 
 WORKDIR /lyndon/iProject/cpath
-RUN git clone ssh://git@172.16.117.174:39922/zhengyang.hu/jingweiprinter.git
+RUN git clone http://172.16.117.174:39980/zhengyang.hu/jingweiprinter.git
 WORKDIR /lyndon/iProject/cpath/jingweiprinter
 RUN git checkout -b $CODE_VERSION $CODE_VERSION
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
