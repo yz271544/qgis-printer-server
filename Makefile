@@ -29,6 +29,14 @@ printergithubnnv:
 printergithubnnvarm64:
 	docker buildx build --platform linux/arm64 -t ${REPO}/jingweiprinter:${VERSION}-nnv-arm64 --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv-github-aarch64.dockerfile --push .
 
+# nnv aarch64 runtime local
+.PHONY: printerlocalruntimennvarm64
+printerlocalruntimennvarm64:
+	docker buildx build --platform linux/arm64 -t ${REPO}/qgis:${VERSION}-nnv-arm64 --build-arg REPO=${REPO} --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv-local-runtime-aarch64.dockerfile --push .
+
+.PHONY: printerlocalnnvarm64
+printerlocalnnvarm64:
+	docker buildx build --platform linux/arm64 -t ${REPO}/qgis:${VERSION}-nnv-arm64 --build-arg REPO=${REPO} --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv-local-aarch64.dockerfile --push .
 
 .PHONY: printerimage470
 printerimage470:
@@ -123,6 +131,9 @@ images: baseimage printerimages
 
 .PHONY: github
 github: basegithub printergithub
+
+.PHONY: aarch64local
+aarch64local: printerlocalruntimennvarm64 printerlocalnnvarm64
 
 .PHONY: push
 push:
