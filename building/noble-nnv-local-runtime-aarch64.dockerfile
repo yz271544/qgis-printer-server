@@ -71,7 +71,7 @@ RUN git config --global core.autocrlf input
 RUN mkdir /lyndon/iProject/cpath -p
 WORKDIR /lyndon/iProject/cpath
 # build and install yaml-cpp
-RUN git clone ssh://git@172.16.117.174:39922/zhengyang.hu/yaml-cpp.git
+RUN git clone http://172.16.117.174:39980/zhengyang.hu/yaml-cpp.git
 WORKDIR /lyndon/iProject/cpath/yaml-cpp
 RUN git checkout -b 0.8.0 0.8.0
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
@@ -80,7 +80,7 @@ WORKDIR /lyndon/iProject/cpath/yaml-cpp/build
 RUN make install
 WORKDIR /lyndon/iProject/cpath
 # build and install oatpp
-RUN git clone ssh://git@172.16.117.174:39922/zhengyang.hu/oatpp.git
+RUN git clone http://172.16.117.174:39980/zhengyang.hu/oatpp.git
 WORKDIR /lyndon/iProject/cpath/oatpp
 RUN git checkout -b 1.4.0 1.4.0
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
@@ -89,7 +89,7 @@ WORKDIR /lyndon/iProject/cpath/oatpp/build
 RUN make install
 WORKDIR /lyndon/iProject/cpath
 # build and install oatpp-curl
-RUN git clone ssh://git@172.16.117.174:39922/zhengyang.hu/oatpp-curl.git
+RUN git clone http://172.16.117.174:39980/zhengyang.hu/oatpp-curl.git
 WORKDIR /lyndon/iProject/cpath/oatpp-curl
 RUN git checkout -b 1.4.0 1.4.0
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
@@ -98,7 +98,7 @@ WORKDIR /lyndon/iProject/cpath/oatpp-curl/build
 RUN make install
 WORKDIR /lyndon/iProject/cpath
 # build and install spdlog
-RUN git clone ssh://git@172.16.117.174:39922/zhengyang.hu/spdlog.git
+RUN git clone http://172.16.117.174:39980/zhengyang.hu/spdlog.git
 WORKDIR /lyndon/iProject/cpath/spdlog
 RUN git checkout -b v1.9.2 v1.9.2
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
