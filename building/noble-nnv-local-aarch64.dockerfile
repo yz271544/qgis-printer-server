@@ -5,6 +5,7 @@ FROM ${REPO}/qgis:${CODE_VERSION}-nnv-arm64 AS builder
 LABEL authors="Lyndon"
 
 ENV MASTER_RELEASE=true
+ARG CODE_VERSION
 RUN echo "Building with code version: $CODE_VERSION"
 ARG PARALLEL_LEVEL
 RUN echo "Building with parallel level: $PARALLEL_LEVEL"
@@ -17,7 +18,7 @@ ENV TZ=Etc/UTC
 WORKDIR /lyndon/iProject/cpath
 RUN git clone http://172.16.117.174:39980/zhengyang.hu/jingweiprinter.git
 WORKDIR /lyndon/iProject/cpath/jingweiprinter
-RUN git checkout -b $CODE_VERSION $CODE_VERSION
+RUN git checkout -b ${CODE_VERSION} {$CODE_VERSION}
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
 RUN cmake --build build
 WORKDIR /lyndon/iProject/cpath/jingweiprinter/build
