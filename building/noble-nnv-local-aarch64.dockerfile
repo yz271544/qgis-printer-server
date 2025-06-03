@@ -1,12 +1,11 @@
 ARG REPO
 ARG CODE_VERSION
-RUN echo "Building with code version: $CODE_VERSION"
 
 FROM ${REPO}/qgis:${CODE_VERSION} AS builder
 LABEL authors="Lyndon"
 
 ENV MASTER_RELEASE=true
-
+RUN echo "Building with code version: $CODE_VERSION"
 ARG PARALLEL_LEVEL
 RUN echo "Building with parallel level: $PARALLEL_LEVEL"
 ENV CMAKE_BUILD_PARALLEL_LEVEL=$PARALLEL_LEVEL
@@ -25,6 +24,8 @@ WORKDIR /lyndon/iProject/cpath/jingweiprinter/build
 RUN make install
 WORKDIR /lyndon/iProject/cpath
 
+ARG REPO
+ARG CODE_VERSION
 FROM ${REPO}/qgis:${CODE_VERSION} AS runner
 LABEL authors="Lyndon"
 
