@@ -15,6 +15,10 @@ RUN sed -i "s|ports.ubuntu.com|mirrors.tuna.tsinghua.edu.cn|g" /etc/apt/sources.
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 
+RUN apt update
+RUN apt install -y libarchive-dev
+RUN ldconfig
+RUN mkdir -p /lyndon/iProject/cpath
 WORKDIR /lyndon/iProject/cpath
 RUN git clone http://172.16.117.174:39980/zhengyang.hu/jingweiprinter.git
 WORKDIR /lyndon/iProject/cpath/jingweiprinter
