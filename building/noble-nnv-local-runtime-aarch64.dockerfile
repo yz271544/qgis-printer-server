@@ -60,6 +60,7 @@ RUN ldconfig
 RUN mkdir -p /root/.ssh
 RUN chmod 700 /root/.ssh
 COPY building/.ssh/ /root/.ssh
+RUN chown -R root:root /root/.ssh
 RUN git config --global user.name "Lyndon"
 RUN git config --global user.email "Lyndon.Hu9@gmail.com"
 RUN git config --global http.sslverify false
