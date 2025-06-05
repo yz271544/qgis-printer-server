@@ -1,4 +1,4 @@
-FROM registry.cn-beijing.aliyuncs.com/dc_huzy/jingweiprinter-base:3.40.5-noble AS builder
+FROM registry.cn-beijing.aliyuncs.com/dc_huzy/jingweiprinter-base:3.40.7-noble AS builder
 LABEL authors="Lyndon"
 
 ARG CODE_VERSION
@@ -16,7 +16,7 @@ RUN apt install -y libarchive13t64
 RUN mkdir -p /lyndon/iProject/cpath
 WORKDIR /lyndon/iProject/cpath
 # build and install jingweiprinter
-RUN git clone http://172.31.100.21/zhengyang.hu/jingweiprinter.git
+RUN git clone http://172.16.117.174:39980/zhengyang.hu/jingweiprinter.git
 WORKDIR /lyndon/iProject/cpath/jingweiprinter
 RUN git checkout -b $CODE_VERSION $CODE_VERSION
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
@@ -25,7 +25,7 @@ WORKDIR /lyndon/iProject/cpath/jingweiprinter/build
 RUN make install
 WORKDIR /lyndon/iProject/cpath
 
-FROM qgis/qgis:3.40.5-noble AS runner
+FROM qgis/qgis:3.40.7-noble AS runner
 LABEL authors="Lyndon"
 
 COPY --from=builder /usr/local/lib /usr/local/lib
