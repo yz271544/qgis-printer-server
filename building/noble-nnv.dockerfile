@@ -1,4 +1,4 @@
-FROM registry.cn-beijing.aliyuncs.com/dc_huzy/jingweiprinter-base:3.40.7-noble AS builder
+FROM registry.cn-beijing.aliyuncs.com/dc_huzy/jingweiprinter-base:3.40.5-noble AS builder
 LABEL authors="Lyndon"
 
 ARG CODE_VERSION
@@ -25,7 +25,7 @@ WORKDIR /lyndon/iProject/cpath/jingweiprinter/build
 RUN make install
 WORKDIR /lyndon/iProject/cpath
 
-FROM qgis/qgis:3.40.7-noble AS runner
+FROM qgis/qgis:3.40.5-noble AS runner
 LABEL authors="Lyndon"
 
 COPY --from=builder /usr/local/lib /usr/local/lib

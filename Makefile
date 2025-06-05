@@ -9,11 +9,11 @@ REPO ?= registry.cn-beijing.aliyuncs.com/dc_huzy
 
 .PHONY: baseimage
 baseimage:
-	docker build -t ${REPO}/jingweiprinter-base:3.40.7-noble --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/base.dockerfile .
+	docker build -t ${REPO}/jingweiprinter-base:3.40.5-noble --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/base.dockerfile .
 
 .PHONY: basegithub
 basegithub:
-	docker build -t ${REPO}/jingweiprinter-base:3.40.7-noble --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/base-github.dockerfile .
+	docker build -t ${REPO}/jingweiprinter-base:3.40.5-noble --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/base-github.dockerfile .
 
 # nnv
 .PHONY: printerimagennv
