@@ -20,6 +20,11 @@ basegithub:
 printerimagennv:
 	docker build -t ${REPO}/jingweiprinter:${VERSION}-nnv --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv.dockerfile .
 
+# nnv-c86
+.PHONY: printerimagennvc86
+printerimagennvc86:
+	docker build -t ${REPO}/jingweiprinter:${VERSION}-nnv-c86 --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv.dockerfile .
+
 .PHONY: printergithubnnv
 printergithubnnv:
 	docker build -t ${REPO}/jingweiprinter:${VERSION}-nnv --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv-github.dockerfile .
@@ -128,6 +133,9 @@ printergithub: printergithubnnv
 
 .PHONY: images
 images: baseimage printerimages
+
+.PHONY: imagesc86
+imagesc86: baseimage printerimagennvc86
 
 .PHONY: github
 github: basegithub printergithub
