@@ -315,15 +315,7 @@ void App::addMap3dTileLayer(int num, QString& realistic3dPath, QVariantMap& info
     }
     auto renderer3d = std::make_unique<QgsTiledSceneLayer3DRenderer>();
 
-    double max_screen_error = 300;
-    try {
-        max_screen_error = (*mConfig)["qgis"]["max_screen_error"].as<double>();
-        if (MAX_SCREEN_ERROR > 0 && MAX_SCREEN_ERROR < max_screen_error) {
-            max_screen_error = MAX_SCREEN_ERROR;
-        }
-    } catch (const std::exception& e) {
-        spdlog::error("get qgis.max_screen_error error: {}", e.what());
-    }
+    double max_screen_error = infos.value(TILE3D_MAX_SCREEN_ERROR, MAX_SCREEN_ERROR).toDouble();
 
     renderer3d->setMaximumScreenError(max_screen_error);
     tiled_scene_layer->setRenderer3D(renderer3d.release());

@@ -228,7 +228,29 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
         spdlog::error("get qgis.pitch_negate_threshold error: {}", e.what());
     }
 
+    try {
+        auto conf_max_clarity = (*m_config)["qgis"]["m_max_clarity"];
+        if (conf_max_clarity) {
+            m_max_clarity = conf_max_clarity.as<std::int32_t>();
+        }
+        if (MAX_CLARITY > 0) {
+            m_max_clarity = MAX_CLARITY;
+        }
+    } catch (const std::exception& e) {
+        spdlog::error("get qgis.m_max_clarity error: {}", e.what());
+    }
 
+    try {
+        auto conf_max_screen_error = (*m_config)["qgis"]["max_screen_error"];
+        if (conf_max_screen_error) {
+            m_default_max_screen_error = conf_max_screen_error.as<std::int32_t>();
+        }
+        if (MAX_SCREEN_ERROR > 0) {
+            m_default_max_screen_error = MAX_SCREEN_ERROR;
+        }
+    } catch (const std::exception& e) {
+        spdlog::error("get qgis.max_screen_error error: {}", e.what());
+    }
 }
 
 Processor::~Processor() {
@@ -405,6 +427,13 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                             real_3d_path = plottingWebSceneId.append("-").append(path3d);
                         } else {
                             real_3d_path = path3d;
+                        }
+
+                        if (plottingWeb->clarity != nullptr && plottingWeb->clarity > 100) {
+                            auto tile3d_max_clarity = m_max_clarity - plottingWeb->clarity;
+                            infos.insert(TILE3D_MAX_SCREEN_ERROR, tile3d_max_clarity);
+                        } else {
+                            infos.insert(TILE3D_MAX_SCREEN_ERROR, m_default_max_screen_error);
                         }
                         m_app->addMap3dTileLayer(i, real_3d_path, infos);
                     }

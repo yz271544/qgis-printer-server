@@ -36,6 +36,7 @@
 #include "layer/JwLine.h"
 #include "layer/JwPolygon.h"
 #include "utils/TypeConvert.h"
+#include "config.h"
 
 /*#include <QMetaType>
 Q_DECLARE_METATYPE(QgsPoint)*/
@@ -66,6 +67,8 @@ private:
     double m_max_pitch_angle = 77.0;
     double m_offset_pull_pitch = 16.0;
     double m_pitch_negate_threshold = 45.0;
+    int32_t m_default_max_screen_error = 300;
+    int32_t m_max_clarity = 1100;
 public:
     // 构造函数
     //Processor(const QList<QString> &argvList, YAML::Node *config, std::shared_ptr<QOpenGLContext> globalGLContext);

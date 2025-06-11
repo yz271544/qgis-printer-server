@@ -222,6 +222,7 @@ class PlottingDto : public oatpp::DTO {
   DTO_FIELD(String, paper);
   DTO_FIELD(String, pictureUnit);
   DTO_FIELD(Object<MapTypeDto>, mapType);
+  DTO_FIELD(Int32, clarity);
 };
 
 // 定义响应DTO

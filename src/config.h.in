@@ -29,6 +29,7 @@ inline const char* TILE3D_MAX_HEIGHT = "TILE3D_MAX_HEIGHT";
 inline const char* TILE3D_MIN_HEIGHT = "TILE3D_MIN_HEIGHT";
 inline const char* PLOTTING_MAX_HEIGHT = "PLOTTING_MAX_HEIGHT";
 inline const char* PLOTTING_MIN_HEIGHT = "PLOTTING_MIN_HEIGHT";
+inline const char* TILE3D_MAX_SCREEN_ERROR = "TILE3D_MAX_SCREEN_ERROR";
 
 const std::vector<std::string> CIRCLE_LABELS = {"核心区", "警戒区", "控制区"};
 
@@ -134,6 +135,8 @@ inline bool LOG_VERBOSE = getEnvValue<bool>("VERBOSE", false);
 inline bool REMOVE_3D_BASE = getEnvValue<bool>("REMOVE_3D_BASE", false);
 
 inline std::string CANVAS3D_TYPE = getEnvValue<std::string>("CANVAS3D_TYPE");
+
+inline int MAX_CLARITY = getEnvValue<std::int32_t>("MAX_CLARITY", 1100);
 
 inline double MAX_SCREEN_ERROR = getEnvValue<double>("MAX_SCREEN_ERROR", 300.0);
 
