@@ -33,11 +33,11 @@ RUN apt-get install -y bison build-essential ca-certificates ccache cmake cmake-
 RUN ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 COPY building/other-party/PDAL-2.6.3-src.tar.bz2 /usr/local/src/
-COPY building/other-party/QGIS-final-3_40_6.tar.gz /usr/local/src/
+COPY building/other-party/QGIS-final-3_42_3.tar.gz /usr/local/src/
 
 RUN bzip2 -d /usr/local/src/PDAL-2.6.3-src.tar.bz2
 RUN tar xvf /usr/local/src/PDAL-2.6.3-src.tar -C /usr/local/src/
-RUN tar -zxvf /usr/local/src/QGIS-final-3_40_6.tar.gz -C /usr/local/src/
+RUN tar -zxvf /usr/local/src/QGIS-final-3_42_3.tar.gz -C /usr/local/src/
 
 WORKDIR /usr/local/src/PDAL-2.6.3-src
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
@@ -48,10 +48,10 @@ RUN ln -s /usr/bin/ccache /usr/local/bin/gcc
 RUN ln -s /usr/bin/ccache /usr/local/bin/g++
 
 RUN ldconfig
-WORKDIR /usr/local/src/QGIS-final-3_40_6
+WORKDIR /usr/local/src/QGIS-final-3_42_3
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
 
-WORKDIR /usr/local/src/QGIS-final-3_40_6/build
+WORKDIR /usr/local/src/QGIS-final-3_42_3/build
 RUN make -j$(expr $(nproc) - 2)
 RUN make install
 RUN ldconfig

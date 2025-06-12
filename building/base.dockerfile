@@ -1,4 +1,4 @@
-FROM qgis/qgis:3.40.5-noble
+FROM qgis/qgis:3.42.3-noble
 LABEL authors="Lyndon"
 
 ARG CODE_VERSION
