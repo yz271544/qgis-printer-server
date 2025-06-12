@@ -6,7 +6,7 @@ Authorization: Bearer {{token}}
 {
   "selectPath": false,
   "path": "",
-  "path3d": "/map/test_data/实景三维/瑞光电厂切片/tileset.json",
+  "path3d": "/map/mnt/fakeRoot/data/mapdata/瑞光电厂OSGB切片/tileset.json",
   "tileIndex": [
     [
       0,
@@ -17,7 +17,7 @@ Authorization: Bearer {{token}}
       -5821555
     ]
   ],
-  "sceneId": "1914619367037911042",
+  "sceneId": "1931962881837010945",
   "sceneName": "修改线面样式后测试-20250422",
   "geojson": {
     "type": "Feature",

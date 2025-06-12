@@ -229,7 +229,7 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
     }
 
     try {
-        auto conf_max_clarity = (*m_config)["qgis"]["m_max_clarity"];
+        auto conf_max_clarity = (*m_config)["qgis"]["max_clarity"];
         if (conf_max_clarity) {
             m_max_clarity = conf_max_clarity.as<std::int32_t>();
         }
@@ -350,6 +350,10 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                           topicMapDataJson.toJson(QJsonDocument::JsonFormat::Compact).toStdString());
         }
 
+        if (plottingWeb->path3d != nullptr && !plottingWeb->path3d->empty()) {
+            topicMapData->filterByCanvas = false;
+        }
+
         // 获取 XServer 绘图数据
         auto plottingRespDto = fetchPlotting(token, plottingWeb->sceneType, topicMapData).get();
         if (plottingRespDto == nullptr) {
@@ -429,10 +433,12 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                             real_3d_path = path3d;
                         }
 
-                        if (plottingWeb->clarity != nullptr && plottingWeb->clarity > 100) {
+                        if (plottingWeb->clarity != nullptr && plottingWeb->clarity > 0) {
                             auto tile3d_max_clarity = m_max_clarity - plottingWeb->clarity;
+                            spdlog::debug("{} - {} ==> set relation clarity: {}", m_max_clarity, plottingWeb->clarity, tile3d_max_clarity);
                             infos.insert(TILE3D_MAX_SCREEN_ERROR, tile3d_max_clarity);
                         } else {
+                            spdlog::debug("set default max_screen_error: {}", m_default_max_screen_error);
                             infos.insert(TILE3D_MAX_SCREEN_ERROR, m_default_max_screen_error);
                         }
                         m_app->addMap3dTileLayer(i, real_3d_path, infos);

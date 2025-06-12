@@ -657,8 +657,11 @@ void JwLayout3D::init3DMapSettings(
     //    QgsFlatTerrainSettings::create();
     //    terrainSettings->setElevationOffset(mProject->elevationProperties()->terrainProvider()->offset());
     //    mMapSettings3d->setTerrainSettings(terrainSettings);
-    mMapSettings3d->setTerrainElevationOffset(
-        mProject->elevationProperties()->terrainProvider()->offset());
+    // mMapSettings3d->setTerrainElevationOffset(
+    //     mProject->elevationProperties()->terrainProvider()->offset());
+    const QgsAbstractTerrainSettings *mMapSettings = mMapSettings3d->terrainSettings();
+    const_cast<QgsAbstractTerrainSettings *>(mMapSettings)->setElevationOffset(
+    mProject->elevationProperties()->terrainProvider()->offset());
     // mapSettings3d->setBackgroundColor(QColor("#ffffff"));
     spdlog::debug("filtered map layers");
     const QgsReferencedRectangle projectExtent =
@@ -932,11 +935,13 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
                 lookAt.x(), lookAt.y(), lookAt.z(), distance);
 
     // 12. 赋值给QGIS Layout坐标
-    QgsVector3D qGisLayoutLookAtDiffCenter(lookAt.x() - centerX,  lookAt.z(), lookAt.y() - centerY);
-    if (std::abs(qgisPitch) > pitch_negate_threshold) {
-        spdlog::debug("qgis pitch > {}: {}", pitch_negate_threshold, std::abs(qgisPitch));
-        qGisLayoutLookAtDiffCenter.setZ(-qGisLayoutLookAtDiffCenter.z());
-    }
+    //QgsVector3D qGisLayoutLookAtDiffCenter(lookAt.x() - centerX,  lookAt.z(), lookAt.y() - centerY);
+    QgsVector3D qGisLayoutLookAtDiffCenter(lookAt.x() - centerX,   lookAt.y() - centerY, lookAt.z());
+    // if (std::abs(qgisPitch) > pitch_negate_threshold) {
+    //     spdlog::debug("qgis pitch > {}: {}", pitch_negate_threshold, std::abs(qgisPitch));
+    //     //qGisLayoutLookAtDiffCenter.setZ(-qGisLayoutLookAtDiffCenter.z());
+    //     qGisLayoutLookAtDiffCenter.setY(-qGisLayoutLookAtDiffCenter.y());
+    // }
     // 打印日志
     spdlog::info("QGIS center={}:{}:{} QGisLayoutLookAtDiffCenter: {}:{}:{} distance={} pitch={} yaw={}",
                  centerX, centerY, centerZ, qGisLayoutLookAtDiffCenter.x(), qGisLayoutLookAtDiffCenter.y(), qGisLayoutLookAtDiffCenter.z(),

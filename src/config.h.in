@@ -136,7 +136,7 @@ inline bool REMOVE_3D_BASE = getEnvValue<bool>("REMOVE_3D_BASE", false);
 
 inline std::string CANVAS3D_TYPE = getEnvValue<std::string>("CANVAS3D_TYPE");
 
-inline int MAX_CLARITY = getEnvValue<std::int32_t>("MAX_CLARITY", 1100);
+inline int MAX_CLARITY = getEnvValue<std::int32_t>("MAX_CLARITY", 0);
 
 inline double MAX_SCREEN_ERROR = getEnvValue<double>("MAX_SCREEN_ERROR", 300.0);
 
