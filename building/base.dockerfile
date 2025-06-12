@@ -35,7 +35,7 @@ RUN apt-get install -y bison build-essential ca-certificates ccache cmake cmake-
     qtpositioning5-dev qttools5-dev qttools5-dev-tools sip-tools spawn-fcgi xauth xfonts-100dpi xfonts-75dpi \
     xfonts-base xfonts-scalable xvfb libcurl4-openssl-dev libarchive13t64 libarchive-dev
 
-RUN apt-get install -y libqgis-dev=1:3.40.5+40noble
+RUN apt-get install -y libqgis-dev=1:3.42.3+40noble
 
 RUN mkdir /lyndon/iProject/cpath -p
 WORKDIR /lyndon/iProject/cpath
