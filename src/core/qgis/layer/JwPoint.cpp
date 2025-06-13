@@ -74,19 +74,23 @@ void JwPoint::addPoints(
         attribute.push_back(transformed_point->z());
         if (infos.contains(PLOTTING_MAX_HEIGHT)) {
             auto plotting_max_height = infos[PLOTTING_MAX_HEIGHT].toDouble();
-            if (transformed_point->z() > plotting_max_height) {
+            if (transformed_point->z() > plotting_max_height && transformed_point->z() > 0) {
                 infos.insert(PLOTTING_MAX_HEIGHT, transformed_point->z());
             }
         } else {
-            infos.insert(PLOTTING_MAX_HEIGHT, transformed_point->z());
+            if (transformed_point->z() > 0) {
+                infos.insert(PLOTTING_MAX_HEIGHT, transformed_point->z());
+            }
         }
         if (infos.contains(PLOTTING_MIN_HEIGHT)) {
             auto plotting_min_height = infos[PLOTTING_MIN_HEIGHT].toDouble();
-            if (transformed_point->z() < plotting_min_height) {
+            if (transformed_point->z() < plotting_min_height && transformed_point->z() > 0) {
                 infos.insert(PLOTTING_MIN_HEIGHT, transformed_point->z());
             }
         } else {
-            infos.insert(PLOTTING_MIN_HEIGHT, transformed_point->z());
+            if (transformed_point->z() > 0) {
+                infos.insert(PLOTTING_MIN_HEIGHT, transformed_point->z());
+            }
         }
         feature.setAttributes(attribute);
         pointProvider->addFeature(feature);

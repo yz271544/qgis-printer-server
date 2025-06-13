@@ -352,6 +352,8 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
 
         if (plottingWeb->path3d != nullptr && !plottingWeb->path3d->empty()) {
             topicMapData->filterByCanvas = false;
+        } else {
+            topicMapData->filterByCanvas = true;
         }
 
         // 获取 XServer 绘图数据
@@ -1240,6 +1242,9 @@ void Processor::add_3d_layout(
     auto canvas3d = std::make_unique<Qgs3DMapCanvas>();
     canvas3d->setSurfaceType(QSurface::OpenGLSurface);
     canvas3d->setFormat(defaultFormat);
+    /*auto extentByGeoJson = m_app->resetCanvas(plottingWeb->geojson);
+    const QgsRectangle& extent = extentByGeoJson;
+    canvas3d->setViewFrom2DExtent(extent);*/
 
     // 初始化 3D 画布
     try {

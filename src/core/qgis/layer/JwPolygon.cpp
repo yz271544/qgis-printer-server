@@ -95,15 +95,19 @@ void JwPolygon::addPolygons(
                 infos.insert(PLOTTING_MAX_HEIGHT, max_z);
             }
         } else {
-            infos.insert(PLOTTING_MAX_HEIGHT, max_z);
+            if (max_z > 0) {
+                infos.insert(PLOTTING_MAX_HEIGHT, max_z);
+            }
         }
         if (infos.contains(PLOTTING_MIN_HEIGHT)) {
             auto plotting_min_height = infos[PLOTTING_MIN_HEIGHT].toDouble();
-            if (min_z < plotting_min_height) {
+            if (min_z < plotting_min_height && min_z > 0) {
                 infos.insert(PLOTTING_MIN_HEIGHT, min_z);
             }
         } else {
-            infos.insert(PLOTTING_MIN_HEIGHT, min_z);
+            if (min_z > 0) {
+                infos.insert(PLOTTING_MIN_HEIGHT, min_z);
+            }
         }
         feature.setAttributes(attribute);
         polygonProvider->addFeature(feature);

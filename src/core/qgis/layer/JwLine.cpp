@@ -80,19 +80,23 @@ void JwLine::addLines(
                 }
                 if (infos.contains(PLOTTING_MAX_HEIGHT)) {
                     auto plotting_max_height = infos[PLOTTING_MAX_HEIGHT].toDouble();
-                    if (point.z() > plotting_max_height) {
+                    if (point.z() > plotting_max_height && point.z() > 0) {
                         infos.insert(PLOTTING_MAX_HEIGHT, point.z());
                     }
                 } else {
-                    infos.insert(PLOTTING_MAX_HEIGHT, point.z());
+                    if (point.z() > 0) {
+                        infos.insert(PLOTTING_MAX_HEIGHT, point.z());
+                    }
                 }
                 if (infos.contains(PLOTTING_MIN_HEIGHT)) {
                     auto plotting_min_height = infos[PLOTTING_MIN_HEIGHT].toDouble();
-                    if (point.z() < plotting_min_height) {
+                    if (point.z() < plotting_min_height && point.z() > 0) {
                         infos.insert(PLOTTING_MIN_HEIGHT, point.z());
                     }
                 } else {
-                    infos.insert(PLOTTING_MIN_HEIGHT, point.z());
+                    if (point.z() > 0) {
+                        infos.insert(PLOTTING_MIN_HEIGHT, point.z());
+                    }
                 }
                 renderer_altitude = static_cast<float>(max_z);
             }

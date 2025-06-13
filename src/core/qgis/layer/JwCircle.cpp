@@ -463,19 +463,23 @@ void JwCircle::addLevelKeyAreas(
                 attribute.append(center_transformed->z());
                 if (infos.contains(PLOTTING_MAX_HEIGHT)) {
                     auto plotting_max_height = infos[PLOTTING_MAX_HEIGHT].toDouble();
-                    if (center_transformed->z() > plotting_max_height) {
+                    if (center_transformed->z() > plotting_max_height && center_transformed->z() > 0) {
                         infos.insert(PLOTTING_MAX_HEIGHT, center_transformed->z());
                     }
                 } else {
-                    infos.insert(PLOTTING_MAX_HEIGHT, center_transformed->z());
+                    if (center_transformed->z() > 0) {
+                        infos.insert(PLOTTING_MAX_HEIGHT, center_transformed->z());
+                    }
                 }
                 if (infos.contains(PLOTTING_MIN_HEIGHT)) {
                     auto plotting_min_height = infos[PLOTTING_MIN_HEIGHT].toDouble();
-                    if (center_transformed->z() < plotting_min_height) {
+                    if (center_transformed->z() < plotting_min_height && center_transformed->z() > 0) {
                         infos.insert(PLOTTING_MIN_HEIGHT, center_transformed->z());
                     }
                 } else {
-                    infos.insert(PLOTTING_MIN_HEIGHT, center_transformed->z());
+                    if (center_transformed->z() > 0) {
+                        infos.insert(PLOTTING_MIN_HEIGHT, center_transformed->z());
+                    }
                 }
                 attribute.append(radius_);
                 feature.setAttributes(attribute);

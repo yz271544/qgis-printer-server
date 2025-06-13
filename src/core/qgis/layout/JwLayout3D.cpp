@@ -863,9 +863,13 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
         mProject->transformContext());
     CameraUtil::ExtentInfo(fullExtent);
 
+    spdlog::info("fullExtent of 3DCanvasCamera: {}", fullExtent.toString().toStdString());
     double centerZ = default_ground_altitude;
     if (infos.contains(PLOTTING_MIN_HEIGHT)) {
         centerZ = infos[PLOTTING_MIN_HEIGHT].value<double>();
+    }
+    if (centerZ == 0) {
+        centerZ = 1;
     }
     spdlog::debug("centerZ: {}", centerZ);
 
