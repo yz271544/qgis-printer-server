@@ -203,8 +203,8 @@ QgsAbstract3DRenderer* StylePoint::get3d_single_raster_symbol_renderer(
     raster_marker->setOpacity(1.0);
     raster_marker->setAngle(0.0);
     raster_marker->setOffset(QPointF(0, 0));
-    raster_marker->setVerticalAnchorPoint(QgsMarkerSymbolLayer::VerticalAnchorPoint::VCenter);
-    raster_marker->setHorizontalAnchorPoint(QgsMarkerSymbolLayer::HorizontalAnchorPoint::HCenter);
+    raster_marker->setVerticalAnchorPoint(Qgis::VerticalAnchorPoint::Center);
+    raster_marker->setHorizontalAnchorPoint(Qgis::HorizontalAnchorPoint::Center);
 
     auto symbol = std::make_unique<QgsPoint3DSymbol>();
     symbol->setShape(Qgis::Point3DShape::Billboard);
@@ -269,8 +269,8 @@ QgsRuleBased3DRenderer* StylePoint::get3d_rule_renderer(
     raster_marker->setOpacity(1.0);
     raster_marker->setAngle(0.0);
     raster_marker->setOffset(QPointF(0, 0));
-    raster_marker->setVerticalAnchorPoint(QgsMarkerSymbolLayer::VerticalAnchorPoint::VCenter);
-    raster_marker->setHorizontalAnchorPoint(QgsMarkerSymbolLayer::HorizontalAnchorPoint::HCenter);
+    raster_marker->setVerticalAnchorPoint(Qgis::VerticalAnchorPoint::Center);
+    raster_marker->setHorizontalAnchorPoint(Qgis::HorizontalAnchorPoint::Center);
 
     mark_symbol->changeSymbolLayer(0, raster_marker.release());
     mark_symbol->setFlags(Qgis::SymbolFlag::AffectsLabeling);

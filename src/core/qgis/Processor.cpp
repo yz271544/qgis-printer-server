@@ -1245,6 +1245,8 @@ void Processor::add_3d_layout(
     /*auto extentByGeoJson = m_app->resetCanvas(plottingWeb->geojson);
     const QgsRectangle& extent = extentByGeoJson;
     canvas3d->setViewFrom2DExtent(extent);*/
+    auto init2d_extent = canvas3d->viewFrustum2DExtent();
+    spdlog::debug("init2d_extent: {}", ShowDataUtil::showQgsPointXY(init2d_extent));
 
     // 初始化 3D 画布
     try {

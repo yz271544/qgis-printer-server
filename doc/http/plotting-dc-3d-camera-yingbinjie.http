@@ -1,0 +1,153 @@
+### POST plotting
+POST http://{{host}}:{{port}}/api/qgz
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "selectPath": false,
+  "path": "",
+  "path3d": "/map/mnt/data/mapdata/3DTiles/4迎宾街三维/tileset.json",
+  "tileIndex": [
+    [
+      0,
+      0
+    ],
+    [
+      1048576,
+      -5821555
+    ]
+  ],
+  "sceneId": "1933726909638307841",
+  "sceneName": "迎宾街",
+  "geojson": {
+    "type": "Feature",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            111.33247537967003,
+            37.70499923861905
+          ],
+          [
+            111.33247537967003,
+            38.598871552604514
+          ],
+          [
+            113.6647769638108,
+            38.598871552604514
+          ],
+          [
+            113.6647769638108,
+            37.70499923861905
+          ]
+        ]
+      ]
+    },
+    "properties": {}
+  },
+  "handleFlag": false,
+  "sceneType": "03",
+  "layinfo": {
+    "title": {
+      "text": "标题",
+      "position": [],
+      "borderColor": "",
+      "fillColor": "",
+      "fontSize": 28,
+      "color": "rgba(0,0,0,1)",
+      "fontBorderColor": ""
+    },
+    "subTitle": {
+      "text": "",
+      "fontSize": 16,
+      "color": "rgba(0,0,0,1)"
+    },
+    "legend": {
+      "position": [
+        84,
+        65,
+        16,
+        35
+      ]
+    },
+    "bgPic": {
+      "borderColor": "#FF0000",
+      "doubleFrame": true,
+      "borderWidth": 3
+    },
+    "remark": [
+      {
+        "text": "备注",
+        "position": [
+          0,
+          80,
+          28,
+          10
+        ],
+        "borderColor": "",
+        "fillColor": "rgba(255,255,255,1)",
+        "fontSize": 18,
+        "color": "rgba(0,0,0,1)",
+        "url": ""
+      }
+    ],
+    "arrows": [],
+    "north": {
+      "position": [
+        97,
+        1,
+        2,
+        8
+      ],
+      "rotate": 341
+    },
+    "scaleBar": false
+  },
+  "paper": "a3",
+  "pictureUnit": "制图单位：    时间：",
+  "mapType": {
+    "map": true,
+    "electron": false,
+    "is3D": true
+  },
+  "camera": {
+    "cameraLongitude": 112.49862617174041,
+    "cameraLatitude": 37.69126148482089,
+    "cameraHeight": 808.246599918451,
+    "cameraDirX": -0.050926279022128665,
+    "cameraDirY": -0.7326530596857415,
+    "cameraDirZ": 0.6786943408030465,
+    "cameraUpX": -0.3098889143105588,
+    "cameraUpY": 0.657625673300243,
+    "cameraUpZ": 0.6866566351560475,
+    "cameraRightX": -0.9494079075362619,
+    "cameraRightY": -0.17535098502582355,
+    "cameraRightZ": -0.26053148976292684,
+    "fov": 1.0471975511965976,
+    "aspectRatio": 2.071197411003236,
+    "nearPlane": 0.1,
+    "farPlane": 10000000000,
+    "centerLongitude": 112.52731997018942,
+    "centerLatitude": 37.7565952174828,
+    "centerHeight": 776.1273500255942,
+    "heading": "19.22",
+    "pitch": "-6.04",
+    "roll": "0.00"
+  },
+  "clarity": 800
+}
+
+
+### Response
+HTTP/1.1 200 OK
+Server: TornadoServer/6.4.1
+Content-Type: application/json; charset=UTF-8
+Date: Thu, 07 Nov 2024 07:12:42 GMT
+Content-Length: 141
+
+{
+  "project_zip_url": "http://localhost:80/jingweipy/test.zip",
+  "image_url": "http://localhost:80/jingweipy/local/test-位置图.png"
+}
+###

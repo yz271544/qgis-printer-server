@@ -113,3 +113,16 @@ std::string ShowDataUtil::polygonToString(const QgsPolygon& polygon) {
 
     return oss.str();
 }
+
+std::string ShowDataUtil::showQgsPointXY(QVector<QgsPointXY> points) {
+    std::ostringstream oss;
+    oss << "[";
+    for (int i = 0; i < points.size(); ++i) {
+        if (i > 0) {
+            oss << ", ";
+        }
+        oss << "(" << QString::number(points[i].x(), 'f', 15).toStdString() << ", " << QString::number(points[i].y(), 'f', 15).toStdString() << ")";
+    }
+    oss << "]";
+    return oss.str();
+}

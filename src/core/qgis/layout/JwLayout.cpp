@@ -434,7 +434,7 @@ void JwLayout::addArrowToLayout(QgsLayout* layout, const QVector<QgsPointXY>& po
     auto polylineItem = std::make_unique<QgsLayoutItemPolyline>(polygon, layout);
 
     // 创建线符号
-    QgsLineSymbol* lineSymbol = QgsLineSymbol::createSimple(QVariantMap{
+    auto lineSymbol = QgsLineSymbol::createSimple(QVariantMap{
             {"color", color.name()},
             {"width", QString::number(width)}
     });
@@ -453,7 +453,7 @@ void JwLayout::addArrowToLayout(QgsLayout* layout, const QVector<QgsPointXY>& po
     lineSymbol->changeSymbolLayer(0, arrowSymbolLayer.release());
 
     // 设置线符号到多线段项
-    polylineItem->setSymbol(lineSymbol);
+    polylineItem->setSymbol(lineSymbol.release());
 
     // 将多线段项添加到布局
     layout->addLayoutItem(polylineItem.release());
@@ -931,7 +931,7 @@ void JwLayout::exportLayoutAsPng(const QString& layoutName,
     // 设置导出参数
     QgsLayoutExporter::ImageExportSettings settings;
     settings.dpi = dpi;
-    settings.flags |= QgsLayoutRenderContext::FlagAntialiasing;
+    settings.flags |= Qgis::LayoutRenderFlag::Antialiasing;
     // 导出图像
     try {
         spdlog::debug("开始导出PNG: {}", outputPath.toStdString());
@@ -984,7 +984,7 @@ void JwLayout::exportLayoutAsPdf(const QString& layoutName,
     QgsLayoutExporter::PdfExportSettings settings;
     settings.dpi = dpi;
     spdlog::debug("Export settings: {}", settings.dpi);
-    settings.flags |= QgsLayoutRenderContext::FlagAntialiasing; // 启用抗锯齿
+    settings.flags |= Qgis::LayoutRenderFlag::Antialiasing; // 启用抗锯齿
 
     // 导出图像
     try {
@@ -1034,7 +1034,7 @@ void JwLayout::exportLayoutAsSvg(const QString& layoutName,
     // 设置导出参数
     QgsLayoutExporter::SvgExportSettings settings;
     settings.dpi = dpi;
-    settings.flags |= QgsLayoutRenderContext::FlagAntialiasing; // 启用抗锯齿
+    settings.flags |= Qgis::LayoutRenderFlag::Antialiasing; // 启用抗锯齿
 
     // 导出图像
     try {

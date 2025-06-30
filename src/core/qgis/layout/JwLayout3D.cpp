@@ -496,7 +496,7 @@ void JwLayout3D::addArrowToLayout(QgsLayout *layout,
     auto polylineItem = std::make_unique<QgsLayoutItemPolyline>(polygon, layout);
 
     // 创建线符号
-    QgsLineSymbol *lineSymbol = QgsLineSymbol::createSimple(
+    auto lineSymbol = QgsLineSymbol::createSimple(
         QVariantMap{{"color", color.name()}, {"width", QString::number(width)}});
 
     // 创建箭头符号层
@@ -513,7 +513,7 @@ void JwLayout3D::addArrowToLayout(QgsLayout *layout,
     lineSymbol->changeSymbolLayer(0, arrowSymbolLayer.release());
 
     // 设置线符号到多线段项
-    polylineItem->setSymbol(lineSymbol);
+    polylineItem->setSymbol(lineSymbol.release());
 
     // 将多线段项添加到布局
     layout->addLayoutItem(polylineItem.release());
@@ -761,7 +761,8 @@ void JwLayout3D::init3DMapSettings(
     mMapSettings3d->setExtent(fullExtent);
     mCanvas3d->setRootEntity(new Qt3DCore::QEntity);
     mCanvas3d->setMapSettings(mMapSettings3d);
-    if (!mCanvas3d->scene()) {
+    auto mapScene = mCanvas3d->scene();
+    if (!mapScene) {
         spdlog::error("Error: Qgs3DMapScene or Root Entity is NULL!");
         return;
     }
@@ -769,7 +770,10 @@ void JwLayout3D::init3DMapSettings(
         spdlog::error("Error: QgsWindow3DEngine is NULL!");
         return;
     }
-    qDebug() << "Qgs3DMapScene created: " << (mCanvas3d->scene() != nullptr);
+
+    auto init3DSceneExtent = mapScene->viewFrustum2DExtent();
+    spdlog::debug("init3DSceneExtent: {}" ,ShowDataUtil::showQgsPointXY(init3DSceneExtent));
+    qDebug() << "Qgs3DMapScene created: " << (mapScene != nullptr);
     qDebug() << "QgsWindow3DEngine created: " << (mCanvas3d->engine() != nullptr);
 }
 
@@ -951,12 +955,18 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
                  centerX, centerY, centerZ, qGisLayoutLookAtDiffCenter.x(), qGisLayoutLookAtDiffCenter.y(), qGisLayoutLookAtDiffCenter.z(),
                  distance, qgisPitch, yaw);
 
+    auto init2d_extent1 = mCanvas3d->viewFrustum2DExtent();
+    spdlog::debug("init2d_extent1: {}", ShowDataUtil::showQgsPointXY(init2d_extent1));
+
     // 13. 设置QGIS相机
     mCanvas3d->cameraController()->setLookingAtPoint(
         qGisLayoutLookAtDiffCenter,
         static_cast<float>(distance),
         static_cast<float>(qgisPitch),
         static_cast<float>(yaw));
+
+    auto init2d_extent2 = mCanvas3d->viewFrustum2DExtent();
+    spdlog::debug("init2d_extent2: {}", ShowDataUtil::showQgsPointXY(init2d_extent2));
 
     // 14. 创建并返回LookAtPoint对象
     auto qGisLayoutLookAtLookAtPoint = std::make_unique<LookAtPoint>(
@@ -1465,7 +1475,7 @@ void JwLayout3D::exportLayoutToPng(const QString &layoutName,
     // 设置导出选项
     QgsLayoutExporter::ImageExportSettings settings;
     settings.dpi = dpi; // 设置DPI
-    settings.flags |= QgsLayoutRenderContext::FlagAntialiasing; // 启用抗锯齿
+    settings.flags |= Qgis::LayoutRenderFlag::Antialiasing; // 启用抗锯齿
     // 导出为PNG
     try {
         spdlog::debug("开始导出3D PNG: {}", outputPath.toStdString());
@@ -1527,7 +1537,7 @@ void JwLayout3D::exportLayoutToPdf(const QString &layoutName,
     // 设置导出选项
     QgsLayoutExporter::PdfExportSettings settings;
     settings.dpi = dpi; // 设置DPI
-    settings.flags |= QgsLayoutRenderContext::FlagAntialiasing; // 启用抗锯齿
+    settings.flags |= Qgis::LayoutRenderFlag::Antialiasing; // 启用抗锯齿
     // 导出为PDF
     try {
         spdlog::debug("开始导出3D PDF: {}", outputPath.toStdString());
@@ -1588,7 +1598,7 @@ void JwLayout3D::exportLayoutToSvg(const QString &layoutName,
     // 设置导出选项
     QgsLayoutExporter::SvgExportSettings settings;
     settings.dpi = dpi; // 设置DPI
-    settings.flags |= QgsLayoutRenderContext::FlagAntialiasing; // 启用抗锯齿
+    settings.flags |= Qgis::LayoutRenderFlag::Antialiasing; // 启用抗锯齿
 
     // 导出为SVG图片
     try {

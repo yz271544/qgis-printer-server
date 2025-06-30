@@ -28,6 +28,8 @@ public:
     static std::string lineStringToString(const QgsLineString& lineString);
 
     static std::string polygonToString(const QgsPolygon& polygon);
+
+    static std::string showQgsPointXY(QVector<QgsPointXY>);
 };
 
 
