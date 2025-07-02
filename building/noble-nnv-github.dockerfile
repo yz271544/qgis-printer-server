@@ -1,9 +1,9 @@
 ARG BASE_TAG_VERSION
-RUN echo "Building with tag version: $BASE_TAG_VERSION"
 
 FROM registry.cn-beijing.aliyuncs.com/dc_huzy/jingweiprinter-base:${BASE_TAG_VERSION}-noble AS builder
 LABEL authors="Lyndon"
 
+RUN echo "Building with tag version: $BASE_TAG_VERSION"
 ARG CODE_VERSION
 RUN echo "Building with code version: $CODE_VERSION"
 
