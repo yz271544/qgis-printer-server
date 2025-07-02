@@ -1,4 +1,7 @@
-FROM qgis/qgis:3.40.5-noble
+ARG BASE_TAG_VERSION
+RUN echo "Building with tag version: $BASE_TAG_VERSION"
+
+FROM qgis/qgis:${BASE_TAG_VERSION}-noble
 LABEL authors="Lyndon"
 
 ARG CODE_VERSION
@@ -31,7 +34,7 @@ RUN apt-get install -y bison build-essential ca-certificates ccache cmake cmake-
     qtpositioning5-dev qttools5-dev qttools5-dev-tools sip-tools spawn-fcgi xauth xfonts-100dpi xfonts-75dpi \
     xfonts-base xfonts-scalable xvfb libcurl4-openssl-dev libarchive13t64 libarchive-dev
 
-RUN apt-get install -y libqgis-dev=1:3.42.3+40noble
+RUN apt-get install -y libqgis-dev=1:${BASE_TAG_VERSION}+40noble
 
 # set git proxy
 RUN mkdir -p /root/.ssh

@@ -6,42 +6,43 @@ version:
 	@echo ${VERSION}
 
 REPO ?= registry.cn-beijing.aliyuncs.com/dc_huzy
+BASE_TAG_VERSION ?= 3.44.0
 
 .PHONY: baseimage
 baseimage:
-	docker build -t ${REPO}/jingweiprinter-base:3.42.3-noble --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/base.dockerfile .
+	docker build -t ${REPO}/jingweiprinter-base:${BASE_TAG_VERSION}-noble --build-arg BASE_TAG_VERSION=${BASE_TAG_VERSION} --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/base.dockerfile .
 
 .PHONY: basegithub
 basegithub:
-	docker build -t ${REPO}/jingweiprinter-base:3.42.3-noble --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/base-github.dockerfile .
+	docker build -t ${REPO}/jingweiprinter-base:${BASE_TAG_VERSION}-noble --build-arg BASE_TAG_VERSION=${BASE_TAG_VERSION} --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/base-github.dockerfile .
 
 # nnv
 .PHONY: printerimagennv
 printerimagennv:
-	docker build -t ${REPO}/jingweiprinter:${VERSION}-nnv --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv.dockerfile .
+	docker build -t ${REPO}/jingweiprinter:${VERSION}-nnv --build-arg BASE_TAG_VERSION=${BASE_TAG_VERSION} --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv.dockerfile .
 
 # nnv-c86
 .PHONY: printerimagennvc86
 printerimagennvc86:
-	docker build -t ${REPO}/jingweiprinter:${VERSION}-nnv-c86 --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv.dockerfile .
+	docker build -t ${REPO}/jingweiprinter:${VERSION}-nnv-c86 --build-arg BASE_TAG_VERSION=${BASE_TAG_VERSION} --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv.dockerfile .
 
 .PHONY: printergithubnnv
 printergithubnnv:
-	docker build -t ${REPO}/jingweiprinter:${VERSION}-nnv --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv-github.dockerfile .
+	docker build -t ${REPO}/jingweiprinter:${VERSION}-nnv --build-arg BASE_TAG_VERSION=${BASE_TAG_VERSION} --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv-github.dockerfile .
 
 # nnv aarch64
 .PHONY: printergithubnnvarm64
 printergithubnnvarm64:
-	docker buildx build --platform linux/arm64 -t ${REPO}/jingweiprinter:${VERSION}-nnv-arm64 --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv-github-aarch64.dockerfile --push .
+	docker buildx build --platform linux/arm64 -t ${REPO}/jingweiprinter:${VERSION}-nnv-arm64 --build-arg BASE_TAG_VERSION=${BASE_TAG_VERSION} --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv-github-aarch64.dockerfile --push .
 
 # nnv aarch64 runtime local
 .PHONY: printerlocalruntimennvarm64
 printerlocalruntimennvarm64:
-	docker buildx build --platform linux/arm64 -t ${REPO}/qgis:${VERSION}-nnv-arm64 --build-arg REPO=${REPO} --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv-local-runtime-aarch64.dockerfile --push .
+	docker buildx build --platform linux/arm64 -t ${REPO}/qgis:${VERSION}-nnv-arm64 --build-arg BASE_TAG_VERSION=${BASE_TAG_VERSION} --build-arg REPO=${REPO} --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv-local-runtime-aarch64.dockerfile --push .
 
 .PHONY: printerlocalnnvarm64
 printerlocalnnvarm64:
-	docker buildx build --platform linux/arm64 -t ${REPO}/jingweiprinter:${VERSION}-nnv-arm64 --build-arg REPO=${REPO} --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv-local-aarch64.dockerfile --push .
+	docker buildx build --platform linux/arm64 -t ${REPO}/jingweiprinter:${VERSION}-nnv-arm64 --build-arg BASE_TAG_VERSION=${BASE_TAG_VERSION} --build-arg REPO=${REPO} --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv-local-aarch64.dockerfile --push .
 
 .PHONY: printerimage470
 printerimage470:
