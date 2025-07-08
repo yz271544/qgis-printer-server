@@ -6,6 +6,7 @@ version:
 	@echo ${VERSION}
 
 REPO ?= registry.cn-beijing.aliyuncs.com/dc_huzy
+BASE_TAG_VERSION ?= 3.42.3
 
 .PHONY: baseimage
 baseimage:
