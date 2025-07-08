@@ -10,6 +10,7 @@ ARG PARALLEL_LEVEL
 RUN echo "Building with parallel level: $PARALLEL_LEVEL"
 ENV CMAKE_BUILD_PARALLEL_LEVEL=$PARALLEL_LEVEL
 
+COPY building/proxy.conf /etc/apt/apt.conf.d/proxy.conf
 RUN apt update
 RUN apt install -y libarchive13t64
 
@@ -39,6 +40,7 @@ COPY common/input/topicMap.json /lyndon/iProject/cpath/jingweiprinter/common/inp
 RUN mkdir /usr/local/bin/conf
 COPY conf/config-prod.yaml /usr/local/bin/conf/config.yaml
 
+COPY building/proxy.conf /etc/apt/apt.conf.d/proxy.conf
 #RUN sed -i "s/mirrors.aliyun.com/mirrors.ustc.edu.cn/g" /etc/apt/sources.list.d/ubuntu.sources
 RUN apt update
 RUN apt install -y libarchive13t64

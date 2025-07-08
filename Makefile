@@ -11,6 +11,10 @@ REPO ?= registry.cn-beijing.aliyuncs.com/dc_huzy
 baseimage:
 	docker build -t ${REPO}/jingweiprinter-base:3.40.5-noble --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/base.dockerfile .
 
+.PHONY: baseimageproxy
+baseimageproxy:
+	docker build -t ${REPO}/jingweiprinter-base:3.40.5-noble --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/base-proxy.dockerfile .
+
 .PHONY: basegithub
 basegithub:
 	docker build -t ${REPO}/jingweiprinter-base:3.40.5-noble --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/base-github.dockerfile .
@@ -20,10 +24,18 @@ basegithub:
 printerimagennv:
 	docker build -t ${REPO}/jingweiprinter:${VERSION}-nnv --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv.dockerfile .
 
+.PHONY: printerimagesproxy
+printerimagesproxy:
+	docker build -t ${REPO}/jingweiprinter:${VERSION}-nnv --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv-proxy.dockerfile .
+
 # nnv-c86
 .PHONY: printerimagennvc86
 printerimagennvc86:
 	docker build -t ${REPO}/jingweiprinter:${VERSION}-nnv-c86 --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv.dockerfile .
+
+.PHONE: printerimagennvc86proxy
+printerimagennvc86proxy:
+	docker build -t ${REPO}/jingweiprinter:${VERSION}-nnv-c86 --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv-proxy.dockerfile .
 
 .PHONY: printergithubnnv
 printergithubnnv:
@@ -136,6 +148,12 @@ images: baseimage printerimages
 
 .PHONY: imagesc86
 imagesc86: baseimage printerimagennvc86
+
+.PHONY: imagesproxy
+images: baseimageproxy printerimagesproxy
+
+.PHONY: imagesc86proxy
+imagesc86: baseimageproxy printerimagennvc86proxy
 
 .PHONY: github
 github: basegithub printergithub
