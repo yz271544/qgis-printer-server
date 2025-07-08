@@ -61,7 +61,7 @@ COPY building/simsunb.ttf /root/.fonts/simsunb.ttf
 COPY building/OpenSans-Regular.ttf /root/.fonts/OpenSans-Regular.ttf
 RUN fc-cache -fv
 
-RUN mkdir /root/.local/share
+RUN mkdir /root/.local/share -p
 COPY building/QGIS /root/.local/share/QGIS
 
 WORKDIR /usr/local/bin
