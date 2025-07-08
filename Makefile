@@ -150,10 +150,10 @@ images: baseimage printerimages
 imagesc86: baseimage printerimagennvc86
 
 .PHONY: imagesproxy
-images: baseimageproxy printerimagesproxy
+imagesproxy: baseimageproxy printerimagesproxy
 
 .PHONY: imagesc86proxy
-imagesc86: baseimageproxy printerimagennvc86proxy
+imagesc86proxy: baseimageproxy printerimagennvc86proxy
 
 .PHONY: github
 github: basegithub printergithub
