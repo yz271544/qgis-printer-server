@@ -10,39 +10,39 @@ BASE_TAG_VERSION ?= 3.42.3
 
 .PHONY: baseimage
 baseimage:
-	docker build -t ${REPO}/jingweiprinter-base:3.42.3-noble --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/base.dockerfile .
+	docker build -t ${REPO}/jingweiprinter-base:3.42.3-noble --build-arg BASE_TAG_VERSION=${BASE_TAG_VERSION} --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/base.dockerfile .
 
 .PHONY: basegithub
 basegithub:
-	docker build -t ${REPO}/jingweiprinter-base:3.42.3-noble --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/base-github.dockerfile .
+	docker build -t ${REPO}/jingweiprinter-base:3.42.3-noble --build-arg BASE_TAG_VERSION=${BASE_TAG_VERSION} --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/base-github.dockerfile .
 
 # nnv
 .PHONY: printerimagennv
 printerimagennv:
-	docker build -t ${REPO}/jingweiprinter:${VERSION}-nnv --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv.dockerfile .
+	docker build -t ${REPO}/jingweiprinter:${VERSION}-nnv --build-arg BASE_TAG_VERSION=${BASE_TAG_VERSION} --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv.dockerfile .
 
 # nnv-c86
 .PHONY: printerimagennvc86
 printerimagennvc86:
-	docker build -t ${REPO}/jingweiprinter:${VERSION}-nnv-c86 --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv.dockerfile .
+	docker build -t ${REPO}/jingweiprinter:${VERSION}-nnv-c86 --build-arg BASE_TAG_VERSION=${BASE_TAG_VERSION} --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv.dockerfile .
 
 .PHONY: printergithubnnv
 printergithubnnv:
-	docker build -t ${REPO}/jingweiprinter:${VERSION}-nnv --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv-github.dockerfile .
+	docker build -t ${REPO}/jingweiprinter:${VERSION}-nnv --build-arg BASE_TAG_VERSION=${BASE_TAG_VERSION} --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv-github.dockerfile .
 
 # nnv aarch64
 .PHONY: printergithubnnvarm64
 printergithubnnvarm64:
-	docker buildx build --platform linux/arm64 -t ${REPO}/jingweiprinter:${VERSION}-nnv-arm64 --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv-github-aarch64.dockerfile --push .
+	docker buildx build --platform linux/arm64 -t ${REPO}/jingweiprinter:${VERSION}-nnv-arm64 --build-arg BASE_TAG_VERSION=${BASE_TAG_VERSION} --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv-github-aarch64.dockerfile --push .
 
 # nnv aarch64 runtime local
 .PHONY: printerlocalruntimennvarm64
 printerlocalruntimennvarm64:
-	docker buildx build --platform linux/arm64 -t ${REPO}/qgis:${VERSION}-nnv-arm64 --build-arg REPO=${REPO} --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv-local-runtime-aarch64.dockerfile --push .
+	docker buildx build --platform linux/arm64 -t ${REPO}/qgis:${VERSION}-nnv-arm64 --build-arg BASE_TAG_VERSION=${BASE_TAG_VERSION} --build-arg REPO=${REPO} --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv-local-runtime-aarch64.dockerfile --push .
 
 .PHONY: printerlocalnnvarm64
 printerlocalnnvarm64:
-	docker buildx build --platform linux/arm64 -t ${REPO}/jingweiprinter:${VERSION}-nnv-arm64 --build-arg REPO=${REPO} --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv-local-aarch64.dockerfile --push .
+	docker buildx build --platform linux/arm64 -t ${REPO}/jingweiprinter:${VERSION}-nnv-arm64 --build-arg BASE_TAG_VERSION=${BASE_TAG_VERSION} --build-arg REPO=${REPO} --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-nnv-local-aarch64.dockerfile --push .
 
 .PHONY: printerimage470
 printerimage470:
@@ -51,6 +51,7 @@ printerimage470:
 	$(eval DRIVER_FULL_VERSION := $(shell docker run --rm qgis/qgis:3.42.3-noble bash -c "wget -q https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb >/dev/null 2>&1 && dpkg -i cuda-keyring_1.1-1_all.deb >/dev/null 2>&1 && apt-get update >/dev/null 2>&1 && apt-cache show ${NVIDIA_PACKAGE} 2>/dev/null | grep -oP 'Version: \\K.*' | head -1"))
 	@if [ -z "${DRIVER_FULL_VERSION}" ]; then echo "Error: Failed to get driver version for ${NVIDIA_PACKAGE}"; exit 1; fi
 	docker build -t ${REPO}/jingweiprinter:${VERSION}-${DRIVER_FULL_VERSION} \
+            --build-arg BASE_TAG_VERSION=${BASE_TAG_VERSION} \
 			--build-arg CODE_VERSION=${VERSION} \
 			--build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} \
 			--build-arg NVIDIA_MAIN_VERSION=${NVIDIA_MAIN_VERSION} \
@@ -64,6 +65,7 @@ printerimage510:
 	$(eval DRIVER_FULL_VERSION := $(shell docker run --rm qgis/qgis:3.42.3-noble bash -c "wget -q https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb >/dev/null 2>&1 && dpkg -i cuda-keyring_1.1-1_all.deb >/dev/null 2>&1 && apt-get update >/dev/null 2>&1 && apt-cache show ${NVIDIA_PACKAGE} 2>/dev/null | grep -oP 'Version: \\K.*' | head -1"))
 	@if [ -z "${DRIVER_FULL_VERSION}" ]; then echo "Error: Failed to get driver version for ${NVIDIA_PACKAGE}"; exit 1; fi
 	docker build -t ${REPO}/jingweiprinter:${VERSION}-${DRIVER_FULL_VERSION} \
+            --build-arg BASE_TAG_VERSION=${BASE_TAG_VERSION} \
 			--build-arg CODE_VERSION=${VERSION} \
 			--build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} \
 			--build-arg NVIDIA_MAIN_VERSION=${NVIDIA_MAIN_VERSION} \
@@ -77,6 +79,7 @@ printerimage515:
 	$(eval DRIVER_FULL_VERSION := $(shell docker run --rm qgis/qgis:3.42.3-noble bash -c "wget -q https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb >/dev/null 2>&1 && dpkg -i cuda-keyring_1.1-1_all.deb >/dev/null 2>&1 && apt-get update >/dev/null 2>&1 && apt-cache show ${NVIDIA_PACKAGE} 2>/dev/null | grep -oP 'Version: \\K.*' | head -1"))
 	@if [ -z "${DRIVER_FULL_VERSION}" ]; then echo "Error: Failed to get driver version for ${NVIDIA_PACKAGE}"; exit 1; fi
 	docker build -t ${REPO}/jingweiprinter:${VERSION}-${DRIVER_FULL_VERSION} \
+            --build-arg BASE_TAG_VERSION=${BASE_TAG_VERSION} \
 			--build-arg CODE_VERSION=${VERSION} \
 			--build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} \
 			--build-arg NVIDIA_MAIN_VERSION=${NVIDIA_MAIN_VERSION} \
@@ -90,6 +93,7 @@ printerimage520:
 	$(eval DRIVER_FULL_VERSION := $(shell docker run --rm qgis/qgis:3.42.3-noble bash -c "wget -q https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb >/dev/null 2>&1 && dpkg -i cuda-keyring_1.1-1_all.deb >/dev/null 2>&1 && apt-get update >/dev/null 2>&1 && apt-cache show ${NVIDIA_PACKAGE} 2>/dev/null | grep -oP 'Version: \\K.*' | head -1"))
 	@if [ -z "${DRIVER_FULL_VERSION}" ]; then echo "Error: Failed to get driver version for ${NVIDIA_PACKAGE}"; exit 1; fi
 	docker build -t ${REPO}/jingweiprinter:${VERSION}-${DRIVER_FULL_VERSION} \
+            --build-arg BASE_TAG_VERSION=${BASE_TAG_VERSION} \
 			--build-arg CODE_VERSION=${VERSION} \
 			--build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} \
 			--build-arg NVIDIA_MAIN_VERSION=${NVIDIA_MAIN_VERSION} \
@@ -103,6 +107,7 @@ printerimage535:
 	$(eval DRIVER_FULL_VERSION := $(shell docker run --rm qgis/qgis:3.42.3-noble bash -c "wget -q https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb >/dev/null 2>&1 && dpkg -i cuda-keyring_1.1-1_all.deb >/dev/null 2>&1 && apt-get update >/dev/null 2>&1 && apt-cache show ${NVIDIA_PACKAGE} 2>/dev/null | grep -oP 'Version: \\K.*' | head -1"))
 	@if [ -z "${DRIVER_FULL_VERSION}" ]; then echo "Error: Failed to get driver version for ${NVIDIA_PACKAGE}"; exit 1; fi
 	docker build -t ${REPO}/jingweiprinter:${VERSION}-${DRIVER_FULL_VERSION} \
+            --build-arg BASE_TAG_VERSION=${BASE_TAG_VERSION} \
 			--build-arg CODE_VERSION=${VERSION} \
 			--build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} \
 			--build-arg NVIDIA_MAIN_VERSION=${NVIDIA_MAIN_VERSION} \
@@ -116,6 +121,7 @@ printerimage550:
 	$(eval DRIVER_FULL_VERSION := $(shell docker run --rm qgis/qgis:3.42.3-noble bash -c "wget -q https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb >/dev/null 2>&1 && dpkg -i cuda-keyring_1.1-1_all.deb >/dev/null 2>&1 && apt-get update >/dev/null 2>&1 && apt-cache show ${NVIDIA_PACKAGE} 2>/dev/null | grep -oP 'Version: \\K.*' | head -1"))
 	@if [ -z "${DRIVER_FULL_VERSION}" ]; then echo "Error: Failed to get driver version for ${NVIDIA_PACKAGE}"; exit 1; fi
 	docker build -t ${REPO}/jingweiprinter:${VERSION}-${DRIVER_FULL_VERSION} \
+            --build-arg BASE_TAG_VERSION=${BASE_TAG_VERSION} \
     		--build-arg CODE_VERSION=${VERSION} \
     		--build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} \
     		--build-arg NVIDIA_MAIN_VERSION=${NVIDIA_MAIN_VERSION} \
@@ -124,7 +130,7 @@ printerimage550:
 
 .PHONY: printerimage550120
 printerimage550120:
-	docker build -t ${REPO}/jingweiprinter:${VERSION}-550-120 --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-550-120.dockerfile .
+	docker build -t ${REPO}/jingweiprinter:${VERSION}-550-120 --build-arg BASE_TAG_VERSION=${BASE_TAG_VERSION} --build-arg CODE_VERSION=${VERSION} --build-arg PARALLEL_LEVEL=${PARALLEL_LEVEL} -f building/noble-550-120.dockerfile .
 
 .PHONY: printerimages
 printerimages: printerimagennv
