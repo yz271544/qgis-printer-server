@@ -8,3 +8,5 @@ out/
 compile_commands.json
 building/.ssh/
 building/other-party/
+__pycache__/
+*.pyc
