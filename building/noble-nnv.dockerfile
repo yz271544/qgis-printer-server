@@ -54,6 +54,7 @@ RUN echo "Asia/Shanghai" > /etc/timezone
 RUN mkdir /root/.fonts
 COPY building/simhei.ttf /root/.fonts/simhei.ttf
 COPY building/simsunb.ttf /root/.fonts/simsunb.ttf
+COPY building/OpenSans-Regular.ttf /root/.fonts/OpenSans-Regular.ttf
 RUN fc-cache -fv
 
 WORKDIR /usr/local/bin
