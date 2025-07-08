@@ -16,6 +16,7 @@ ARG HOME
 RUN echo "Building with home: $HOME"
 ENV HOME=$HOME
 
+COPY building/proxy.conf /etc/apt/apt.conf.d/proxy.conf
 #RUN cp /etc/apt/sources.list.d/ubuntu.sources /etc/apt/sources.list.d/ubuntu.sources.bak
 #RUN sed -i "s/archive.ubuntu.com/mirrors.aliyun.com/g" /etc/apt/sources.list.d/ubuntu.sources
 #RUN sed -i "s/security.ubuntu.com/mirrors.aliyun.com/g" /etc/apt/sources.list.d/ubuntu.sources
