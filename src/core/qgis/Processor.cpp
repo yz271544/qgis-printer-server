@@ -328,7 +328,12 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
         auto topicMapData = TopicMapData::createShared();
         topicMapData->sceneId = plottingWeb->sceneId;
         // check and closed the polygon
-        checkDealWithClosedGeometry(plottingWeb->geojson);
+        if (plottingWeb->camera != nullptr && plottingWeb->camera->cameraLongitude != 0.0
+            && plottingWeb->camera->cameraLatitude != 0.0) {
+            fivePointGeometry(plottingWeb->geojson, plottingWeb->camera->cameraLongitude, plottingWeb->camera->cameraLatitude);
+        } else {
+            checkDealWithClosedGeometry(plottingWeb->geojson);
+        }
         auto scopeJson = JsonUtil::convertDtoToQJsonObject(plottingWeb->geojson);
         topicMapData->scope = scopeJson.toJson(QJsonDocument::JsonFormat::Compact).toStdString();
 
@@ -614,7 +619,32 @@ void Processor::export3DLayout(QString& sceneName,
     spdlog::debug("close 3d canvas done");
 }
 
+void Processor::fivePointGeometry(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto> &geojson, double cameraLongitude, double cameraLatitude) {
+    // 检查geojson是否包含有效的Polygon数据
+    if (geojson->geometry && geojson->geometry->type == "Polygon" && geojson->geometry->coordinates) {
+        if (!geojson || !(geojson->geometry) || !geojson->geometry->coordinates
+            || !geojson->geometry->coordinates[0]
+            || geojson->geometry->coordinates[0]->size() < 4) {
+            throw GeometryCheckError("Invalid Polygon data");
+            }
 
+        QVector<QgsPointXY> geoPts = QVector<QgsPointXY>();
+        auto& coords = geojson->geometry->coordinates[0];
+        for (size_t i = 0; i < coords->size(); i++) {
+            geoPts.append(QgsPointXY((coords)[i][0], (coords)[i][1]));
+        }
+        geoPts.append(QgsPointXY(cameraLongitude, cameraLatitude));
+        QgsGeometry convex = QgsGeometry::fromMultiPointXY(geoPts).convexHull();
+        spdlog::info("convex: {}", convex.asWkt().toStdString());
+        coords->clear();
+        // 将凸包的坐标点添加到geojson的coordinates中
+        auto vertices = convex.vertices();
+        while (vertices.hasNext()) {
+            auto vertex = vertices.next();
+            coords->push_back({vertex.x(), vertex.y()});
+        }
+    }
+}
 
 void Processor::checkDealWithClosedGeometry(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto> &geojson) {
     // 检查geojson是否包含有效的Polygon数据

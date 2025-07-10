@@ -82,7 +82,8 @@ public:
     fetchPlotting(const oatpp::String &token, const oatpp::String &scene_type,
                   DTOWRAPPERNS::DTOWrapper<TopicMapData> &topic_map_data);
 
-
+    // 检查和处理闭合几何图形的函数
+    static void fivePointGeometry(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto> &geojson, double cameraLongitude, double cameraLatitude);
     // 检查和处理闭合几何图形的函数
     static void checkDealWithClosedGeometry(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto> &geojson);
 

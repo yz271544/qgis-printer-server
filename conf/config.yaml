@@ -2,7 +2,7 @@ app:
   name: jingweiprinter
 logging:
   level: debug
-  verbose: false
+  verbose: true
   qt_log_enable: false
 web:
   host: "0.0.0.0"
@@ -22,24 +22,24 @@ qgis:
   projects_prefix: "/opt/anbao/qgz"
   projects_temp_prefix: "{PROJECTS_PREFIX}/temp"
   icon_prefix: "/opt/anbao/qgz"
-  jingwei_server_host: "172.16.117.71"
+  jingwei_server_host: "172.16.117.78"
   jingwei_server_port: 8080
   jingwei_server_api_prefix: "/api"
   jingwei_server_url: "http://{JINGWEI_SERVER_HOST}:{JINGWEI_SERVER_PORT}{JINGWEI_SERVER_API_PREFIX}"
   layout_dir: "/opt/anbao/qgz/layout"
-  map_base_url: "http://172.16.117.71:80"
+  map_base_url: "http://172.16.117.78:80"
   map_base_prefix: "type=xyz&url={MAP_BASE_URL}"
   map_base_suffix: "/map/lx/{z}/{x}/{y}.png&zmax={BASE_TILE_LAYER_MAX_LEVEL}&zmin={BASE_TILE_LAYER_MIN_LEVEL}"
   base_tile_layer_max_level: 17
   base_tile_layer_min_level: 0
   has_scene_prefix: false
-  map_main_base_url: "http://172.16.117.71:80"
+  map_main_base_url: "http://172.16.117.78:80"
   map_main_prefix: "type=xyz&url={MAP_MAIN_BASE_URL}"
   map_main_middle: "/map/orthogonal/{ORTHOGONAL_PATH_NAME}"
   map_main_suffix: "/{z}/{x}/{y}.png"
   map_3d_base_url: "url={MAP_MAIN_BASE_URL}/map/realistic3d/{REALISTIC3D_PATH_NAME}/tileset.json&http-header:referer="
   export_prefix: "/opt/anbao/qgz"
-  mapping_export_nginx_host: "172.16.117.71"
+  mapping_export_nginx_host: "172.16.117.78"
   mapping_export_nginx_port: 80
   mapping_export_nginx_url_prefix: "http://{MAPPING_EXPORT_NGINX_HOST}:{MAPPING_EXPORT_NGINX_PORT}/qgz"
   export_png_enable: true

@@ -1,0 +1,153 @@
+### POST plotting
+POST http://{{host}}:{{port}}/api/qgz
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "selectPath": false,
+  "path": "",
+  "path3d": "/map/mnt/fakeRoot/data/mapdata/3DTiles/5晋祠三维模型切片/tileset.json",
+  "tileIndex": [
+    [
+      0,
+      0
+    ],
+    [
+      1048576,
+      -5821555
+    ]
+  ],
+  "sceneId": "1932990848725983233",
+  "sceneName": "太原南站-晋祠全",
+  "geojson": {
+    "type": "Feature",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            112.19534743811309,
+            37.5541409112009
+          ],
+          [
+            112.19534743811309,
+            37.74814329135092
+          ],
+          [
+            112.4436278946951,
+            37.74814329135092
+          ],
+          [
+            112.4436278946951,
+            37.5541409112009
+          ]
+        ]
+      ]
+    },
+    "properties": {}
+  },
+  "handleFlag": false,
+  "sceneType": "undefined",
+  "layinfo": {
+    "title": {
+      "text": "标题",
+      "position": [],
+      "borderColor": "",
+      "fillColor": "",
+      "fontSize": 28,
+      "color": "rgba(0,0,0,1)",
+      "fontBorderColor": ""
+    },
+    "subTitle": {
+      "text": "",
+      "fontSize": 16,
+      "color": "rgba(0,0,0,1)"
+    },
+    "legend": {
+      "position": [
+        84,
+        20,
+        26,
+        80
+      ]
+    },
+    "bgPic": {
+      "borderColor": "#FF0000",
+      "doubleFrame": true,
+      "borderWidth": 3
+    },
+    "remark": [
+      {
+        "text": "备注",
+        "position": [
+          0,
+          0,
+          28,
+          10
+        ],
+        "borderColor": "",
+        "fillColor": "rgba(255,255,255,1)",
+        "fontSize": 18,
+        "color": "rgba(0,0,0,1)",
+        "url": ""
+      }
+    ],
+    "arrows": [],
+    "north": {
+      "position": [
+        97,
+        1,
+        2,
+        8
+      ],
+      "rotate": 110
+    },
+    "scaleBar": false
+  },
+  "paper": "a3",
+  "pictureUnit": "制图单位：    时间：",
+  "mapType": {
+    "map": true,
+    "electron": false,
+    "is3D": true
+  },
+  "camera": {
+    "cameraLongitude": 112.45887412086645,
+    "cameraLatitude": 37.7147210480984,
+    "cameraHeight": 1287.6127094198407,
+    "cameraDirX": 0.8437389982150739,
+    "cameraDirY": 0.2851589662019798,
+    "cameraDirZ": -0.4547404390260907,
+    "cameraUpX": -0.029865399589219632,
+    "cameraUpY": 0.8708336137191854,
+    "cameraUpZ": 0.4906698229198133,
+    "cameraRightX": 0.5359221592716619,
+    "cameraRightY": -0.4004162599238396,
+    "cameraRightZ": 0.743272667323509,
+    "fov": 1.0471975511965976,
+    "aspectRatio": 2.119205298013245,
+    "nearPlane": 0.1,
+    "farPlane": 10000000000,
+    "centerLongitude": 112.41887599534708,
+    "centerLatitude": 37.70313635174363,
+    "centerHeight": 903.1289281602342,
+    "heading": "249.98",
+    "pitch": "-18.95",
+    "roll": "0.00"
+  },
+  "clarity": 800
+}
+
+
+### Response
+HTTP/1.1 200 OK
+Server: TornadoServer/6.4.1
+Content-Type: application/json; charset=UTF-8
+Date: Thu, 07 Nov 2024 07:12:42 GMT
+Content-Length: 141
+
+{
+  "project_zip_url": "http://localhost:80/jingweipy/test.zip",
+  "image_url": "http://localhost:80/jingweipy/local/test-位置图.png"
+}
+###
