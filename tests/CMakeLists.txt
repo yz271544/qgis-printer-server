@@ -2,8 +2,7 @@ include(../src/ComponentQGIS.cmake)
 set(BINARY ${CMAKE_PROJECT_NAME}_tst)
 file(GLOB_RECURSE TEST_SOURCES LIST_DIRECTORIES false *.h *.cpp)
 message("TEST_SOURCES: ${TEST_SOURCES}")
-set(SOURCES ${TEST_SOURCES}
-        DegreeUtilTest.cpp)
+set(SOURCES ${TEST_SOURCES})
 
 # Include util source files
 file(GLOB_RECURSE UTIL_SOURCES LIST_DIRECTORIES false ../src/utils/*.h ../src/utils/*.cpp)
