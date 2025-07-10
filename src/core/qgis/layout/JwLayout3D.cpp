@@ -943,8 +943,11 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
     if (pitch_negate_threshold > 0) {
         if (std::abs(qgisPitch) > pitch_negate_threshold) {
             spdlog::debug("qgis pitch > {}: {}", pitch_negate_threshold, std::abs(qgisPitch));
-            //qGisLayoutLookAtDiffCenter.setZ(-qGisLayoutLookAtDiffCenter.z());
+#if _QGIS_VERSION_INT >= 34200
             qGisLayoutLookAtDiffCenter.setY(-qGisLayoutLookAtDiffCenter.y());
+#else
+            qGisLayoutLookAtDiffCenter.setZ(-qGisLayoutLookAtDiffCenter.z());
+#endif
         }
     }
     // 打印日志
