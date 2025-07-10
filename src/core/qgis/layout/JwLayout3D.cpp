@@ -935,8 +935,11 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
                 lookAt.x(), lookAt.y(), lookAt.z(), distance);
 
     // 12. 赋值给QGIS Layout坐标
-    //QgsVector3D qGisLayoutLookAtDiffCenter(lookAt.x() - centerX,  lookAt.z(), lookAt.y() - centerY);
+#if _QGIS_VERSION_INT >= 34200
     QgsVector3D qGisLayoutLookAtDiffCenter(lookAt.x() - centerX,   lookAt.y() - centerY, lookAt.z());
+#else
+    QgsVector3D qGisLayoutLookAtDiffCenter(lookAt.x() - centerX,  lookAt.z(), lookAt.y() - centerY);
+#endif
     if (pitch_negate_threshold > 0) {
         if (std::abs(qgisPitch) > pitch_negate_threshold) {
             spdlog::debug("qgis pitch > {}: {}", pitch_negate_threshold, std::abs(qgisPitch));
