@@ -639,29 +639,25 @@ void JwLayout3D::init3DMapSettings(
     QgsSettings settings;
     // 创建 3D 地图设置
     // auto mapSettings3d = std::make_shared<Qgs3DMapSettings>();
-    mMapSettings3d = new Qgs3DMapSettings();
+    auto mapSettings = std::make_unique<Qgs3DMapSettings>();
+    mMapSettings3d = mapSettings.release();
     mMapSettings3d->setCrs(mProject->crs());
     // 过滤图层
     filterMapLayers(removeLayerNames, removeLayerPrefixes, mMapSettings3d);
 
-    auto flatTerrain = new QgsFlatTerrainGenerator();
+    auto flatTerrain = std::make_unique<QgsFlatTerrainGenerator>();
 #if _QGIS_VERSION_INT >= 34100
   flatTerrain->setCrs(mMapSettings3d->crs(), mProject->transformContext());
 #else
     flatTerrain->setCrs(mMapSettings3d->crs());
 #endif
-    mMapSettings3d->setTerrainGenerator(flatTerrain);
-    // mapSettings3d->setTerrainElevationOffset(
-    // project->elevationProperties()->terrainProvider()->offset() );
-    //    QgsAbstractTerrainSettings *terrainSettings =
-    //    QgsFlatTerrainSettings::create();
-    //    terrainSettings->setElevationOffset(mProject->elevationProperties()->terrainProvider()->offset());
-    //    mMapSettings3d->setTerrainSettings(terrainSettings);
-    // mMapSettings3d->setTerrainElevationOffset(
-    //     mProject->elevationProperties()->terrainProvider()->offset());
-    const QgsAbstractTerrainSettings *mMapSettings = mMapSettings3d->terrainSettings();
-    const_cast<QgsAbstractTerrainSettings *>(mMapSettings)->setElevationOffset(
-    mProject->elevationProperties()->terrainProvider()->offset());
+    mMapSettings3d->setTerrainGenerator(flatTerrain.release());
+    mMapSettings3d->setTerrainElevationOffset(
+        mProject->elevationProperties()->terrainProvider()->offset());
+    // qgis 3.42
+    // const QgsAbstractTerrainSettings *mMapSettings = mMapSettings3d->terrainSettings();
+    // const_cast<QgsAbstractTerrainSettings *>(mMapSettings)->setElevationOffset(
+    // mProject->elevationProperties()->terrainProvider()->offset());
     // mapSettings3d->setBackgroundColor(QColor("#ffffff"));
     spdlog::debug("filtered map layers");
     const QgsReferencedRectangle projectExtent =
@@ -941,11 +937,13 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
     // 12. 赋值给QGIS Layout坐标
     //QgsVector3D qGisLayoutLookAtDiffCenter(lookAt.x() - centerX,  lookAt.z(), lookAt.y() - centerY);
     QgsVector3D qGisLayoutLookAtDiffCenter(lookAt.x() - centerX,   lookAt.y() - centerY, lookAt.z());
-    // if (std::abs(qgisPitch) > pitch_negate_threshold) {
-    //     spdlog::debug("qgis pitch > {}: {}", pitch_negate_threshold, std::abs(qgisPitch));
-    //     //qGisLayoutLookAtDiffCenter.setZ(-qGisLayoutLookAtDiffCenter.z());
-    //     qGisLayoutLookAtDiffCenter.setY(-qGisLayoutLookAtDiffCenter.y());
-    // }
+    if (pitch_negate_threshold > 0) {
+        if (std::abs(qgisPitch) > pitch_negate_threshold) {
+            spdlog::debug("qgis pitch > {}: {}", pitch_negate_threshold, std::abs(qgisPitch));
+            //qGisLayoutLookAtDiffCenter.setZ(-qGisLayoutLookAtDiffCenter.z());
+            qGisLayoutLookAtDiffCenter.setY(-qGisLayoutLookAtDiffCenter.y());
+        }
+    }
     // 打印日志
     spdlog::info("QGIS center={}:{}:{} QGisLayoutLookAtDiffCenter: {}:{}:{} distance={} pitch={} yaw={}",
                  centerX, centerY, centerZ, qGisLayoutLookAtDiffCenter.x(), qGisLayoutLookAtDiffCenter.y(), qGisLayoutLookAtDiffCenter.z(),
