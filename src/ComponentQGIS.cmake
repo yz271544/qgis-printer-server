@@ -7,11 +7,21 @@ add_definitions(-D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING)
 
 
 if (WIN32)
+    message("WIN32")
     if(MSVC)
-        set(ENV{LIB} "D:/iProject/cpath/OSGeo4W/apps/qgis/bin")
-        set(ENV{PATH} "$ENV{PATH};D:/iProject/cpath/OSGeo4W/apps/qgis/bin;D:/iProject/cpath/OSGeo4W/apps/Qt5/bin")
+        message("MSVC")
+        IF (NOT OSGEO4W_QGIS_SUBDIR OR "${OSGEO4W_QGIS_SUBDIR}" STREQUAL "")
+            IF (NOT "$ENV{OSGEO4W_QGIS_SUBDIR}" STREQUAL "")
+                SET(OSGEO4W_QGIS_SUBDIR $ENV{OSGEO4W_QGIS_SUBDIR})
+            ELSE()
+                SET(OSGEO4W_QGIS_SUBDIR qgis)
+            ENDIF()
+        ENDIF()
+        message("OSGEO4W_QGIS_SUBDIR by judge: ${OSGEO4W_QGIS_SUBDIR}")
+        set(ENV{LIB} "D:/OSGeo4W/apps/qgis-ltr-dev/bin")
+        set(ENV{PATH} "$ENV{PATH};D:/OSGeo4W/apps/qgis-ltr-dev/bin;D:/OSGeo4W/apps/Qt5/bin")
         message("ENV LIB: $ENV{LIB}")
-        set(CMAKE_INSTALL_RPATH "D:/iProject/cpath/OSGeo4W/apps/qgis/bin;D:/iProject/cpath/QGIS/output/lib;D:/iProject/cpath/QGIS/output/lib/qgis/plugins;D:/iProject/cpath/OSGeo4W/apps/qgis/bin")
+        set(CMAKE_INSTALL_RPATH "D:/OSGeo4W/apps/qgis-ltr-dev/bin;D:/OSGeo4W/apps/qgis-ltr-dev/plugins;D:/OSGeo4W/apps/qgis-ltr-dev")
         set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
         add_compile_options(/wd4819)
         add_definitions(-D_USE_MATH_DEFINES)
@@ -23,24 +33,27 @@ if (WIN32)
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
     endif()
-    message("Win32 Searching for QGIS in $ENV{QGISPROGRAMFILES}/qgis")
+    #message("Win32 Searching for QGIS in $ENV{QGISPROGRAMFILES}/qgis")
+    message("Win32 Searching for QGIS in $ENV{OSGEO4W_ROOT}/apps/${OSGEO4W_QGIS_SUBDIR}")
     # 设置QGIS库的路径
-    set(QGIS_PREFIX_PATH $ENV{QGISPROGRAMFILES}/qgis)
+    #set(QGIS_PREFIX_PATH $ENV{QGISPROGRAMFILES}/qgis)
+    set(QGIS_PREFIX_PATH $ENV{OSGEO4W_ROOT}/apps/${OSGEO4W_QGIS_SUBDIR})
     message("QGIS_PREFIX_PATH: ${QGIS_PREFIX_PATH}")
-    set(QGIS_DIR $ENV{QGISPROGRAMFILES}/qgis)
+    #set(QGIS_DIR $ENV{QGISPROGRAMFILES}/qgis)
+    set(QGIS_DIR $ENV{OSGEO4W_ROOT}/apps/${OSGEO4W_QGIS_SUBDIR})
     message("QGIS_DIR: ${QGIS_DIR}")
     set(QGIS_INCLUDE_DIR ${QGIS_DIR}/include)
     message("QGIS_INCLUDE_DIR: ${QGIS_INCLUDE_DIR}")
     set(QGIS_LIB_PATH ${QGIS_DIR}/lib)
     message("QGIS_LIB_PATH: ${QGIS_LIB_PATH}")
-    set(QT5_BIN_DIR "D:/iProject/cpath/OSGeo4W/apps/Qt5/bin")
+    set(QT5_BIN_DIR "$ENV{OSGEO4W_ROOT}/apps/Qt5/bin")
     set(ENV{PATH} "$ENV{PATH};${QT5_BIN_DIR}")
-    set(QT5_CMAKE_DIR D:/iProject/cpath/OSGeo4W/apps/Qt5/lib/cmake/Qt5)
+    set(QT5_CMAKE_DIR $ENV{QGISPROGRAMFILES}/Qt5/lib/cmake/Qt5)
     message("QT5_CMAKE_DIR: ${QT5_CMAKE_DIR}")
-    set(QT5_DIR D:/iProject/cpath/OSGeo4W/apps/Qt5/lib)
-    #    set(QT5_GUI_CMAKE_DIR D:/iProject/cpath/OSGeo4W/apps/Qt5/lib/cmake/Qt5Gui)
-    #    set(QT5_QML_CMAKE_DIR D:/iProject/cpath/OSGeo4W/apps/Qt5/lib/cmake/Qt5Qml)
-    #    set(QT5_XML_CMAKE_DIR D:/iProject/cpath/OSGeo4W/apps/Qt5/lib/cmake/Qt5Xml)
+    set(QT5_DIR $ENV{QGISPROGRAMFILES}/Qt5/lib)
+    #    set(QT5_GUI_CMAKE_DIR $ENV{QGISPROGRAMFILES}/Qt5/lib/cmake/Qt5Gui)
+    #    set(QT5_QML_CMAKE_DIR $ENV{QGISPROGRAMFILES}/Qt5/lib/cmake/Qt5Qml)
+    #    set(QT5_XML_CMAKE_DIR $ENV{QGISPROGRAMFILES}/Qt5/lib/cmake/Qt5Xml)
     #    set(CMAKE_MODULE_PATH ${QGIS_DIR} ${QT5_DIR} ${QT5_GUI_CMAKE_DIR} ${QT5_CMAKE_DIR} ${QT5_QML_CMAKE_DIR} ${QT5_XML_CMAKE_DIR} ${CMAKE_MODULE_PATH})
     set(CMAKE_MODULE_PATH ${QGIS_DIR} ${QGIS_LIB_PATH} ${QT5_DIR} ${QT5_CMAKE_DIR} ${CMAKE_MODULE_PATH})
     message("CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
@@ -63,7 +76,7 @@ if (WIN32)
     find_library(GDAL_LIBRARY NAMES gdal HINTS $ENV{QGISPROGRAMFILES}/gdal-dev/lib)
 
     message("find yaml-cpp")
-    set(YAML_CPP_PATH "D:/iProject/cpath/OSGeo4W/apps/yaml-cpp")
+    set(YAML_CPP_PATH "$ENV{QGISPROGRAMFILES}/yaml-cpp")
     #    find_package(yaml-cpp REQUIRED PATHS YAML_CPP_PATH)
 
     message("CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
@@ -74,7 +87,7 @@ if (WIN32)
                 yaml-cpp/yaml.h
                 yaml-cpp/traits.h
                 PATHS
-                "D:/iProject/cpath/OSGeo4W/apps/yaml-cpp/include"
+                "$ENV{QGISPROGRAMFILES}/yaml-cpp/include"
         )
         set(YAML_CPP_NODE_INCLUDE_DIR ${YAML_CPP_INCLUDE_DIR}/node)
         set(YAML_CPP_NODE_DETAIL_INCLUDE_DIR ${YAML_CPP_NODE_INCLUDE_DIR}/detail)
@@ -82,7 +95,7 @@ if (WIN32)
         find_library(YAML_CPP_LIBRARIES
                 NAMES yaml-cppd.lib
                 PATHS
-                "D:/iProject/cpath/OSGeo4W/apps/yaml-cpp/lib"
+                "$ENV{QGISPROGRAMFILES}/yaml-cpp/lib"
         )
     elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
         message("PROGRAMFILES: $ENV{PROGRAMFILES}")
@@ -118,7 +131,9 @@ if (WIN32)
     #    else()
     #        message(FATAL_ERROR "Failed to find yaml-cpp.")
     #    endif()
-
+    #find_package(PkgConfig REQUIRED)
+    find_package(LibArchive REQUIRED)
+    find_package(LibZip REQUIRED)
 elseif(UNIX)
     message("NIX system - QGISSOURCE: ${QGISSOURCE}")
     if (NOT DEFINED $ENV{QGISSOURCE} OR $ENV{QGISSOURCE} STREQUAL "")
@@ -244,20 +259,32 @@ message("Qt53DCore_INCLUDE_DIRS: ${Qt53DCore_INCLUDE_DIRS}")
 include_directories(${Qt53DCore_INCLUDE_DIRS})
 message("Qt5Network_INCLUDE_DIRS: ${Qt5Network_INCLUDE_DIRS}")
 include_directories(${Qt5Network_INCLUDE_DIRS})
-message("LIBARCHIVE_INCLUDE_DIRS: ${LIBARCHIVE_INCLUDE_DIRS}")
-message("LIBZIP_INCLUDE_DIRS: ${LIBZIP_INCLUDE_DIRS}")
-include_directories(${LIBARCHIVE_INCLUDE_DIRS} ${LIBZIP_INCLUDE_DIRS})
+if(WIN32)
+    if(MSVC)
+        message("LibArchive_INCLUDE_DIR: ${LibArchive_INCLUDE_DIR}")
+        message("LibZip_INCLUDE_DIR: ${LibZip_INCLUDE_DIR}")
+        include_directories(${LibArchive_INCLUDE_DIR} ${LibZip_INCLUDE_DIR})
+    endif()
+elseif(UNIX)
+    message("LIBARCHIVE_INCLUDE_DIRS: ${LIBARCHIVE_INCLUDE_DIRS}")
+    message("LIBZIP_INCLUDE_DIRS: ${LIBZIP_INCLUDE_DIRS}")
+    include_directories(${LIBARCHIVE_INCLUDE_DIRS} ${LIBZIP_INCLUDE_DIRS})
+endif()
 
 find_path(Qt53DRender_INCLUDE_DIRS
         NAMES qt3drender_global.h
-        HINTS ${CMAKE_PREFIX_PATH}/include/Qt3DRender
+        HINTS
+        ${CMAKE_PREFIX_PATH}/include/Qt3DRender
+        $ENV{QGISPROGRAMFILES}/Qt5/include/Qt3DRender
 )
 message("Qt53DRender_INCLUDE_DIRS: ${Qt53DRender_INCLUDE_DIRS}")
 include_directories(${Qt53DRender_INCLUDE_DIRS})
 
 find_library(Qt53DRender_LIBRARY
         NAMES Qt53DRender
-        HINTS ${CMAKE_PREFIX_PATH}/lib
+        HINTS 
+        ${CMAKE_PREFIX_PATH}/lib
+        $ENV{QGISPROGRAMFILES}/Qt5/lib
 )
 
 message("Qt53DRender_LIBRARY: ${Qt53DRender_LIBRARY}")

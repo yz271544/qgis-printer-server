@@ -203,7 +203,7 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
 
     try {
         m_offset_pull_pitch = m_config->operator[]("qgis")["offset_pull_pitch"].as<double>();
-        if (!OFFSET_PULL_PITCH != 16.0) {
+        if (OFFSET_PULL_PITCH != 16.0) {
             m_offset_pull_pitch = OFFSET_PULL_PITCH;
         }
     } catch (const std::exception &e) {
@@ -212,7 +212,7 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
 
    try {
        m_default_ground_altitude = m_config->operator[]("qgis")["default_ground_altitude"].as<double>();
-       if (!DEFAULT_GROUND_ALTITUDE != 100.0) {
+       if (DEFAULT_GROUND_ALTITUDE != 100.0) {
            m_default_ground_altitude = DEFAULT_GROUND_ALTITUDE;
        }
    } catch (const std::exception &e) {
@@ -221,7 +221,7 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
 
     try {
         m_pitch_negate_threshold = m_config->operator[]("qgis")["pitch_negate_threshold"].as<double>();
-        if (!PITCH_NEGATE_THRESHOLD != 45.0) {
+        if (PITCH_NEGATE_THRESHOLD != 45.0) {
             m_pitch_negate_threshold = PITCH_NEGATE_THRESHOLD;
         }
     } catch (const std::exception &e) {

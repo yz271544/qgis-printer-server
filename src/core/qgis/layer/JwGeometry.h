@@ -84,8 +84,15 @@ public:
     // 模拟 Python 中的 zip 功能
     template<typename T1, typename T2>
     void zip2(const QList<T1>& vec1, const QList<T2>& vec2, auto func) {
-        size_t min_size = std::min(vec1.size(), vec2.size());
-        for (size_t i = 0; i < min_size; ++i) {
+        //int min_size = std::min(vec1.size(), vec2.size());
+        int min_size = 0;
+        if (vec1.size() < vec2.size()) {
+            min_size = vec1.size();
+        }
+        else {
+            min_size = vec2.size();
+        }
+        for (int i = 0; i < min_size; ++i) {
             func(vec1[i], vec2[i]);
         }
     }
@@ -93,8 +100,21 @@ public:
     // 模拟 Python 中的 zip 功能
     template<typename T1, typename T2, typename T3>
     void zip3(const QList<T1>& vec1, const QList<T2>& vec2, const QList<T3>& vec3, auto func) {
-        size_t min_size = std::min(vec1.size(), std::min(vec2.size(), vec3.size()));
-        for (size_t i = 0; i < min_size; ++i) {
+        //int min_size = std::min(vec1.size(), std::min(vec2.size(), vec3.size()));
+        int min_vec2_vec3 = 0;
+        if (vec2.size() < vec3.size()) {
+            min_vec2_vec3 = vec2.size();
+        }
+        else {
+			min_vec2_vec3 = vec3.size();
+        }
+        int min_size = 0; 
+        if (vec1.size() < min_vec2_vec3) {
+            min_size = vec1.size();
+        } else {
+            min_size = min_vec2_vec3;
+		}
+        for (int i = 0; i < min_size; ++i) {
             func(vec1[i], vec2[i], vec3[i]);
         }
     }
