@@ -5,7 +5,11 @@
 #ifndef DEGREEUTIL_H
 #define DEGREEUTIL_H
 
+#if defined(_WIN32)
+#include <cmath>
+#else
 #include <math.h>
+#endif
 
 class DegreeUtil {
 public:

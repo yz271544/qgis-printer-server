@@ -12,13 +12,15 @@
 #include <limits>
 #include <qgsvector3d.h>
 
-#define DOUBLECOMPARENEAR(a, b) std::fabs((a) - (b)) <= std::numeric_limits<double>::epsilon() * std::max(std::fabs((a)), std::fabs((b)))
+//#define DOUBLECOMPARENEAR(a, b) std::fabs((a) - (b)) <= std::numeric_limits<double>::epsilon() * std::max(std::fabs((a)), std::fabs((b)))
 
-#define POINTXYCOMPARENEAR(a, b) (DOUBLECOMPARENEAR((a[0]), (b[0])) && DOUBLECOMPARENEAR((a[1]), (b[1])))
-
-#define POINTCOMPARENEAR(a, b) (DOUBLECOMPARENEAR((a[0]), (b[0])) && DOUBLECOMPARENEAR((a[1]), (b[1])) && DOUBLECOMPARENEAR((a[2]), (b[2])))
-
-#define QGSPOINTCOMPARENEAR(a, b) (DOUBLECOMPARENEAR((a.x()), (b.x())) && DOUBLECOMPARENEAR((a.y()), (b.y())) && DOUBLECOMPARENEAR((a.z()), (b.z())))
+// #define DOUBLECOMPARENEAR(a, b) Formula::nearlyEqual((a), (b))
+//
+// #define POINTXYCOMPARENEAR(a, b) (DOUBLECOMPARENEAR((a[0]), (b[0])) && DOUBLECOMPARENEAR((a[1]), (b[1])))
+//
+// #define POINTCOMPARENEAR(a, b) (DOUBLECOMPARENEAR((a[0]), (b[0])) && DOUBLECOMPARENEAR((a[1]), (b[1])) && DOUBLECOMPARENEAR((a[2]), (b[2])))
+//
+// #define QGSPOINTCOMPARENEAR(a, b) (DOUBLECOMPARENEAR((a.x()), (b.x())) && DOUBLECOMPARENEAR((a.y()), (b.y())) && DOUBLECOMPARENEAR((a.z()), (b.z())))
 
 
 class Formula {
@@ -31,20 +33,28 @@ public:
 
     static void checkAndClosedLineStringOfPolygon(QgsLineString& lineString) {
 
-        auto startPoint = lineString.startPoint();
-        auto endPoint = lineString.endPoint();
-
-        auto equals = QGSPOINTCOMPARENEAR(startPoint, endPoint);
-
-        if (!equals) {
-            lineString.addVertex(startPoint);
-        }
+        // auto startPoint = lineString.startPoint();
+        // auto endPoint = lineString.endPoint();
+        //
+        // auto equals = QGSPOINTCOMPARENEAR(startPoint, endPoint);
+        //
+        // if (!equals) {
+        //     lineString.addVertex(startPoint);
+        // }
     }
 
     // 单位向量乘标量
-    QgsVector3D scaledDir(const QgsVector3D &dir, double distance);
+    static QgsVector3D scaledDir(const QgsVector3D &dir, double distance);
 
     static float getRelativeAltitude(float altitude);
+
+    // static bool nearlyEqual(double a, double b, double epsilon = 1e-9) {
+    //     const double absDiff = std::fabs(a - b);
+    //     // 处理接近零的情况
+    //     if (absDiff < epsilon) return true;
+    //     // 相对误差比较
+    //     return absDiff <= epsilon * std::max(std::fabs(a), std::fabs(b));
+    // }
 };
 
 #endif //FORMULA_H

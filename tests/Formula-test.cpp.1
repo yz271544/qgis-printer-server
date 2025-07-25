@@ -21,19 +21,25 @@ TEST(blaTest, test1) {
 }
 
 
-TEST(blaTest, test2) {
-    double num1 = 0.1 + 0.2;
-    double num2 = 0.3;
+// TEST(blaTest, test2) {
+//     double num1 = 0.1 + 0.2;
+//     double num2 = 0.3;
+//
+//     auto vv = DOUBLECOMPARENEAR(num1, num2);
+//
+//     std::cout << "vv: " << vv << std::endl;
+//
+//     if (vv) {
+//         std::cout << "The two double values are considered equal." << std::endl;
+//     } else {
+//         std::cout << "The two double values are not considered equal." << std::endl;
+//     }
+// }
 
-    auto vv = DOUBLECOMPARENEAR(num1, num2);
-
-    std::cout << "vv: " << vv << std::endl;
-
-    if (vv) {
-        std::cout << "The two double values are considered equal." << std::endl;
-    } else {
-        std::cout << "The two double values are not considered equal." << std::endl;
-    }
+TEST(blaTest, testdev)
+{
+    //std::fabs((a) - (b)) <= std::numeric_limits<double>::epsilon() * std::max(std::fabs((a)), std::fabs((b)))
+    GTEST_LOG_(INFO) << std::fabs(3.14);
 }
 
 TEST(blaTest, testQStringFormat) {

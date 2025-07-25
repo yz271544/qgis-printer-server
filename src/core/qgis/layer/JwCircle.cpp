@@ -66,7 +66,7 @@ void JwCircle::addCircle(QgsPoint &centerPoint,
         QgsFeature feature(fields);
         feature.setGeometry(circle_geometry);
         QgsAttributes attribute;
-        attribute.append(mLayerName);
+        attribute.append(mLayerName.toUtf8());
         attribute.append("circle");
         attribute.append(center_transformed->x());
         attribute.append(center_transformed->y());
@@ -75,7 +75,7 @@ void JwCircle::addCircle(QgsPoint &centerPoint,
         feature.setAttributes(attribute);
         circleProvider->addFeature(feature);
         spdlog::debug("addCircle added circle feature {}: {}-{}-{} {}",
-                      mLayerName.toStdString(),
+                      mLayerName.toUtf8().toStdString(),
                       center_transformed->x(), center_transformed->y(),
                       center_transformed->z(), radius);
         renderer_altitude = static_cast<float>(center_transformed->z());
@@ -174,7 +174,7 @@ void JwCircle::addCircles(
             QgsFeature feature(fields);
             feature.setGeometry(circle_geometry);
             QgsAttributes attribute;
-            attribute.append(name);
+            attribute.append(name.toUtf8());
             attribute.append("circle");
             attribute.append(center_transformed->x());
             attribute.append(center_transformed->y());
@@ -273,7 +273,9 @@ void JwCircle::addCircleKeyAreas(
     // 分别创建三个同心圆并添加到图层
     QList<QString> areaNames;
     for (const auto &item: CIRCLE_LABELS) {
-        areaNames.append(QString::fromStdString(item));
+        QString name = QString::fromStdString(item);
+        spdlog::debug("name: {}", name.toUtf8().toStdString());
+        areaNames.append(QString::fromUtf8(name.toUtf8()));
     }
 
     if (radii.size() > 3) {
@@ -298,7 +300,7 @@ void JwCircle::addCircleKeyAreas(
             feature.setGeometry(circle_geometry);
             const auto& name_ = areaNames[level];
             QgsAttributes attribute;
-            attribute.append(name_);
+            attribute.append(name_.toUtf8());
             attribute.append("leveled-circle");
             attribute.append(center_transformed->x());
             attribute.append(center_transformed->y());
@@ -307,7 +309,7 @@ void JwCircle::addCircleKeyAreas(
             feature.setAttributes(attribute);
             circleProvider->addFeature(feature);
             spdlog::debug("addCircleKeyAreas added circle feature {}: {}-{}-{} {}",
-                          name_.toStdString(),
+                          name_.toUtf8().toStdString(),
                           center_transformed->x(),
                           center_transformed->y(),
                           center_transformed->z(),
@@ -416,7 +418,9 @@ void JwCircle::addLevelKeyAreas(
 
         QList<QString> circleLabels;
         for (const auto &item_label: CIRCLE_LABELS) {
-            circleLabels.append(QString::fromStdString(item_label));
+            QString name = QString::fromStdString(item_label);
+            spdlog::debug("name: {}", name.toUtf8().toStdString());
+            circleLabels.append(QString::fromUtf8(name.toUtf8()));
         }
 
         QList<QString> area_name;
@@ -456,7 +460,7 @@ void JwCircle::addLevelKeyAreas(
                 feature.setGeometry(circle_geometry);
                 const auto& name_ = area_render_names[level];
                 QgsAttributes attribute;
-                attribute.append(name_);
+                attribute.append(name_.toUtf8());
                 attribute.append("leveled-circle");
                 attribute.append(center_transformed->x());
                 attribute.append(center_transformed->y());
@@ -485,7 +489,7 @@ void JwCircle::addLevelKeyAreas(
                 feature.setAttributes(attribute);
                 circleProvider->addFeature(feature);
                 spdlog::debug("addLevelKeyAreas added circle feature {}: {}-{}-{} {}",
-                              name_.toStdString(),
+                              name_.toUtf8().toStdString(),
                               center_transformed->x(),
                               center_transformed->y(),
                               center_transformed->z(),

@@ -97,33 +97,40 @@ if (WIN32)
                 PATHS
                 "$ENV{QGISPROGRAMFILES}/yaml-cpp/lib"
         )
-    elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
-        message("PROGRAMFILES: $ENV{PROGRAMFILES}")
-        message("PROGRAMFILES(x86): $ENV{PROGRAMFILES\(x86\)}")
-        message("PROGRAM_FILES_X86: ${PROGRAM_FILES_X86}")
+    elseif(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+#        message("PROGRAMFILES: $ENV{PROGRAMFILES}")
+#        message("PROGRAMFILES(x86): $ENV{PROGRAMFILES\(x86\)}")
+#        message("PROGRAM_FILES_X86: ${PROGRAM_FILES_X86}")
+#        set(PROGRAM_FILES_X86 $ENV{PROGRAMFILES\(x86\)})
+#        set(YAML_CPP_DIR ${PROGRAM_FILES_X86}/YAML_CPP)
+#        message("YAML_CPP_DIR: ${YAML_CPP_DIR}")
+#        find_package(yaml-cpp REQUIRED PATHS $ENV{QGISPROGRAMFILES}/yaml-cpp)
 
-        set(PROGRAM_FILES_X86 $ENV{PROGRAMFILES\(x86\)})
-        set(YAML_CPP_DIR ${PROGRAM_FILES_X86}/YAML_CPP)
-        find_path(YAML_CPP_INCLUDE_DIR
-                NAMES
-                yaml-cpp/null.h
-                yaml-cpp/yaml.h
-                yaml-cpp/traits.h
-                PATHS
-                ${YAML_CPP_DIR}/include
-        )
-        set(YAML_CPP_NODE_INCLUDE_DIR ${YAML_CPP_INCLUDE_DIR}/node)
-        set(YAML_CPP_NODE_DETAIL_INCLUDE_DIR ${YAML_CPP_NODE_INCLUDE_DIR}/detail)
-        set(YAML_CPP_CONTRIB_INCLUDE_DIR ${YAML_CPP_INCLUDE_DIR}/contrib)
-        find_library(YAML_CPP_LIBRARIES
-                NAMES yaml-cpp.lib
-                PATHS
-                ${YAML_CPP_DIR}/lib
-        )
+#        message("YAML_CPP_INCLUDE_DIR: ${YAML_CPP_INCLUDE_DIR}")
+#        find_path(YAML_CPP_INCLUDE_DIR
+#                NAMES
+#                yaml-cpp/null.h
+#                yaml-cpp/yaml.h
+#                yaml-cpp/traits.h
+#                PATHS
+#                ${YAML_CPP_DIR}/include
+#        )
+#        set(YAML_CPP_NODE_INCLUDE_DIR ${YAML_CPP_INCLUDE_DIR}/node)
+#        set(YAML_CPP_NODE_DETAIL_INCLUDE_DIR ${YAML_CPP_NODE_INCLUDE_DIR}/detail)
+#        set(YAML_CPP_CONTRIB_INCLUDE_DIR ${YAML_CPP_INCLUDE_DIR}/contrib)
+#        find_library(YAML_CPP_LIBRARIES
+#                NAMES yaml-cpp.lib
+#                PATHS
+#                ${YAML_CPP_DIR}/lib
+#        )
+#        message("find_library YAML_CPP_LIBRARIES: ${YAML_CPP_LIBRARIES}")
+        find_package(yaml-cpp REQUIRED)
     endif()
     message("yaml-cpp found successfully.")
     message("YAML_CPP_INCLUDE_DIR: ${YAML_CPP_INCLUDE_DIR}")
+    #message("YAML_CPP_LIBRARIES: ${YAML_CPP_DIR}/lib/${YAML_CPP_LIBRARIES}")
     message("YAML_CPP_LIBRARIES: ${YAML_CPP_LIBRARIES}")
+    message("YAML_CPP_LIBRARY_DIR: ${YAML_CPP_LIBRARY_DIR}")
     #    if (yaml-cpp_FOUND)
     #        message("yaml-cpp found successfully.")
     #        message("YAML_CPP_INCLUDE_DIR: ${YAML_CPP_INCLUDE_DIR}")
@@ -134,6 +141,13 @@ if (WIN32)
     #find_package(PkgConfig REQUIRED)
     find_package(LibArchive REQUIRED)
     find_package(LibZip REQUIRED)
+    if(NOT LIBZIP_LIBRARIES AND LibZip_LIBRARIES)
+        set(LIBZIP_LIBRARIES ${LibZip_LIBRARIES})
+    endif()
+    if(NOT LIBZIP_LIBRARIES AND LibZip_LIBRARY)
+        set(LIBZIP_LIBRARIES ${LibZip_LIBRARY})
+    endif()
+    message("LIBZIP_LIBRARIES: ${LIBZIP_LIBRARIES}")
 elseif(UNIX)
     message("NIX system - QGISSOURCE: ${QGISSOURCE}")
     if (NOT DEFINED $ENV{QGISSOURCE} OR $ENV{QGISSOURCE} STREQUAL "")
@@ -295,7 +309,11 @@ include_directories(${GDAL_INCLUDE_DIR})
 include_directories(${YAML_CPP_INCLUDE_DIR} ${YAML_CPP_NODE_INCLUDE_DIR} ${YAML_CPP_CONTRIB_INCLUDE_DIR})
 
 # Add library directories
-link_directories(${QGIS_PREFIX_PATH}/lib /usr/lib/x86_64-linux-gnu ${YAML_CPP_LIBRARIES} ${YAML_CPP_NODE_DETAIL_INCLUDE_DIR})
+if(MSVC)
+    link_directories(${QGIS_PREFIX_PATH}/lib /usr/lib/x86_64-linux-gnu ${YAML_CPP_LIBRARY_DIR}/${YAML_CPP_LIBRARIES}.lib)
+else()
+    link_directories(${QGIS_PREFIX_PATH}/lib /usr/lib/x86_64-linux-gnu ${YAML_CPP_LIBRARIES} ${YAML_CPP_NODE_DETAIL_INCLUDE_DIR})
+endif()
 
 
 message("QGIS_CORE_LIBRARY: ${QGIS_CORE_LIBRARY}")

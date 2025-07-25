@@ -8,7 +8,18 @@
 void CompressUtil::un_gz(const std::string& file_full_name, const std::string& target_dir) {
 
     std::string f_name = file_full_name.substr(0, file_full_name.find_last_of('.'));
-    std::string output_path = fs::path(target_dir) / fs::path(f_name).filename();
+    fs::path target_path(target_dir);
+    if (!fs::exists(target_path)) {
+        fs::create_directories(target_path);
+    }
+    if (!fs::is_directory(target_path)) {
+        std::cerr << "Target path is not a directory: " << target_dir << std::endl;
+        return;
+    }
+    fs::path file_full_path = target_path.append("/").append(f_name);
+
+    //std::string output_path = fs::path(target_dir) / fs::path(f_name).filename();
+    std::string output_path = file_full_path.generic_string();
 
     struct archive *a = archive_read_new();
     archive_read_support_filter_gzip(a);
@@ -49,7 +60,9 @@ void CompressUtil::un_tar(const std::string& file_full_name, const std::string& 
 
     struct archive_entry *entry;
     while (archive_read_next_header(a, &entry) == ARCHIVE_OK) {
-        std::string path = fs::path(target_dir) / archive_entry_pathname(entry);
+        fs::path target_path(target_dir);
+        //std::string path = fs::path(target_dir) / archive_entry_pathname(entry);
+        std::string path = target_path.append("/").append(archive_entry_pathname(entry)).generic_string();
         fs::create_directories(fs::path(path).parent_path());
 
         std::ofstream out(path, std::ios::binary);
@@ -71,6 +84,7 @@ void CompressUtil::un_tar(const std::string& file_full_name, const std::string& 
 
 void CompressUtil::create_zip(const std::string& source_dir, const std::string& output_filename) {
     int err = 0;
+    spdlog::debug("create_zip -> source_dir: {}, output_filename: {}", source_dir, output_filename);
     zip_t *zip = zip_open(output_filename.c_str(), ZIP_CREATE | ZIP_TRUNCATE, &err);
     if (!zip) {
         std::cerr << "Error creating zip file" << std::endl;
@@ -80,8 +94,9 @@ void CompressUtil::create_zip(const std::string& source_dir, const std::string& 
     for (const auto& entry : fs::recursive_directory_iterator(source_dir)) {
         if (entry.is_regular_file()) {
             std::string file_path = entry.path().string();
+            spdlog::debug("file_path: {}", file_path);
             std::string arcname = fs::relative(entry.path(), source_dir).string();
-
+            spdlog::debug("arcname: {}", arcname);
             zip_source_t *source = zip_source_file(zip, file_path.c_str(), 0, 0);
             if (!source) {
                 std::cerr << "Error adding file to zip: " << file_path << std::endl;
@@ -111,7 +126,9 @@ void CompressUtil::un_zip(const std::string& file_full_name, const std::string& 
     for (zip_int64_t i = 0; i < num_entries; ++i) {
         struct zip_stat st;
         if (zip_stat_index(zip, i, 0, &st) == 0) {
-            std::string path = fs::path(target_dir) / st.name;
+            fs::path target_path(target_dir);
+            //std::string path = fs::path(target_dir) / st.name;
+            std::string path = target_path.append("/").append(st.name).generic_string();
             fs::create_directories(fs::path(path).parent_path());
 
             zip_file_t *file = zip_fopen_index(zip, i, 0);

@@ -85,7 +85,7 @@ if (NOT DEFINED $ENV{MASTER_RELEASE} AND $ENV{MASTER_RELEASE} STREQUAL "")
     )
     FetchContent_MakeAvailable(oatpp-curl)
 else()
-    set(CMAKE_PREFIX_PATH "D:/iProject/cpath/oatpp-curl-installed;D:/iProject/cpath/oatpp-installed;D:/iProject/cpath/spdlog-installed;D:/iProject/cpath/yaml-cpp-installed")
+    set(CMAKE_PREFIX_PATH "D:/iProject/cpath/oatpp-curl-installed;D:/iProject/cpath/oatpp-installed;D:/iProject/cpath/spdlog-installed;D:/iProject/cpath/yaml-cpp-installed") #  C:/Program Files (x86)/YAML_CPP;
     find_package(yaml-cpp REQUIRED)
     find_package(spdlog REQUIRED)
     find_package(oatpp REQUIRED)

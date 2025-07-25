@@ -40,36 +40,115 @@ add_custom_command(
 target_include_directories(${PROJECT_NAME} PRIVATE ${yaml-cpp_SOURCE_DIR}/include ${spdlog_SOURCE_DIR}/include ${oatpp_INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME}_lib PRIVATE ${yaml-cpp_SOURCE_DIR}/include ${spdlog_SOURCE_DIR}/include ${oatpp_INCLUDE_DIRS})
 
+if (WIN32)
+  if(MSVC)
+    target_link_libraries(${PROJECT_NAME}
+            PRIVATE
+            yaml-cpp::yaml-cpp
+            spdlog::spdlog
+            oatpp::oatpp
+            oatpp::oatpp-curl
+            ${QGIS_CORE_LIBRARY}
+            ${QGIS_GUI_LIBRARY}
+            ${QGIS_3D_LIBRARY}
+            Qt5::Core
+            Qt5::Gui
+            Qt5::Qml
+            Qt5::Quick
+            Qt5::Widgets
+            Qt5::Xml
+            Qt5::Svg
+            Qt5::Test
+            Qt5::Network
+            Qt5::3DCore
+            ${Qt53DRender_LIBRARY}
+            ${GDAL_LIBRARY}
+            ${YAML_CPP_LIBRARY_DIR}/${YAML_CPP_LIBRARIES}.lib
+            ${LibArchive_LIBRARY}
+            libzip::zip
+    )
 
-target_link_libraries(${PROJECT_NAME}
-        PRIVATE
-        yaml-cpp
-        spdlog::spdlog
-        oatpp::oatpp
-        oatpp::oatpp-curl
-        ${QGIS_CORE_LIBRARY} ${QGIS_GUI_LIBRARY} ${QGIS_3D_LIBRARY}
-        Qt5::Core Qt5::Gui Qt5::Qml Qt5::Quick Qt5::Widgets Qt5::Xml
-        Qt5::Svg Qt5::Test Qt5::Network Qt5::3DCore
-        ${Qt53DRender_LIBRARY}
-        ${GDAL_LIBRARY} ${YAML_CPP_LIBRARIES}
-        ${LIBARCHIVE_LIBRARIES} ${LIBZIP_LIBRARIES}
-)
+    target_link_libraries(${PROJECT_NAME}_lib
+            PRIVATE
+            yaml-cpp::yaml-cpp
+            spdlog::spdlog
+            oatpp::oatpp
+            oatpp::oatpp-curl
+            gtest
+            ${QGIS_CORE_LIBRARY}
+            ${QGIS_GUI_LIBRARY}
+            ${QGIS_3D_LIBRARY}
+            Qt5::Core
+            Qt5::Gui
+            Qt5::Qml
+            Qt5::Quick
+            Qt5::Widgets
+            Qt5::Xml
+            Qt5::Svg
+            Qt5::Test
+            Qt5::Network
+            Qt5::3DCore
+            ${Qt53DRender_LIBRARY}
+            ${GDAL_LIBRARY}
+            ${YAML_CPP_LIBRARY_DIR}/${YAML_CPP_LIBRARIES}.lib
+            ${LibArchive_LIBRARY}
+            libzip::zip
+    )
+  endif()
+else()
+  target_link_libraries(${PROJECT_NAME}
+          PRIVATE
+          yaml-cpp
+          spdlog::spdlog
+          oatpp::oatpp
+          oatpp::oatpp-curl
+          ${QGIS_CORE_LIBRARY}
+          ${QGIS_GUI_LIBRARY}
+          ${QGIS_3D_LIBRARY}
+          Qt5::Core
+          Qt5::Gui
+          Qt5::Qml
+          Qt5::Quick
+          Qt5::Widgets
+          Qt5::Xml
+          Qt5::Svg
+          Qt5::Test
+          Qt5::Network
+          Qt5::3DCore
+          ${Qt53DRender_LIBRARY}
+          ${GDAL_LIBRARY}
+          ${YAML_CPP_LIBRARIES}
+          ${LIBARCHIVE_LIBRARIES}
+          ${LIBZIP_LIBRARIES}
+  )
 
-target_link_libraries(${PROJECT_NAME}_lib
-        PRIVATE
-        yaml-cpp
-        spdlog::spdlog
-        oatpp::oatpp
-        oatpp::oatpp-curl
-        gtest
-        ${QGIS_CORE_LIBRARY} ${QGIS_GUI_LIBRARY} ${QGIS_3D_LIBRARY}
-        Qt5::Core Qt5::Gui Qt5::Qml Qt5::Quick Qt5::Widgets Qt5::Xml
-        Qt5::Svg Qt5::Test Qt5::Network Qt5::3DCore
-        ${Qt53DRender_LIBRARY}
-        ${GDAL_LIBRARY} ${YAML_CPP_LIBRARIES}
-        ${LIBARCHIVE_LIBRARIES} ${LIBZIP_LIBRARIES}
-)
-
+  target_link_libraries(${PROJECT_NAME}_lib
+          PRIVATE
+          yaml-cpp
+          spdlog::spdlog
+          oatpp::oatpp
+          oatpp::oatpp-curl
+          gtest
+          ${QGIS_CORE_LIBRARY}
+          ${QGIS_GUI_LIBRARY}
+          ${QGIS_3D_LIBRARY}
+          Qt5::Core
+          Qt5::Gui
+          Qt5::Qml
+          Qt5::Quick
+          Qt5::Widgets
+          Qt5::Xml
+          Qt5::Svg
+          Qt5::Test
+          Qt5::Network
+          Qt5::3DCore
+          ${Qt53DRender_LIBRARY}
+          ${GDAL_LIBRARY}
+          ${YAML_CPP_LIBRARIES}
+          ${LIBARCHIVE_LIBRARIES}
+          ${LIBZIP_LIBRARIES}
+  )
+endif()
 # install
 install(TARGETS ${PROJECT_NAME}
         RUNTIME DESTINATION bin

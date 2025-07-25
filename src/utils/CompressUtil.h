@@ -13,6 +13,7 @@
 #include <archive.h>
 #include <archive_entry.h>
 #include <zip.h>
+#include <spdlog/spdlog.h>
 
 namespace fs = std::filesystem;
 

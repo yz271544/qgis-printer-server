@@ -668,19 +668,33 @@ void Processor::checkDealWithClosedGeometry(const DTOWRAPPERNS::DTOWrapper<GeoPo
         spdlog::info("isEqX: {}", isEqX);
         spdlog::info("isEqY: {}", isEqY);*/
 
-        auto isEq = POINTXYCOMPARENEAR(geojson->geometry->coordinates[0][0],
-                                       geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() -
-                                                                         1]);
-        //if (!isEqX || !isEqY ) {
-        if (!isEq) {
-            // 处理闭合几何图形
-            geojson->geometry->coordinates[0]->push_back(geojson->geometry->coordinates[0][0]);
-        } else {
-            spdlog::debug("first point x: {}, y: {}", geojson->geometry->coordinates[0][0][0],
-                         geojson->geometry->coordinates[0][0][1]);
-            spdlog::debug("last point x: {}, y: {}",
-                         geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() - 1][0],
-                         geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() - 1][1]);
+        // auto isEq = POINTXYCOMPARENEAR(geojson->geometry->coordinates[0][0],
+        //                                geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() -
+        //                                                                  1]);
+        // //if (!isEqX || !isEqY ) {
+        // if (!isEq) {
+        //     // 处理闭合几何图形
+        //     geojson->geometry->coordinates[0]->push_back(geojson->geometry->coordinates[0][0]);
+        // } else {
+        //     spdlog::debug("first point x: {}, y: {}", geojson->geometry->coordinates[0][0][0],
+        //                  geojson->geometry->coordinates[0][0][1]);
+        //     spdlog::debug("last point x: {}, y: {}",
+        //                  geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() - 1][0],
+        //                  geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() - 1][1]);
+        // }
+        QVector<QgsPointXY> geoPts = QVector<QgsPointXY>();
+        auto& coords = geojson->geometry->coordinates[0];
+        for (size_t i = 0; i < coords->size(); i++) {
+            geoPts.append(QgsPointXY((coords)[i][0], (coords)[i][1]));
+        }
+        QgsGeometry convex = QgsGeometry::fromMultiPointXY(geoPts).convexHull();
+        spdlog::info("convex: {}", convex.asWkt().toStdString());
+        coords->clear();
+        // 将凸包的坐标点添加到geojson的coordinates中
+        auto vertices = convex.vertices();
+        while (vertices.hasNext()) {
+            auto vertex = vertices.next();
+            coords->push_back({vertex.x(), vertex.y()});
         }
     }
 }
@@ -1327,9 +1341,10 @@ void Processor::add_3d_layout(
 
 QString Processor::zipProject(const QString &scene_name) {
     QString targetZipFile = QString("%1/%2.zip").arg(m_export_prefix, scene_name);
-    spdlog::debug("zip project: {}", targetZipFile.toStdString());
-    CompressUtil::create_zip(m_app->getProjectDir().toStdString(), targetZipFile.toStdString());
+    spdlog::debug("zip project: {}", targetZipFile.toUtf8().toStdString());
+    CompressUtil::create_zip(m_app->getProjectDir().toUtf8().toStdString(), targetZipFile.toUtf8().toStdString());
     QString zip_file_name = QString("%1.zip").arg(scene_name);
+    spdlog::debug("zip file name: {}", zip_file_name.toUtf8().toStdString());
     return zip_file_name;
 }
 

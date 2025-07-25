@@ -63,6 +63,16 @@ void QCoreStarter::Init(StarterContext &context) {
     }
     QgsApplication::setPrefixPath(qgis_prefix_path, true);
 
+    QString qgis_plugin_path = QgsApplication::pluginPath();
+    spdlog::info("qgis plugin path: {}", qgis_plugin_path.toStdString());
+    try {
+        qgis_plugin_path = QString::fromStdString((*config)["qgis"]["plugin_path"].as<std::string>());
+        spdlog::info("qgis_plugin_path: {}", qgis_plugin_path.toStdString());
+    } catch (const std::exception &e) {
+        spdlog::error("get qgis.plugin_path error: {}", e.what());
+    }
+    QgsApplication::setPluginPath(qgis_plugin_path);
+
     spdlog::info("init qgis app");
     try {
         try {
