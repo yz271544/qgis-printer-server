@@ -96,7 +96,7 @@ if (WIN32)
     )
   endif()
 else()
-  target_link_libraries(${PROJECT_NAME}
+ target_link_libraries(${PROJECT_NAME}
           PRIVATE
           yaml-cpp
           spdlog::spdlog

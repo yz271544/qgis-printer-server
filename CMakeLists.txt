@@ -77,13 +77,18 @@ if (NOT DEFINED $ENV{MASTER_RELEASE} AND $ENV{MASTER_RELEASE} STREQUAL "")
     )
     FetchContent_MakeAvailable(spdlog)
     #set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};D:/OSGeo4W/lib/cmake/CURL")
-    # 使用 FetchContent 下载并构建 oatpp-curl
-    FetchContent_Declare(
-            oatpp-curl
-            GIT_REPOSITORY https://github.com/oatpp/oatpp-curl.git
-            GIT_TAG 1.3.0
-    )
-    FetchContent_MakeAvailable(oatpp-curl)
+#    FetchContent_Declare(
+#            oatpp
+#            GIT_REPOSITORY https://github.com/oatpp/oatpp.git
+#            GIT_TAG 1.3.1    )
+#    FetchContent_MakeAvailable(oatpp)
+#    # 使用 FetchContent 下载并构建 oatpp-curl
+#    FetchContent_Declare(
+#            oatpp-curl
+#            GIT_REPOSITORY https://github.com/oatpp/oatpp-curl.git
+#            GIT_TAG 1.3.0
+#    )
+#    FetchContent_MakeAvailable(oatpp-curl)
 else()
     set(CMAKE_PREFIX_PATH "D:/iProject/cpath/oatpp-curl-installed;D:/iProject/cpath/oatpp-installed;D:/iProject/cpath/spdlog-installed;D:/iProject/cpath/yaml-cpp-installed") #  C:/Program Files (x86)/YAML_CPP;
     find_package(yaml-cpp REQUIRED)
@@ -91,8 +96,8 @@ else()
     find_package(oatpp REQUIRED)
     find_package(oatpp-curl REQUIRED)
 endif()
-#find_package(oatpp REQUIRED)
-#find_package(oatpp-curl REQUIRED)
+find_package(oatpp REQUIRED)
+find_package(oatpp-curl REQUIRED)
 #find_package(gtest REQUIRED)
 
 message("oatpp_VERSION: ${oatpp_VERSION}")
