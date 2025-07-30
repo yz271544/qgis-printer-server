@@ -3,6 +3,9 @@ ARG BASE_TAG_VERSION
 FROM qgis/qgis:${BASE_TAG_VERSION}-noble
 LABEL authors="Lyndon"
 
+ARG BASE_TAG_VERSION
+RUN echo "Building with base tag version: $BASE_TAG_VERSION"
+
 ARG CODE_VERSION
 RUN echo "Building with code version: $CODE_VERSION"
 
