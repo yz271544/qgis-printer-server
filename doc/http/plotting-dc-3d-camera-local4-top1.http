@@ -6,7 +6,7 @@ Authorization: Bearer {{token}}
 {
   "selectPath": false,
   "path": "",
-  "path3d": "/map/mnt/fakeRoot/data/mapdata/瑞光电厂OSGB切片/tileset.json",
+  "path3d": "/map/mnt/fakeRoot/data/mapdata/3DTiles/瑞光电厂OSGB切片/tileset.json",
   "tileIndex": [
     [
       0,
@@ -17,8 +17,8 @@ Authorization: Bearer {{token}}
       -5821555
     ]
   ],
-  "sceneId": "1931962881837010945",
-  "sceneName": "ces",
+  "sceneId": "1933800942803283970",
+  "sceneName": "瑞光电厂",
   "geojson": {
     "type": "Feature",
     "geometry": {
@@ -26,20 +26,20 @@ Authorization: Bearer {{token}}
       "coordinates": [
         [
           [
-            112.712532512251,
-            37.77774736342515
+            112.6227265256816,
+            37.78006892281279
           ],
           [
-            112.712532512251,
-            37.7903963600238
+            112.6227265256816,
+            37.871754426324934
           ],
           [
-            112.72535309771084,
-            37.7903963600238
+            112.72985102829593,
+            37.871754426324934
           ],
           [
-            112.72535309771084,
-            37.77774736342515
+            112.72985102829593,
+            37.78006892281279
           ]
         ]
       ]
@@ -47,7 +47,7 @@ Authorization: Bearer {{token}}
     "properties": {}
   },
   "handleFlag": false,
-  "sceneType": "04",
+  "sceneType": "undefined",
   "layinfo": {
     "title": {
       "text": "标题",
@@ -81,7 +81,7 @@ Authorization: Bearer {{token}}
         "text": "备注",
         "position": [
           0,
-          89,
+          80,
           28,
           10
         ],
@@ -100,7 +100,7 @@ Authorization: Bearer {{token}}
         2,
         8
       ],
-      "rotate": 282
+      "rotate": 32
     },
     "scaleBar": false
   },
@@ -112,29 +112,30 @@ Authorization: Bearer {{token}}
     "is3D": true
   },
   "camera": {
-    "cameraLongitude": 112.71771380812609,
-    "cameraLatitude": 37.78368613825081,
-    "cameraHeight": 1075.6751721538783,
-    "cameraDirX": 0.23239865101763116,
-    "cameraDirY": -0.7678331116314085,
-    "cameraDirZ": -0.5970118756671547,
-    "cameraUpX": -0.8774862985187528,
-    "cameraUpY": -0.4302877898732215,
-    "cameraUpZ": 0.21182590445428684,
-    "cameraRightX": -0.41953386385015906,
-    "cameraRightY": 0.47464168650514355,
-    "cameraRightZ": -0.7737613369214756,
+    "cameraLongitude": 112.72685658740096,
+    "cameraLatitude": 37.77665720895643,
+    "cameraHeight": 1460.13806189497,
+    "cameraDirX": 0.7449057963070019,
+    "cameraDirY": -0.6193177327377665,
+    "cameraDirZ": 0.2481146923194672,
+    "cameraUpX": 0.10258606235572178,
+    "cameraUpY": 0.473792662237761,
+    "cameraUpZ": 0.8746408480170607,
+    "cameraRightX": -0.6592355075681067,
+    "cameraRightY": -0.6260719280771244,
+    "cameraRightZ": 0.4164642678972744,
     "fov": 1.0471975511965976,
-    "aspectRatio": 1.401098901098901,
+    "aspectRatio": 1.37108953613808,
     "nearPlane": 0.1,
     "farPlane": 10000000000,
-    "centerLongitude": 112.71872064695219,
-    "centerLatitude": 37.78385237362877,
-    "centerHeight": 882.3461550441625,
-    "heading": "78.25",
-    "pitch": "-85.19",
+    "centerLongitude": 112.7127651702561,
+    "centerLatitude": 37.79469372484934,
+    "centerHeight": 897.1341262677532,
+    "heading": "328.20",
+    "pitch": "-31.80",
     "roll": "0.00"
-  }
+  },
+  "clarity": 800
 }
 
 ### Response

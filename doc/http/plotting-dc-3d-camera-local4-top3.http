@@ -26,20 +26,20 @@ Authorization: Bearer {{token}}
       "coordinates": [
         [
           [
-            112.70478515076958,
-            37.773407728141095
+            112.70064260614244,
+            37.774527732253844
           ],
           [
-            112.70478515076958,
-            37.79733827377732
+            112.70064260614244,
+            37.799749709508994
           ],
           [
-            112.73564259262074,
-            37.79733827377732
+            112.73544915066496,
+            37.799749709508994
           ],
           [
-            112.73564259262074,
-            37.773407728141095
+            112.73544915066496,
+            37.774527732253844
           ]
         ]
       ]
@@ -100,7 +100,7 @@ Authorization: Bearer {{token}}
         2,
         8
       ],
-      "rotate": 41
+      "rotate": 28
     },
     "scaleBar": false
   },
@@ -112,31 +112,32 @@ Authorization: Bearer {{token}}
     "is3D": true
   },
   "camera": {
-    "cameraLongitude": 112.72058479278813,
-    "cameraLatitude": 37.7850482791329,
-    "cameraHeight": 1907.5494340835037,
-    "cameraDirX": 0.31925138760011373,
-    "cameraDirY": -0.7320303721795628,
-    "cameraDirZ": -0.6018389200791627,
-    "cameraUpX": 0.7760308562118974,
-    "cameraUpY": -0.16256443972937631,
-    "cameraUpZ": 0.6093840440498123,
-    "cameraRightX": -0.5439252354160731,
-    "cameraRightY": -0.6615922740949478,
-    "cameraRightZ": 0.5161792335375815,
+    "cameraLongitude": 112.72183609821751,
+    "cameraLatitude": 37.78260380529451,
+    "cameraHeight": 2095.3379403178287,
+    "cameraDirX": 0.4278370406022267,
+    "cameraDirY": -0.7786389827766007,
+    "cameraDirZ": -0.4589954261093994,
+    "cameraUpX": 0.5641808465128577,
+    "cameraUpY": -0.16668741228932396,
+    "cameraUpZ": 0.8086502822681289,
+    "cameraRightX": -0.7061553930380782,
+    "cameraRightY": -0.6049269716956823,
+    "cameraRightZ": 0.36797815125130534,
     "fov": 1.0471975511965976,
     "aspectRatio": 1.37108953613808,
     "nearPlane": 0.1,
     "farPlane": 10000000000,
-    "centerLongitude": 112.7203305270996,
-    "centerLatitude": 37.785282367693554,
-    "centerHeight": 893.0341062525288,
-    "heading": "319.22",
-    "pitch": "-88.97",
-    "roll": "0.00"
+    "centerLongitude": 112.71955614606736,
+    "centerLatitude": 37.78604440321721,
+    "centerHeight": 894.2792424329757,
+    "heading": "332.26",
+    "pitch": "-78.36",
+    "roll": "359.99"
   },
   "clarity": 800
 }
+
 ### Response
 HTTP/1.1 200 OK
 Server: TornadoServer/6.4.1
