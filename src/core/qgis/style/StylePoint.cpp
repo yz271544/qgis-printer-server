@@ -280,6 +280,11 @@ QgsRuleBased3DRenderer* StylePoint::get3d_rule_renderer(
     symbol->setMaterialSettings(null_material_settings.release());
     symbol->setShape(Qgis::Point3DShape::Billboard);
 
+    // 设置离地高度
+    QVariantMap shapeProperties;
+    shapeProperties.insert("altitude", 5.0); // 设置离地高度
+    symbol->setShapeProperties(shapeProperties);
+
     auto rule = std::make_unique<QgsRuleBased3DRenderer::Rule>(nullptr);
 
     rule->setSymbol(symbol.release());
