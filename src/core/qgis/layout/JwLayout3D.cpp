@@ -940,16 +940,21 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
 #else
     QgsVector3D qGisLayoutLookAtDiffCenter(lookAt.x() - centerX,  lookAt.z(), lookAt.y() - centerY);
 #endif
-    if (pitch_negate_threshold > 0) {
-        if (std::abs(qgisPitch) > pitch_negate_threshold) {
-            spdlog::debug("qgis pitch > {}: {}", pitch_negate_threshold, std::abs(qgisPitch));
+//     if (pitch_negate_threshold > 0) {
+//         if (std::abs(qgisPitch) > pitch_negate_threshold) {
+//             spdlog::debug("qgis pitch > {}: {}", pitch_negate_threshold, std::abs(qgisPitch));
+// #if _QGIS_VERSION_INT >= 34200
+//             qGisLayoutLookAtDiffCenter.setY(-qGisLayoutLookAtDiffCenter.y());
+// #else
+//             qGisLayoutLookAtDiffCenter.setZ(-qGisLayoutLookAtDiffCenter.z());
+// #endif
+//         }
+//     }
 #if _QGIS_VERSION_INT >= 34200
-            qGisLayoutLookAtDiffCenter.setY(-qGisLayoutLookAtDiffCenter.y());
+                qGisLayoutLookAtDiffCenter.setY(-qGisLayoutLookAtDiffCenter.y());
 #else
-            qGisLayoutLookAtDiffCenter.setZ(-qGisLayoutLookAtDiffCenter.z());
+                qGisLayoutLookAtDiffCenter.setZ(-qGisLayoutLookAtDiffCenter.z());
 #endif
-        }
-    }
     // 打印日志
     spdlog::info("QGIS center={}:{}:{} QGisLayoutLookAtDiffCenter: {}:{}:{} distance={} pitch={} yaw={}",
                  centerX, centerY, centerZ, qGisLayoutLookAtDiffCenter.x(), qGisLayoutLookAtDiffCenter.y(), qGisLayoutLookAtDiffCenter.z(),
