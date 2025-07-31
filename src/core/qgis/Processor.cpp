@@ -641,7 +641,13 @@ void Processor::fivePointGeometry(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonD
         for (size_t i = 0; i < coords->size(); i++) {
             geoPts.append(QgsPointXY((coords)[i][0], (coords)[i][1]));
         }
-        geoPts.append(QgsPointXY(cameraLongitude, cameraLatitude));
+        //geoPts.append(QgsPointXY(cameraLongitude, cameraLatitude));
+        // 检查摄像机位置是否已存在于 geoPts 中
+        QgsPointXY cameraPoint(cameraLongitude, cameraLatitude);
+        if (!geoPts.contains(cameraPoint)) {
+            geoPts.append(cameraPoint);
+        }
+
         QgsGeometry convex = QgsGeometry::fromMultiPointXY(geoPts).convexHull();
         spdlog::info("convex: {}", convex.asWkt().toStdString());
         coords->clear();
