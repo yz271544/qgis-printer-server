@@ -164,6 +164,22 @@ QgsAbstract3DRenderer* StylePoint::get3d_single_raster_symbol_renderer(
         const QJsonObject& layerStyle,
         QString& icon_path,
         qreal point_size) {
+
+    // QJsonDocument doc(layerStyle);
+    // QJsonDocument fdoc(fontStyle);
+    // spdlog::debug("fontStyle: {}, layerStyle: {}, point_size: {}", fdoc.toJson(QJsonDocument::Compact), doc.toJson(QJsonDocument::Compact), point_size);
+    float scale = 0.8f;
+    if (layerStyle.contains("scale")) {
+        try {
+            double aScale = layerStyle["scale"].toDouble();
+            if (aScale > 0.0 && aScale < 1.0) {
+                scale = static_cast<float>(aScale);
+            }
+        } catch (const std::exception& e) {
+            spdlog::error("parse scale error: {}", e.what());
+        }
+    }
+
     auto label_style = std::make_unique<QMap<QString, QVariant>>();
 
     if (fontStyle.contains("fontColor")) {
@@ -171,7 +187,6 @@ QgsAbstract3DRenderer* StylePoint::get3d_single_raster_symbol_renderer(
         std::pair<QString, float> colorOpacity = ColorTransformUtil::strRgbaToHex(font_color);
         label_style->insert("fontColor", colorOpacity.first);
         label_style->insert("fontOpacity", colorOpacity.second);
-
     }
     else {
         label_style->insert("fontColor", "#000000");
@@ -195,6 +210,7 @@ QgsAbstract3DRenderer* StylePoint::get3d_single_raster_symbol_renderer(
 
 
     float point_size_mm = QgsUtil::d300PixelToMm(static_cast<float>(point_size));
+    spdlog::debug("point_size: {} -> point_size_mm: {}", point_size, point_size_mm);
     // 创建一个嵌入式规则渲染器
     auto raster_marker = std::make_unique<QgsRasterMarkerSymbolLayer>(icon_path);
 
@@ -208,7 +224,15 @@ QgsAbstract3DRenderer* StylePoint::get3d_single_raster_symbol_renderer(
 
     auto symbol = std::make_unique<QgsPoint3DSymbol>();
     symbol->setShape(Qgis::Point3DShape::Billboard);
+    // 设置离地高度
+    symbol->setAltitudeClamping(Qgis::AltitudeClamping::Relative);
+    QMatrix4x4 transform = symbol->transform(); // 获取当前变换
+    //transform(1, 3) = 5.5;
+    transform(1, 3) = point_size_mm * scale;
+    symbol->setTransform(transform); // 应用新变换
+
     QgsMarkerSymbol* marker_symbol = symbol->billboardSymbol();
+
     marker_symbol->changeSymbolLayer(0, raster_marker.release());
 
     auto renderer = std::make_unique<QgsVectorLayer3DRenderer>();
@@ -279,11 +303,6 @@ QgsRuleBased3DRenderer* StylePoint::get3d_rule_renderer(
     auto null_material_settings = std::make_unique<QgsNullMaterialSettings>();
     symbol->setMaterialSettings(null_material_settings.release());
     symbol->setShape(Qgis::Point3DShape::Billboard);
-
-    // 设置离地高度
-    QVariantMap shapeProperties;
-    shapeProperties.insert("altitude", 5.0); // 设置离地高度
-    symbol->setShapeProperties(shapeProperties);
 
     auto rule = std::make_unique<QgsRuleBased3DRenderer::Rule>(nullptr);
 

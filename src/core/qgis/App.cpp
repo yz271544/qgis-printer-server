@@ -322,6 +322,7 @@ void App::addMap3dTileLayer(int num, QString& realistic3dPath, QVariantMap& info
 
     renderer3d->setMaximumScreenError(max_screen_error);
     tiled_scene_layer->setRenderer3D(renderer3d.release());
+    //tiled_scene_layer->elevationProperties()->setZOffset(-100);
 
     if (tiled_scene_layer->isValid()) {
         mProject->addMapLayer(tiled_scene_layer.release());

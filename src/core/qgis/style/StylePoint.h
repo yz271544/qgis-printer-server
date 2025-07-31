@@ -9,6 +9,7 @@
 #pragma execution_character_set("utf-8")
 #endif
 
+#include <qmatrix4x4.h>
 #include <spdlog/spdlog.h>
 #include <qgsrenderer.h>
 #include <qgis.h>
@@ -46,37 +47,35 @@
 
 class StylePoint {
 public:
+    static QgsFeatureRenderer *get2d_single_symbol_renderer();
 
-    static QgsFeatureRenderer* get2d_single_symbol_renderer();
+    static QgsFeatureRenderer *get2d_rule_based_renderer(
+        const QJsonObject &fontStyle,
+        const QJsonObject &layerStyle,
+        QString &icon_path,
+        qreal point_size);
 
-    static QgsFeatureRenderer* get2d_rule_based_renderer(
-            const QJsonObject& fontStyle,
-            const QJsonObject& layerStyle,
-            QString& icon_path,
-            qreal point_size);
+    static QgsAbstract3DRenderer *get3d_single_symbol_renderer(
+        QgsVectorLayer &point_layer,
+        const QJsonObject &fontStyle,
+        const QJsonObject &layerStyle,
+        QString &icon_path,
+        qreal point_size);
 
-    static QgsAbstract3DRenderer* get3d_single_symbol_renderer(
-            QgsVectorLayer& point_layer,
-            const QJsonObject& fontStyle,
-            const QJsonObject& layerStyle,
-            QString& icon_path,
-            qreal point_size);
+    static QgsAbstract3DRenderer *get3d_single_raster_symbol_renderer(
+        QgsVectorLayer &point_layer,
+        const QJsonObject &fontStyle,
+        const QJsonObject &layerStyle,
+        QString &icon_path,
+        qreal point_size);
 
-    static QgsAbstract3DRenderer* get3d_single_raster_symbol_renderer(
-            QgsVectorLayer& point_layer,
-            const QJsonObject& fontStyle,
-            const QJsonObject& layerStyle,
-            QString& icon_path,
-            qreal point_size);
-
-    static QgsRuleBased3DRenderer* get3d_rule_renderer(
-            QgsVectorLayer& point_layer,
-            const QJsonObject& fontStyle,
-            const QJsonObject& layerStyle,
-            QString& icon_path,
-            qreal point_size);
+    static QgsRuleBased3DRenderer *get3d_rule_renderer(
+        QgsVectorLayer &point_layer,
+        const QJsonObject &fontStyle,
+        const QJsonObject &layerStyle,
+        QString &icon_path,
+        qreal point_size);
 };
-
 
 
 #endif //CBOOT_STYLEPOINT_H
