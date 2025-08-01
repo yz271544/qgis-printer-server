@@ -348,12 +348,6 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
         } else {
             topicMapData->topicCategory = "";
         }
-        // show XServer Request body
-        if (m_verbose) {
-            auto topicMapDataJson = JsonUtil::convertDtoToQJsonObject(topicMapData);
-            spdlog::debug("topicMapData: {}",
-                          topicMapDataJson.toJson(QJsonDocument::JsonFormat::Compact).toStdString());
-        }
 
         if (plottingWeb->path3d != nullptr && !plottingWeb->path3d->empty()) {
             topicMapData->filterByCanvas = true;
@@ -362,6 +356,13 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
             topicMapData->path = plottingWeb->path;
         } else {
             topicMapData->filterByCanvas = true;
+        }
+
+        // show XServer Request body
+        if (m_verbose) {
+            auto topicMapDataJson = JsonUtil::convertDtoToQJsonObject(topicMapData);
+            spdlog::debug("topicMapData: {}",
+                          topicMapDataJson.toJson(QJsonDocument::JsonFormat::Compact).toStdString());
         }
 
         // 获取 XServer 绘图数据

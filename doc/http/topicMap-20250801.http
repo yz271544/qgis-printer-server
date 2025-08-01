@@ -1,0 +1,213 @@
+### POST topicMap
+POST http://{{host}}:{{port}}/api/guard/plotting/topicMap
+Authorization: Bearer {{token}}
+Content-Type: application/json
+Accept: */*
+Scenetype: 04
+
+{
+  "filterByCanvas": true,
+  "path": "/map/mnt/fakeRoot/data/mapdata/3DTiles/郑州测试使用/徐兰线接京广-3Dtile/tileset.json",
+  "sceneId": "1950731176045363201",
+  "scope": "{\"geometry\":{\"coordinates\":[[[112.9940062115069,34.66360260323983],[112.9940062115069,35.19402941081139],[114.289446190097,35.19402941081139],[114.289446190097,34.66360260323983],[112.9940062115069,34.66360260323983]]],\"type\":\"Polygon\"},\"properties\":{},\"type\":\"Feature\"}",
+  "topicCategory": ""
+}
+
+### Response
+HTTP/1.1 200 OK
+Connection: keep-alive
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Transfer-Encoding: chunked
+Content-Type: application/json; charset=UTF-8
+Date: Fri, 01 Aug 2025 03:05:21 GMT
+
+{
+  "msg": "操作成功",
+  "code": 200,
+  "data": {
+    "sceneMap": [
+      {
+        "id": "1942123019331239938",
+        "sceneId": "1937796764201562113",
+        "name": "rgdc",
+        "type": "01",
+        "filePath": "/map/mnt/fakeRoot/data/mapdata/3DTiles/瑞光电厂OSGB切片/tileset.json",
+        "position": "",
+        "pushDate": "2025-07-06 00:00:00",
+        "lngLat": "[112.720656,37.785424,863.6]",
+        "lngLatAlt": "[0,0,-10]",
+        "yaw": "0",
+        "pitch": "0",
+        "roll": "0",
+        "loadFlag": true,
+        "lineWidth": "2",
+        "color": "rgba(0,0,255,1)",
+        "showLevel": "[0,20]",
+        "remark": "",
+        "belong": null,
+        "sceneIds": null
+      }
+    ],
+    "plottings": [
+      {
+        "special": "{\"loadFlag\":false,\"type\":\"01\",\"color\":\"rgba(255,255,255,1)\",\"num\":\"\",\"radius\":100}",
+        "isPoint": false,
+        "code": "0105",
+        "attachment": "data:image/png;base64,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",
+        "pcode": "01",
+        "name": "治安",
+        "icon": "/common/legend/治安.png",
+        "plottingNum": 1,
+        "fontStyle": "{\"loadFlag\":true,\"fontSize\":20,\"fontColor\":\"rgba(0, 50, 230, 1)\",\"borderColor\":\"rgba(255,255,255,1)\",\"x\":0,\"y\":35}",
+        "plottings": [
+          {
+            "createBy": "jingwei",
+            "createTime": "2025-08-01 02:42:13",
+            "updateBy": "jingwei",
+            "updateTime": "2025-08-01 02:42:13",
+            "remark": null,
+            "id": "1951111192363712513",
+            "sceneId": "1937796764201562113",
+            "plottingType": 0,
+            "coverageId": "07e10c9a-f18c-11ee-bfc1-fa163ebdd4f8",
+            "coverageCode": "0105",
+            "basicsPropertiesJson": "{\"code\":\"0105\",\"ethnicity\":\"\",\"jobResume\":\"\",\"latitude\":37.787567,\"remark\":\"\",\"birthTime\":\"\",\"type\":\"02.watchkeeper\",\"watchkeeperHeight\":\"\",\"politicsStatus\":\"\",\"psychologicalResult\":\"\",\"post\":\"\",\"tel\":\"\",\"company\":\"\",\"politicalReview\":\"\",\"longitude\":112.718058,\"leadTel\":\"\",\"educationBackground\":\"\",\"sex\":\"\",\"dept\":\"\",\"majorTaskInfo\":\"\",\"heathCondition\":\"\",\"lead\":\"\",\"watchkeeperProfessionType\":\"\",\"watchkeeperPostType\":\"\",\"birthplace\":\"\",\"personnelId\":\"1401081982011725116\",\"name\":\"111\",\"trainingBackground\":\"\",\"duty\":\"\",\"watchkeeperTeamType\":\"\",\"layName\":\"治安\",\"typeValue\":\"02\",\"position\":\"\"}",
+            "basicParamsPropertiesJson": null,
+            "extendPropertiesJson": "[{\"label\":\"\",\"val\":\"\"}]",
+            "name": "111",
+            "licensePlateNumber": null,
+            "longitudeLatitude": "{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[112.718058,37.787567]},\"properties\":{}}",
+            "shape": "{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[112.718058,37.787567,851.875194]},\"properties\":{}}",
+            "styleFlag": 0,
+            "layerFlag": 1,
+            "styleInfoJson": "{\"color\":\"rgba(255,255,255,1)\",\"bim\":\"\",\"num\":\"\",\"loadFlag\":false,\"type\":\"01\",\"fontStyle\":{\"borderColor\":\"rgba(255,255,255,1)\",\"loadFlag\":true,\"x\":0,\"y\":35,\"fontSize\":20,\"fontColor\":\"rgba(0, 50, 230, 1)\"},\"radius\":100}",
+            "realityImagesOne": "",
+            "realityImagesTwo": "",
+            "rangeImages": "",
+            "images": "",
+            "sort": 1,
+            "delFlag": false,
+            "watchPerson": "[]",
+            "equipment": "[]",
+            "bindDeviceId": null,
+            "status": "00",
+            "binding": null,
+            "directoryId": "0",
+            "watchPersonInfo": [],
+            "coverageCodes": null,
+            "plottingTypeQuery": null,
+            "plottingTypes": null
+          }
+        ],
+        "layerStyle": "{\"scale\":0.8}"
+      },
+      {
+        "special": "{\"loadFlag\":false,\"type\":\"01\",\"color\":\"rgba(255,255,255,1)\",\"num\":\"\",\"radius\":100}",
+        "isPoint": false,
+        "code": "01120",
+        "attachment": "data:image/png;base64,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",
+        "pcode": "01",
+        "name": "交警",
+        "icon": "/common/legend/交警.png",
+        "plottingNum": 1,
+        "fontStyle": "{\"loadFlag\":true,\"fontSize\":20,\"fontColor\":\"rgba(255,255,255,1)\",\"borderColor\":\"rgba(255,255,255,1)\",\"x\":0,\"y\":50}",
+        "plottings": [
+          {
+            "createBy": "jingwei",
+            "createTime": "2025-08-01 02:42:43",
+            "updateBy": "jingwei",
+            "updateTime": "2025-08-01 02:42:43",
+            "remark": null,
+            "id": "1951111317723070466",
+            "sceneId": "1937796764201562113",
+            "plottingType": 0,
+            "coverageId": "1862424270485897217",
+            "coverageCode": "01120",
+            "basicsPropertiesJson": "{\"code\":\"01120\",\"ethnicity\":\"\",\"jobResume\":\"\",\"latitude\":37.782729,\"remark\":\"\",\"birthTime\":\"\",\"type\":\"07.watchkeeper\",\"watchkeeperHeight\":\"\",\"politicsStatus\":\"\",\"psychologicalResult\":\"\",\"post\":\"\",\"tel\":\"\",\"company\":\"\",\"politicalReview\":\"\",\"longitude\":112.722852,\"leadTel\":\"\",\"educationBackground\":\"\",\"sex\":\"\",\"dept\":\"\",\"majorTaskInfo\":\"\",\"heathCondition\":\"\",\"lead\":\"\",\"watchkeeperProfessionType\":\"\",\"watchkeeperPostType\":\"\",\"birthplace\":\"\",\"personnelId\":\"140108199110192313\",\"name\":\"222\",\"trainingBackground\":\"\",\"duty\":\"\",\"watchkeeperTeamType\":\"\",\"layName\":\"交警\",\"typeValue\":\"07\",\"position\":\"\"}",
+            "basicParamsPropertiesJson": null,
+            "extendPropertiesJson": "[{\"label\":\"\",\"val\":\"\"}]",
+            "name": "222",
+            "licensePlateNumber": null,
+            "longitudeLatitude": "{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[112.722852,37.782729]},\"properties\":{}}",
+            "shape": "{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[112.722852,37.782729,879.958255]},\"properties\":{}}",
+            "styleFlag": 0,
+            "layerFlag": 1,
+            "styleInfoJson": "{\"color\":\"rgba(255,255,255,1)\",\"bim\":\"\",\"num\":\"\",\"loadFlag\":false,\"type\":\"01\",\"fontStyle\":{\"borderColor\":\"rgba(255,255,255,1)\",\"loadFlag\":true,\"x\":0,\"y\":50,\"fontSize\":20,\"fontColor\":\"rgba(255,255,255,1)\"},\"radius\":100}",
+            "realityImagesOne": "",
+            "realityImagesTwo": "",
+            "rangeImages": "",
+            "images": "",
+            "sort": 1,
+            "delFlag": false,
+            "watchPerson": "[]",
+            "equipment": "[]",
+            "bindDeviceId": null,
+            "status": "00",
+            "binding": null,
+            "directoryId": "0",
+            "watchPersonInfo": [],
+            "coverageCodes": null,
+            "plottingTypeQuery": null,
+            "plottingTypes": null
+          }
+        ],
+        "layerStyle": "{\"scale\":1}"
+      },
+      {
+        "special": "{\"loadFlag\":false,\"material\":\"01\",\"color\":\"rgba(255,255,255,1)\",\"height\":50}",
+        "isPoint": false,
+        "code": "0206",
+        "attachment": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAEAQMAAADVia+XAAAAA1BMVEWCxfRJluc6AAAACklEQVQI12PAAgAAFAAB8OkRlAAAAABJRU5ErkJggg==",
+        "pcode": "02",
+        "name": "城市道路",
+        "icon": "/common/legend/城市道路.png",
+        "plottingNum": 1,
+        "fontStyle": "{\"loadFlag\":true,\"fontSize\":20,\"fontColor\":\"rgba(130, 196, 244, 1)\",\"borderColor\":\"rgba(255,255,255,1)\",\"x\":0,\"y\":35}",
+        "plottings": [
+          {
+            "createBy": "jingwei",
+            "createTime": "2025-08-01 02:43:13",
+            "updateBy": "jingwei",
+            "updateTime": "2025-08-01 02:43:13",
+            "remark": null,
+            "id": "1951111446102327297",
+            "sceneId": "1937796764201562113",
+            "plottingType": 1,
+            "coverageId": "07fdba5f-f18c-11ee-bfc1-fa163ebdd4f8",
+            "coverageCode": "0206",
+            "basicsPropertiesJson": "{\"code\":\"0206\",\"latitude\":37.781937,\"typeName\":\"公路\",\"remark\":\"\",\"type\":\"02\",\"speed\":0,\"end\":0,\"id\":\"\",\"kuandu\":0,\"longitude\":112.723379,\"height\":876.985673,\"leadTel\":\"\",\"heightDifference\":\"11.664225\",\"start\":0,\"heightDifferenceUnit\":\"m\",\"totalLength\":\"1.79\",\"totalLengthUnit\":\"m\",\"prop7\":\"\",\"fenbu\":\"\",\"lead\":\"\",\"lngLatAlt\":\"{\\\"type\\\":\\\"Feature\\\",\\\"geometry\\\":{\\\"type\\\":\\\"LineString\\\",\\\"coordinates\\\":[[112.718601,37.787021,881.284502],[112.718627,37.782142,874.26523],[112.723379,37.781937,876.985673],[112.723519,37.785974,885.929455]]},\\\"properties\\\":{}}\",\"police\":\"\",\"name\":\"aaa\",\"layName\":\"城市道路\",\"position\":\"\"}",
+            "basicParamsPropertiesJson": null,
+            "extendPropertiesJson": "[{\"label\":\"\",\"val\":\"\"}]",
+            "name": "aaa",
+            "licensePlateNumber": null,
+            "longitudeLatitude": "{\"type\":\"Feature\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[112.723379,37.781937,876.985673]},\"properties\":{}}",
+            "shape": "{\"type\":\"Feature\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[112.718601,37.787021,881.284502],[112.718627,37.782142,874.26523],[112.723379,37.781937,876.985673],[112.723519,37.785974,885.929455]]},\"properties\":{}}",
+            "styleFlag": 0,
+            "layerFlag": 1,
+            "styleInfoJson": "{\"dxFlag\":false,\"bim\":\"\",\"hcFlag\":false,\"fontStyle\":{\"borderColor\":\"rgba(255,255,255,1)\",\"loadFlag\":true,\"x\":0,\"y\":35,\"fontSize\":20,\"fontColor\":\"rgba(130, 196, 244, 1)\"},\"jb\":1,\"jbList\":[{\"color\":\"rgba(125,142,52,0.7)\",\"num\":10}]}",
+            "realityImagesOne": "",
+            "realityImagesTwo": "",
+            "rangeImages": null,
+            "images": null,
+            "sort": 1,
+            "delFlag": false,
+            "watchPerson": "[]",
+            "equipment": null,
+            "bindDeviceId": null,
+            "status": "00",
+            "binding": null,
+            "directoryId": "0",
+            "watchPersonInfo": [],
+            "coverageCodes": null,
+            "plottingTypeQuery": null,
+            "plottingTypes": null
+          }
+        ],
+        "layerStyle": "{\"type\":\"01\",\"width\":8,\"interval\":50,\"dashedColor\":\"rgba(255,255,255,1)\",\"color\":\"rgba(130, 196, 244, 1)\"}"
+      }
+    ]
+  }
+}
+###

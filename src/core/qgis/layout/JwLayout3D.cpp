@@ -864,8 +864,8 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
     if (infos.contains(PLOTTING_MIN_HEIGHT)) {
         centerZ = infos[PLOTTING_MIN_HEIGHT].value<double>();
     }
-    if (centerZ == 0) {
-        centerZ = 1;
+    if (centerZ <= 10) {
+        centerZ = 10;
     }
     spdlog::debug("centerZ: {}", centerZ);
 
@@ -1291,9 +1291,9 @@ void JwLayout3D::addPrintLayout(
     double default_ground_altitude,
     double pitch_negate_threshold) {
 
-    auto plottingJson =
+    /*auto plottingJson =
             JsonUtil::variantMapToJson(const_cast<QVariantMap &>(plottingWeb));
-    spdlog::info("添加打印布局: {}", plottingJson.toJson());
+    spdlog::info("添加打印布局: {}", plottingJson.toJson());*/
 
     // 初始化布局
     spdlog::info("初始化3d布局");
