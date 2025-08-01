@@ -266,6 +266,30 @@ public:
     QJsonObject getStyleInfoJson();
 };
 
+class SceneMapDataDto : public oatpp::DTO {
+    DTO_INIT(SceneMapDataDto, DTO)
+
+    DTO_FIELD(String, id);
+    DTO_FIELD(String, sceneId);
+    DTO_FIELD(String, name);
+    DTO_FIELD(String, type);
+    DTO_FIELD(String, filePath);
+    DTO_FIELD(String, position);
+    DTO_FIELD(String, pushDate);
+    DTO_FIELD(String, lngLat);
+    DTO_FIELD(String, lngLatAlt);
+    DTO_FIELD(String, yaw);
+    DTO_FIELD(String, pitch);
+    DTO_FIELD(String, roll);
+    DTO_FIELD(Boolean, loadFlag);
+    DTO_FIELD(String, lineWidth);
+    DTO_FIELD(String, color);
+    DTO_FIELD(String, showLevel);
+    DTO_FIELD(String, remark);
+    DTO_FIELD(String, belong);
+    DTO_FIELD(String, sceneIds);
+};
+
 class PlottingDataDto : public oatpp::DTO {
     DTO_INIT(PlottingDataDto, DTO)
 
@@ -290,12 +314,19 @@ public:
     QJsonObject getLayerStyleJson();
 };
 
+class TopicMapRespDto : public oatpp::DTO {
+    DTO_INIT(TopicMapRespDto, DTO)
+
+    DTO_FIELD(List<Object<SceneMapDataDto>>, sceneMaps);
+    DTO_FIELD(List<Object<PlottingDataDto>>, plottings);
+};
+
 class PlottingRespDto: public oatpp::DTO {
     DTO_INIT(PlottingRespDto, DTO)
 
     DTO_FIELD(Int32, code);
     DTO_FIELD(String, msg);
-    DTO_FIELD(List<Object<PlottingDataDto>>, data);
+    DTO_FIELD(Object<TopicMapRespDto>, data);
 };
 
 #include OATPP_CODEGEN_END(DTO)

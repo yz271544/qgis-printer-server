@@ -66,7 +66,7 @@ public:
      * @param num
      * @param realistic3dPath
      */
-    void addMap3dTileLayer(int num, QString& realistic3dPath, QVariantMap& infos);
+    void addMap3dTileLayer(int num, QString& realistic3dPath, QVariantMap& infos, QJsonDocument& sceneMap);
 
     void refreshCanvasExtent();
 

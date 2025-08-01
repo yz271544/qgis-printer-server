@@ -184,7 +184,7 @@ TEST(dtoQJson, testDeserializerTopicFile) {
         GTEST_LOG_(INFO) << "plottingRespDto msg: " << plottingRespDto->msg->c_str();
         /*QJsonDocument body = JsonUtil::convertDtoToQJsonObject(plottingRespDto);
         GTEST_LOG_(INFO) << "plottingRespDto body: " << body.toJson().toStdString();*/
-        auto data = plottingRespDto->data;
+        auto data = plottingRespDto->data->plottings;
         GTEST_LOG_(INFO) << "plottingRespDto data size: " << data->size();
 
         for (const auto &dataItem: *data.get()) {

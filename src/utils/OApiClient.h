@@ -37,6 +37,7 @@ class TopicMapData : public oatpp::DTO {
     DTO_FIELD(String, scope);
     DTO_FIELD(String, topicCategory);
     DTO_FIELD(Boolean, filterByCanvas);
+    DTO_FIELD(String, path);
 };
 
 class ErrorResponse : public oatpp::DTO {

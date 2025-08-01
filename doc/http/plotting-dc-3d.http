@@ -4,27 +4,9 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "selectPath": true,
-  "path": "/map/orthogonal/瑞光电厂-DOM",
-  "path3d": "/map/realistic3d/瑞光电厂切片/tileset.json",
-  "camera": {
-    "cameraLongitude": 112.7206564553031,
-    "cameraLatitude": 37.76311083914113,
-    "cameraHeight": 2943.133305511889,
-    "cameraDirX": 0.3774950189635327,
-    "cameraDirY": -0.9015178144978879,
-    "cameraDirZ": 0.2115730152941863,
-    "cameraUpX": -0.08171766809856015,
-    "cameraUpY": 0.1951547168817799,
-    "cameraUpZ": 0.9773621944802888,
-    "cameraRightX": -0.9223989014402911,
-    "cameraRightY": -0.3862386135819984,
-    "cameraRightZ": 3.26405569239796e-14,
-    "fov": 1.047197551196598,
-    "aspectRatio": 2.152466367713004,
-    "nearPlane": 0.1,
-    "farPlane": 10000000000
-  },
+  "selectPath": false,
+  "path": "",
+  "path3d": "/map/mnt/fakeRoot/data/mapdata/3DTiles/瑞光电厂OSGB切片/tileset.json",
   "tileIndex": [
     [
       0,
@@ -35,8 +17,8 @@ Authorization: Bearer {{token}}
       -5821555
     ]
   ],
-  "sceneId": "1898224049056694273",
-  "sceneName": "太原高速公路",
+  "sceneId": "1937796764201562113",
+  "sceneName": "多个地方11",
   "geojson": {
     "type": "Feature",
     "geometry": {
@@ -44,29 +26,28 @@ Authorization: Bearer {{token}}
       "coordinates": [
         [
           [
-            112.6764976139788,
-            37.78165418732383
+            112.67597508761678,
+            37.781273139782606
           ],
           [
-            112.6764976139788,
-            37.82003153020722
+            112.67597508761678,
+            37.834828102781835
           ],
           [
-            112.7648152969363,
-            37.82003153020722
+            112.76533782335784,
+            37.834828102781835
           ],
           [
-            112.7648152969363,
-            37.78165418732383
+            112.76533782335784,
+            37.781273139782606
           ]
         ]
       ]
     },
     "properties": {}
   },
-  "savePath": null,
   "handleFlag": false,
-  "sceneType": "01",
+  "sceneType": "undefined",
   "layinfo": {
     "title": {
       "text": "标题",
@@ -85,9 +66,9 @@ Authorization: Bearer {{token}}
     "legend": {
       "position": [
         84,
-        20,
-        46,
-        80
+        65,
+        16,
+        35
       ]
     },
     "bgPic": {
@@ -119,7 +100,7 @@ Authorization: Bearer {{token}}
         2,
         8
       ],
-      "rotate": 4
+      "rotate": 0
     },
     "scaleBar": false
   },
@@ -129,5 +110,34 @@ Authorization: Bearer {{token}}
     "map": true,
     "electron": false,
     "is3D": true
-  }
+  },
+  "camera": {
+    "cameraLongitude": 112.72065645530303,
+    "cameraLatitude": 37.771209077494646,
+    "cameraHeight": 2178.12111863811,
+    "cameraDirX": 0.3774950185458905,
+    "cameraDirY": -0.9015178135008075,
+    "cameraDirZ": 0.21157302028793967,
+    "cameraUpX": -0.08171767002743413,
+    "cameraUpY": 0.1951547214879727,
+    "cameraUpZ": 0.9773621933992737,
+    "cameraRightX": -0.9223989014403287,
+    "cameraRightY": -0.3862386135819085,
+    "cameraRightZ": -9.25370891025068e-14,
+    "fov": 1.0471975511965976,
+    "aspectRatio": 1.37108953613808,
+    "nearPlane": 0.1,
+    "farPlane": 10000000000,
+    "centerLongitude": 112.72065645527537,
+    "centerLatitude": 37.794590005537685,
+    "centerHeight": 916.6617756483026,
+    "heading": "0.00",
+    "pitch": "-40.01",
+    "roll": "360.00"
+  },
+  "clarity": 800
 }
+
+### Response
+
+###

@@ -356,7 +356,10 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
         }
 
         if (plottingWeb->path3d != nullptr && !plottingWeb->path3d->empty()) {
-            topicMapData->filterByCanvas = false;
+            topicMapData->filterByCanvas = true;
+            topicMapData->path = plottingWeb->path3d;
+        } else if (plottingWeb->path != nullptr && !plottingWeb->path->empty()) {
+            topicMapData->path = plottingWeb->path;
         } else {
             topicMapData->filterByCanvas = true;
         }
@@ -385,6 +388,14 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
         QMetaObject::invokeMethod(qApp, [this, plottingWeb, plottingRespDto, layoutType, promise, &eventLoop]() {
             //QTimer::singleShot(0, tempRecever, [this, plottingWeb, plottingRespDto, layoutType, promise, &eventLoop]() {
             spdlog::debug("Inside invokeMethod lambda: start");
+
+            QMap<QString, QJsonDocument> sceneMap;
+            auto sceneMaps = plottingRespDto->data->sceneMaps;
+            for (const auto &sceneMapItem: *sceneMaps) {
+                sceneMap.insert(QString::fromStdString(sceneMapItem->filePath),
+                                JsonUtil::convertDtoToQJsonObject(sceneMapItem));
+            }
+
             auto responseDto = ResponseDto::createShared();
             try {
                 QVariantMap infos;
@@ -426,6 +437,7 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                     QStringList real_3d_paths = plottingWebPath3ds.split(",");
                     for (int i = 0; i < real_3d_paths.size(); ++i) {
                         QString path3d = real_3d_paths[i].trimmed();
+                        auto mapInfo = sceneMap.take(path3d);
                         QStringList path3d_arr = path3d.split("/");
                         if (path3d_arr.last() == "tileset.json") {
                             path3d = path3d_arr[path3d_arr.size() - 2];
@@ -448,7 +460,7 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                             spdlog::debug("set default max_screen_error: {}", m_default_max_screen_error);
                             infos.insert(TILE3D_MAX_SCREEN_ERROR, m_default_max_screen_error);
                         }
-                        m_app->addMap3dTileLayer(i, real_3d_path, infos);
+                        m_app->addMap3dTileLayer(i, real_3d_path, infos, mapInfo);
                     }
                 }
 
@@ -693,7 +705,7 @@ void Processor::checkDealWithClosedGeometry(const DTOWRAPPERNS::DTOWrapper<GeoPo
 
 
 void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &plotting_data, QVariantMap& infos) {
-    auto map_plot_payloads = plotting_data->data;
+    auto map_plot_payloads = plotting_data->data->plottings;
 
     // 遍历每个 payload
     for (const auto &payloads: *map_plot_payloads) {

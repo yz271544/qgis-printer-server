@@ -270,7 +270,7 @@ void App::addMapMainTileLayer(int num, QString& orthogonalPath) {
     }
 }
 
-void App::addMap3dTileLayer(int num, QString& realistic3dPath, QVariantMap& infos) {
+void App::addMap3dTileLayer(int num, QString& realistic3dPath, QVariantMap& infos, QJsonDocument& mapInfo) {
 
     if (realistic3dPath.isEmpty()) {
         spdlog::error("realistic3dPath is empty");
@@ -322,7 +322,23 @@ void App::addMap3dTileLayer(int num, QString& realistic3dPath, QVariantMap& info
 
     renderer3d->setMaximumScreenError(max_screen_error);
     tiled_scene_layer->setRenderer3D(renderer3d.release());
-    //tiled_scene_layer->elevationProperties()->setZOffset(-100);
+
+    QJsonObject mapInfoObj = mapInfo.object();
+    if (mapInfoObj.contains("lngLatAlt")) {
+        auto lngLatAlt = mapInfoObj.take("lngLatAlt").toString();
+        auto lngLatAltArr = JsonUtil::convertStringToJsonDoc(lngLatAlt).array();
+        if (lngLatAltArr.size() == 3) {
+            try {
+                double alt = lngLatAltArr[2].toDouble();
+                tiled_scene_layer->elevationProperties()->setZOffset(alt);
+            } catch (std::exception &e) {
+                spdlog::error("set elevationProperties zOffset error: {}", e.what());
+                throw DataError("set elevationProperties zOffset error: " + std::string(e.what()));
+            }
+        } else {
+            spdlog::warn("lngLatAlt array size is not 3, size: {}", lngLatAltArr.size());
+        }
+    }
 
     if (tiled_scene_layer->isValid()) {
         mProject->addMapLayer(tiled_scene_layer.release());
