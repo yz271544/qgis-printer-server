@@ -438,6 +438,16 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                     for (int i = 0; i < real_3d_paths.size(); ++i) {
                         QString path3d = real_3d_paths[i].trimmed();
                         auto mapInfo = sceneMap.take(path3d);
+                        auto mapInfoObj = mapInfo.object();
+                        if (mapInfoObj.contains("loadFlag")) {
+                            bool loadFlag = mapInfoObj.take("loadFlag").toBool();
+                            if (!loadFlag) {
+                                spdlog::info("skip load 3d tileset: {}", path3d.toStdString());
+                                continue;
+                            }
+                        } else {
+                            continue;
+                        }
                         QStringList path3d_arr = path3d.split("/");
                         if (path3d_arr.last() == "tileset.json") {
                             path3d = path3d_arr[path3d_arr.size() - 2];
