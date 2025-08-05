@@ -45,7 +45,7 @@ jobs:
             c_compiler: cl
 
     steps:
-    - uses: yz271544/checkout@v4
+    - uses: yz271544/checkout
 
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
