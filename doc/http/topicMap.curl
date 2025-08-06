@@ -1,0 +1,6 @@
+curl -X POST \
+-H "Content-Type: application/json" \
+-H "sceneType: 00" \
+-H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJsb2dpblR5cGUiOiJsb2dpbiIsImxvZ2luSWQiOiJzeXNfdXNlcjoxNSIsInJuU3RyIjoib2hRNUlnS0w5MWhOZUtONVkyTmFaWkhmNWlrMnQ1Uk8iLCJ1c2VySWQiOjE1fQ.sKtPJZl9egKJKJYcuIdMueXB6CUk7OzfNwv-3ybgkV8" \
+-d '{"filterByCanvas":null,"path":null,"sceneId":"1944574407467921409","scope":"{\"geometry\":{\"coordinates\":[[[113.0243628832251,34.75822640250291],[113.0243628832251,35.36237620002284],[114.5017609408404,35.36237620002284],[114.5017609408404,34.75822640250291],[113.0243628832251,34.75822640250291]]],\"type\":\"Polygon\"},\"properties\":{},\"type\":\"Feature\"}","topicCategory":""}' \
+http://172.16.117.71:48089/api/guard/plotting/topicMap

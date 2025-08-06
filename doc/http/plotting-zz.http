@@ -1,0 +1,155 @@
+### POST plotting
+POST http://{{host}}:{{port}}/api/qgz
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "camera": {
+    "aspectRatio": 1.216738197424893,
+    "cameraDirX": -0.7107209599414852,
+    "cameraDirY": -0.5932350607248105,
+    "cameraDirZ": -0.3780844876832219,
+    "cameraHeight": 352.9977784089032,
+    "cameraLatitude": 34.76081260111744,
+    "cameraLongitude": 113.7630619120328,
+    "cameraRightX": -0.05965311404114186,
+    "cameraRightY": 0.5863408572854987,
+    "cameraRightZ": -0.8078650289886924,
+    "cameraUpX": -0.7009402421640862,
+    "cameraUpY": 0.5516126918450457,
+    "cameraUpZ": 0.4521130556734841,
+    "centerHeight": 71.71916884945693,
+    "centerLatitude": 34.75958562529067,
+    "centerLongitude": 113.7711073661222,
+    "farPlane": 10000000000,
+    "fov": 1.047197551196598,
+    "heading": "100.47",
+    "nearPlane": 0.1,
+    "pitch": "-25.24",
+    "roll": "360.00"
+  },
+  "clarity": 800,
+  "geojson": {
+    "geometry": {
+      "coordinates": [
+        [
+          [
+            113.0243628832251,
+            34.75822640250291
+          ],
+          [
+            113.0243628832251,
+            35.36237620002284
+          ],
+          [
+            114.5017609408404,
+            35.36237620002284
+          ],
+          [
+            114.5017609408404,
+            34.75822640250291
+          ]
+        ]
+      ],
+      "type": "Polygon"
+    },
+    "properties": {},
+    "type": "Feature"
+  },
+  "handleFlag": false,
+  "layinfo": {
+    "arrows": [],
+    "bgPic": {
+      "borderColor": "#FF0000",
+      "borderWidth": 3,
+      "doubleFrame": true
+    },
+    "legend": {
+      "borderColor": null,
+      "position": [
+        84,
+        65,
+        16,
+        35
+      ]
+    },
+    "north": {
+      "position": [
+        97,
+        1,
+        2,
+        8
+      ],
+      "rotate": 260
+    },
+    "remark": [
+      {
+        "borderColor": "",
+        "color": "rgba(0,0,0,1)",
+        "fillColor": "rgba(255,255,255,1)",
+        "fontSize": 18,
+        "position": [
+          0,
+          80,
+          28,
+          10
+        ],
+        "text": "备注",
+        "url": ""
+      }
+    ],
+    "scaleBar": false,
+    "subTitle": {
+      "color": "rgba(0,0,0,1)",
+      "fontSize": 16,
+      "text": ""
+    },
+    "title": {
+      "borderColor": "",
+      "color": "rgba(0,0,0,1)",
+      "fillColor": "",
+      "fontBorderColor": "",
+      "fontSize": 28,
+      "position": [],
+      "text": "标题"
+    }
+  },
+  "mapType": {
+    "electron": false,
+    "is3D": true,
+    "map": true
+  },
+  "paper": "a3",
+  "path": "",
+  "path3d": "/map/mnt/data/3DTiles/重点区域/郑州东站-3Dtiles/tileset.json,/map/mnt/data/3DTiles/重点区域/国际会展中心-3Dtile/tileset.json,/map/mnt/data/3DTiles/高铁沿线/京广线-3Dtiles/京广线1段-3Dtile/tileset.json,/map/mnt/data/3DTiles/高铁沿线/京广线-3Dtiles/京广线2段-3Dtile/tileset.json,/map/mnt/data/3DTiles/高铁沿线/京广线-3Dtiles/京广线4段-3Dtile/tileset.json,/map/mnt/data/3DTiles/高铁沿线/京广线-3Dtiles/京广线6段-3Dtile/tileset.json,/map/mnt/data/3DTiles/高铁沿线/京广线-3Dtiles/京广线最南段-3Dtile/tileset.json,/map/mnt/data/3DTiles/城际道路/国际会展中心-黄河迎宾馆（中州大道南段）-3Dtile/tileset.json,/map/mnt/data/3DTiles/城际道路/国际会展中心-黄河迎宾馆（中州大道北段）-3Dtile/tileset.json,/map/mnt/data/3DTiles/重点区域/黄河迎宾馆-3Dtile/tileset.json,/map/mnt/data/3DTiles/城际道路/中州大道接黄河迎宾馆-3Dilte/tileset.json,/map/mnt/data/3DTiles/城际道路/北三环-3Dtile/tileset.json,/map/mnt/data/3DTiles/重点区域/人民大会堂-3Dtile/tileset.json",
+  "pictureUnit": "制图单位：    时间：",
+  "savePath": null,
+  "sceneId": "1944574407467921409",
+  "sceneName": "郑州东站警卫要素部署图郑东分局0714",
+  "sceneType": "03",
+  "selectPath": false,
+  "tileIndex": [
+    [
+      0,
+      0
+    ],
+    [
+      1048576,
+      -5821555
+    ]
+  ],
+  "topicCategory": null
+}
+
+### Response
+HTTP/1.1 200 OK
+Server: TornadoServer/6.4.1
+Content-Type: application/json; charset=UTF-8
+Date: Thu, 07 Nov 2024 07:12:42 GMT
+Content-Length: 141
+
+{
+  "project_zip_url": "http://localhost:80/jingweipy/test.zip",
+  "image_url": "http://localhost:80/jingweipy/local/test-位置图.png"
+}
+###
