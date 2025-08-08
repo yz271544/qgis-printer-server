@@ -380,13 +380,8 @@ public:
             return nullptr;
         }
         try {
-            if (response->getStatusCode() == 200) {
-                auto loginObj = response->readBodyToDto<oatpp::Object<PlottingRespDto>>(m_objectMapper.get());
-                return loginObj;
-            } else {
-                spdlog::error("XServer Response Failed to fetch login response: {}", response->getStatusCode());
-                return nullptr;
-            }
+            auto loginObj = response->readBodyToDto<oatpp::Object<PlottingRespDto>>(m_objectMapper.get());
+            return loginObj;
         } catch (const std::exception& e) {
             spdlog::error("Printer Failed to fetch login response: {}", e.what());
             return nullptr;

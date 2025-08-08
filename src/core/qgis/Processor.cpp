@@ -354,8 +354,9 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
             topicMapData->path = plottingWeb->path3d;
         } else if (plottingWeb->path != nullptr && !plottingWeb->path->empty()) {
             topicMapData->path = plottingWeb->path;
-        } else {
             topicMapData->filterByCanvas = true;
+        } else {
+            topicMapData->filterByCanvas = false;
         }
 
         // show XServer Request body
