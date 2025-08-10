@@ -53,6 +53,7 @@ qgis:
   offset_pull_pitch: 11
   default_ground_altitude: 810
   pitch_negate_threshold: 45.0
+  sync_wait_time_second: 120000
 specification:
   - name: "现场位置图"
     local: "local"

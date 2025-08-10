@@ -150,6 +150,8 @@ inline std::string MESA_GL_VERSION_OVERRIDE = getEnvValue<std::string>("MESA_GL_
 
 inline double PITCH_NEGATE_THRESHOLD = getEnvValue<double>("PITCH_NEGATE_THRESHOLD", 45.0);
 
+inline int SYNC_WAIT_TIME_SECOND = getEnvValue<std::int32_t>("SYNC_WAIT_TIME_SECOND", 120000);
+
 #ifdef OATPP_VERSION_LESS_1_4_0
 #define DTOWRAPPERNS oatpp::data::mapping::type
 #define OBJECTMAPPERNS oatpp::parser::json::mapping

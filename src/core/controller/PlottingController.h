@@ -5,6 +5,7 @@
 #ifndef PLOTTINGCONTROLLER_H
 #define PLOTTINGCONTROLLER_H
 
+#include <yaml-cpp/yaml.h>
 #include <oatpp/codegen/api_controller/base_define.hpp>
 #include <oatpp/network/Server.hpp>
 #include <oatpp/web/server/HttpConnectionHandler.hpp>
@@ -34,14 +35,18 @@
 class PlottingController : public oatpp::web::server::api::ApiController {
 private:
     PlottingService *m_plottingService; // 业务逻辑服务类
+    YAML::Node *m_config;
+    int32_t m_sync_wait_time_second;
 public:
     PlottingController(std::shared_ptr<OBJECTMAPPERNS::ObjectMapper> &objectMapper,
                        oatpp::String &routePrefix,
-                       PlottingService *plottingService);
+                       PlottingService *plottingService,
+                       YAML::Node* config);
 
     static std::shared_ptr<PlottingController> createShared(std::shared_ptr<OBJECTMAPPERNS::ObjectMapper> &objectMapper,
                                                             oatpp::String &routePrefix,
-                                                            PlottingService *plottingService);
+                                                            PlottingService *plottingService,
+                                                            YAML::Node* config);
 
     /**
      * async Endpoint
@@ -93,7 +98,7 @@ public:
                         callback(this, done, responseDto);
                     });
 
-            std::chrono::milliseconds duration_predefine_milliseconds(120000);
+            std::chrono::milliseconds duration_predefine_milliseconds(plottingController->m_sync_wait_time_second);
             return m_cv.waitFor(m_lockGuard, [this] {
                 return m_done;
             }, duration_predefine_milliseconds).next(yieldTo(&AsyncPlotting::onResponse));
