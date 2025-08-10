@@ -196,3 +196,151 @@ TEST_F(GDALSQLiteTest, DeleteRecord) {
 
     GDALClose(poDS);
 }
+
+TEST_F(GDALSQLiteTest, QueryRecords) {
+    GDALDataset* poDS = openDatabase();
+    ASSERT_NE(poDS, nullptr);
+
+    OGRLayer* poLayer = poDS->CreateLayer("print_tasks", nullptr, wkbNone, nullptr);
+    ASSERT_NE(poLayer, nullptr);
+
+    // 创建字段
+    OGRFieldDefn oFieldTaskId("task_id", OFTString);
+    oFieldTaskId.SetWidth(50);
+    poLayer->CreateField(&oFieldTaskId);
+
+    OGRFieldDefn oFieldStatus("status", OFTString);
+    oFieldStatus.SetWidth(20);
+    poLayer->CreateField(&oFieldStatus);
+
+    OGRFieldDefn oFieldTime("create_time", OFTString);
+    oFieldTime.SetWidth(20);
+    poLayer->CreateField(&oFieldTime);
+
+    // 插入多条测试记录
+    OGRFeature* poFeature1 = OGRFeature::CreateFeature(poLayer->GetLayerDefn());
+    poFeature1->SetField("task_id", "test_001");
+    poFeature1->SetField("status", "pending");
+    poFeature1->SetField("create_time", "2025-08-07 12:00:00");
+    ASSERT_EQ(poLayer->CreateFeature(poFeature1), OGRERR_NONE);
+    OGRFeature::DestroyFeature(poFeature1);
+
+    OGRFeature* poFeature2 = OGRFeature::CreateFeature(poLayer->GetLayerDefn());
+    poFeature2->SetField("task_id", "test_002");
+    poFeature2->SetField("status", "completed");
+    poFeature2->SetField("create_time", "2025-08-07 13:00:00");
+    ASSERT_EQ(poLayer->CreateFeature(poFeature2), OGRERR_NONE);
+    OGRFeature::DestroyFeature(poFeature2);
+
+    // 查询所有记录
+    poLayer->ResetReading();
+    int count = 0;
+    OGRFeature* poFeature;
+    while ((poFeature = poLayer->GetNextFeature()) != nullptr) {
+        count++;
+        OGRFeature::DestroyFeature(poFeature);
+    }
+    EXPECT_EQ(count, 2) << "查询所有记录数量不符";
+
+    // 带条件查询
+    poLayer->SetAttributeFilter("status = 'completed'");
+    poLayer->ResetReading();
+    count = 0;
+    while ((poFeature = poLayer->GetNextFeature()) != nullptr) {
+        const char* taskId = poFeature->GetFieldAsString("task_id");
+        EXPECT_STREQ(taskId, "test_002") << "条件查询结果错误";
+        count++;
+        OGRFeature::DestroyFeature(poFeature);
+    }
+    EXPECT_EQ(count, 1) << "条件查询记录数量不符";
+
+    GDALClose(poDS);
+}
+
+TEST_F(GDALSQLiteTest, UpdateRecord) {
+    GDALDataset* poDS = openDatabase();
+    ASSERT_NE(poDS, nullptr);
+
+    OGRLayer* poLayer = poDS->CreateLayer("print_tasks", nullptr, wkbNone, nullptr);
+    ASSERT_NE(poLayer, nullptr);
+
+    // 创建字段
+    OGRFieldDefn oFieldTaskId("task_id", OFTString);
+    oFieldTaskId.SetWidth(50);
+    poLayer->CreateField(&oFieldTaskId);
+
+    OGRFieldDefn oFieldStatus("status", OFTString);
+    oFieldStatus.SetWidth(20);
+    poLayer->CreateField(&oFieldStatus);
+
+    OGRFieldDefn oFieldTime("create_time", OFTString);
+    oFieldTime.SetWidth(20);
+    poLayer->CreateField(&oFieldTime);
+
+    // 插入测试记录
+    OGRFeature* poFeature = OGRFeature::CreateFeature(poLayer->GetLayerDefn());
+    poFeature->SetField("task_id", "test_001");
+    poFeature->SetField("status", "pending");
+    poFeature->SetField("create_time", "2025-08-07 12:00:00");
+    ASSERT_EQ(poLayer->CreateFeature(poFeature), OGRERR_NONE);
+    OGRFeature::DestroyFeature(poFeature);
+
+    // 查询并更新记录
+    poLayer->SetAttributeFilter("task_id = 'test_001'");
+    poLayer->ResetReading();
+    OGRFeature* poFeatureToUpdate = poLayer->GetNextFeature();
+    ASSERT_NE(poFeatureToUpdate, nullptr);
+
+    // 修改状态字段
+    poFeatureToUpdate->SetField("status", "completed");
+    OGRErr eErr = poLayer->SetFeature(poFeatureToUpdate);
+    EXPECT_EQ(eErr, OGRERR_NONE) << "更新记录失败，错误代码: " << eErr;
+    OGRFeature::DestroyFeature(poFeatureToUpdate);
+
+    // 验证更新是否成功
+    poLayer->SetAttributeFilter("status = 'completed'");
+    poLayer->ResetReading();
+    int count = 0;
+    while (poLayer->GetNextFeature() != nullptr) count++;
+    EXPECT_EQ(count, 1) << "更新后查询结果不符";
+
+    GDALClose(poDS);
+}
+
+TEST_F(GDALSQLiteTest, LayerCapabilities) {
+    GDALDataset* poDS = openDatabase();
+    ASSERT_NE(poDS, nullptr);
+
+    OGRLayer* poLayer = poDS->CreateLayer("print_tasks", nullptr, wkbNone, nullptr);
+    ASSERT_NE(poLayer, nullptr);
+
+    // 测试图层功能
+    EXPECT_TRUE(poLayer->TestCapability(OLCCreateField)) << "图层应支持创建字段";
+    EXPECT_TRUE(poLayer->TestCapability(OLCSequentialWrite)) << "图层应支持顺序写入";
+    EXPECT_TRUE(poLayer->TestCapability(OLCRandomWrite)) << "图层应支持随机写入";
+    EXPECT_TRUE(poLayer->TestCapability(OLCDeleteFeature)) << "图层应支持删除要素";
+
+    GDALClose(poDS);
+}
+
+TEST_F(GDALSQLiteTest, InvalidOperations) {
+    GDALDataset* poDS = openDatabase();
+    ASSERT_NE(poDS, nullptr);
+
+    OGRLayer* poLayer = poDS->CreateLayer("print_tasks", nullptr, wkbNone, nullptr);
+    ASSERT_NE(poLayer, nullptr);
+
+    // 尝试删除不存在的记录
+    OGRErr eErr = poLayer->DeleteFeature(999999);
+    EXPECT_EQ(eErr, OGRERR_NON_EXISTING_FEATURE) << "删除不存在的记录应返回OGRERR_NON_EXISTING_FEATURE";
+
+    // 尝试更新不存在的记录
+    OGRFeature* poFeature = OGRFeature::CreateFeature(poLayer->GetLayerDefn());
+    poFeature->SetFID(999999);
+    poFeature->SetField("task_id", "invalid");
+    eErr = poLayer->SetFeature(poFeature);
+    EXPECT_EQ(eErr, OGRERR_NON_EXISTING_FEATURE) << "更新不存在的记录应返回OGRERR_NON_EXISTING_FEATURE";
+    OGRFeature::DestroyFeature(poFeature);
+
+    GDALClose(poDS);
+}
