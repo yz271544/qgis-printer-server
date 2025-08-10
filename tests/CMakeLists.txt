@@ -12,6 +12,9 @@ list(APPEND SOURCES ${UTIL_SOURCES})
 add_executable(${BINARY} ${SOURCES})
 add_test(NAME ${BINARY} COMMAND ${BINARY})
 
+target_include_directories(${CMAKE_PROJECT_NAME}_tst PRIVATE ${yaml-cpp_SOURCE_DIR}/include ${spdlog_SOURCE_DIR}/include ${oatpp_INCLUDE_DIRS} ${GDAL_INCLUDE_DIR})
+
+
 # 获取 oatpp 的版本号
 if(${oatpp_VERSION} VERSION_LESS "1.4.0")
     message("${oatpp_VERSION} < 1.4.0")

@@ -37,8 +37,8 @@ add_custom_command(
         COMMENT "Copying conf directory to build directory"
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${yaml-cpp_SOURCE_DIR}/include ${spdlog_SOURCE_DIR}/include ${oatpp_INCLUDE_DIRS})
-target_include_directories(${PROJECT_NAME}_lib PRIVATE ${yaml-cpp_SOURCE_DIR}/include ${spdlog_SOURCE_DIR}/include ${oatpp_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PRIVATE ${yaml-cpp_SOURCE_DIR}/include ${spdlog_SOURCE_DIR}/include ${oatpp_INCLUDE_DIRS} ${GDAL_INCLUDE_DIR})
+target_include_directories(${PROJECT_NAME}_lib PRIVATE ${yaml-cpp_SOURCE_DIR}/include ${spdlog_SOURCE_DIR}/include ${oatpp_INCLUDE_DIRS} ${GDAL_INCLUDE_DIR})
 
 
 target_link_libraries(${PROJECT_NAME}

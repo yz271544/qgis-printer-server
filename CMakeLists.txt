@@ -60,6 +60,7 @@ endif()
 find_package(oatpp REQUIRED)
 find_package(oatpp-curl REQUIRED)
 #find_package(gtest REQUIRED)
+find_package(GDAL REQUIRED)
 
 message("oatpp_VERSION: ${oatpp_VERSION}")
 message("oatpp-curl_VERSION: ${oatpp_VERSION}")
