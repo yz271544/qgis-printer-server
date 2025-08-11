@@ -329,6 +329,46 @@ class PlottingRespDto: public oatpp::DTO {
     DTO_FIELD(Object<TopicMapRespDto>, data);
 };
 
+
+// SubmitResponseDto
+class SubmitResponseDto : public oatpp::DTO {
+    DTO_INIT(SubmitResponseDto, DTO)
+    DTO_FIELD(String, task_id);
+};
+
+// TaskStatusDto
+class TaskStatusDto : public oatpp::DTO {
+    DTO_INIT(TaskStatusDto, DTO)
+    DTO_FIELD(String, task_id);
+    DTO_FIELD(String, status);
+    DTO_FIELD(String, created_at);
+    DTO_FIELD(Object<PlottingRespDto>, result);
+    DTO_FIELD(String, error);
+};
+
+// TaskItemDto (用于列表)
+class TaskItemDto : public oatpp::DTO {
+    DTO_INIT(TaskItemDto, DTO)
+    DTO_FIELD(String, task_id);
+    DTO_FIELD(String, scene_id);
+    DTO_FIELD(String, status);
+    DTO_FIELD(String, created_at);
+};
+
+class TaskInfo : public oatpp::DTO {
+    DTO_INIT(TaskInfo, DTO)
+    DTO_FIELD(String, id);
+    DTO_FIELD(String, scene_id);
+    DTO_FIELD(String, status);
+    DTO_FIELD(String, created_at);
+    DTO_FIELD(String, started_at);
+    DTO_FIELD(String, completed_at);
+    DTO_FIELD(Object<PlottingDto>, plotting);
+    DTO_FIELD(Object<PlottingRespDto>, result_data);
+    DTO_FIELD(String, error);
+};
+
+
 #include OATPP_CODEGEN_END(DTO)
 
 class PlottingFetch {

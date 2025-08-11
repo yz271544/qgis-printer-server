@@ -100,13 +100,33 @@ TEST_F(GDALSQLiteTest, CreateTable) {
     oFieldTaskId.SetWidth(50);
     EXPECT_EQ(poLayer->CreateField(&oFieldTaskId), OGRERR_NONE) << "添加task_id字段失败";
 
+    OGRFieldDefn oFieldSceneId("scene_id", OFTString);
+    oFieldSceneId.SetWidth(50);
+    EXPECT_EQ(poLayer->CreateField(&oFieldSceneId), OGRERR_NONE) << "添加scene_id字段失败";
+
     OGRFieldDefn oFieldStatus("status", OFTString);
     oFieldStatus.SetWidth(20);
     EXPECT_EQ(poLayer->CreateField(&oFieldStatus), OGRERR_NONE) << "添加status字段失败";
 
-    OGRFieldDefn oFieldTime("create_time", OFTString);
-    oFieldTime.SetWidth(20);
-    EXPECT_EQ(poLayer->CreateField(&oFieldTime), OGRERR_NONE) << "添加create_time字段失败";
+    OGRFieldDefn oCreateTime("create_at", OFTString);
+    oCreateTime.SetWidth(20);
+    EXPECT_EQ(poLayer->CreateField(&oCreateTime), OGRERR_NONE) << "添加create_at字段失败";
+
+    OGRFieldDefn oStartTime("started_at", OFTString);
+    oStartTime.SetWidth(20);
+    EXPECT_EQ(poLayer->CreateField(&oStartTime), OGRERR_NONE) << "添加started_at字段失败";
+
+    OGRFieldDefn oCompleteTime("completed_at", OFTString);
+    oCompleteTime.SetWidth(20);
+    EXPECT_EQ(poLayer->CreateField(&oCompleteTime), OGRERR_NONE) << "添加completed_at字段失败";
+
+    OGRFieldDefn oTopicMapData("topic_map_data", OFTString);
+    //oTopicMapData.SetWidth(20);
+    EXPECT_EQ(poLayer->CreateField(&oTopicMapData), OGRERR_NONE) << "添加topic_map_data字段失败";
+
+    OGRFieldDefn oResult("result", OFTString);
+    //oTopicMapData.SetWidth(20);
+    EXPECT_EQ(poLayer->CreateField(&oResult), OGRERR_NONE) << "添加result字段失败";
 
     OGRLayer* poCheckLayer = poDS->GetLayerByName("print_tasks");
     ASSERT_NE(poCheckLayer, nullptr) << "表创建后未找到";

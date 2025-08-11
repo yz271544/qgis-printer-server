@@ -399,6 +399,7 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
             }
 
             auto responseDto = ResponseDto::createShared();
+            responseDto->taskId = plottingWeb->taskId;
             try {
                 QVariantMap infos;
                 QString sceneName = QString::fromStdString(plottingWeb->sceneName);

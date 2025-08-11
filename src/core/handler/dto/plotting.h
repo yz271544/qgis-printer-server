@@ -206,6 +206,7 @@ class Camera3dPosition : public oatpp::DTO {
 class PlottingDto : public oatpp::DTO {
   DTO_INIT(PlottingDto, DTO)
 
+  DTO_FIELD(String, taskId);
   DTO_FIELD(Boolean, selectPath);
   DTO_FIELD(String, path);
   DTO_FIELD(String, path3d);
@@ -229,6 +230,7 @@ class PlottingDto : public oatpp::DTO {
 class ResponseDto : public oatpp::DTO {
     DTO_INIT(ResponseDto, DTO)
 
+    DTO_FIELD(String, taskId);
     DTO_FIELD(String, project_zip_url);
     DTO_FIELD(String, image_url);
     DTO_FIELD(String, pdf_url);

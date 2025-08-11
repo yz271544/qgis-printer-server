@@ -77,6 +77,7 @@ TEST_F(ProcessTest, test_points) {
         GTEST_ASSERT_NE(geoPolygonJsonDto->geometry->coordinates[0][0], geoPolygonJsonDto->geometry->coordinates[0][1]);
         GTEST_ASSERT_NE(geoPolygonJsonDto->geometry->coordinates[0][0], geoPolygonJsonDto->geometry->coordinates[0][3]);
         GTEST_ASSERT_EQ(geoPolygonJsonDto->geometry->coordinates[0][0], geoPolygonJsonDto->geometry->coordinates[0][4]);
+
     } catch (const std::exception &e) {
         GTEST_LOG_(ERROR) << e.what();
     }

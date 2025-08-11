@@ -244,3 +244,18 @@ TEST(dtoQJson, testDeserializerTopicFile) {
         GTEST_LOG_(ERROR) << "Exception while parsing JSON: " << e.what();
     }
 }
+
+
+TEST(json2Dto, testSerializerTopic) {
+    QString json = "{\"geometry\":{\"coordinates\":[[[111.4561455880718,40.71854289134421],[111.4561455880718,40.73911269545787],[111.5131415301853,40.73911269545787],[111.5131415301853,40.71854289134421],[111.4561455880718,40.71854289134421]]],\"type\":\"Polygon\"},\"properties\":{},\"type\":\"Feature\"}";
+
+    QJsonDocument doc = QJsonDocument::fromJson(json.toUtf8());
+
+    GTEST_LOG_(INFO) << "json to QJsonObject: " << doc.toJson().toStdString();
+
+    auto toDto = JsonUtil::convertQJsonObjectToDto<GeoPolygonJsonDto>(doc);
+
+    GTEST_LOG_(INFO) << "type of Dto: " << toDto->type->c_str();
+
+    GTEST_LOG_(INFO) << "geometry type of Dto: " << toDto->geometry->type->c_str();
+}
