@@ -1,5 +1,6 @@
 app:
-  name: jingweiprinter
+  name: qgis-printer-server
+  org: stxx
 logging:
   level: debug
   verbose: true

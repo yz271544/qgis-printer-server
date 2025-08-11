@@ -22,6 +22,11 @@ BaseStarter *QCoreStarter::GetInstance() {
 void QCoreStarter::Init(StarterContext &context) {
     spdlog::info("QCoreStarter Init start");
     auto config = context.Props();
+    auto serverName = (*config)["app"]["name"].as<std::string>();
+    auto orgName = (*config)["app"]["org"].as<std::string>();
+    QSettings q_settings(QString::fromStdString(orgName), QString::fromStdString(serverName));
+    QgsApplication::setOrganizationName(q_settings.organizationName());
+    QgsApplication::setApplicationName(q_settings.applicationName());
     // int newArgc;
     // //char** newArgv;
     // std::unique_ptr<char *[]> newArgv;
@@ -80,6 +85,8 @@ void QCoreStarter::Init(StarterContext &context) {
     } catch (const std::exception &e) {
         spdlog::error("init qgis error: {}", e.what());
     }
+    spdlog::info("qgisSettingsDirPath: {}", QgsApplication::qgisSettingsDirPath().toStdString());
+    spdlog::info("applicationDirPath: {}", QgsApplication::applicationDirPath().toStdString());
     spdlog::info("QCoreStarter Init end");
 }
 
