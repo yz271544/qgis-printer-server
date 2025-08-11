@@ -7,8 +7,6 @@
 
 
 #include <yaml-cpp/yaml.h>
-#include <oatpp/codegen/api_controller/base_define.hpp>
-#include <oatpp/network/Server.hpp>
 #include <oatpp/web/server/HttpConnectionHandler.hpp>
 #include <oatpp/web/server/HttpRouter.hpp>
 #include <spdlog/spdlog.h>
@@ -37,6 +35,7 @@ class AsyncPlottingController : public oatpp::web::server::api::ApiController {
 private:
     AsyncPlottingService* m_asyncPlottingService;
     YAML::Node *m_config;
+    int32_t m_sync_wait_time_second;
 public:
     AsyncPlottingController(std::shared_ptr<OBJECTMAPPERNS::ObjectMapper> &objectMapper,
                             oatpp::String &routePrefix,
@@ -54,10 +53,10 @@ public:
     ENDPOINT_INFO(AsyncSubmitTask) {
         info->summary = "async plotting endpoint";
         info->addConsumes<Object<PlottingDto>>("application/json");
-        info->addResponse<Object<SubmitResponseDto>>(Status::CODE_202, "application/json");
+        info->addResponse<Object<XServerResponseDto<oatpp::Boolean>>>(Status::CODE_202, "application/json");
     }
 
-    ENDPOINT_ASYNC("POST", "/api/qgz", AsyncSubmitTask) {
+    ENDPOINT_ASYNC("POST", "/api/qgz/a", AsyncSubmitTask) {
 
         ENDPOINT_ASYNC_INIT(AsyncSubmitTask)
         oatpp::async::Lock m_lock;
@@ -78,25 +77,27 @@ public:
         }
 
         Action onDtoLoaded(const DTOWRAPPERNS::DTOWrapper<PlottingDto>& plottingDto) {
+            auto errResp = XServerResponseDto<oatpp::Boolean>::createShared();
             try {
                 // 创建新任务
                 std::string sceneId = plottingDto->sceneId;
                 QJsonDocument plottingDtoJsonDoc = JsonUtil::convertDtoToQJsonObject(plottingDto);
 
                 auto procTask = processTask(sceneId, plottingDtoJsonDoc);
+                errResp->code = Status::CODE_202.code;
+                errResp->msg = procTask->msg;
+                errResp->data = procTask->data;
 
-                // 立即返回任务ID
-                auto response = SubmitResponseDto::createShared();
-                return _return(controller->createDtoResponse(Status::CODE_202, response));
+                return _return(controller->createDtoResponse(Status::CODE_202, errResp));
 
             } catch (const std::exception& e) {
-                auto errResp = XServerResponseDto<bool>::createShared();
+                errResp->data = false;
                 errResp->msg = e.what();
                 return _return(controller->createDtoResponse(Status::CODE_500, errResp));
             }
         }
 
-        DTOWRAPPERNS::DTOWrapper<XServerResponseDto<bool>::Z__CLASS>
+        DTOWRAPPERNS::DTOWrapper<AsyncResponseDto>&
         processTask(const std::string& sceneId, const QJsonDocument& plottingDtoJsonDoc) {
             auto asyncPlottingController = dynamic_cast<AsyncPlottingController *>(this->controller);
             return asyncPlottingController->m_asyncPlottingService->processPlottingAsync(sceneId, plottingDtoJsonDoc);

@@ -38,7 +38,7 @@ private:
     std::mutex asyncResponseMutex;
     std::condition_variable asyncResponseCV;
     bool responseReady = false;
-    DTOWRAPPERNS::DTOWrapper<XServerResponseDto<bool>> processedResponseDto;
+    DTOWRAPPERNS::DTOWrapper<AsyncResponseDto> processedResponseDto;
     PlottingTaskDao* m_plottingTaskDao;
 
 public:
@@ -49,11 +49,11 @@ public:
     void startProcessing();
     void stopProcessing();
 
-    DTOWRAPPERNS::DTOWrapper<XServerResponseDto<bool>>& processPlotting(
+    DTOWRAPPERNS::DTOWrapper<AsyncResponseDto>& processPlotting(
         const oatpp::String& token,
         const DTOWRAPPERNS::DTOWrapper<PlottingDto>& plottingDto);
 
-    DTOWRAPPERNS::DTOWrapper<XServerResponseDto<bool>>&
+    DTOWRAPPERNS::DTOWrapper<AsyncResponseDto>&
     processPlottingAsync(
         const oatpp::String &token,
         const QJsonDocument& plottingDtoJsonDoc);
@@ -61,18 +61,15 @@ public:
     bool processRequest(const oatpp::String& token,
         const DTOWRAPPERNS::DTOWrapper<PlottingDto>& plottingDto);
 
-    void setProcessedResponseDto(DTOWRAPPERNS::DTOWrapper<XServerResponseDto<bool>>& response);
+    void setProcessedResponseDto(DTOWRAPPERNS::DTOWrapper<AsyncResponseDto>& response);
 
     bool cleanCompleteTasks(const oatpp::String& status, int deprecateDays) const;
 
     DTOWRAPPERNS::DTOWrapper<TaskInfo>& getTaskInfo(const oatpp::String& taskId) const;
 
-    DTOWRAPPERNS::DTOWrapper<TaskInfo>& getTaskInfoBySceneId(const oatpp::String& sceneId) const;
+    DTOWRAPPERNS::DTOWrapper<::TaskInfo>& getTaskInfoBySceneId(const oatpp::String& sceneId) const;
 
-    oatpp::data::mapping::type::ListObjectWrapper<oatpp::data::mapping::type::DTOWrapper<TaskItemDto>, oatpp::data::
-    mapping
-    ::type::__class::List<oatpp::data::mapping::type::DTOWrapper<TaskItemDto>>> AsyncPlottingService::getPageTasks(
-        int pageSize, int pageNum) const;
+    oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> getPageTasks(int pageSize, int pageNum) const;
 };
 
 

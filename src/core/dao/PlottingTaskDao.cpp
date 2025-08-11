@@ -3,6 +3,8 @@
 //
 
 #include "PlottingTaskDao.h"
+#include "utils/UuidUtil.h"
+#include <ogrsf_frmts.h>
 
 
 PlottingTaskDao::PlottingTaskDao() {
@@ -268,10 +270,10 @@ bool PlottingTaskDao::cleanCompleteTasks(const std::string &status, int deprecat
 }
 
 // check has running task for scene_id,  true has running task, false no running task
-PlottingTaskDao::TaskInfo PlottingTaskDao::checkHasRunningTask(const std::string &sceneId) {
+DTOWRAPPERNS::DTOWrapper<::TaskInfo> PlottingTaskDao::checkHasRunningTask(const std::string &sceneId) {
     std::lock_guard<std::mutex> lock(db_mutex_);
-    TaskInfo taskInfo;
-    taskInfo.id = "";
+    DTOWRAPPERNS::DTOWrapper<::TaskInfo> taskInfo = ::TaskInfo::createShared();
+    taskInfo->id = "";
     if (m_dbConn == nullptr) {
         spdlog::error("Database connection is not available");
         return taskInfo;
@@ -287,10 +289,10 @@ PlottingTaskDao::TaskInfo PlottingTaskDao::checkHasRunningTask(const std::string
 }
 
 
-PlottingTaskDao::TaskInfo PlottingTaskDao::getTaskInfo(const std::string &task_id) {
+DTOWRAPPERNS::DTOWrapper<::TaskInfo>& PlottingTaskDao::getTaskInfo(const std::string &task_id) {
     std::lock_guard<std::mutex> lock(db_mutex_);
-    TaskInfo taskInfo;
-    taskInfo.id = "";
+    DTOWRAPPERNS::DTOWrapper<::TaskInfo> taskInfo = ::TaskInfo::createShared();
+    taskInfo->id = "";
     if (m_dbConn == nullptr) {
         spdlog::error("Database connection is not available");
         return taskInfo;
@@ -309,12 +311,12 @@ PlottingTaskDao::TaskInfo PlottingTaskDao::getTaskInfo(const std::string &task_i
         spdlog::error("Task with ID {} not found", task_id);
         return taskInfo;
     }
-    taskInfo.id = poFeature->GetFieldAsInteger("id");
-    taskInfo.scene_id = poFeature->GetFieldAsString("scene_id");
-    taskInfo.status = poFeature->GetFieldAsInteger("status");
-    taskInfo.completed_at = QDateTime::fromString(QString(poFeature->GetFieldAsString("created_at")), Qt::ISODate);
-    taskInfo.started_at = QDateTime::fromString(QString(poFeature->GetFieldAsString("started_at")), Qt::ISODate);
-    taskInfo.completed_at = QDateTime::fromString(QString(poFeature->GetFieldAsString("completed_at")), Qt::ISODate);
+    taskInfo->id = poFeature->GetFieldAsString("id");
+    taskInfo->scene_id = poFeature->GetFieldAsString("scene_id");
+    taskInfo->status = poFeature->GetFieldAsString("status");
+    taskInfo->completed_at = QString(poFeature->GetFieldAsString("created_at")).toStdString();
+    taskInfo->started_at = QString(poFeature->GetFieldAsString("started_at")).toStdString();
+    taskInfo->completed_at = QString(poFeature->GetFieldAsString("completed_at")).toStdString();
     const char *resultData = poFeature->GetFieldAsString("result_data");
     if (resultData && strlen(resultData) > 0) {
         QJsonDocument jsonDoc = QJsonDocument::fromJson(QByteArray(resultData));
@@ -322,7 +324,7 @@ PlottingTaskDao::TaskInfo PlottingTaskDao::getTaskInfo(const std::string &task_i
             oatpp::data::mapping::type::DTOWrapper<PlottingRespDto> dto = JsonUtil::convertQJsonObjectToDto<
                 PlottingRespDto>(jsonDoc);
             if (dto) {
-                taskInfo.result = std::shared_ptr<PlottingRespDto>(dto.get());
+                taskInfo->result_data = std::shared_ptr<PlottingRespDto>(dto.get());
             } else {
                 spdlog::error("Failed to convert result_data to PlottingRespDto");
             }
@@ -337,7 +339,7 @@ PlottingTaskDao::TaskInfo PlottingTaskDao::getTaskInfo(const std::string &task_i
             oatpp::data::mapping::type::DTOWrapper<PlottingDto> dto = JsonUtil::convertQJsonObjectToDto<PlottingDto>(
                 plottingDoc);
             if (dto) {
-                taskInfo.plotting = std::shared_ptr<PlottingDto>(dto.get());
+                taskInfo->plotting = std::shared_ptr<PlottingDto>(dto.get());
             } else {
                 spdlog::error("Failed to convert result_data to PlottingRespDto");
             }
@@ -346,16 +348,16 @@ PlottingTaskDao::TaskInfo PlottingTaskDao::getTaskInfo(const std::string &task_i
 
     const char *errorMessage = poFeature->GetFieldAsString("error_message");
     if (errorMessage && strlen(errorMessage) > 0) {
-        taskInfo.error = errorMessage;
+        taskInfo->error = errorMessage;
     }
     OGRFeature::DestroyFeature(poFeature);
     return taskInfo;
 }
 
-PlottingTaskDao::TaskInfo PlottingTaskDao::getTaskInfoBySceneId(const std::string &scene_id) {
+DTOWRAPPERNS::DTOWrapper<::TaskInfo>& PlottingTaskDao::getTaskInfoBySceneId(const std::string &scene_id) {
     std::lock_guard<std::mutex> lock(db_mutex_);
-    TaskInfo taskInfo;
-    taskInfo.id = "";
+    DTOWRAPPERNS::DTOWrapper<::TaskInfo> taskInfo = ::TaskInfo::createShared();
+    taskInfo->id = "";
     if (m_dbConn == nullptr) {
         spdlog::error("Database connection is not available");
         return taskInfo;
@@ -374,12 +376,12 @@ PlottingTaskDao::TaskInfo PlottingTaskDao::getTaskInfoBySceneId(const std::strin
         spdlog::error("Task with scene ID {} not found", scene_id);
         return taskInfo;
     }
-    taskInfo.id = poFeature->GetFieldAsInteger("id");
-    taskInfo.scene_id = poFeature->GetFieldAsString("scene_id");
-    taskInfo.status = poFeature->GetFieldAsInteger("status");
-    taskInfo.completed_at = QDateTime::fromString(QString(poFeature->GetFieldAsString("created_at")), Qt::ISODate);
-    taskInfo.started_at = QDateTime::fromString(QString(poFeature->GetFieldAsString("started_at")), Qt::ISODate);
-    taskInfo.completed_at = QDateTime::fromString(QString(poFeature->GetFieldAsString("completed_at")), Qt::ISODate);
+    taskInfo->id = poFeature->GetFieldAsString("id");
+    taskInfo->scene_id = poFeature->GetFieldAsString("scene_id");
+    taskInfo->status = poFeature->GetFieldAsString("status");
+    taskInfo->completed_at = QString(poFeature->GetFieldAsString("created_at")).toStdString();
+    taskInfo->started_at = QString(poFeature->GetFieldAsString("started_at")).toStdString();
+    taskInfo->completed_at = QString(poFeature->GetFieldAsString("completed_at")).toStdString();
     const char *resultData = poFeature->GetFieldAsString("result_data");
     if (resultData && strlen(resultData) > 0) {
         QJsonDocument jsonDoc = QJsonDocument::fromJson(QByteArray(resultData));
@@ -387,7 +389,7 @@ PlottingTaskDao::TaskInfo PlottingTaskDao::getTaskInfoBySceneId(const std::strin
             oatpp::data::mapping::type::DTOWrapper<PlottingRespDto> dto = JsonUtil::convertQJsonObjectToDto<
                 PlottingRespDto>(jsonDoc);
             if (dto) {
-                taskInfo.result = std::shared_ptr<PlottingRespDto>(dto.get());
+                taskInfo->result_data = std::shared_ptr<PlottingRespDto>(dto.get());
             } else {
                 spdlog::error("Failed to convert result_data to PlottingRespDto");
             }
@@ -402,7 +404,7 @@ PlottingTaskDao::TaskInfo PlottingTaskDao::getTaskInfoBySceneId(const std::strin
             oatpp::data::mapping::type::DTOWrapper<PlottingDto> dto = JsonUtil::convertQJsonObjectToDto<PlottingDto>(
                 plottingDoc);
             if (dto) {
-                taskInfo.plotting = std::shared_ptr<PlottingDto>(dto.get());
+                taskInfo->plotting = std::shared_ptr<PlottingDto>(dto.get());
             } else {
                 spdlog::error("Failed to convert result_data to PlottingRespDto");
             }
@@ -410,15 +412,15 @@ PlottingTaskDao::TaskInfo PlottingTaskDao::getTaskInfoBySceneId(const std::strin
     }
     const char *errorMessage = poFeature->GetFieldAsString("error_message");
     if (errorMessage && strlen(errorMessage) > 0) {
-        taskInfo.error = errorMessage;
+        taskInfo->error = errorMessage;
     }
     OGRFeature::DestroyFeature(poFeature);
     return taskInfo;
 }
 
 // get page of tasks
-oatpp::List<oatpp::Object<PlottingTaskDao::TaskInfo>> PlottingTaskDao::getPageTasks(int pageSize, int pageNum) const {
-    oatpp::List<oatpp::Object<PlottingTaskDao::TaskInfo>> taskList = oatpp::List<oatpp::Object<TaskInfo>>::createShared();
+oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> PlottingTaskDao::getPageTasks(int pageSize, int pageNum) const {
+    oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> taskList = oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>>::createShared();
     if (m_dbConn == nullptr) {
         spdlog::error("Database connection is not available");
         return taskList;
@@ -479,24 +481,41 @@ oatpp::List<oatpp::Object<PlottingTaskDao::TaskInfo>> PlottingTaskDao::getPageTa
     // 遍历查询结果并填充到任务列表
     OGRFeature *poFeature = nullptr;
     while ((poFeature = poResultLayer->GetNextFeature()) != nullptr) {
-        TaskInfo task;
-
-        // 假设TaskInfo有对应的成员变量
-        task.id = poFeature->GetFieldAsInteger("id");
-        task.scene_id = poFeature->GetFieldAsString("scene_id");
-        auto plo = poFeature->GetFieldAsString("plotting");
-        auto ploObj = JsonUtil::convertQJsonObjectToDto<PlottingDto>(QJsonDocument::fromJson(QByteArray(plo)));
-        task.plotting = std::make_shared<PlottingDto>(*(ploObj.get()));
-        auto result_data = poFeature->GetFieldAsString("result_data");
-        auto result_data_obj = JsonUtil::convertQJsonObjectToDto<PlottingRespDto>(
-            QJsonDocument::fromJson(QByteArray(result_data)));
-        task.result = std::make_shared<PlottingRespDto>(*(result_data_obj.get()));
-        task.status = poFeature->GetFieldAsInteger("status");
-        task.error = poFeature->GetFieldAsString("error_message");
-        task.completed_at = QDateTime::fromString(QString(poFeature->GetFieldAsString("created_at")), Qt::ISODate);
-        task.started_at = QDateTime::fromString(QString(poFeature->GetFieldAsString("started_at")), Qt::ISODate);
-        task.completed_at = QDateTime::fromString(QString(poFeature->GetFieldAsString("completed_at")), Qt::ISODate);
-        taskList->push_back(task);
+        auto dto = ::TaskInfo::createShared();
+        dto->id = poFeature->GetFieldAsString("id");
+        dto->scene_id = poFeature->GetFieldAsString("scene_id");
+        dto->status = poFeature->GetFieldAsString("status");
+        dto->created_at = poFeature->GetFieldAsString("created_at");
+        dto->started_at = poFeature->GetFieldAsString("started_at");
+        dto->completed_at = poFeature->GetFieldAsString("completed_at");
+        // plotting
+        const char* plotting = poFeature->GetFieldAsString("plotting");
+        if (plotting && strlen(plotting) > 0) {
+            QJsonDocument plottingDoc = QJsonDocument::fromJson(QByteArray(plotting));
+            if (!plottingDoc.isNull() && plottingDoc.isObject()) {
+                oatpp::data::mapping::type::DTOWrapper<PlottingDto> plottingDto = JsonUtil::convertQJsonObjectToDto<PlottingDto>(plottingDoc);
+                if (plottingDto) {
+                    dto->plotting = plottingDto;
+                }
+            }
+        }
+        // result_data
+        const char* resultData = poFeature->GetFieldAsString("result_data");
+        if (resultData && strlen(resultData) > 0) {
+            QJsonDocument resultDoc = QJsonDocument::fromJson(QByteArray(resultData));
+            if (!resultDoc.isNull() && resultDoc.isObject()) {
+                oatpp::data::mapping::type::DTOWrapper<PlottingRespDto> resultDto = JsonUtil::convertQJsonObjectToDto<PlottingRespDto>(resultDoc);
+                if (resultDto) {
+                    dto->result_data = resultDto;
+                }
+            }
+        }
+        // error
+        const char* errorMsg = poFeature->GetFieldAsString("error_message");
+        if (errorMsg && strlen(errorMsg) > 0) {
+            dto->error = errorMsg;
+        }
+        taskList->push_back(dto);
         OGRFeature::DestroyFeature(poFeature); // 释放特征对象
     }
 

@@ -247,6 +247,13 @@ class XServerResponseDto : public oatpp::DTO {
     DTO_FIELD(Object<T&>, data);
 };
 
+class AsyncResponseDto : public oatpp::DTO {
+    DTO_INIT(AsyncResponseDto, DTO)
+
+    DTO_FIELD(String, msg);
+    DTO_FIELD(Boolean, data);
+};
+
 
 #include OATPP_CODEGEN_END(DTO)
 

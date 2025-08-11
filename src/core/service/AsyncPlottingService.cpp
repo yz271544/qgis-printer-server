@@ -16,7 +16,7 @@ AsyncPlottingService::~AsyncPlottingService() {
 }
 
 
-DTOWRAPPERNS::DTOWrapper<XServerResponseDto<bool>>& AsyncPlottingService::processPlotting(
+DTOWRAPPERNS::DTOWrapper<AsyncResponseDto>& AsyncPlottingService::processPlotting(
         const oatpp::String& token,
         const DTOWRAPPERNS::DTOWrapper<PlottingDto>& plottingDto) {
     {
@@ -25,16 +25,14 @@ DTOWRAPPERNS::DTOWrapper<XServerResponseDto<bool>>& AsyncPlottingService::proces
     }
     asyncQueueCV.notify_one();
     //auto responseDto = processRequest(token, plottingDto);
-    DTOWRAPPERNS::DTOWrapper<XServerResponseDto<bool>> responseDto;
     // 等待 responseDto 有值
     {
         std::unique_lock<std::mutex> lock(asyncResponseMutex);
         asyncResponseCV.wait(lock, [this] { return responseReady; });
-        responseDto = processedResponseDto;
         responseReady = false;
     }
 
-    return responseDto;
+    return processedResponseDto;
 }
 
 // PlottingService.cpp
@@ -100,20 +98,20 @@ void AsyncPlottingService::startProcessing() {
             // check scene id has running task
             // if no running task, then start processing thread, and response taskId
             auto runningTask = m_plottingTaskDao->checkHasRunningTask(plottingDto->sceneId);
-            DTOWRAPPERNS::DTOWrapper<XServerResponseDto<bool>> responseDto = XServerResponseDto<bool>::createShared();
-            if (runningTask.id != "") {
+            DTOWRAPPERNS::DTOWrapper<AsyncResponseDto> asyncResponseDto = AsyncResponseDto::createShared();
+            if (runningTask->id != "") {
                 std::string msg = fmt::format("scene id has running task, taskId: {}, scene: {}", plottingDto->taskId, plottingDto->sceneName->c_str());
                 spdlog::warn("scene id has running task, skip this request -> token: {}, scene: {}", token->c_str(), plottingDto->sceneName->c_str());
-                responseDto->data = false;
-                responseDto->msg = msg;
-                setProcessedResponseDto(responseDto);
+                asyncResponseDto->data = false;
+                asyncResponseDto->msg = msg;
+                setProcessedResponseDto(processedResponseDto);
             } else {
                 // 处理请求
                 spdlog::info("处理请求 -> token: {}, scene: {}", token->c_str(), plottingDto->sceneName->c_str());
-                responseDto->data = true;
-                responseDto->msg = "";
+                asyncResponseDto->data = true;
+                asyncResponseDto->msg = "";
                 // 设置处理后的 responseDto 并通知等待线程
-                setProcessedResponseDto(responseDto);
+                setProcessedResponseDto(processedResponseDto);
                 auto result = processRequest(token, plottingDto);
                 spdlog::info("taskId: {}, scene: {}, result: {}", plottingDto->taskId, plottingDto->sceneName->c_str(), result);
             }
@@ -133,7 +131,7 @@ void AsyncPlottingService::stopProcessing() {
     }
 }
 
-void AsyncPlottingService::setProcessedResponseDto(DTOWRAPPERNS::DTOWrapper<XServerResponseDto<bool>>& response) {
+void AsyncPlottingService::setProcessedResponseDto(DTOWRAPPERNS::DTOWrapper<AsyncResponseDto>& response) {
     {
         std::lock_guard<std::mutex> lock(asyncResponseMutex);
         processedResponseDto = response;
@@ -147,7 +145,7 @@ bool AsyncPlottingService::cleanCompleteTasks(
     return m_plottingTaskDao->cleanCompleteTasks(status, deprecateDays);
 }
 
-DTOWRAPPERNS::DTOWrapper<XServerResponseDto<bool>>&
+DTOWRAPPERNS::DTOWrapper<AsyncResponseDto>&
 AsyncPlottingService::processPlottingAsync(
         const oatpp::String &token,
         const QJsonDocument& plottingDtoJsonDoc) {
@@ -156,71 +154,14 @@ AsyncPlottingService::processPlottingAsync(
 }
 
 DTOWRAPPERNS::DTOWrapper<TaskInfo>& AsyncPlottingService::getTaskInfo(const oatpp::String& taskId) const {
-    auto taskInfo = m_plottingTaskDao->getTaskInfo(taskId);
-
-    auto retTaskInfo = TaskInfo::createShared();
-
-    retTaskInfo->id = taskInfo.id.c_str();
-    retTaskInfo->scene_id = taskInfo.scene_id.c_str();
-    retTaskInfo->status = taskInfo.status.c_str();
-    retTaskInfo->created_at = taskInfo.created_at.toString().toStdString();
-    retTaskInfo->started_at = taskInfo.started_at.toString().toStdString();
-    retTaskInfo->completed_at = taskInfo.completed_at.toString().toStdString();
-    if (taskInfo.result) {
-        retTaskInfo->result_data = taskInfo.result;
-    }
-    if (!taskInfo.error.empty()) {
-        retTaskInfo->error = taskInfo.error.c_str();
-    }
-    return retTaskInfo;
+    return m_plottingTaskDao->getTaskInfo(taskId);
 }
 
 DTOWRAPPERNS::DTOWrapper<TaskInfo>& AsyncPlottingService::getTaskInfoBySceneId(const oatpp::String& sceneId) const {
-    auto taskInfo = m_plottingTaskDao->getTaskInfoBySceneId(sceneId);
-    auto retTaskInfo = TaskInfo::createShared();
-    retTaskInfo->id = taskInfo.id.c_str();
-    retTaskInfo->scene_id = taskInfo.scene_id.c_str();
-    retTaskInfo->status = taskInfo.status.c_str();
-    retTaskInfo->created_at = taskInfo.created_at.toString().toStdString();
-    retTaskInfo->started_at = taskInfo.started_at.toString().toStdString();
-    retTaskInfo->completed_at = taskInfo.completed_at.toString().toStdString();
-    if (taskInfo.result) {
-        retTaskInfo->result_data = taskInfo.result;
-    }
-    if (!taskInfo.error.empty()) {
-        retTaskInfo->error = taskInfo.error.c_str();
-    }
-    return retTaskInfo;
+    return m_plottingTaskDao->getTaskInfoBySceneId(sceneId);
 }
 
 // get page of tasks
-oatpp::data::mapping::type::ListObjectWrapper<oatpp::data::mapping::type::DTOWrapper<TaskItemDto>, oatpp::data::mapping
-::type::__class::List<oatpp::data::mapping::type::DTOWrapper<TaskItemDto>>> AsyncPlottingService::getPageTasks(
-    int pageSize, int pageNum) const {
-    auto taskList = m_plottingTaskDao->getPageTasks(pageSize, pageNum);
-    auto dtoList = oatpp::List<oatpp::Object<TaskItemDto>>::createShared();
-
-    for (const auto& task : taskList) {
-        auto item = TaskInfo::createShared();
-        item->id = task.id.c_str();
-        item->scene_id = task.scene_id.c_str();
-        item->status = task.status.c_str();
-        item->created_at = task.created_at.toString().toStdString();
-
-        item->id = task.id.c_str();
-        item->scene_id = task.scene_id.c_str();
-        item->status = task.status.c_str();
-        item->created_at = task.created_at.toString().toStdString();
-        item->started_at = task.started_at.toString().toStdString();
-        item->completed_at = task.completed_at.toString().toStdString();
-        if (task.result) {
-            item->result_data = task.result;
-        }
-        if (!task.error.empty()) {
-            item->error = task.error.c_str();
-        }
-        dtoList->push_back(item);
-    }
-
-    return dtoList;
+oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> AsyncPlottingService::getPageTasks(int pageSize, int pageNum) const {
+    return m_plottingTaskDao->getPageTasks(pageSize, pageNum);
 }

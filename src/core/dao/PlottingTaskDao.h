@@ -7,22 +7,21 @@
 
 #pragma once
 
+#include <QDateTime>
+#include "core/handler/dto/plotting.h"
 #include <spdlog/spdlog.h>
 #include <string>
 #include <sqlite3.h>
 #include <mutex>
 #include <memory>
-
-#include "gdal.h"
 #include "gdal_priv.h"
-#include "ogr_api.h"
-#include "ogrsf_frmts.h"
-
 #include <qgsapplication.h>
-
 #include "core/fetch/PlottingFetch.h"
-#include "core/handler/dto/plotting.h"
-#include "utils/UuidUtil.h"
+#include "oatpp/core/Types.hpp"
+
+// 移除 TaskInfoDto oatpp DTO 的定义，只保留 struct TaskInfo
+
+// --- 分隔线，防止解析混淆 ---
 
 class PlottingTaskDao {
 public:
@@ -36,8 +35,8 @@ public:
         QDateTime created_at;
         QDateTime started_at;
         QDateTime completed_at;
-        std::shared_ptr<PlottingDto> plotting;
-        std::shared_ptr<PlottingRespDto> result;
+        DTOWRAPPERNS::DTOWrapper<PlottingDto> plotting;
+        DTOWRAPPERNS::DTOWrapper<PlottingRespDto> result;
         std::string error;
     };
 
@@ -53,19 +52,19 @@ public:
 
     // 设置任务结果
     bool setTaskResult(const std::string& task_id,
-                      const std::shared_ptr<PlottingRespDto>& result);
+                      const DTOWRAPPERNS::DTOWrapper<PlottingRespDto>& result);
 
     // 获取任务信息
-    TaskInfo getTaskInfo(const std::string& task_id);
+    DTOWRAPPERNS::DTOWrapper<::TaskInfo>& getTaskInfo(const std::string& task_id);
 
-    TaskInfo getTaskInfoBySceneId(const std::string& scene_id);
+    DTOWRAPPERNS::DTOWrapper<::TaskInfo>& getTaskInfoBySceneId(const std::string& scene_id);
 
     std::unique_ptr<GDALDataset, void(*)(GDALDataset*)> openDatabase();
 
     // true has running task, false no running task
-    TaskInfo checkHasRunningTask(const std::string& sceneId);
+    DTOWRAPPERNS::DTOWrapper<::TaskInfo> checkHasRunningTask(const std::string& sceneId);
 
-    oatpp::List<oatpp::Object<TaskInfo>> getPageTasks(int pageSize, int pageNum) const;
+    [[nodiscard]] oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> getPageTasks(int pageSize, int pageNum) const;
 private:
     sqlite3* db_;
     std::mutex db_mutex_;
@@ -75,7 +74,5 @@ private:
     void initializeDB();
     bool executeSQL(const std::string& sql);
 };
-
-
 
 #endif //PLOTTINGTASKSERVICE_H
