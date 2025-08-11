@@ -5,6 +5,7 @@
 #ifndef ASYNCPLOTTINGSERVICE_H
 #define ASYNCPLOTTINGSERVICE_H
 
+#include "spdlog/fmt/bundled/format.h"
 #include <spdlog/spdlog.h>
 #include <memory>
 #include <oatpp/web/server/api/ApiController.hpp>
@@ -30,7 +31,7 @@ class AsyncPlottingService {
 private:
     Processor* m_processor;
 
-    std::queue<std::pair<oatpp::String, DTOWRAPPERNS::DTOWrapper<PlottingDto>>> asyncRequestQueue;
+    std::queue<std::pair<oatpp::String, QJsonDocument>> asyncRequestQueue;
     std::mutex asyncQueueMutex;
     std::condition_variable asyncQueueCV;
     std::thread asyncProcessingThread;
@@ -51,7 +52,7 @@ public:
 
     DTOWRAPPERNS::DTOWrapper<AsyncResponseDto>& processPlotting(
         const oatpp::String& token,
-        const DTOWRAPPERNS::DTOWrapper<PlottingDto>& plottingDto);
+        const QJsonDocument& plottingDto);
 
     DTOWRAPPERNS::DTOWrapper<AsyncResponseDto>&
     processPlottingAsync(
@@ -65,9 +66,9 @@ public:
 
     bool cleanCompleteTasks(const oatpp::String& status, int deprecateDays) const;
 
-    DTOWRAPPERNS::DTOWrapper<TaskInfo>& getTaskInfo(const oatpp::String& taskId) const;
+    DTOWRAPPERNS::DTOWrapper<TaskInfo> getTaskInfo(const oatpp::String& taskId) const;
 
-    DTOWRAPPERNS::DTOWrapper<::TaskInfo>& getTaskInfoBySceneId(const oatpp::String& sceneId) const;
+    DTOWRAPPERNS::DTOWrapper<::TaskInfo> getTaskInfoBySceneId(const oatpp::String& sceneId) const;
 
     oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> getPageTasks(int pageSize, int pageNum) const;
 };

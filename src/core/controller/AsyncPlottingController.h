@@ -53,7 +53,7 @@ public:
     ENDPOINT_INFO(AsyncSubmitTask) {
         info->summary = "async plotting endpoint";
         info->addConsumes<Object<PlottingDto>>("application/json");
-        info->addResponse<Object<XServerResponseDto<oatpp::Boolean>>>(Status::CODE_202, "application/json");
+        info->addResponse<Object<AsyncResponseDto>>(Status::CODE_202, "application/json");
     }
 
     ENDPOINT_ASYNC("POST", "/api/qgz/a", AsyncSubmitTask) {
@@ -77,20 +77,17 @@ public:
         }
 
         Action onDtoLoaded(const DTOWRAPPERNS::DTOWrapper<PlottingDto>& plottingDto) {
-            auto errResp = XServerResponseDto<oatpp::Boolean>::createShared();
             try {
                 // 创建新任务
                 std::string sceneId = plottingDto->sceneId;
                 QJsonDocument plottingDtoJsonDoc = JsonUtil::convertDtoToQJsonObject(plottingDto);
 
                 auto procTask = processTask(sceneId, plottingDtoJsonDoc);
-                errResp->code = Status::CODE_202.code;
-                errResp->msg = procTask->msg;
-                errResp->data = procTask->data;
 
-                return _return(controller->createDtoResponse(Status::CODE_202, errResp));
+                return _return(controller->createDtoResponse(Status::CODE_202, procTask));
 
             } catch (const std::exception& e) {
+                auto errResp = AsyncResponseDto::createShared();
                 errResp->data = false;
                 errResp->msg = e.what();
                 return _return(controller->createDtoResponse(Status::CODE_500, errResp));

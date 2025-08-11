@@ -289,7 +289,7 @@ DTOWRAPPERNS::DTOWrapper<::TaskInfo> PlottingTaskDao::checkHasRunningTask(const 
 }
 
 
-DTOWRAPPERNS::DTOWrapper<::TaskInfo>& PlottingTaskDao::getTaskInfo(const std::string &task_id) {
+DTOWRAPPERNS::DTOWrapper<::TaskInfo> PlottingTaskDao::getTaskInfo(const std::string &task_id) {
     std::lock_guard<std::mutex> lock(db_mutex_);
     DTOWRAPPERNS::DTOWrapper<::TaskInfo> taskInfo = ::TaskInfo::createShared();
     taskInfo->id = "";
@@ -321,8 +321,7 @@ DTOWRAPPERNS::DTOWrapper<::TaskInfo>& PlottingTaskDao::getTaskInfo(const std::st
     if (resultData && strlen(resultData) > 0) {
         QJsonDocument jsonDoc = QJsonDocument::fromJson(QByteArray(resultData));
         if (!jsonDoc.isNull() && jsonDoc.isObject()) {
-            oatpp::data::mapping::type::DTOWrapper<PlottingRespDto> dto = JsonUtil::convertQJsonObjectToDto<
-                PlottingRespDto>(jsonDoc);
+            DTOWRAPPERNS::DTOWrapper<PlottingRespDto> dto = JsonUtil::convertQJsonObjectToDto<PlottingRespDto>(jsonDoc);
             if (dto) {
                 taskInfo->result_data = std::shared_ptr<PlottingRespDto>(dto.get());
             } else {
@@ -336,8 +335,7 @@ DTOWRAPPERNS::DTOWrapper<::TaskInfo>& PlottingTaskDao::getTaskInfo(const std::st
         // Convert plotting JSON string to PlottingDto
         QJsonDocument plottingDoc = QJsonDocument::fromJson(QByteArray(plotting));
         if (plottingDoc.isNull() || !plottingDoc.isObject()) {
-            oatpp::data::mapping::type::DTOWrapper<PlottingDto> dto = JsonUtil::convertQJsonObjectToDto<PlottingDto>(
-                plottingDoc);
+            DTOWRAPPERNS::DTOWrapper<PlottingDto> dto = JsonUtil::convertQJsonObjectToDto<PlottingDto>(plottingDoc);
             if (dto) {
                 taskInfo->plotting = std::shared_ptr<PlottingDto>(dto.get());
             } else {
@@ -354,7 +352,7 @@ DTOWRAPPERNS::DTOWrapper<::TaskInfo>& PlottingTaskDao::getTaskInfo(const std::st
     return taskInfo;
 }
 
-DTOWRAPPERNS::DTOWrapper<::TaskInfo>& PlottingTaskDao::getTaskInfoBySceneId(const std::string &scene_id) {
+DTOWRAPPERNS::DTOWrapper<::TaskInfo> PlottingTaskDao::getTaskInfoBySceneId(const std::string &scene_id) {
     std::lock_guard<std::mutex> lock(db_mutex_);
     DTOWRAPPERNS::DTOWrapper<::TaskInfo> taskInfo = ::TaskInfo::createShared();
     taskInfo->id = "";
@@ -386,7 +384,7 @@ DTOWRAPPERNS::DTOWrapper<::TaskInfo>& PlottingTaskDao::getTaskInfoBySceneId(cons
     if (resultData && strlen(resultData) > 0) {
         QJsonDocument jsonDoc = QJsonDocument::fromJson(QByteArray(resultData));
         if (!jsonDoc.isNull() && jsonDoc.isObject()) {
-            oatpp::data::mapping::type::DTOWrapper<PlottingRespDto> dto = JsonUtil::convertQJsonObjectToDto<
+            DTOWRAPPERNS::DTOWrapper<PlottingRespDto> dto = JsonUtil::convertQJsonObjectToDto<
                 PlottingRespDto>(jsonDoc);
             if (dto) {
                 taskInfo->result_data = std::shared_ptr<PlottingRespDto>(dto.get());
@@ -401,7 +399,7 @@ DTOWRAPPERNS::DTOWrapper<::TaskInfo>& PlottingTaskDao::getTaskInfoBySceneId(cons
         // Convert plotting JSON string to PlottingDto
         QJsonDocument plottingDoc = QJsonDocument::fromJson(QByteArray(plotting));
         if (plottingDoc.isNull() || !plottingDoc.isObject()) {
-            oatpp::data::mapping::type::DTOWrapper<PlottingDto> dto = JsonUtil::convertQJsonObjectToDto<PlottingDto>(
+            DTOWRAPPERNS::DTOWrapper<PlottingDto> dto = JsonUtil::convertQJsonObjectToDto<PlottingDto>(
                 plottingDoc);
             if (dto) {
                 taskInfo->plotting = std::shared_ptr<PlottingDto>(dto.get());
@@ -493,7 +491,7 @@ oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> PlottingTaskDao::getPageTasks(
         if (plotting && strlen(plotting) > 0) {
             QJsonDocument plottingDoc = QJsonDocument::fromJson(QByteArray(plotting));
             if (!plottingDoc.isNull() && plottingDoc.isObject()) {
-                oatpp::data::mapping::type::DTOWrapper<PlottingDto> plottingDto = JsonUtil::convertQJsonObjectToDto<PlottingDto>(plottingDoc);
+                DTOWRAPPERNS::DTOWrapper<PlottingDto> plottingDto = JsonUtil::convertQJsonObjectToDto<PlottingDto>(plottingDoc);
                 if (plottingDto) {
                     dto->plotting = plottingDto;
                 }
@@ -504,7 +502,7 @@ oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> PlottingTaskDao::getPageTasks(
         if (resultData && strlen(resultData) > 0) {
             QJsonDocument resultDoc = QJsonDocument::fromJson(QByteArray(resultData));
             if (!resultDoc.isNull() && resultDoc.isObject()) {
-                oatpp::data::mapping::type::DTOWrapper<PlottingRespDto> resultDto = JsonUtil::convertQJsonObjectToDto<PlottingRespDto>(resultDoc);
+                DTOWRAPPERNS::DTOWrapper<PlottingRespDto> resultDto = JsonUtil::convertQJsonObjectToDto<PlottingRespDto>(resultDoc);
                 if (resultDto) {
                     dto->result_data = resultDto;
                 }

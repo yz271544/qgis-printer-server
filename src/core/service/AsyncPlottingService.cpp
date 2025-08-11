@@ -18,7 +18,7 @@ AsyncPlottingService::~AsyncPlottingService() {
 
 DTOWRAPPERNS::DTOWrapper<AsyncResponseDto>& AsyncPlottingService::processPlotting(
         const oatpp::String& token,
-        const DTOWRAPPERNS::DTOWrapper<PlottingDto>& plottingDto) {
+        const QJsonDocument& plottingDto) {
     {
         std::lock_guard<std::mutex> lock(asyncQueueMutex);
         asyncRequestQueue.emplace(token, plottingDto);
@@ -91,19 +91,21 @@ void AsyncPlottingService::startProcessing() {
                 spdlog::info("break from processing thread");
                 break;
             }
-            auto [token, plottingDto] = asyncRequestQueue.front();
+            auto [token, plottingDtoJsonDoc] = asyncRequestQueue.front();
             asyncRequestQueue.pop();
             lock.unlock();
+
+            auto plottingDto = JsonUtil::convertQJsonObjectToDto<PlottingDto>(plottingDtoJsonDoc);
 
             // check scene id has running task
             // if no running task, then start processing thread, and response taskId
             auto runningTask = m_plottingTaskDao->checkHasRunningTask(plottingDto->sceneId);
             DTOWRAPPERNS::DTOWrapper<AsyncResponseDto> asyncResponseDto = AsyncResponseDto::createShared();
             if (runningTask->id != "") {
-                std::string msg = fmt::format("scene id has running task, taskId: {}, scene: {}", plottingDto->taskId, plottingDto->sceneName->c_str());
+                auto message = fmt::format("scene id has running task, taskId: {}, sceneId: {}", runningTask->id->c_str(), plottingDto->sceneId->c_str());
                 spdlog::warn("scene id has running task, skip this request -> token: {}, scene: {}", token->c_str(), plottingDto->sceneName->c_str());
                 asyncResponseDto->data = false;
-                asyncResponseDto->msg = msg;
+                asyncResponseDto->msg = message;
                 setProcessedResponseDto(processedResponseDto);
             } else {
                 // 处理请求
@@ -113,7 +115,7 @@ void AsyncPlottingService::startProcessing() {
                 // 设置处理后的 responseDto 并通知等待线程
                 setProcessedResponseDto(processedResponseDto);
                 auto result = processRequest(token, plottingDto);
-                spdlog::info("taskId: {}, scene: {}, result: {}", plottingDto->taskId, plottingDto->sceneName->c_str(), result);
+                spdlog::info("taskId: {}, scene: {}, result: {}", plottingDto->taskId->c_str(), plottingDto->sceneName->c_str(), result);
             }
         }
     });
@@ -153,11 +155,11 @@ AsyncPlottingService::processPlottingAsync(
     return processPlotting(token, plottingDtoJsonDoc);
 }
 
-DTOWRAPPERNS::DTOWrapper<TaskInfo>& AsyncPlottingService::getTaskInfo(const oatpp::String& taskId) const {
+DTOWRAPPERNS::DTOWrapper<TaskInfo> AsyncPlottingService::getTaskInfo(const oatpp::String& taskId) const {
     return m_plottingTaskDao->getTaskInfo(taskId);
 }
 
-DTOWRAPPERNS::DTOWrapper<TaskInfo>& AsyncPlottingService::getTaskInfoBySceneId(const oatpp::String& sceneId) const {
+DTOWRAPPERNS::DTOWrapper<TaskInfo> AsyncPlottingService::getTaskInfoBySceneId(const oatpp::String& sceneId) const {
     return m_plottingTaskDao->getTaskInfoBySceneId(sceneId);
 }
 

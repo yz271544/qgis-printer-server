@@ -4,8 +4,10 @@
 
 #include "webstarter.h"
 
+#include "controller/AsyncPlottingController.h"
 #include "controller/HelloController.h"
 #include "controller/PlottingController.h"
+#include "service/AsyncPlottingService.h"
 
 
 //
@@ -76,6 +78,11 @@ void WebStarter::Setup(StarterContext &context) {
     auto plottingService = std::make_unique<PlottingService>(processor);
     auto plotting_controller = PlottingController::createShared(objectMapper, apiPrefix, plottingService.release(), config);
     router->addController(plotting_controller);
+
+    auto plottingTaskDao = std::make_unique<PlottingTaskDao>();
+    auto asyncPlottingService = std::make_unique<AsyncPlottingService>(processor, plottingTaskDao.release());
+    auto asyncPlottingController = AsyncPlottingController::createShared(objectMapper, apiPrefix, asyncPlottingService.release(), config);
+    router->addController(asyncPlottingController);
 
     /* create server */
     server = oatpp::network::Server::createShared(appComponent->serverConnectionProvider.getObject(),

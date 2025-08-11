@@ -17,7 +17,11 @@
 #include "gdal_priv.h"
 #include <qgsapplication.h>
 #include "core/fetch/PlottingFetch.h"
+#if OATPP_VERSION_LESS_1_4_0
 #include "oatpp/core/Types.hpp"
+#else
+#include "oatpp/Types.hpp"
+#endif
 
 // 移除 TaskInfoDto oatpp DTO 的定义，只保留 struct TaskInfo
 
@@ -55,9 +59,9 @@ public:
                       const DTOWRAPPERNS::DTOWrapper<PlottingRespDto>& result);
 
     // 获取任务信息
-    DTOWRAPPERNS::DTOWrapper<::TaskInfo>& getTaskInfo(const std::string& task_id);
+    DTOWRAPPERNS::DTOWrapper<::TaskInfo> getTaskInfo(const std::string& task_id);
 
-    DTOWRAPPERNS::DTOWrapper<::TaskInfo>& getTaskInfoBySceneId(const std::string& scene_id);
+    DTOWRAPPERNS::DTOWrapper<::TaskInfo> getTaskInfoBySceneId(const std::string& scene_id);
 
     std::unique_ptr<GDALDataset, void(*)(GDALDataset*)> openDatabase();
 

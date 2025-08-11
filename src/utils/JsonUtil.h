@@ -64,12 +64,12 @@ public:
     }
 
     template<typename D>
-    static oatpp::data::mapping::type::DTOWrapper<D> convertQJsonObjectToDto(QJsonDocument json) {
+    static DTOWRAPPERNS::DTOWrapper<D> convertQJsonObjectToDto(QJsonDocument json) {
         auto d = D::createShared();
         auto objectMapper = JsonUtil::getObjectMapper();
         try {
             // Deserialize JSON to DTO
-            d = objectMapper->readFromString<oatpp::data::mapping::type::DTOWrapper<D>>(json.toJson().toStdString().c_str());
+            d = objectMapper->readFromString<DTOWRAPPERNS::DTOWrapper<D>>(json.toJson().toStdString().c_str());
         } catch (const std::exception& e) {
             spdlog::error("Error deserializing JSON to DTO: {}", e.what());
             // Handle error as needed, such as throwing an exception or returning an error response
