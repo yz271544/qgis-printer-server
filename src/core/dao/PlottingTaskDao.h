@@ -65,7 +65,7 @@ public:
     // true has running task, false no running task
     TaskInfo checkHasRunningTask(const std::string& sceneId);
 
-    QList<TaskInfo> getPageTasks(int pageSize, int pageNum) const;
+    oatpp::List<oatpp::Object<TaskInfo>> getPageTasks(int pageSize, int pageNum) const;
 private:
     sqlite3* db_;
     std::mutex db_mutex_;

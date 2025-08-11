@@ -417,8 +417,8 @@ PlottingTaskDao::TaskInfo PlottingTaskDao::getTaskInfoBySceneId(const std::strin
 }
 
 // get page of tasks
-QList<PlottingTaskDao::TaskInfo> PlottingTaskDao::getPageTasks(int pageSize, int pageNum) const {
-    QList<TaskInfo> taskList;
+oatpp::List<oatpp::Object<PlottingTaskDao::TaskInfo>> PlottingTaskDao::getPageTasks(int pageSize, int pageNum) const {
+    oatpp::List<oatpp::Object<PlottingTaskDao::TaskInfo>> taskList = oatpp::List<oatpp::Object<TaskInfo>>::createShared();
     if (m_dbConn == nullptr) {
         spdlog::error("Database connection is not available");
         return taskList;
@@ -435,7 +435,7 @@ QList<PlottingTaskDao::TaskInfo> PlottingTaskDao::getPageTasks(int pageSize, int
     if (poDriver == nullptr) {
         spdlog::error("SQLite driver not found");
         // 返回空的unique_ptr，使用自定义删除器
-        return QList<TaskInfo>();
+        return taskList;
     }
     // 打开或创建数据库
     GDALDataset *poDS = nullptr;
@@ -448,7 +448,7 @@ QList<PlottingTaskDao::TaskInfo> PlottingTaskDao::getPageTasks(int pageSize, int
         if (poDS == nullptr) {
             spdlog::error("create database failed, {}", CPLGetLastErrorMsg());
             perror("system error");
-            return QList<TaskInfo>();
+            return taskList;
         }
         spdlog::info("create new database: {}", dbPath.c_str());
     }
@@ -496,7 +496,7 @@ QList<PlottingTaskDao::TaskInfo> PlottingTaskDao::getPageTasks(int pageSize, int
         task.completed_at = QDateTime::fromString(QString(poFeature->GetFieldAsString("created_at")), Qt::ISODate);
         task.started_at = QDateTime::fromString(QString(poFeature->GetFieldAsString("started_at")), Qt::ISODate);
         task.completed_at = QDateTime::fromString(QString(poFeature->GetFieldAsString("completed_at")), Qt::ISODate);
-        taskList.append(task);
+        taskList->push_back(task);
         OGRFeature::DestroyFeature(poFeature); // 释放特征对象
     }
 

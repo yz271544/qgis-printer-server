@@ -102,63 +102,6 @@ public:
             return asyncPlottingController->m_asyncPlottingService->processPlottingAsync(sceneId, plottingDtoJsonDoc);
         }
     };
-
-    /* 任务状态查询端点 */
-    ENDPOINT_INFO(GetTaskStatus) {
-        info->summary = "获取任务状态";
-        info->addResponse<Object<TaskStatusDto>>(Status::CODE_200, "application/json");
-    }
-
-    ENDPOINT_ASYNC("GET", "/api/qgz/tasks/{taskId}", GetTaskStatus) {
-
-        Action act() override {
-            auto asyncPlottingController = dynamic_cast<AsyncPlottingController *>(this->controller);
-
-            auto taskId = request->getPathVariable("taskId");
-            auto taskInfo = asyncPlottingController->m_asyncPlottingService->getTaskInfo(taskId);
-            return _return(controller->createDtoResponse(Status::CODE_200, taskInfo));
-        }
-    };
-
-    /* 任务列表端点 */
-    ENDPOINT_INFO(GetTaskList) {
-        info->summary = "获取任务列表";
-        info->addResponse<oatpp::List<Object<TaskItemDto>>>(Status::CODE_200, "application/json");
-    }
-
-    ENDPOINT_ASYNC("GET", "/api/tasks", GetTaskList) {
-        Action act() override {
-            auto asyncPlottingController = dynamic_cast<AsyncPlottingController *>(this->controller);
-            auto pageSizeStr = request->getQueryParameter("pageSize");
-            auto pageNumStr = request->getQueryParameter("pageNum");
-
-            int pageSize = pageSizeStr ? std::stoi(pageSizeStr->c_str()) : 50; // 默认50条
-            int pageNum = pageNumStr ? std::stoi(pageNumStr->c_str()) : 0;
-
-            auto taskList = asyncPlottingController->m_asyncPlottingService->getPageTasks(pageSize, pageNum); // 获取最近50条
-            /*auto dtoList = oatpp::List<Object<TaskInfo>>::createShared();
-
-            for (const auto& task : taskList) {
-                auto item = TaskInfo::createShared();
-                item->id = task.id.c_str();
-                item->scene_id = task.scene_id.c_str();
-                item->status = task.status.c_str();
-                item->created_at = task.created_at;
-                item->started_at = task.started_at;
-                item->completed_at = task.completed_at;
-                if (task.result) {
-                    item->result_data = task.result;
-                }
-                if (!task.error.empty()) {
-                    item->error = task.error.c_str();
-                }
-                item->plotting = task.plotting;
-                dtoList->push_back(item);
-            }*/
-
-            return _return(controller->createDtoResponse(Status::CODE_200, taskList));
-        }
-    };
 };
 
 #include OATPP_CODEGEN_END(ApiController)
