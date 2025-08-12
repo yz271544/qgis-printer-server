@@ -1,0 +1,8 @@
+### GET tasks
+GET http://{{host}}:{{port}}/api/qgz/a/tasks?status=completed,pending&pageSize=2&pageNum=1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Response
+
+###

@@ -72,7 +72,6 @@ void WebStarter::Setup(StarterContext &context) {
 
     // 路由 add controller
     router->addController(HelloController::createShared(objectMapper, apiPrefix));
-
     // 添加绘图服务控制器
     auto processor = context.getProcessor();
     auto plottingService = std::make_unique<PlottingService>(processor);
@@ -84,6 +83,7 @@ void WebStarter::Setup(StarterContext &context) {
     auto asyncPlottingController = AsyncPlottingController::createShared(objectMapper, apiPrefix, asyncPlottingService.release(), config);
     router->addController(asyncPlottingController);
 
+    router->logRouterMappings();
     /* create server */
     server = oatpp::network::Server::createShared(appComponent->serverConnectionProvider.getObject(),
                                                   appComponent->serverConnectionHandler.getObject());

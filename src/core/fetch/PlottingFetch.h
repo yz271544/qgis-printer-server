@@ -339,7 +339,7 @@ class TaskInfo : public oatpp::DTO {
     DTO_FIELD(String, started_at);
     DTO_FIELD(String, completed_at);
     DTO_FIELD(Object<PlottingDto>, plotting);
-    DTO_FIELD(Object<PlottingRespDto>, result_data);
+    DTO_FIELD(Object<ResponseDto>, result_data);
     DTO_FIELD(String, error);
 };
 

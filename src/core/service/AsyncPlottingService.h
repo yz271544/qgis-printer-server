@@ -26,20 +26,17 @@
 #include "core/qgis/Processor.h"
 #include "config.h"
 #include "core/dao/PlottingTaskDao.h"
+#include "utils/UuidUtil.h"
 
 class AsyncPlottingService {
 private:
     Processor* m_processor;
 
-    std::queue<std::pair<oatpp::String, QJsonDocument>> asyncRequestQueue;
+    std::queue<std::pair<oatpp::String, DTOWRAPPERNS::DTOWrapper<PlottingDto>>> asyncRequestQueue;
     std::mutex asyncQueueMutex;
     std::condition_variable asyncQueueCV;
     std::thread asyncProcessingThread;
     std::atomic<bool> stopProcess;
-    std::mutex asyncResponseMutex;
-    std::condition_variable asyncResponseCV;
-    bool responseReady = false;
-    DTOWRAPPERNS::DTOWrapper<AsyncResponseDto> processedResponseDto;
     PlottingTaskDao* m_plottingTaskDao;
 
 public:
@@ -50,27 +47,25 @@ public:
     void startProcessing();
     void stopProcessing();
 
-    DTOWRAPPERNS::DTOWrapper<AsyncResponseDto>& processPlotting(
+    DTOWRAPPERNS::DTOWrapper<AsyncResponseDto> processPlotting(
         const oatpp::String& token,
-        const QJsonDocument& plottingDto);
+        const DTOWRAPPERNS::DTOWrapper<PlottingDto>& plottingDto);
 
-    DTOWRAPPERNS::DTOWrapper<AsyncResponseDto>&
+    DTOWRAPPERNS::DTOWrapper<AsyncResponseDto>
     processPlottingAsync(
         const oatpp::String &token,
-        const QJsonDocument& plottingDtoJsonDoc);
+        const DTOWRAPPERNS::DTOWrapper<PlottingDto>&);
 
     bool processRequest(const oatpp::String& token,
         const DTOWRAPPERNS::DTOWrapper<PlottingDto>& plottingDto);
-
-    void setProcessedResponseDto(DTOWRAPPERNS::DTOWrapper<AsyncResponseDto>& response);
 
     bool cleanCompleteTasks(const oatpp::String& status, int deprecateDays) const;
 
     DTOWRAPPERNS::DTOWrapper<TaskInfo> getTaskInfo(const oatpp::String& taskId) const;
 
-    DTOWRAPPERNS::DTOWrapper<::TaskInfo> getTaskInfoBySceneId(const oatpp::String& sceneId) const;
+    oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> getTaskInfoBySceneId(const oatpp::String& sceneId) const;
 
-    oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> getPageTasks(int pageSize, int pageNum) const;
+    oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> getPageTasks(const oatpp::String& status, int pageSize, int pageNum) const;
 };
 
 

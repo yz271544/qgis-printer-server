@@ -80,9 +80,9 @@ public:
             try {
                 // 创建新任务
                 std::string sceneId = plottingDto->sceneId;
-                QJsonDocument plottingDtoJsonDoc = JsonUtil::convertDtoToQJsonObject(plottingDto);
+                // QJsonDocument plottingDtoJsonDoc = JsonUtil::convertDtoToQJsonObject(plottingDto);
 
-                auto procTask = processTask(sceneId, plottingDtoJsonDoc);
+                auto procTask = processTask(sceneId, plottingDto);
 
                 return _return(controller->createDtoResponse(Status::CODE_202, procTask));
 
@@ -94,10 +94,51 @@ public:
             }
         }
 
-        DTOWRAPPERNS::DTOWrapper<AsyncResponseDto>&
-        processTask(const std::string& sceneId, const QJsonDocument& plottingDtoJsonDoc) {
+        DTOWRAPPERNS::DTOWrapper<AsyncResponseDto>
+        processTask(const std::string& sceneId, const DTOWRAPPERNS::DTOWrapper<PlottingDto>& plottingDto) {
             auto asyncPlottingController = dynamic_cast<AsyncPlottingController *>(this->controller);
-            return asyncPlottingController->m_asyncPlottingService->processPlottingAsync(sceneId, plottingDtoJsonDoc);
+            return asyncPlottingController->m_asyncPlottingService->processPlottingAsync(sceneId, plottingDto);
+        }
+    };
+
+
+    /* 任务状态查询端点 */
+    ENDPOINT_INFO(GetTaskStatus) {
+        info->summary = "获取任务状态";
+        info->addResponse<DTOWRAPPERNS::DTOWrapper<TaskInfo>>(Status::CODE_200, "application/json");
+    }
+
+    ENDPOINT_ASYNC("GET", "/api/qgz/a/task/{taskId}", GetTaskStatus) {
+        ENDPOINT_ASYNC_INIT(GetTaskStatus)
+        Action act() override {
+            auto asyncPlottingController = dynamic_cast<AsyncPlottingController *>(this->controller);
+
+            auto taskId = request->getPathVariable("taskId");
+            auto taskInfo = asyncPlottingController->m_asyncPlottingService->getTaskInfo(taskId);
+            return _return(controller->createDtoResponse(Status::CODE_200, taskInfo));
+        }
+    };
+
+    /* 任务列表端点 */
+    ENDPOINT_INFO(GetTaskList) {
+        info->summary = "获取任务列表";
+        info->addResponse<oatpp::List<DTOWRAPPERNS::DTOWrapper<TaskInfo>>>(Status::CODE_200, "application/json");
+    }
+
+    ENDPOINT_ASYNC("GET", "/api/qgz/a/tasks", GetTaskList) {
+        ENDPOINT_ASYNC_INIT(GetTaskList)
+        Action act() override {
+            auto asyncPlottingController = dynamic_cast<AsyncPlottingController *>(this->controller);
+            auto pageSizeStr = request->getQueryParameter("pageSize");
+            auto pageNumStr = request->getQueryParameter("pageNum");
+            auto status = request->getQueryParameter("status");
+
+            int pageSize = pageSizeStr ? std::stoi(pageSizeStr->c_str()) : 50; // 默认50条
+            int pageNum = pageNumStr ? std::stoi(pageNumStr->c_str()) : 0;
+
+            auto taskList = asyncPlottingController->m_asyncPlottingService->getPageTasks(status->c_str(), pageSize, pageNum); // 获取最近50条
+
+            return _return(controller->createDtoResponse(Status::CODE_200, taskList));
         }
     };
 };

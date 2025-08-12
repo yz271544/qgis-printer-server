@@ -7,15 +7,55 @@
 #include <ogrsf_frmts.h>
 
 
-PlottingTaskDao::PlottingTaskDao() {
+PlottingTaskDao::PlottingTaskDao()
+    :db_path_(QgsApplication::qgisSettingsDirPath()),
+     m_db_conn_(openDatabase()) {
     spdlog::warn("construct PlottingTaskDao");
-    db_path_ = QgsApplication::qgisSettingsDirPath();
-    m_dbConn = openDatabase().get();
+}
+
+PlottingTaskDao::PlottingTaskDao(const QString &db_path)
+    :db_path_(db_path),
+     m_db_conn_(openDatabase()) {
+    spdlog::warn("construct PlottingTaskDao by db_path: {}", db_path.toStdString());
 }
 
 PlottingTaskDao::~PlottingTaskDao() {
     spdlog::warn("deconstruct PlottingTaskDao");
 }
+
+GDALDataset* PlottingTaskDao::getDataSet() const {
+    std::string dbPath = db_path_.toStdString()
+                         + QgsApplication::organizationName().toStdString() + "/"
+                         + QgsApplication::applicationName().toStdString() + ".db";
+    //spdlog::info("dbPath: {}", dbPath.c_str());
+    // 检查数据库是否已存在
+    bool dbExists = (GDALOpenEx(dbPath.c_str(), GDAL_OF_VECTOR, nullptr, nullptr, nullptr) != nullptr);
+
+    const char *pszDriverName = "SQLite";
+    GDALDriver *poDriver = GetGDALDriverManager()->GetDriverByName(pszDriverName);
+    if (poDriver == nullptr) {
+        spdlog::error("SQLite driver not found");
+        // 返回空的unique_ptr，使用自定义删除器
+        return nullptr;
+    }
+    // 打开或创建数据库
+    GDALDataset *poDS = nullptr;
+    if (dbExists) {
+        poDS = static_cast<GDALDataset *>(GDALOpenEx(dbPath.c_str(), GDAL_OF_VECTOR | GDAL_OF_UPDATE, nullptr, nullptr,
+                                                     nullptr));
+        //spdlog::info("open exists database: {}", dbPath.c_str());
+    } else {
+        poDS = poDriver->Create(dbPath.c_str(), 0, 0, 0, GDT_Unknown, nullptr);
+        if (poDS == nullptr) {
+            spdlog::error("create database failed, {}", CPLGetLastErrorMsg());
+            perror("system error");
+            return nullptr;
+        }
+        spdlog::info("create new database: {}", dbPath.c_str());
+    }
+    return poDS;
+}
+
 
 // 封装数据库打开逻辑，返回unique_ptr管理的GDALDataset
 std::unique_ptr<GDALDataset, void(*)(GDALDataset *)> PlottingTaskDao::openDatabase() {
@@ -129,22 +169,26 @@ std::unique_ptr<GDALDataset, void(*)(GDALDataset *)> PlottingTaskDao::openDataba
 
 
 // create new task
-std::string PlottingTaskDao::createTask(const std::string &scene_id, const QJsonDocument &plottingDtoJsonDoc) {
+//std::string PlottingTaskDao::createTask(const std::string &scene_id, const QJsonDocument &plottingDtoJsonDoc) {
+
+std::string PlottingTaskDao::createTask(const std::string &scene_id, const DTOWRAPPERNS::DTOWrapper<PlottingDto>& plottingDto) {
     std::lock_guard<std::mutex> lock(db_mutex_);
 
-    if (m_dbConn == nullptr) {
+    if (m_db_conn_ == nullptr) {
         spdlog::error("Database connection is not available");
         return "";
     }
 
     // 生成UUID作为任务ID
-    std::string task_id(UuidUtil::generate());
+    // std::string task_id(UuidUtil::generate());
+    std::string task_id = plottingDto->taskId->c_str();
+    auto plottingDtoJsonDoc = JsonUtil::convertDtoToQJsonObject(plottingDto);
 
     // 获取当前时间戳
     int64_t created_at = static_cast<int64_t>(time(nullptr));
 
     // 插入新任务记录
-    OGRLayer *poLayer = m_dbConn->GetLayerByName("print_tasks");
+    OGRLayer *poLayer = m_db_conn_->GetLayerByName("print_tasks");
     if (poLayer == nullptr) {
         spdlog::error("Table print_tasks does not exist");
         return "";
@@ -155,7 +199,7 @@ std::string PlottingTaskDao::createTask(const std::string &scene_id, const QJson
     poFeature->SetField("scene_id", scene_id.c_str());
     poFeature->SetField("status", "pending");
     poFeature->SetField("created_at", static_cast<GIntBig>(created_at));
-    poFeature->SetField("plotting", plottingDtoJsonDoc.toJson().toStdString().c_str());
+    poFeature->SetField("plotting", plottingDtoJsonDoc.toJson(QJsonDocument::Compact).toStdString().c_str());
 
     OGRErr eErr = poLayer->CreateFeature(poFeature);
     OGRFeature::DestroyFeature(poFeature);
@@ -173,15 +217,16 @@ std::string PlottingTaskDao::createTask(const std::string &scene_id, const QJson
 bool PlottingTaskDao::updateTaskStatus(
     const std::string &task_id,
     const std::string &status,
+    const QJsonDocument &resultJsonDoc,
     const std::string &error) {
     std::lock_guard<std::mutex> lock(db_mutex_);
 
-    if (m_dbConn == nullptr) {
+    if (m_db_conn_ == nullptr) {
         spdlog::error("Database connection is not available");
         return false;
     }
 
-    OGRLayer *poLayer = m_dbConn->GetLayerByName("print_tasks");
+    OGRLayer *poLayer = m_db_conn_->GetLayerByName("print_tasks");
     if (poLayer == nullptr) {
         spdlog::error("Table print_tasks does not exist");
         return false;
@@ -209,6 +254,11 @@ bool PlottingTaskDao::updateTaskStatus(
         poFeature->SetField("completed_at", static_cast<GIntBig>(current_time));
     }
 
+    if (!resultJsonDoc.isNull()) {
+        auto resultJson = resultJsonDoc.toJson(QJsonDocument::Compact);
+        poFeature->SetField("result_data", resultJson.toStdString().c_str());
+    }
+
     // 如果有错误信息，更新错误字段
     if (!error.empty()) {
         poFeature->SetField("error_message", error.c_str());
@@ -230,12 +280,12 @@ bool PlottingTaskDao::updateTaskStatus(
 bool PlottingTaskDao::cleanCompleteTasks(const std::string &status, int deprecateDays) {
     std::lock_guard<std::mutex> lock(db_mutex_);
 
-    if (m_dbConn == nullptr) {
+    if (m_db_conn_ == nullptr) {
         spdlog::error("Database connection is not available");
         return false;
     }
 
-    OGRLayer *poLayer = m_dbConn->GetLayerByName("print_tasks");
+    OGRLayer *poLayer = m_db_conn_->GetLayerByName("print_tasks");
     if (poLayer == nullptr) {
         spdlog::error("Table print_tasks does not exist");
         return false;
@@ -245,44 +295,44 @@ bool PlottingTaskDao::cleanCompleteTasks(const std::string &status, int deprecat
     int64_t current_time = static_cast<int64_t>(time(nullptr));
     int64_t expire_time = current_time - deprecateDays * 24 * 3600;
 
-    // 构造过滤条件
-    std::string filter = "status = '" + status + "' AND completed_at IS NOT NULL AND completed_at < " +
-                         std::to_string(expire_time);
-    poLayer->SetAttributeFilter(filter.c_str());
-    poLayer->ResetReading();
-
-    // 删除符合条件的记录
-    OGRFeature *poFeature;
-    int deleteCount = 0;
-    while ((poFeature = poLayer->GetNextFeature()) != nullptr) {
-        GIntBig fid = poFeature->GetFID();
-        OGRErr eErr = poLayer->DeleteFeature(fid);
-        OGRFeature::DestroyFeature(poFeature);
-        if (eErr == OGRERR_NONE) {
-            deleteCount++;
-        } else {
-            spdlog::error("Failed to delete task with FID {}, error code: {}", fid, eErr);
-        }
+    GDALDataset* poDS = getDataSet();
+    if (poDS == nullptr) {
+        spdlog::error("Failed to open database");
+        return false;
     }
-
-    spdlog::info("Deleted {} tasks with status '{}' older than {} days", deleteCount, status, deprecateDays);
+    // 删除过期任务记录
+    char deleteSQL[512];
+    snprintf(deleteSQL, sizeof(deleteSQL),
+             "DELETE "
+             "FROM print_tasks "
+             "WHERE completed_at IS NOT NULL "
+             "AND status = '%s' "
+             "AND completed_at < %ld "
+             , status.c_str()
+             , expire_time);
+    // 执行SQL查询
+    OGRLayer *poResultLayer = poDS->ExecuteSQL(deleteSQL, nullptr, nullptr);
+    if (poResultLayer == nullptr) {
+        spdlog::error("SQL exec failed: {}", CPLGetLastErrorMsg());
+        GDALClose(poDS);
+        return false;
+    }
     return true;
 }
 
 // check has running task for scene_id,  true has running task, false no running task
-DTOWRAPPERNS::DTOWrapper<::TaskInfo> PlottingTaskDao::checkHasRunningTask(const std::string &sceneId) {
+oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> PlottingTaskDao::checkHasRunningTask(const std::string &sceneId) {
     std::lock_guard<std::mutex> lock(db_mutex_);
-    DTOWRAPPERNS::DTOWrapper<::TaskInfo> taskInfo = ::TaskInfo::createShared();
-    taskInfo->id = "";
-    if (m_dbConn == nullptr) {
+    oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> taskList = oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>>::createShared();
+    if (m_db_conn_ == nullptr) {
         spdlog::error("Database connection is not available");
-        return taskInfo;
+        return taskList;
     }
 
-    OGRLayer *poLayer = m_dbConn->GetLayerByName("print_tasks");
+    OGRLayer *poLayer = m_db_conn_->GetLayerByName("print_tasks");
     if (poLayer == nullptr) {
         spdlog::error("Table print_tasks does not exist");
-        return taskInfo;
+        return taskList;
     }
 
     return getTaskInfoBySceneId(sceneId);
@@ -290,184 +340,110 @@ DTOWRAPPERNS::DTOWrapper<::TaskInfo> PlottingTaskDao::checkHasRunningTask(const 
 
 
 DTOWRAPPERNS::DTOWrapper<::TaskInfo> PlottingTaskDao::getTaskInfo(const std::string &task_id) {
-    std::lock_guard<std::mutex> lock(db_mutex_);
     DTOWRAPPERNS::DTOWrapper<::TaskInfo> taskInfo = ::TaskInfo::createShared();
     taskInfo->id = "";
-    if (m_dbConn == nullptr) {
+    if (m_db_conn_ == nullptr) {
         spdlog::error("Database connection is not available");
         return taskInfo;
     }
-    OGRLayer *poLayer = m_dbConn->GetLayerByName("print_tasks");
+    OGRLayer *poLayer = m_db_conn_->GetLayerByName("print_tasks");
     if (poLayer == nullptr) {
         spdlog::error("Table print_tasks does not exist");
         return taskInfo;
     }
+
+    GDALDataset* poDS = getDataSet();
+    if (poDS == nullptr) {
+        spdlog::error("Failed to open database");
+        return taskInfo;
+    }
+
     // 查询指定任务ID的记录
-    std::string filter = "id = '" + task_id + "'";
-    poLayer->SetAttributeFilter(filter.c_str());
-    poLayer->ResetReading();
-    OGRFeature *poFeature = poLayer->GetNextFeature();
-    if (poFeature == nullptr) {
-        spdlog::error("Task with ID {} not found", task_id);
+    char selectOneSQL[512];
+    snprintf(selectOneSQL, sizeof(selectOneSQL),
+             "SELECT id, scene_id, plotting, status, created_at, started_at, completed_at, result_data, error_message "
+             "FROM print_tasks "
+             "WHERE id = '%s' "
+             "ORDER BY created_at DESC ",
+             task_id.c_str());
+    // 执行SQL查询
+    OGRLayer *poResultLayer = poDS->ExecuteSQL(selectOneSQL, nullptr, nullptr);
+    if (poResultLayer == nullptr) {
+        spdlog::error("SQL query failed: {}", CPLGetLastErrorMsg());
+        GDALClose(poDS);
         return taskInfo;
     }
-    taskInfo->id = poFeature->GetFieldAsString("id");
-    taskInfo->scene_id = poFeature->GetFieldAsString("scene_id");
-    taskInfo->status = poFeature->GetFieldAsString("status");
-    taskInfo->completed_at = QString(poFeature->GetFieldAsString("created_at")).toStdString();
-    taskInfo->started_at = QString(poFeature->GetFieldAsString("started_at")).toStdString();
-    taskInfo->completed_at = QString(poFeature->GetFieldAsString("completed_at")).toStdString();
-    const char *resultData = poFeature->GetFieldAsString("result_data");
-    if (resultData && strlen(resultData) > 0) {
-        QJsonDocument jsonDoc = QJsonDocument::fromJson(QByteArray(resultData));
-        if (!jsonDoc.isNull() && jsonDoc.isObject()) {
-            DTOWRAPPERNS::DTOWrapper<PlottingRespDto> dto = JsonUtil::convertQJsonObjectToDto<PlottingRespDto>(jsonDoc);
-            if (dto) {
-                taskInfo->result_data = std::shared_ptr<PlottingRespDto>(dto.get());
-            } else {
-                spdlog::error("Failed to convert result_data to PlottingRespDto");
+
+    // 遍历查询结果并填充到任务列表
+    OGRFeature *poFeature = nullptr;
+    while ((poFeature = poResultLayer->GetNextFeature()) != nullptr) {
+        taskInfo->id = poFeature->GetFieldAsString("id");
+        taskInfo->scene_id = poFeature->GetFieldAsString("scene_id");
+        taskInfo->status = poFeature->GetFieldAsString("status");
+        taskInfo->created_at = DateTimeUtil::intToDateTime(poFeature->GetFieldAsInteger("created_at")).toString(DateTimeUtil::getDefaultFormat()).toStdString();
+        taskInfo->started_at = DateTimeUtil::intToDateTime(poFeature->GetFieldAsInteger("started_at")).toString(DateTimeUtil::getDefaultFormat()).toStdString();
+        taskInfo->completed_at = DateTimeUtil::intToDateTime(poFeature->GetFieldAsInteger("completed_at")).toString(DateTimeUtil::getDefaultFormat()).toStdString();
+        // plotting
+        const char* plotting = poFeature->GetFieldAsString("plotting");
+        if (plotting && strlen(plotting) > 0) {
+            QJsonDocument plottingDoc = QJsonDocument::fromJson(QByteArray(plotting));
+            if (!plottingDoc.isNull() && plottingDoc.isObject()) {
+                DTOWRAPPERNS::DTOWrapper<PlottingDto> plottingDto = JsonUtil::convertQJsonObjectToDto<PlottingDto>(plottingDoc);
+                if (plottingDto) {
+                    taskInfo->plotting = plottingDto;
+                }
             }
         }
-    }
-
-    const char *plotting = poFeature->GetFieldAsString("plotting");
-    if (plotting && strlen(plotting) > 0) {
-        // Convert plotting JSON string to PlottingDto
-        QJsonDocument plottingDoc = QJsonDocument::fromJson(QByteArray(plotting));
-        if (plottingDoc.isNull() || !plottingDoc.isObject()) {
-            DTOWRAPPERNS::DTOWrapper<PlottingDto> dto = JsonUtil::convertQJsonObjectToDto<PlottingDto>(plottingDoc);
-            if (dto) {
-                taskInfo->plotting = std::shared_ptr<PlottingDto>(dto.get());
-            } else {
-                spdlog::error("Failed to convert result_data to PlottingRespDto");
+        // result_data
+        const char* resultData = poFeature->GetFieldAsString("result_data");
+        if (resultData && strlen(resultData) > 0) {
+            QJsonDocument resultDoc = QJsonDocument::fromJson(QByteArray(resultData));
+            if (!resultDoc.isNull() && resultDoc.isObject()) {
+                DTOWRAPPERNS::DTOWrapper<ResponseDto> resultDto = JsonUtil::convertQJsonObjectToDto<ResponseDto>(resultDoc);
+                if (resultDto) {
+                    taskInfo->result_data = resultDto;
+                }
             }
         }
+        // error
+        const char* errorMsg = poFeature->GetFieldAsString("error_message");
+        if (errorMsg && strlen(errorMsg) > 0) {
+            taskInfo->error = errorMsg;
+        }
+        OGRFeature::DestroyFeature(poFeature);
+        break;
     }
-
-    const char *errorMessage = poFeature->GetFieldAsString("error_message");
-    if (errorMessage && strlen(errorMessage) > 0) {
-        taskInfo->error = errorMessage;
-    }
-    OGRFeature::DestroyFeature(poFeature);
+    poDS->ReleaseResultSet(poResultLayer);
+    GDALClose(poDS);
     return taskInfo;
 }
 
-DTOWRAPPERNS::DTOWrapper<::TaskInfo> PlottingTaskDao::getTaskInfoBySceneId(const std::string &scene_id) {
-    std::lock_guard<std::mutex> lock(db_mutex_);
-    DTOWRAPPERNS::DTOWrapper<::TaskInfo> taskInfo = ::TaskInfo::createShared();
-    taskInfo->id = "";
-    if (m_dbConn == nullptr) {
-        spdlog::error("Database connection is not available");
-        return taskInfo;
-    }
-    OGRLayer *poLayer = m_dbConn->GetLayerByName("print_tasks");
-    if (poLayer == nullptr) {
-        spdlog::error("Table print_tasks does not exist");
-        return taskInfo;
-    }
-    // 查询指定场景ID的记录
-    std::string filter = "scene_id = '" + scene_id + "'";
-    poLayer->SetAttributeFilter(filter.c_str());
-    poLayer->ResetReading();
-    OGRFeature *poFeature = poLayer->GetNextFeature();
-    if (poFeature == nullptr) {
-        spdlog::error("Task with scene ID {} not found", scene_id);
-        return taskInfo;
-    }
-    taskInfo->id = poFeature->GetFieldAsString("id");
-    taskInfo->scene_id = poFeature->GetFieldAsString("scene_id");
-    taskInfo->status = poFeature->GetFieldAsString("status");
-    taskInfo->completed_at = QString(poFeature->GetFieldAsString("created_at")).toStdString();
-    taskInfo->started_at = QString(poFeature->GetFieldAsString("started_at")).toStdString();
-    taskInfo->completed_at = QString(poFeature->GetFieldAsString("completed_at")).toStdString();
-    const char *resultData = poFeature->GetFieldAsString("result_data");
-    if (resultData && strlen(resultData) > 0) {
-        QJsonDocument jsonDoc = QJsonDocument::fromJson(QByteArray(resultData));
-        if (!jsonDoc.isNull() && jsonDoc.isObject()) {
-            DTOWRAPPERNS::DTOWrapper<PlottingRespDto> dto = JsonUtil::convertQJsonObjectToDto<
-                PlottingRespDto>(jsonDoc);
-            if (dto) {
-                taskInfo->result_data = std::shared_ptr<PlottingRespDto>(dto.get());
-            } else {
-                spdlog::error("Failed to convert result_data to PlottingRespDto");
-            }
-        }
-    }
-
-    const char *plotting = poFeature->GetFieldAsString("plotting");
-    if (plotting && strlen(plotting) > 0) {
-        // Convert plotting JSON string to PlottingDto
-        QJsonDocument plottingDoc = QJsonDocument::fromJson(QByteArray(plotting));
-        if (plottingDoc.isNull() || !plottingDoc.isObject()) {
-            DTOWRAPPERNS::DTOWrapper<PlottingDto> dto = JsonUtil::convertQJsonObjectToDto<PlottingDto>(
-                plottingDoc);
-            if (dto) {
-                taskInfo->plotting = std::shared_ptr<PlottingDto>(dto.get());
-            } else {
-                spdlog::error("Failed to convert result_data to PlottingRespDto");
-            }
-        }
-    }
-    const char *errorMessage = poFeature->GetFieldAsString("error_message");
-    if (errorMessage && strlen(errorMessage) > 0) {
-        taskInfo->error = errorMessage;
-    }
-    OGRFeature::DestroyFeature(poFeature);
-    return taskInfo;
-}
-
-// get page of tasks
-oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> PlottingTaskDao::getPageTasks(int pageSize, int pageNum) const {
+oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> PlottingTaskDao::getTaskInfoBySceneId(const std::string &scene_id) {
     oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> taskList = oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>>::createShared();
-    if (m_dbConn == nullptr) {
+    if (m_db_conn_ == nullptr) {
         spdlog::error("Database connection is not available");
         return taskList;
     }
-    std::string dbPath = db_path_.toStdString()
-                         + QgsApplication::organizationName().toStdString() + "/"
-                         + QgsApplication::applicationName().toStdString() + ".db";
-
-    // 检查数据库是否已存在
-    bool dbExists = (GDALOpenEx(dbPath.c_str(), GDAL_OF_VECTOR, nullptr, nullptr, nullptr) != nullptr);
-
-    const char *pszDriverName = "SQLite";
-    GDALDriver *poDriver = GetGDALDriverManager()->GetDriverByName(pszDriverName);
-    if (poDriver == nullptr) {
-        spdlog::error("SQLite driver not found");
-        // 返回空的unique_ptr，使用自定义删除器
-        return taskList;
-    }
-    // 打开或创建数据库
-    GDALDataset *poDS = nullptr;
-    if (dbExists) {
-        poDS = static_cast<GDALDataset *>(GDALOpenEx(dbPath.c_str(), GDAL_OF_VECTOR | GDAL_OF_UPDATE, nullptr, nullptr,
-                                                     nullptr));
-        spdlog::info("open exists database: {}", dbPath.c_str());
-    } else {
-        poDS = poDriver->Create(dbPath.c_str(), 0, 0, 0, GDT_Unknown, nullptr);
-        if (poDS == nullptr) {
-            spdlog::error("create database failed, {}", CPLGetLastErrorMsg());
-            perror("system error");
-            return taskList;
-        }
-        spdlog::info("create new database: {}", dbPath.c_str());
-    }
-
-    OGRLayer *poLayer = m_dbConn->GetLayerByName("print_tasks");
+    OGRLayer *poLayer = m_db_conn_->GetLayerByName("print_tasks");
     if (poLayer == nullptr) {
         spdlog::error("Table print_tasks does not exist");
         return taskList;
     }
-    // 使用字符串格式化构建带参数的SQL查询
-    // 对于SQLite，LIMIT和OFFSET直接使用整数
+
+    GDALDataset* poDS = getDataSet();
+    if (poDS == nullptr) {
+        spdlog::error("Failed to open database");
+        return taskList;
+    }
+
+    // 查询指定任务ID的记录
     char selectPageSQL[512];
     snprintf(selectPageSQL, sizeof(selectPageSQL),
              "SELECT id, scene_id, plotting, status, created_at, started_at, completed_at, result_data, error_message "
              "FROM print_tasks "
-             "ORDER BY created_at DESC "
-             "LIMIT %d OFFSET %d",
-             pageSize, pageNum);
-
+             "WHERE scene_id = '%s' "
+             "ORDER BY created_at DESC ",
+             scene_id.c_str());
     // 执行SQL查询
     OGRLayer *poResultLayer = poDS->ExecuteSQL(selectPageSQL, nullptr, nullptr);
     if (poResultLayer == nullptr) {
@@ -483,9 +459,9 @@ oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> PlottingTaskDao::getPageTasks(
         dto->id = poFeature->GetFieldAsString("id");
         dto->scene_id = poFeature->GetFieldAsString("scene_id");
         dto->status = poFeature->GetFieldAsString("status");
-        dto->created_at = poFeature->GetFieldAsString("created_at");
-        dto->started_at = poFeature->GetFieldAsString("started_at");
-        dto->completed_at = poFeature->GetFieldAsString("completed_at");
+        dto->created_at = DateTimeUtil::intToDateTime(poFeature->GetFieldAsInteger("created_at")).toString(DateTimeUtil::getDefaultFormat()).toStdString();
+        dto->started_at = DateTimeUtil::intToDateTime(poFeature->GetFieldAsInteger("started_at")).toString(DateTimeUtil::getDefaultFormat()).toStdString();
+        dto->completed_at = DateTimeUtil::intToDateTime(poFeature->GetFieldAsInteger("completed_at")).toString(DateTimeUtil::getDefaultFormat()).toStdString();
         // plotting
         const char* plotting = poFeature->GetFieldAsString("plotting");
         if (plotting && strlen(plotting) > 0) {
@@ -502,7 +478,112 @@ oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> PlottingTaskDao::getPageTasks(
         if (resultData && strlen(resultData) > 0) {
             QJsonDocument resultDoc = QJsonDocument::fromJson(QByteArray(resultData));
             if (!resultDoc.isNull() && resultDoc.isObject()) {
-                DTOWRAPPERNS::DTOWrapper<PlottingRespDto> resultDto = JsonUtil::convertQJsonObjectToDto<PlottingRespDto>(resultDoc);
+                DTOWRAPPERNS::DTOWrapper<ResponseDto> resultDto = JsonUtil::convertQJsonObjectToDto<ResponseDto>(resultDoc);
+                if (resultDto) {
+                    dto->result_data = resultDto;
+                }
+            }
+        }
+        // error
+        const char* errorMsg = poFeature->GetFieldAsString("error_message");
+        if (errorMsg && strlen(errorMsg) > 0) {
+            dto->error = errorMsg;
+        }
+        taskList->push_back(dto);
+        OGRFeature::DestroyFeature(poFeature); // 释放特征对象
+    }
+
+    // 释放资源
+    poDS->ReleaseResultSet(poResultLayer);
+    GDALClose(poDS);
+    return taskList;
+}
+
+// get page of tasks
+oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> PlottingTaskDao::getPageTasks(const oatpp::String& status, int pageSize, int pageNum) const {
+    oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> taskList = oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>>::createShared();
+    if (m_db_conn_ == nullptr) {
+        spdlog::error("Database connection is not available");
+        return taskList;
+    }
+
+    GDALDataset* poDS = getDataSet();
+    if (poDS == nullptr) {
+        spdlog::error("Failed to open database");
+        return taskList;
+    }
+
+    // 使用字符串格式化构建带参数的SQL查询
+    // 对于SQLite，LIMIT和OFFSET直接使用整数
+
+    std::string selectClause = "SELECT id, scene_id, plotting, status, created_at, "
+                               "started_at, completed_at, result_data, error_message "
+                               "FROM print_tasks";
+    std::string whereClause = "1 = 1";
+    QString q_where = "";
+    if (!status->empty()) {
+        // split by comma and join with quotes
+        // 这里假设status是一个逗号分隔的字符串
+        // 例如: "pending,running,completed"
+        QString q_status(status->c_str());
+        auto statusList = q_status.split(",");
+
+        if (!statusList.empty()) {
+            q_where += " AND status IN (";
+            for (size_t i = 0; i < statusList.size(); ++i) {
+                q_where += "'" + statusList[i] + "'";
+                if (i < statusList.size() - 1) {
+                    q_where += ", ";
+                }
+            }
+            q_where += ")";
+        }
+    }
+
+    std::string whereAndClause = q_where.toStdString();
+
+    std::string orderClause = "ORDER BY created_at DESC";
+
+    std::string limitClause = "LIMIT " + std::to_string(pageSize) + " OFFSET " + std::to_string(pageNum * pageSize);
+
+    std::string finalSQL = selectClause + " WHERE " + whereClause + whereAndClause + " " + orderClause + " " + limitClause;
+
+    spdlog::debug("finalSQL: {}", finalSQL);
+    // 执行SQL查询
+    OGRLayer *poResultLayer = poDS->ExecuteSQL(finalSQL.c_str(), nullptr, nullptr);
+    if (poResultLayer == nullptr) {
+        spdlog::error("SQL query failed: {}", CPLGetLastErrorMsg());
+        GDALClose(poDS);
+        return taskList;
+    }
+
+    // 遍历查询结果并填充到任务列表
+    OGRFeature *poFeature = nullptr;
+    while ((poFeature = poResultLayer->GetNextFeature()) != nullptr) {
+        auto dto = ::TaskInfo::createShared();
+        dto->id = poFeature->GetFieldAsString("id");
+        dto->scene_id = poFeature->GetFieldAsString("scene_id");
+        dto->status = poFeature->GetFieldAsString("status");
+        dto->created_at = DateTimeUtil::intToDateTime(poFeature->GetFieldAsInteger("created_at")).toString(DateTimeUtil::getDefaultFormat()).toStdString();
+        dto->started_at = DateTimeUtil::intToDateTime(poFeature->GetFieldAsInteger("started_at")).toString(DateTimeUtil::getDefaultFormat()).toStdString();
+        dto->completed_at = DateTimeUtil::intToDateTime(poFeature->GetFieldAsInteger("completed_at")).toString(DateTimeUtil::getDefaultFormat()).toStdString();
+        // plotting
+        const char* plotting = poFeature->GetFieldAsString("plotting");
+        if (plotting && strlen(plotting) > 0) {
+            QJsonDocument plottingDoc = QJsonDocument::fromJson(QByteArray(plotting));
+            if (!plottingDoc.isNull() && plottingDoc.isObject()) {
+                DTOWRAPPERNS::DTOWrapper<PlottingDto> plottingDto = JsonUtil::convertQJsonObjectToDto<PlottingDto>(plottingDoc);
+                if (plottingDto) {
+                    dto->plotting = plottingDto;
+                }
+            }
+        }
+        // result_data
+        const char* resultData = poFeature->GetFieldAsString("result_data");
+        if (resultData && strlen(resultData) > 0) {
+            QJsonDocument resultDoc = QJsonDocument::fromJson(QByteArray(resultData));
+            if (!resultDoc.isNull() && resultDoc.isObject()) {
+                DTOWRAPPERNS::DTOWrapper<ResponseDto> resultDto = JsonUtil::convertQJsonObjectToDto<ResponseDto>(resultDoc);
                 if (resultDto) {
                     dto->result_data = resultDto;
                 }

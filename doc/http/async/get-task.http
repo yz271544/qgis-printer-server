@@ -1,0 +1,8 @@
+### GET tasks
+GET http://{{host}}:{{port}}/api/qgz/a/task/123
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Response
+
+###
