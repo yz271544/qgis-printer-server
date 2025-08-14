@@ -163,6 +163,53 @@ bool AsyncPlottingService::hasDuplicateTaskByCamera(
         }
         auto taskCamera = taskPlottingInfo->camera;
 
+        // 日志输出
+        spdlog::debug("taskCamera -> cameraLongitude: {}, cameraLatitude: {}, cameraHeight: {}, fov: {}, heading: {}, pitch: {}, roll: {}",
+                     taskCamera->cameraLongitude,
+                     taskCamera->cameraLatitude,
+                     taskCamera->cameraHeight,
+                     taskCamera->fov,
+                     taskCamera->heading ? taskCamera->heading->c_str() : "null",
+                     taskCamera->pitch ? taskCamera->pitch->c_str() : "null",
+                     taskCamera->roll ? taskCamera->roll->c_str() : "null");
+
+        spdlog::debug("payloadCamera -> cameraLongitude: {}, cameraLatitude: {}, cameraHeight: {}, fov: {}, heading: {}, pitch: {}, roll: {}",
+                     camera->cameraLongitude,
+                     camera->cameraLatitude,
+                     camera->cameraHeight,
+                     camera->fov,
+                     camera->heading ? camera->heading->c_str() : "null",
+                     camera->pitch ? camera->pitch->c_str() : "null",
+                     camera->roll ? camera->roll->c_str() : "null");
+
+        if (isEqual(taskCamera->cameraLongitude, camera->cameraLongitude)) {
+            spdlog::debug("cameraLongitude is equal: {} = {}", taskCamera->cameraLongitude, camera->cameraLongitude);
+        }
+
+        if (isEqual(taskCamera->cameraLatitude, camera->cameraLatitude)) {
+            spdlog::debug("cameraLatitude is equal: {} = {}", taskCamera->cameraLatitude, camera->cameraLatitude);
+        }
+
+        if (isEqual(taskCamera->cameraHeight, camera->cameraHeight)) {
+            spdlog::debug("cameraHeight is equal: {} = {}", taskCamera->cameraHeight, camera->cameraHeight);
+        }
+
+        if (isEqual(taskCamera->fov, camera->fov)) {
+            spdlog::debug("fov is equal: {} = {}", taskCamera->fov, camera->fov);
+        }
+
+        if (taskCamera->heading == camera->heading) {
+            spdlog::debug("heading is equal: {} = {}", taskCamera->heading->c_str(), camera->heading->c_str());
+        }
+
+        if (taskCamera->pitch == camera->pitch) {
+            spdlog::debug("pitch is equal: {} = {}", taskCamera->pitch->c_str(), camera->pitch->c_str());
+        }
+
+        if (taskCamera->roll == camera->roll) {
+            spdlog::debug("roll is equal: {} = {}", taskCamera->roll->c_str(), camera->roll->c_str());
+        }
+
         if (isEqual(taskCamera->cameraLongitude, camera->cameraLongitude) &&
             isEqual(taskCamera->cameraLatitude, camera->cameraLatitude) &&
             isEqual(taskCamera->cameraHeight, camera->cameraHeight) &&

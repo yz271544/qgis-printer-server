@@ -23,11 +23,24 @@
 #include "oatpp/Types.hpp"
 #endif
 
+#include <filesystem>
+#include <ogrsf_frmts.h>
+
+#include "utils/UuidUtil.h"
 #include "utils/DateTimeUtil.h"
 
-// 移除 TaskInfoDto oatpp DTO 的定义，只保留 struct TaskInfo
+// 自定义GDALDataset删除器
+struct GDALDatasetDeleter {
+    void operator()(GDALDataset* ds) const {
+        if (ds) {
+            GDALClose(ds);
+        }
+    }
+};
 
-// --- 分隔线，防止解析混淆 ---
+// 定义智能指针类型
+using GDALDatasetPtr = std::unique_ptr<GDALDataset, GDALDatasetDeleter>;
+
 
 class PlottingTaskDao {
 public:
@@ -35,19 +48,13 @@ public:
     PlottingTaskDao(const QString &db_path);
     ~PlottingTaskDao();
 
-    struct TaskInfo {
-        std::string id;
-        std::string scene_id;
-        std::string status;
-        QDateTime created_at;
-        QDateTime started_at;
-        QDateTime completed_at;
-        DTOWRAPPERNS::DTOWrapper<PlottingDto> plotting;
-        DTOWRAPPERNS::DTOWrapper<PlottingRespDto> result;
-        std::string error;
-    };
+    // 禁止拷贝构造和赋值
+    PlottingTaskDao(const PlottingTaskDao&) = delete;
+    PlottingTaskDao& operator=(const PlottingTaskDao&) = delete;
 
-    GDALDataset* getDataSet() const;
+    //GDALDataset* getDataSet() const;
+    // 获取数据集(内部使用，已加锁)
+    GDALDatasetPtr getDataSet() const;
 
     // 创建新任务
     //std::string createTask(const std::string& scene_id, const QJsonDocument& plottingDtoJsonDoc);
@@ -59,11 +66,8 @@ public:
                          const QJsonDocument &resultJsonDoc,
                          const std::string& error = "");
 
+    // 清理过期的完成任务
     bool cleanCompleteTasks(const std::string& status, int deprecateDays);
-
-    // 设置任务结果
-    bool setTaskResult(const std::string& task_id,
-                      const DTOWRAPPERNS::DTOWrapper<PlottingRespDto>& result);
 
     // 获取任务信息
     DTOWRAPPERNS::DTOWrapper<::TaskInfo>
@@ -72,8 +76,6 @@ public:
     [[nodiscard]] oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>>
     getTaskInfoBySceneId(const std::string& scene_id);
 
-    std::unique_ptr<GDALDataset, void(*)(GDALDataset*)> openDatabase();
-
     // true has running task, false no running task
     [[nodiscard]] oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>>
     checkHasRunningTask(const std::string& sceneId);
@@ -81,9 +83,21 @@ public:
     [[nodiscard]] oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>>
     getPageTasks(const oatpp::String& status, int pageSize, int pageNum) const;
 private:
-    std::mutex db_mutex_;
+    mutable std::mutex db_mutex_;
     QString db_path_;
-    std::unique_ptr<GDALDataset, void(*)(GDALDataset*)> m_db_conn_;
+    std::unique_ptr<GDALDataset, GDALDatasetDeleter> m_db_conn_;
+
+    // 辅助函数：比较浮点数是否在误差范围内相等
+    bool isFloatEqual(double a, double b, double epsilon = 1e-9) const {
+        return std::fabs(a - b) < epsilon;
+    }
+
+    // 初始化数据库连接
+    bool initConnection();
+
+    bool createDatabaseDirectory() const;
+
+    bool ensureTableExists(GDALDataset *ds);
 };
 
 #endif //PLOTTINGTASKSERVICE_H
