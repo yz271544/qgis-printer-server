@@ -66,6 +66,10 @@ public:
     oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> getTaskInfoBySceneId(const oatpp::String& sceneId) const;
 
     oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> getPageTasks(const oatpp::String& status, int pageSize, int pageNum) const;
+
+    static bool hasDuplicateTaskByCamera(
+    oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> runningTasksOfScene,
+    DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera);
 };
 
 

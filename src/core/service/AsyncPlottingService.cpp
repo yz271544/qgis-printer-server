@@ -15,7 +15,6 @@ AsyncPlottingService::~AsyncPlottingService() {
     stopProcessing();
 }
 
-
 DTOWRAPPERNS::DTOWrapper<AsyncResponseDto> AsyncPlottingService::processPlotting(
         const oatpp::String& token,
         const DTOWRAPPERNS::DTOWrapper<PlottingDto>& plottingDto) {
@@ -23,7 +22,7 @@ DTOWRAPPERNS::DTOWrapper<AsyncResponseDto> AsyncPlottingService::processPlotting
 
     auto runningTasks = m_plottingTaskDao->checkHasRunningTask(plottingDto->sceneId);
     DTOWRAPPERNS::DTOWrapper<AsyncResponseDto> asyncResponseDto = AsyncResponseDto::createShared();
-    if (!runningTasks->empty()) {
+    if (!runningTasks->empty() && hasDuplicateTaskByCamera(runningTasks, plottingDto->camera)) {
         QString runningTaskIds = "";
         for (const auto& task : *runningTasks) {
             runningTaskIds += task->id->c_str();
@@ -98,7 +97,8 @@ void AsyncPlottingService::startProcessing() {
             auto [token, plottingDto] = asyncRequestQueue.front();
             asyncRequestQueue.pop();
             lock.unlock();
-
+            QJsonDocument noneJsonDoc = QJsonDocument();
+            m_plottingTaskDao->updateTaskStatus(plottingDto->taskId, "running", noneJsonDoc, "");
             //auto plottingDto = JsonUtil::convertQJsonObjectToDto<PlottingDto>(plottingDtoJsonDoc);
             auto result = processRequest(token, plottingDto);
             spdlog::info("taskId: {}, scene: {}, result: {}", plottingDto->taskId->c_str(), plottingDto->sceneName->c_str(), result);
@@ -141,4 +141,39 @@ oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> AsyncPlottingService::getTaskI
 // get page of tasks
 oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> AsyncPlottingService::getPageTasks(const oatpp::String& status, int pageSize, int pageNum) const {
     return m_plottingTaskDao->getPageTasks(status, pageSize, pageNum);
+}
+
+bool AsyncPlottingService::hasDuplicateTaskByCamera(
+    oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> runningTasksOfScene,
+    DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera
+    ) {
+    // 定义浮点数比较的精度阈值（根据业务需求调整，这里用1e-9）
+    const double EPSILON = 1e-9;
+
+    // 辅助函数：比较两个浮点数是否在误差范围内相等
+    auto isEqual = [&EPSILON](double a, double b) {
+        return std::fabs(a - b) < EPSILON;
+    };
+
+    for (auto it = runningTasksOfScene->begin(); it != runningTasksOfScene->end(); ++it) {
+        const DTOWRAPPERNS::DTOWrapper<::TaskInfo>& task = *it;
+        auto taskPlottingInfo = task->plotting;
+        if (taskPlottingInfo == nullptr || taskPlottingInfo->camera == nullptr) {
+            continue; // 跳过没有摄像机信息的任务
+        }
+        auto taskCamera = taskPlottingInfo->camera;
+
+        if (isEqual(taskCamera->cameraLongitude, camera->cameraLongitude) &&
+            isEqual(taskCamera->cameraLatitude, camera->cameraLatitude) &&
+            isEqual(taskCamera->cameraHeight, camera->cameraHeight) &&
+            isEqual(taskCamera->fov, camera->fov) &&
+            taskCamera->heading == camera->heading &&
+            taskCamera->pitch == camera->pitch &&
+            taskCamera->roll == camera->roll) {
+            spdlog::info("hasDuplicateTaskByCamera return true");
+            return true; // 找到重复的摄像机位置
+        }
+    }
+    spdlog::info("hasDuplicateTaskByCamera return false");
+    return false;
 }

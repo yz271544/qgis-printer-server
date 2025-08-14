@@ -195,6 +195,12 @@ std::string PlottingTaskDao::createTask(const std::string &scene_id, const DTOWR
     }
 
     OGRFeature *poFeature = OGRFeature::CreateFeature(poLayer->GetLayerDefn());
+    OGRErr err = poLayer->StartTransaction();
+    if (err != OGRERR_NONE) {
+        spdlog::error("Failed to start transaction, error code: {}", err);
+        OGRFeature::DestroyFeature(poFeature); // 释放已获取的资源
+        return ""; // 事务启动失败，终止操作
+    }
     poFeature->SetField("id", task_id.c_str());
     poFeature->SetField("scene_id", scene_id.c_str());
     poFeature->SetField("status", "pending");
@@ -202,13 +208,21 @@ std::string PlottingTaskDao::createTask(const std::string &scene_id, const DTOWR
     poFeature->SetField("plotting", plottingDtoJsonDoc.toJson(QJsonDocument::Compact).toStdString().c_str());
 
     OGRErr eErr = poLayer->CreateFeature(poFeature);
-    OGRFeature::DestroyFeature(poFeature);
-
     if (eErr != OGRERR_NONE) {
         spdlog::error("Failed to create task record, error code: {}", eErr);
+        poLayer->RollbackTransaction();
+        OGRFeature::DestroyFeature(poFeature);
         return "";
     }
 
+    OGRErr commitErr = poLayer->CommitTransaction();
+    if (commitErr != OGRERR_NONE) {
+        spdlog::error("Failed to commit task record, error code: {}", eErr);
+        poLayer->RollbackTransaction();
+        OGRFeature::DestroyFeature(poFeature);
+        return "";
+    }
+    OGRFeature::DestroyFeature(poFeature);
     spdlog::info("Created new task with ID: {}", task_id);
     return task_id;
 }
@@ -244,6 +258,12 @@ bool PlottingTaskDao::updateTaskStatus(
     }
 
     // 更新状态字段
+    OGRErr err = poLayer->StartTransaction();
+    if (err != OGRERR_NONE) {
+        spdlog::error("Failed to start transaction, error code: {}", err);
+        OGRFeature::DestroyFeature(poFeature); // 释放已获取的资源
+        return false; // 事务启动失败，终止操作
+    }
     poFeature->SetField("status", status.c_str());
 
     // 根据状态更新时间字段
@@ -265,13 +285,21 @@ bool PlottingTaskDao::updateTaskStatus(
     }
 
     OGRErr eErr = poLayer->SetFeature(poFeature);
-    OGRFeature::DestroyFeature(poFeature);
-
     if (eErr != OGRERR_NONE) {
         spdlog::error("Failed to update task status, error code: {}", eErr);
+        poLayer->RollbackTransaction();
+        OGRFeature::DestroyFeature(poFeature);
+        return false;
+    }
+    OGRErr commitErr = poLayer->CommitTransaction();
+    if (commitErr != OGRERR_NONE) {
+        spdlog::error("Failed to commit update task record, error code: {}", eErr);
+        poLayer->RollbackTransaction();
+        OGRFeature::DestroyFeature(poFeature);
         return false;
     }
 
+    OGRFeature::DestroyFeature(poFeature);
     spdlog::info("Updated task {} status to {}", task_id, status);
     return true;
 }
@@ -295,11 +323,12 @@ bool PlottingTaskDao::cleanCompleteTasks(const std::string &status, int deprecat
     int64_t current_time = static_cast<int64_t>(time(nullptr));
     int64_t expire_time = current_time - deprecateDays * 24 * 3600;
 
-    GDALDataset* poDS = getDataSet();
+    /*GDALDataset* poDS = getDataSet();
     if (poDS == nullptr) {
         spdlog::error("Failed to open database");
         return false;
-    }
+    }*/
+    auto poDS = std::unique_ptr<GDALDataset, decltype(&GDALClose)>(getDataSet(), GDALClose);
     // 删除过期任务记录
     char deleteSQL[512];
     snprintf(deleteSQL, sizeof(deleteSQL),
@@ -311,12 +340,31 @@ bool PlottingTaskDao::cleanCompleteTasks(const std::string &status, int deprecat
              , status.c_str()
              , expire_time);
     // 执行SQL查询
+    //OGRErr err = poLayer->StartTransaction();
+    OGRErr err = poDS->StartTransaction();
+    if (err != OGRERR_NONE) {
+        spdlog::error("Failed to start transaction, error code: {}", err);
+        return false; // 事务启动失败，终止操作
+    }
     OGRLayer *poResultLayer = poDS->ExecuteSQL(deleteSQL, nullptr, nullptr);
     if (poResultLayer == nullptr) {
         spdlog::error("SQL exec failed: {}", CPLGetLastErrorMsg());
-        GDALClose(poDS);
+        poDS->RollbackTransaction();
+        //GDALClose(poDS);
         return false;
     }
+    poDS->CommitTransaction();
+
+    const char *vaccumSQL = R"(
+            VACUUM;
+        )";
+
+    OGRLayer *eErr = poDS->ExecuteSQL(vaccumSQL, nullptr, nullptr);
+    if (eErr != OGRERR_NONE) {
+        spdlog::error("vacuum database failed, failed msg: {}", CPLGetLastErrorMsg());
+        //GDALClose(poDS);
+    }
+
     return true;
 }
 
@@ -352,11 +400,12 @@ DTOWRAPPERNS::DTOWrapper<::TaskInfo> PlottingTaskDao::getTaskInfo(const std::str
         return taskInfo;
     }
 
-    GDALDataset* poDS = getDataSet();
+    /*GDALDataset* poDS = getDataSet();
     if (poDS == nullptr) {
         spdlog::error("Failed to open database");
         return taskInfo;
-    }
+    }*/
+    auto poDS = std::unique_ptr<GDALDataset, decltype(&GDALClose)>(getDataSet(), GDALClose);
 
     // 查询指定任务ID的记录
     char selectOneSQL[512];
@@ -370,7 +419,7 @@ DTOWRAPPERNS::DTOWrapper<::TaskInfo> PlottingTaskDao::getTaskInfo(const std::str
     OGRLayer *poResultLayer = poDS->ExecuteSQL(selectOneSQL, nullptr, nullptr);
     if (poResultLayer == nullptr) {
         spdlog::error("SQL query failed: {}", CPLGetLastErrorMsg());
-        GDALClose(poDS);
+        //GDALClose(poDS);
         return taskInfo;
     }
 
@@ -414,7 +463,7 @@ DTOWRAPPERNS::DTOWrapper<::TaskInfo> PlottingTaskDao::getTaskInfo(const std::str
         break;
     }
     poDS->ReleaseResultSet(poResultLayer);
-    GDALClose(poDS);
+    //GDALClose(poDS);
     return taskInfo;
 }
 
@@ -430,11 +479,12 @@ oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> PlottingTaskDao::getTaskInfoBy
         return taskList;
     }
 
-    GDALDataset* poDS = getDataSet();
+    /*GDALDataset* poDS = getDataSet();
     if (poDS == nullptr) {
         spdlog::error("Failed to open database");
         return taskList;
-    }
+    }*/
+    auto poDS = std::unique_ptr<GDALDataset, decltype(&GDALClose)>(getDataSet(), GDALClose);
 
     // 查询指定任务ID的记录
     char selectPageSQL[512];
@@ -442,13 +492,14 @@ oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> PlottingTaskDao::getTaskInfoBy
              "SELECT id, scene_id, plotting, status, created_at, started_at, completed_at, result_data, error_message "
              "FROM print_tasks "
              "WHERE scene_id = '%s' "
+             "AND status in ('pending', 'running') "
              "ORDER BY created_at DESC ",
              scene_id.c_str());
     // 执行SQL查询
     OGRLayer *poResultLayer = poDS->ExecuteSQL(selectPageSQL, nullptr, nullptr);
     if (poResultLayer == nullptr) {
         spdlog::error("SQL query failed: {}", CPLGetLastErrorMsg());
-        GDALClose(poDS);
+        //GDALClose(poDS);
         return taskList;
     }
 
@@ -495,7 +546,7 @@ oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> PlottingTaskDao::getTaskInfoBy
 
     // 释放资源
     poDS->ReleaseResultSet(poResultLayer);
-    GDALClose(poDS);
+    //GDALClose(poDS);
     return taskList;
 }
 
@@ -507,11 +558,12 @@ oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> PlottingTaskDao::getPageTasks(
         return taskList;
     }
 
-    GDALDataset* poDS = getDataSet();
+    /*GDALDataset* poDS = getDataSet();
     if (poDS == nullptr) {
         spdlog::error("Failed to open database");
         return taskList;
-    }
+    }*/
+    auto poDS = std::unique_ptr<GDALDataset, decltype(&GDALClose)>(getDataSet(), GDALClose);
 
     // 使用字符串格式化构建带参数的SQL查询
     // 对于SQLite，LIMIT和OFFSET直接使用整数
@@ -553,7 +605,7 @@ oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> PlottingTaskDao::getPageTasks(
     OGRLayer *poResultLayer = poDS->ExecuteSQL(finalSQL.c_str(), nullptr, nullptr);
     if (poResultLayer == nullptr) {
         spdlog::error("SQL query failed: {}", CPLGetLastErrorMsg());
-        GDALClose(poDS);
+        //GDALClose(poDS);
         return taskList;
     }
 
@@ -600,7 +652,7 @@ oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> PlottingTaskDao::getPageTasks(
 
     // 释放资源
     poDS->ReleaseResultSet(poResultLayer);
-    GDALClose(poDS);
+    //GDALClose(poDS);
 
     return taskList;
 }
