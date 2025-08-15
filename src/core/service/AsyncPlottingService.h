@@ -14,6 +14,8 @@
 #include <condition_variable>
 #include <thread>
 #include <atomic>
+#include <chrono>
+#include <ctime>
 #if OATPP_VERSION_LESS_1_4_0
 #include <oatpp/core/async/Executor.hpp>
 #include <oatpp/core/async/Lock.hpp>
@@ -38,6 +40,9 @@ private:
     std::thread asyncProcessingThread;
     std::atomic<bool> stopProcess;
     PlottingTaskDao* m_plottingTaskDao;
+
+    std::thread dailyCleanupThread;
+    std::atomic<bool> stopCleanup;
 
 public:
     AsyncPlottingService(Processor* processor, PlottingTaskDao* plottingTaskDao);
@@ -70,6 +75,10 @@ public:
     static bool hasDuplicateTaskByCamera(
     oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> runningTasksOfScene,
     DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera);
+
+    void recoveryTasks();
+
+    std::chrono::system_clock::duration getDurationToNextCleanupTime();
 };
 
 

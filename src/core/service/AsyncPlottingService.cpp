@@ -7,12 +7,66 @@
 AsyncPlottingService::AsyncPlottingService(Processor* processor, PlottingTaskDao* plottingTaskDao)
 : m_processor(processor), stopProcess(false), m_plottingTaskDao(plottingTaskDao) {
     spdlog::warn("construct AsyncPlottingService");
+    // 先恢复任务，再启动处理线程
+    recoveryTasks();
     startProcessing();
 }
 
 AsyncPlottingService::~AsyncPlottingService() {
     spdlog::warn("deconstruct AsyncPlottingService");
     stopProcessing();
+}
+
+void AsyncPlottingService::recoveryTasks() {
+    try {
+        spdlog::info("Starting task recovery...");
+
+        // 获取所有 running 和 pending 状态的任务
+        oatpp::String status = "running,pending";
+        auto tasks = m_plottingTaskDao->getPageTasks(status, 1000, 0); // 假设最多1000个待恢复任务
+
+        if (tasks->empty()) {
+            spdlog::info("No tasks need recovery");
+            return;
+        }
+
+        spdlog::info("Found {} tasks to recover", tasks->size());
+
+        std::lock_guard<std::mutex> lock(asyncQueueMutex);
+        for (const auto& task : *tasks) {
+            try {
+                // 将任务重新加入队列
+                if (task->plotting != nullptr) {
+                    // 使用空 token，因为原始 token 可能已经失效
+                    oatpp::String emptyToken = "";
+                    asyncRequestQueue.emplace(emptyToken, task->plotting);
+
+                    spdlog::info("Recovered task: id={}, scene={}, status={}",
+                        task->id->c_str(),
+                        task->scene_id->c_str(),
+                        task->status->c_str());
+
+                    // 如果是 running 状态，重置为 pending
+                    if (task->status == "running") {
+                        QJsonDocument noneJsonDoc;
+                        m_plottingTaskDao->updateTaskStatus(
+                            task->id,
+                            "pending",
+                            noneJsonDoc,
+                            "Reset by recovery process");
+                    }
+                }
+            } catch (const std::exception& e) {
+                spdlog::error("Error recovering task {}: {}", task->id->c_str(), e.what());
+            }
+        }
+
+        // 通知处理线程有新任务
+        asyncQueueCV.notify_one();
+        spdlog::info("Task recovery completed");
+    } catch (const std::exception& e) {
+        spdlog::error("Error in task recovery: {}", e.what());
+    }
 }
 
 DTOWRAPPERNS::DTOWrapper<AsyncResponseDto> AsyncPlottingService::processPlotting(
@@ -104,16 +158,50 @@ void AsyncPlottingService::startProcessing() {
             spdlog::info("taskId: {}, scene: {}, result: {}", plottingDto->taskId->c_str(), plottingDto->sceneName->c_str(), result);
         }
     });
+
+    // 启动每日清理线程
+    stopCleanup = false;
+    dailyCleanupThread = std::thread([this]() {
+        spdlog::info("Daily cleanup thread started");
+        while (!stopCleanup) {
+            try {
+                // 计算到下一个13:05的时间
+                auto sleep_duration = getDurationToNextCleanupTime();
+                // 等待到目标时间或收到停止信号
+                std::unique_lock<std::mutex> lock(asyncQueueMutex);
+                if (asyncQueueCV.wait_for(lock, sleep_duration, [this] {
+                    return stopCleanup.load();
+                })) {
+                    break; // 收到停止信号
+                }
+                // 执行清理操作
+                spdlog::info("Starting daily cleanup of completed tasks...");
+                bool cleanCompleted = cleanCompleteTasks("completed", 7);
+                spdlog::info("Daily cleanup completed task {}successful", cleanCompleted ? "" : "un");
+                bool cleanFailed = cleanCompleteTasks("failed", 7);
+                spdlog::info("Daily cleanup failed task {}successful", cleanFailed ? "" : "un");
+            } catch (const std::exception& e) {
+                spdlog::error("Error in daily cleanup thread: {}", e.what());
+            }
+        }
+
+        spdlog::info("Daily cleanup thread stopped");
+    });
 }
 
 void AsyncPlottingService::stopProcessing() {
     {
         std::lock_guard<std::mutex> lock(asyncQueueMutex);
         stopProcess = true;
+        stopCleanup = true;
     }
-    asyncQueueCV.notify_one();
+    asyncQueueCV.notify_all();
     if (asyncProcessingThread.joinable()) {
         asyncProcessingThread.join();
+    }
+
+    if (dailyCleanupThread.joinable()) {
+        dailyCleanupThread.join();
     }
 }
 
@@ -223,4 +311,30 @@ bool AsyncPlottingService::hasDuplicateTaskByCamera(
     }
     spdlog::info("hasDuplicateTaskByCamera return false");
     return false;
+}
+
+// 计算到下一个指定时间点的时间间隔(1:05)
+std::chrono::system_clock::duration AsyncPlottingService::getDurationToNextCleanupTime() {
+    using namespace std::chrono;
+
+    // 获取当前时间
+    auto now = system_clock::now();
+    time_t now_time = system_clock::to_time_t(now);
+    tm* now_tm = localtime(&now_time);
+
+    // 设置目标时间为今天的13:05
+    tm target_tm = *now_tm;
+    target_tm.tm_hour = 13;
+    target_tm.tm_min = 5;
+    target_tm.tm_sec = 0;
+
+    auto target_time = system_clock::from_time_t(mktime(&target_tm));
+
+    // 如果今天1:05已经过去，设置为明天13:05
+    if (target_time < now) {
+        target_tm.tm_mday += 1;
+        target_time = system_clock::from_time_t(mktime(&target_tm));
+    }
+
+    return target_time - now;
 }
