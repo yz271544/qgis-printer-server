@@ -231,6 +231,36 @@ oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> AsyncPlottingService::getPageT
     return m_plottingTaskDao->getPageTasks(status, pageSize, pageNum);
 }
 
+bool AsyncPlottingService::hasDuplicateTaskByGeojson(
+    oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> runningTasksOfScene,
+    DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto>& geojson
+    )
+{
+    if (!geojson) {
+        return false;
+    }
+
+    auto geometry = QgsUtil::convertPolygonDtoToGeometry(geojson);
+
+    for (auto it = runningTasksOfScene->begin(); it != runningTasksOfScene->end(); ++it)
+    {
+        const DTOWRAPPERNS::DTOWrapper<::TaskInfo>& task = *it;
+        auto storeTaskGeo = task->plotting->geojson;
+        auto storeTaskGeometry = QgsUtil::convertPolygonDtoToGeometry(storeTaskGeo);
+        if (storeTaskGeometry == nullptr)
+        {
+            continue;
+        }
+        auto geometryGet = geometry.get();
+        auto storeTaskGeometryGet = storeTaskGeometry.get();
+        if (geometryGet->equals(*storeTaskGeometryGet))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool AsyncPlottingService::hasDuplicateTaskByCamera(
     oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> runningTasksOfScene,
     DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera

@@ -24,6 +24,7 @@
 #include <utils/JsonUtil.h>
 
 #include "config.h"
+#include "core/handler/dto/plotting.h"
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -62,6 +63,8 @@ public:
                                                                Qgis::WkbType qgs_wkb_type,
                                                                const QgsCoordinateTransformContext &cts,
                                                                const QgsCoordinateReferenceSystem &crs);
+
+    static std::unique_ptr<QgsGeometry> convertPolygonDtoToGeometry(DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto>& polygon);
 };
 
 

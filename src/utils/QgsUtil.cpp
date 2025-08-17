@@ -182,3 +182,26 @@ std::unique_ptr<QgsVectorLayer> QgsUtil::writePersistedLayer(
     auto qgsVectorLayer = std::make_unique<QgsVectorLayer>(file_path, layer_name, "ogr");
     return qgsVectorLayer;
 }
+
+std::unique_ptr<QgsGeometry> QgsUtil::convertPolygonDtoToGeometry(DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto>& polygon)
+{
+    if (polygon && polygon->geometry->type == "Polygon" && polygon->geometry->coordinates)
+    {
+        if (!(polygon) || !polygon->geometry->coordinates
+            || !polygon->geometry->coordinates[0]
+            || polygon->geometry->coordinates[0]->size() < 4) {
+            throw GeometryCheckError("Invalid Polygon data");
+            }
+
+        QVector<QgsPointXY> geoPts = QVector<QgsPointXY>();
+        auto& coords = polygon->geometry->coordinates[0];
+        for (size_t i = 0; i < coords->size(); i++) {
+            geoPts.append(QgsPointXY((coords)[i][0], (coords)[i][1]));
+        }
+
+        QgsGeometry convex = QgsGeometry::fromMultiPointXY(geoPts).convexHull();
+        coords->clear();
+        return std::make_unique<QgsGeometry>(convex);
+    }
+    return nullptr;
+}
