@@ -72,7 +72,7 @@ public:
 
     oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> getPageTasks(const oatpp::String& status, int pageSize, int pageNum) const;
 
-    bool AsyncPlottingService::hasDuplicateTaskByGeojson(
+    static bool hasDuplicateTaskByGeojson(
     oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> runningTasksOfScene,
     DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto>& geojson);
 
