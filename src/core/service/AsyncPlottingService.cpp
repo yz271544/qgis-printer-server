@@ -76,7 +76,17 @@ DTOWRAPPERNS::DTOWrapper<AsyncResponseDto> AsyncPlottingService::processPlotting
 
     auto runningTasks = m_plottingTaskDao->checkHasRunningTask(plottingDto->sceneId);
     DTOWRAPPERNS::DTOWrapper<AsyncResponseDto> asyncResponseDto = AsyncResponseDto::createShared();
-    if (!runningTasks->empty() && hasDuplicateTaskByCamera(runningTasks, plottingDto->camera)) {
+
+    bool hasDuplicateTask = false;
+    if (plottingDto->path3d)
+    {
+        hasDuplicateTask = hasDuplicateTaskByCamera(runningTasks, plottingDto->camera);
+    } else if (plottingDto->path)
+    {
+        hasDuplicateTask = hasDuplicateTaskByGeojson(runningTasks, plottingDto->geojson);
+    }
+
+    if (!runningTasks->empty() && hasDuplicateTask) {
         QString runningTaskIds = "";
         for (const auto& task : *runningTasks) {
             runningTaskIds += task->id->c_str();
