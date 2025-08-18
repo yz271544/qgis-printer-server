@@ -130,6 +130,7 @@ status TEXT NOT NULL, -- 状态: pending/running/completed/failed
 created_at INTEGER NOT NULL, -- 创建时间 (unix timestamp)
 started_at INTEGER, -- 开始时间 (unix timestamp)
 completed_at INTEGER, -- 完成时间 (unix timestamp)
+token TEXT, -- 令牌
 plotting TEXT, -- 绘制数据 (JSON)
 result_data TEXT, -- 结果数据 (JSON)
 error_message TEXT -- 错误信息
@@ -175,8 +176,10 @@ GDALDatasetPtr PlottingTaskDao::getDataSet() const {
 // create new task
 //std::string PlottingTaskDao::createTask(const std::string &scene_id, const QJsonDocument &plottingDtoJsonDoc) {
 
-std::string PlottingTaskDao::createTask(const std::string &scene_id,
-                                        const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingDto) {
+std::string PlottingTaskDao::createTask(
+    const std::string& token,
+    const std::string &scene_id,
+    const DTOWRAPPERNS::DTOWrapper<PlottingDto> &plottingDto) {
     std::lock_guard<std::mutex> lock(db_mutex_);
 
     if (m_db_conn_ == nullptr) {
@@ -212,6 +215,7 @@ std::string PlottingTaskDao::createTask(const std::string &scene_id,
     poFeature->SetField("scene_id", scene_id.c_str());
     poFeature->SetField("status", "pending");
     poFeature->SetField("created_at", static_cast<GIntBig>(created_at));
+    poFeature->SetField("token", token.c_str());
     poFeature->SetField("plotting", plottingPayload.c_str());
 
     OGRErr eErr = poLayer->CreateFeature(poFeature);
@@ -429,7 +433,7 @@ DTOWRAPPERNS::DTOWrapper<::TaskInfo> PlottingTaskDao::getTaskInfo(const std::str
     // 查询指定任务ID的记录
     char selectOneSQL[512];
     snprintf(selectOneSQL, sizeof(selectOneSQL),
-             "SELECT id, scene_id, plotting, status, created_at, started_at, completed_at, result_data, error_message "
+             "SELECT id, scene_id, token, plotting, status, created_at, started_at, completed_at, result_data, error_message "
              "FROM print_tasks "
              "WHERE id = '%s' "
              "ORDER BY created_at DESC ",
@@ -455,6 +459,7 @@ DTOWRAPPERNS::DTOWrapper<::TaskInfo> PlottingTaskDao::getTaskInfo(const std::str
                 DateTimeUtil::getDefaultFormat()).toStdString();
             taskInfo->completed_at = DateTimeUtil::intToDateTime(poFeature->GetFieldAsInteger("completed_at")).toString(
                 DateTimeUtil::getDefaultFormat()).toStdString();
+            taskInfo->token = poFeature->GetFieldAsString("token");
             // plotting
             const char *plotting = poFeature->GetFieldAsString("plotting");
             if (plotting && strlen(plotting) > 0) {
@@ -512,7 +517,7 @@ oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo> > PlottingTaskDao::getTaskInfoB
     // 查询指定任务ID的记录
     char selectPageSQL[512];
     snprintf(selectPageSQL, sizeof(selectPageSQL),
-             "SELECT id, scene_id, plotting, status, created_at, started_at, completed_at, result_data, error_message "
+             "SELECT id, scene_id, token, plotting, status, created_at, started_at, completed_at, result_data, error_message "
              "FROM print_tasks "
              "WHERE scene_id = '%s' "
              "AND status in ('pending', 'running') "
@@ -533,6 +538,7 @@ oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo> > PlottingTaskDao::getTaskInfoB
             auto dto = ::TaskInfo::createShared();
             dto->id = poFeature->GetFieldAsString("id");
             dto->scene_id = poFeature->GetFieldAsString("scene_id");
+            dto->token = poFeature->GetFieldAsString("token");
             dto->status = poFeature->GetFieldAsString("status");
             dto->created_at = DateTimeUtil::intToDateTime(poFeature->GetFieldAsInteger("created_at")).toString(
                 DateTimeUtil::getDefaultFormat()).toStdString();
@@ -584,6 +590,7 @@ oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo> > PlottingTaskDao::getTaskInfoB
 // get page of tasks
 oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo> > PlottingTaskDao::getPageTasks(
     const oatpp::String &status, int pageSize, int pageNum) const {
+    spdlog::info("PlottingTaskDao::getPageTasks");
     oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo> > taskList = oatpp::List<DTOWRAPPERNS::DTOWrapper<
         ::TaskInfo> >::createShared();
     if (m_db_conn_ == nullptr) {
@@ -592,12 +599,12 @@ oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo> > PlottingTaskDao::getPageTasks
     }
 
     // 使用字符串格式化构建带参数的SQL查询, 对于SQLite，LIMIT和OFFSET直接使用整数
-    std::string selectClause = "SELECT id, scene_id, plotting, status, created_at, "
+    std::string selectClause = "SELECT id, scene_id, token, plotting, status, created_at, "
             "started_at, completed_at, result_data, error_message "
             "FROM print_tasks";
     std::string whereClause = "1 = 1";
     QString q_where = "";
-    if (!status->empty()) {
+    if (status && !status->empty()) {
         // split by comma and join with quotes
         // 这里假设status是一个逗号分隔的字符串
         // 例如: "pending,running,completed"
@@ -620,12 +627,14 @@ oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo> > PlottingTaskDao::getPageTasks
 
     std::string orderClause = "ORDER BY created_at DESC";
 
-    std::string limitClause = "LIMIT " + std::to_string(pageSize) + " OFFSET " + std::to_string(pageNum * pageSize);
+    std::string limitClause = "LIMIT " + std::to_string(pageSize);
+
+    std::string offsetClause = " OFFSET " + std::to_string(pageNum > 0 ? (pageNum - 1) * pageSize : 0);
 
     std::string finalSQL = selectClause + " WHERE " + whereClause + whereAndClause + " " + orderClause + " " +
-                           limitClause;
+                           limitClause + offsetClause;
 
-    spdlog::debug("finalSQL: {}", finalSQL);
+    spdlog::debug("finalSQL: {}", finalSQL.c_str());
     // 执行SQL查询
     OGRLayer *poResultLayer = m_db_conn_->ExecuteSQL(finalSQL.c_str(), nullptr, nullptr);
     if (poResultLayer == nullptr) {
@@ -640,6 +649,7 @@ oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo> > PlottingTaskDao::getPageTasks
         auto dto = ::TaskInfo::createShared();
         dto->id = poFeature->GetFieldAsString("id");
         dto->scene_id = poFeature->GetFieldAsString("scene_id");
+        dto->token = poFeature->GetFieldAsString("token");
         dto->status = poFeature->GetFieldAsString("status");
         dto->created_at = DateTimeUtil::intToDateTime(poFeature->GetFieldAsInteger("created_at")).toString(
             DateTimeUtil::getDefaultFormat()).toStdString();

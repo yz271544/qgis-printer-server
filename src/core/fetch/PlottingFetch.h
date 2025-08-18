@@ -338,6 +338,7 @@ class TaskInfo : public oatpp::DTO {
     DTO_FIELD(String, created_at);
     DTO_FIELD(String, started_at);
     DTO_FIELD(String, completed_at);
+    DTO_FIELD(String, token);
     DTO_FIELD(Object<PlottingDto>, plotting);
     DTO_FIELD(Object<ResponseDto>, result_data);
     DTO_FIELD(String, error);
@@ -397,7 +398,7 @@ public:
             auto loginObj = response->readBodyToDto<oatpp::Object<PlottingRespDto>>(m_objectMapper.get());
             return loginObj;
         } catch (const std::exception& e) {
-            spdlog::error("Printer Failed to fetch login response: {}", e.what());
+            spdlog::error("Printer Failed to fetch login response: {}, {}", e.what(), "please check list or object of response");
             return nullptr;
         }
     }

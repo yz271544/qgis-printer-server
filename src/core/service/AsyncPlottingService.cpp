@@ -37,9 +37,9 @@ void AsyncPlottingService::recoveryTasks() {
             try {
                 // 将任务重新加入队列
                 if (task->plotting != nullptr) {
-                    // 使用空 token，因为原始 token 可能已经失效
-                    oatpp::String emptyToken = "";
-                    asyncRequestQueue.emplace(emptyToken, task->plotting);
+                    // 原始 token 可能已经失效
+                    oatpp::String token = task->token;
+                    asyncRequestQueue.emplace(token, task->plotting);
 
                     spdlog::info("Recovered task: id={}, scene={}, status={}",
                         task->id->c_str(),
@@ -96,7 +96,7 @@ DTOWRAPPERNS::DTOWrapper<AsyncResponseDto> AsyncPlottingService::processPlotting
     } else {
         std::string task_id((UuidUtil::generate()));
         plottingDto->taskId = oatpp::String(task_id.c_str());
-        m_plottingTaskDao->createTask(plottingDto->sceneId, plottingDto);
+        m_plottingTaskDao->createTask(token, plottingDto->sceneId, plottingDto);
         {
             std::lock_guard<std::mutex> lock(asyncQueueMutex);
             asyncRequestQueue.emplace(token, plottingDto);

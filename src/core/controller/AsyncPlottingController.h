@@ -79,10 +79,9 @@ public:
         Action onDtoLoaded(const DTOWRAPPERNS::DTOWrapper<PlottingDto>& plottingDto) {
             try {
                 // 创建新任务
-                std::string sceneId = plottingDto->sceneId;
                 // QJsonDocument plottingDtoJsonDoc = JsonUtil::convertDtoToQJsonObject(plottingDto);
-
-                auto procTask = processTask(sceneId, plottingDto);
+                auto token = request->getHeader("Authorization");
+                auto procTask = processTask(token, plottingDto);
 
                 return _return(controller->createDtoResponse(Status::CODE_202, procTask));
 
@@ -95,9 +94,9 @@ public:
         }
 
         DTOWRAPPERNS::DTOWrapper<AsyncResponseDto>
-        processTask(const std::string& sceneId, const DTOWRAPPERNS::DTOWrapper<PlottingDto>& plottingDto) {
+        processTask(const std::string& token, const DTOWRAPPERNS::DTOWrapper<PlottingDto>& plottingDto) {
             auto asyncPlottingController = dynamic_cast<AsyncPlottingController *>(this->controller);
-            return asyncPlottingController->m_asyncPlottingService->processPlottingAsync(sceneId, plottingDto);
+            return asyncPlottingController->m_asyncPlottingService->processPlottingAsync(token, plottingDto);
         }
     };
 
@@ -136,7 +135,7 @@ public:
             int pageSize = pageSizeStr ? std::stoi(pageSizeStr->c_str()) : 50; // 默认50条
             int pageNum = pageNumStr ? std::stoi(pageNumStr->c_str()) : 0;
 
-            auto taskList = asyncPlottingController->m_asyncPlottingService->getPageTasks(status->c_str(), pageSize, pageNum); // 获取最近50条
+            auto taskList = asyncPlottingController->m_asyncPlottingService->getPageTasks(status, pageSize, pageNum); // 获取最近50条
 
             return _return(controller->createDtoResponse(Status::CODE_200, taskList));
         }

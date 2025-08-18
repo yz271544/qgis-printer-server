@@ -300,6 +300,11 @@ Processor::fetchPlotting(const oatpp::String &token, const oatpp::String &scene_
         std::unordered_map<oatpp::String, oatpp::String> additionalHeaders = {
                 {"sceneType", scene_type}
         };
+        if (m_verbose) {
+            auto topicMapDataJsonDoc = JsonUtil::convertDtoToQJsonObject(topic_map_data);
+            spdlog::debug("fetchPlotting: token: {}, header scene_type: {}, topicMapData: {}",
+                token->c_str(), scene_type->c_str(), topicMapDataJsonDoc.toJson());
+        }
         auto resp = m_plotting_fetch->fetch(additionalHeaders, topic_map_data);
         return resp;
     });

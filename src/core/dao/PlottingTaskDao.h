@@ -58,7 +58,7 @@ public:
 
     // 创建新任务
     //std::string createTask(const std::string& scene_id, const QJsonDocument& plottingDtoJsonDoc);
-    std::string createTask(const std::string &scene_id, const DTOWRAPPERNS::DTOWrapper<PlottingDto>& plottingDto);
+    std::string createTask(const std::string& token ,const std::string &scene_id, const DTOWRAPPERNS::DTOWrapper<PlottingDto>& plottingDto);
 
     // 更新任务状态
     bool updateTaskStatus(const std::string& task_id,
