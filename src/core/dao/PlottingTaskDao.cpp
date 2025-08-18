@@ -206,11 +206,13 @@ std::string PlottingTaskDao::createTask(const std::string &scene_id,
         OGRFeature::DestroyFeature(poFeature); // 释放已获取的资源
         return ""; // 事务启动失败，终止操作
     }
+    auto plottingPayload = plottingDtoJsonDoc.toJson(QJsonDocument::Compact).toStdString();
+    spdlog::info("plottingPayload: {}", plottingPayload);
     poFeature->SetField("id", task_id.c_str());
     poFeature->SetField("scene_id", scene_id.c_str());
     poFeature->SetField("status", "pending");
     poFeature->SetField("created_at", static_cast<GIntBig>(created_at));
-    poFeature->SetField("plotting", plottingDtoJsonDoc.toJson(QJsonDocument::Compact).toStdString().c_str());
+    poFeature->SetField("plotting", plottingPayload.c_str());
 
     OGRErr eErr = poLayer->CreateFeature(poFeature);
     if (eErr != OGRERR_NONE) {

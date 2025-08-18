@@ -198,9 +198,7 @@ std::unique_ptr<QgsGeometry> QgsUtil::convertPolygonDtoToGeometry(DTOWRAPPERNS::
         for (size_t i = 0; i < coords->size(); i++) {
             geoPts.append(QgsPointXY((coords)[i][0], (coords)[i][1]));
         }
-
         QgsGeometry convex = QgsGeometry::fromMultiPointXY(geoPts).convexHull();
-        coords->clear();
         return std::make_unique<QgsGeometry>(convex);
     }
     return nullptr;

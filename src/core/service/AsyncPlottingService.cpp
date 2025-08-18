@@ -72,11 +72,8 @@ void AsyncPlottingService::recoveryTasks() {
 DTOWRAPPERNS::DTOWrapper<AsyncResponseDto> AsyncPlottingService::processPlotting(
         const oatpp::String& token,
         const DTOWRAPPERNS::DTOWrapper<PlottingDto>& plottingDto) {
-    //auto plottingDto = JsonUtil::convertQJsonObjectToDto<PlottingDto>(plottingDtoJsonDoc);
-
     auto runningTasks = m_plottingTaskDao->checkHasRunningTask(plottingDto->sceneId);
     DTOWRAPPERNS::DTOWrapper<AsyncResponseDto> asyncResponseDto = AsyncResponseDto::createShared();
-
     bool hasDuplicateTask = false;
     if (plottingDto->path3d)
     {
@@ -224,7 +221,6 @@ DTOWRAPPERNS::DTOWrapper<AsyncResponseDto>
 AsyncPlottingService::processPlottingAsync(
         const oatpp::String &token,
         const DTOWRAPPERNS::DTOWrapper<PlottingDto>& plottingDto) {
-    //spdlog::info("processPlottingAsync -> token: {}, plottingDtoJsonDoc: {}", token->c_str(), plottingDtoJsonDoc.toJson());
     return processPlotting(token, plottingDto);
 }
 
@@ -246,6 +242,7 @@ bool AsyncPlottingService::hasDuplicateTaskByGeojson(
     DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonDto>& geojson
     )
 {
+    spdlog::info("has duplicate task by geojson with path");
     if (!geojson) {
         return false;
     }
@@ -275,6 +272,7 @@ bool AsyncPlottingService::hasDuplicateTaskByCamera(
     oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo>> runningTasksOfScene,
     DTOWRAPPERNS::DTOWrapper<Camera3dPosition>& camera
     ) {
+    spdlog::info("has duplicate task by camera with path3d");
     // 定义浮点数比较的精度阈值（根据业务需求调整，这里用1e-9）
     const double EPSILON = 1e-9;
 
