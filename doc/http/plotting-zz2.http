@@ -1,0 +1,151 @@
+### POST plotting
+POST http://{{host}}:{{port}}/api/qgz
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "selectPath": false,
+  "path": "",
+  "path3d": "/map/mnt/fakeRoot/data/mapdata/3DTiles/郑州测试使用/京广线1段-3Dtile/tileset.json,/map/mnt/fakeRoot/data/mapdata/3DTiles/郑州测试使用/京广线2段-3Dtile/tileset.json",
+  "tileIndex": [
+    [
+      0,
+      0
+    ],
+    [
+      1048576,
+      -5821555
+    ]
+  ],
+  "sceneId": "1958370198211330049",
+  "sceneName": "zn-其他功能测试2",
+  "geojson": {
+    "type": "Feature",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            113.12640563045312,
+            34.79917729241823
+          ],
+          [
+            113.12640563045312,
+            35.32339248431971
+          ],
+          [
+            114.40249355553507,
+            35.32339248431971
+          ],
+          [
+            114.40249355553507,
+            34.79917729241823
+          ]
+        ]
+      ]
+    },
+    "properties": {}
+  },
+  "handleFlag": false,
+  "sceneType": "05",
+  "layinfo": {
+    "title": {
+      "text": "标题",
+      "position": [],
+      "borderColor": "",
+      "fillColor": "",
+      "fontSize": 28,
+      "color": "rgba(0,0,0,1)",
+      "fontBorderColor": ""
+    },
+    "subTitle": {
+      "text": "",
+      "fontSize": 16,
+      "color": "rgba(0,0,0,1)"
+    },
+    "legend": {
+      "position": [
+        84,
+        65,
+        16,
+        35
+      ]
+    },
+    "bgPic": {
+      "borderColor": "#FF0000",
+      "doubleFrame": true,
+      "borderWidth": 3
+    },
+    "remark": [
+      {
+        "text": "备注",
+        "position": [
+          0,
+          80,
+          28,
+          10
+        ],
+        "borderColor": "",
+        "fillColor": "rgba(255,255,255,1)",
+        "fontSize": 18,
+        "color": "rgba(0,0,0,1)",
+        "url": ""
+      }
+    ],
+    "arrows": [],
+    "north": {
+      "position": [
+        97,
+        1,
+        2,
+        8
+      ],
+      "rotate": 191
+    },
+    "scaleBar": false
+  },
+  "paper": "a3",
+  "pictureUnit": "制图单位：    时间：",
+  "mapType": {
+    "map": true,
+    "electron": false,
+    "is3D": true
+  },
+  "camera": {
+    "cameraLongitude": 113.7644495929941,
+    "cameraLatitude": 34.80328810101143,
+    "cameraHeight": 263.5962069193099,
+    "cameraDirX": -0.28916441778295876,
+    "cameraDirY": 0.22038199565573008,
+    "cameraDirZ": -0.9315662700415039,
+    "cameraUpX": -0.42493236016210995,
+    "cameraUpY": 0.8424587227846432,
+    "cameraUpZ": 0.33120354722002415,
+    "cameraRightX": 0.8577974287530251,
+    "cameraRightY": 0.4916249346756787,
+    "cameraRightZ": -0.14996164452897115,
+    "fov": 1.0471975511965976,
+    "aspectRatio": 1.908548707753479,
+    "nearPlane": 0.1,
+    "farPlane": 10000000000,
+    "centerLongitude": 113.76632311047072,
+    "centerLatitude": 34.79496834472639,
+    "heading": "169.48",
+    "pitch": "-15.69",
+    "roll": "360.00"
+  },
+  "clarity": 800
+}
+
+### Response
+HTTP/1.1 200 OK
+Server: TornadoServer/6.4.1
+Content-Type: application/json; charset=UTF-8
+Date: Thu, 07 Nov 2024 07:12:42 GMT
+Content-Length: 141
+
+{
+  "project_zip_url": "http://localhost:80/jingweipy/test.zip",
+  "image_url": "http://localhost:80/jingweipy/local/test-位置图.png"
+}
+###

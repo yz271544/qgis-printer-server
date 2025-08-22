@@ -61,7 +61,13 @@ QPair<int, int> JwLegend::customize(
         if (layer->name() != BASE_TILE_NAME && layer->name() != MAIN_TILE_NAME && layer->name() != REAL3D_TILE_NAME &&
             !layer->name().startsWith(MAIN_TILE_NAME) && !layer->name().startsWith(REAL3D_TILE_NAME))
         {
-            legend->model()->rootGroup()->addLayer(layer);
+            if (!filteredLegendItems.isEmpty()) {
+                if (filteredLegendItems.contains(layer->name())) {
+                    legend->model()->rootGroup()->addLayer(layer);
+                }
+            } else {
+                legend->model()->rootGroup()->addLayer(layer);
+            }
             if (auto* vectorLayer = dynamic_cast<QgsVectorLayer*>(layer))
             {
                 QgsFeatureIterator layer_features_iterator = vectorLayer->getFeatures();

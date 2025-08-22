@@ -141,6 +141,7 @@ class Legend : public oatpp::DTO {
 
     DTO_FIELD(String, borderColor);
     DTO_FIELD(List<Int32>, position);
+    DTO_FIELD(List<String>, items);
 };
 
 /**

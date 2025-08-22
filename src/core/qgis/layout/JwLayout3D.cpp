@@ -1354,15 +1354,12 @@ void JwLayout3D::addPrintLayout(
                                    ? legendInfo["borderColor"].toString()
                                    : mImageSpec["legend_frame_color"].toString();
     QSet<QString> filteredLegendItems;
-    if (plottingWeb.contains("legend") &&
-        plottingWeb["legend"].toMap().contains("items")) {
+    if (legendInfo.contains("items")) {
         for (const QVariant &item:
-             plottingWeb["legend"].toMap()["items"].toList()) {
+             legendInfo["items"].toList()) {
             filteredLegendItems.insert(item.toString());
         }
     }
-
-    spdlog::debug("filteredLegendItems Length:", filteredLegendItems.size());
 
     int legend_width = 40;
     if (layInfo.contains("legendWidth")) {
