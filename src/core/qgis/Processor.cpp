@@ -361,6 +361,8 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
             topicMapData->path = plottingWeb->path;
             topicMapData->filterByCanvas = true;
         } else {
+            plottingWeb->path = "";
+            plottingWeb->path3d = "";
             topicMapData->filterByCanvas = false;
         }
 
@@ -398,10 +400,15 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
 
             QMap<QString, QJsonDocument> sceneMap;
             auto sceneMaps = plottingRespDto->data->sceneMaps;
-            for (const auto &sceneMapItem: *sceneMaps) {
-                sceneMap.insert(QString::fromStdString(sceneMapItem->filePath),
-                                JsonUtil::convertDtoToQJsonObject(sceneMapItem));
+            if (sceneMaps == nullptr) {
+                spdlog::warn("sceneMaps is nullptr");
+            } else {
+                for (const auto &sceneMapItem: *sceneMaps) {
+                    sceneMap.insert(QString::fromStdString(sceneMapItem->filePath),
+                                    JsonUtil::convertDtoToQJsonObject(sceneMapItem));
+                }
             }
+
 
             auto responseDto = ResponseDto::createShared();
             responseDto->taskId = plottingWeb->taskId;
@@ -446,6 +453,9 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                     for (int i = 0; i < real_3d_paths.size(); ++i) {
                         QString path3d = real_3d_paths[i].trimmed();
                         auto mapInfo = sceneMap.take(path3d);
+                        if (mapInfo.isNull()) {
+                            continue;
+                        }
                         auto mapInfoObj = mapInfo.object();
                         if (mapInfoObj.contains("loadFlag")) {
                             bool loadFlag = mapInfoObj.take("loadFlag").toBool();

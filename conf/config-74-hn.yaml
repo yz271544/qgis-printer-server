@@ -2,8 +2,8 @@ app:
   name: qgis-printer-server
   org: stxx
 logging:
-  level: debug
-  verbose: true
+  level: info
+  verbose: false
   qt_log_enable: false
 web:
   host: "0.0.0.0"

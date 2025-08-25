@@ -1,0 +1,200 @@
+### POST plotting
+POST http://{{host}}:{{port}}/api/qgz
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "selectPath": true,
+  "path": "/map/mnt/fakeRoot/data/mapdata/DOM/郑州测试使用/京广线1段-DOM-切片",
+  "path3d": "/map/mnt/fakeRoot/data/mapdata/3DTiles/郑州测试使用/京广线1段-3Dtile/tileset.json",
+  "tileIndex": [
+    [
+      0,
+      0
+    ],
+    [
+      1048576,
+      -5821555
+    ]
+  ],
+  "sceneId": "1958357887719374850",
+  "sceneName": "20250820-旧场景导入",
+  "geojson": {
+    "type": "Feature",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            113.67792742154913,
+            34.82044493628583
+          ],
+          [
+            113.67792742154913,
+            35.0016835698697
+          ],
+          [
+            113.88512517752083,
+            35.0016835698697
+          ],
+          [
+            113.88512517752083,
+            34.82044493628583
+          ]
+        ]
+      ]
+    },
+    "properties": {}
+  },
+  "handleFlag": false,
+  "sceneType": "05",
+  "layinfo": {
+    "title": {
+      "text": "标题",
+      "position": [],
+      "borderColor": "",
+      "fillColor": "",
+      "fontSize": 28,
+      "color": "rgba(0,0,0,1)",
+      "fontBorderColor": ""
+    },
+    "subTitle": {
+      "text": "",
+      "fontSize": 16,
+      "color": "rgba(0,0,0,1)"
+    },
+    "legend": {
+      "position": [
+        84,
+        20,
+        26,
+        80
+      ],
+      "items": [
+        "点长",
+        "米长",
+        "警犬",
+        "渡船",
+        "沿途村庄、小区",
+        "河流、湖泊",
+        "应急消防设施点",
+        "应急避险点",
+        "应急备用医院",
+        "桥",
+        "涵洞",
+        "制高点",
+        "无人机反制点",
+        "水电油分输点",
+        "工厂区",
+        "供电所",
+        "变电站",
+        "中继站",
+        "基站",
+        "酒店",
+        "医院",
+        "中、小学（高中）",
+        "高校（中专、职高）",
+        "燃气阀门",
+        "停车场",
+        "商圈",
+        "施工工地",
+        "地铁站",
+        "汽车站",
+        "公交站",
+        "高铁站",
+        "加油（气）站",
+        "液化气站",
+        "充电站",
+        "易燃易爆场所",
+        "十字路口",
+        "丁字路口",
+        "重点路段",
+        "疏散通道",
+        "辖区交接点",
+        "枪机",
+        "球机",
+        "人像",
+        "卡口",
+        "制高点视频"
+      ]
+    },
+    "bgPic": {
+      "borderColor": "#FF0000",
+      "doubleFrame": true,
+      "borderWidth": 3
+    },
+    "remark": [
+      {
+        "text": "备注",
+        "position": [
+          0,
+          80,
+          28,
+          10
+        ],
+        "borderColor": "",
+        "fillColor": "rgba(255,255,255,1)",
+        "fontSize": 18,
+        "color": "rgba(0,0,0,1)",
+        "url": ""
+      }
+    ],
+    "arrows": [],
+    "north": {
+      "position": [
+        97,
+        1,
+        2,
+        8
+      ],
+      "rotate": 306
+    },
+    "scaleBar": false
+  },
+  "paper": "a3",
+  "pictureUnit": "制图单位：    时间：",
+  "mapType": {
+    "map": true,
+    "electron": false,
+    "is3D": true
+  },
+  "camera": {
+    "cameraLongitude": 113.66880616533865,
+    "cameraLatitude": 34.83497175274065,
+    "cameraHeight": 9293.119143246646,
+    "cameraDirX": -0.1997054110959692,
+    "cameraDirY": -0.9784715377255053,
+    "cameraDirZ": -0.05206917168608638,
+    "cameraUpX": -0.6566641297140252,
+    "cameraUpY": 0.09420534371436262,
+    "cameraUpZ": 0.748276402115275,
+    "cameraRightX": -0.7272619676058317,
+    "cameraRightY": 0.18362680380801782,
+    "cameraRightZ": -0.6613404776643768,
+    "fov": 1.0471975511965976,
+    "aspectRatio": 2.119205298013245,
+    "nearPlane": 0.1,
+    "farPlane": 10000000000,
+    "centerLongitude": 113.75253741198368,
+    "centerLatitude": 34.885681327669346,
+    "heading": "53.67",
+    "pitch": "-44.39",
+    "roll": "0.01"
+  },
+  "clarity": 800
+}
+
+
+
+### Response
+HTTP/1.1 200 OK
+Server: TornadoServer/6.4.1
+Content-Type: application/json; charset=UTF-8
+Date: Thu, 07 Nov 2024 07:12:42 GMT
+Content-Length: 141
+
+{
+  "project_zip_url": "http://localhost:80/jingweipy/test.zip",
+  "image_url": "http://localhost:80/jingweipy/local/test-位置图.png"
+}
+###
