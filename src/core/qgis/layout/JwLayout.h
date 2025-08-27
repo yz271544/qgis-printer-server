@@ -49,6 +49,7 @@
 #include <qgspointlightsettings.h>
 #include <qgs3dmapscene.h>
 #include <qgslayoutexporter.h>
+#include <qgsfillsymbollayer.h>
 #include <utility>
 #include <QtConcurrent/QtConcurrent>
 
@@ -87,10 +88,19 @@ public:
 
     void setRemarks(QgsPrintLayout *layout, const QVariantMap &remarkOfLayinfo, const bool writeQpt);
 
-    void addRightSideLabel(QgsPrintLayout *layout, const QVariantMap &subTitle, int rightSideLabelWidth,
-                           int rightSideLabelHeight);
+    void addRightSideLabel(
+        QgsPrintLayout *layout,
+        const QVariantMap &subTitle,
+        int rightSideLabelWidth,
+        int rightSideLabelHeight,
+        bool mapDoubleFrame,
+        float margin_offset_if_double_frame);
 
-    void addSignatureLabel(QgsPrintLayout *layout, const QString &signatureText);
+    void addSignatureLabel(
+            QgsPrintLayout *layout,
+            const QString &signatureText,
+            bool mapDoubleFrame,
+            float margin_offset_if_double_frame);
 
     void addScaleBar(QgsPrintLayout *layout);
 

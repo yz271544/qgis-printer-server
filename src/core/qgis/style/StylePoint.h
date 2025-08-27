@@ -38,7 +38,7 @@
 #endif
 
 #include "qgsstatisticalsummary.h"
-#include "../../../config.h"
+#include "config.h"
 #include "utils/QgsUtil.h"
 #include "utils/ColorTransformUtil.h"
 #if defined(_WIN32)
@@ -53,7 +53,8 @@ public:
         const QJsonObject &fontStyle,
         const QJsonObject &layerStyle,
         QString &icon_path,
-        qreal point_size);
+        qreal point_size = 5.0,
+        bool enable_point_cluster = false);
 
     static QgsAbstract3DRenderer *get3d_single_symbol_renderer(
         QgsVectorLayer &point_layer,
@@ -67,7 +68,8 @@ public:
         const QJsonObject &fontStyle,
         const QJsonObject &layerStyle,
         QString &icon_path,
-        qreal point_size);
+        qreal point_size,
+        bool enable_point_altitude = false);
 
     static QgsRuleBased3DRenderer *get3d_rule_renderer(
         QgsVectorLayer &point_layer,

@@ -28,7 +28,8 @@ QgsFeatureRenderer* StylePoint::get2d_rule_based_renderer(
         const QJsonObject& fontStyle,
         const QJsonObject& layerStyle,
         QString& icon_path,
-        qreal point_size = 5.0) {
+        qreal point_size,
+        bool enable_point_cluster) {
     auto label_style = std::make_unique<QMap<QString, QVariant>>();
     if (fontStyle.contains("fontColor")) {
         QString font_color = fontStyle["fontColor"].toString();
@@ -91,7 +92,7 @@ QgsFeatureRenderer* StylePoint::get2d_rule_based_renderer(
     spdlog::debug("point_size: {} -> raster_marker_size: ", point_size, raster_marker_size);
     rule_raster_marker->setSize(raster_marker_size);
     rule_symbol->changeSymbolLayer(0, rule_raster_marker.release());
-    if (ENABLE_POINT_CLUSTER)
+    if (!enable_point_cluster)
     {
         rule_symbol->appendSymbolLayer(rule_font_marker.release());
     }
@@ -101,7 +102,7 @@ QgsFeatureRenderer* StylePoint::get2d_rule_based_renderer(
     root_rule->appendChild(rule.release());
     auto rule_renderer = std::make_unique<QgsRuleBasedRenderer>(root_rule.release());
 
-    if (!ENABLE_POINT_CLUSTER) {
+    if (!enable_point_cluster) {
         return rule_renderer.release();
     }
     //QgsSymbol* cluster_symbol = QgsSymbol::defaultSymbol(Qgis::GeometryType::Point);
@@ -163,7 +164,8 @@ QgsAbstract3DRenderer* StylePoint::get3d_single_raster_symbol_renderer(
         const QJsonObject& fontStyle,
         const QJsonObject& layerStyle,
         QString& icon_path,
-        qreal point_size) {
+        qreal point_size,
+        bool enable_point_altitude) {
 
     // QJsonDocument doc(layerStyle);
     // QJsonDocument fdoc(fontStyle);
@@ -219,17 +221,19 @@ QgsAbstract3DRenderer* StylePoint::get3d_single_raster_symbol_renderer(
     raster_marker->setOpacity(1.0);
     raster_marker->setAngle(0.0);
     raster_marker->setOffset(QPointF(0, 0));
-    raster_marker->setVerticalAnchorPoint(QgsMarkerSymbolLayer::VerticalAnchorPoint::VCenter);
+    raster_marker->setVerticalAnchorPoint(QgsMarkerSymbolLayer::VerticalAnchorPoint::Bottom);
     raster_marker->setHorizontalAnchorPoint(QgsMarkerSymbolLayer::HorizontalAnchorPoint::HCenter);
 
     auto symbol = std::make_unique<QgsPoint3DSymbol>();
     symbol->setShape(Qgis::Point3DShape::Billboard);
     // 设置离地高度
     symbol->setAltitudeClamping(Qgis::AltitudeClamping::Relative);
-    QMatrix4x4 transform = symbol->transform(); // 获取当前变换
-    //transform(1, 3) = 5.5;
-    transform(1, 3) = point_size_mm * scale;
-    symbol->setTransform(transform); // 应用新变换
+    if (enable_point_altitude) {
+        QMatrix4x4 transform = symbol->transform(); // 获取当前变换
+        //transform(1, 3) = 5.5;
+        transform(1, 3) = point_size_mm * scale;
+        symbol->setTransform(transform); // 应用新变换
+    }
 
     QgsMarkerSymbol* marker_symbol = symbol->billboardSymbol();
 

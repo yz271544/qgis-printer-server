@@ -52,7 +52,9 @@ public:
         const QJsonObject& layerStyle,
         const QList<QJsonObject>& styleList,
         int point_size = 5,
-        const QString& iconBase64 = "");
+        const QString& iconBase64 = "",
+        bool enable_point_altitude = false,
+        bool enable_point_cluster = false);
 
 private:
     QString& mSceneName;

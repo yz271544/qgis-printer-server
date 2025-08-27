@@ -251,6 +251,26 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
     } catch (const std::exception& e) {
         spdlog::error("get qgis.max_screen_error error: {}", e.what());
     }
+    try {
+        m_enable_point_cluster = (*m_config)["qgis"]["enable_point_cluster"].as<bool>();
+        auto env_enable_point_cluster = getEnvValuePtr<bool>("ENABLE_POINT_CLUSTER");
+        if (env_enable_point_cluster.get() != nullptr) {
+            m_enable_point_cluster = *(env_enable_point_cluster.release());
+        }
+        spdlog::info("m_enable_point_cluster: {}", m_enable_point_cluster);
+    } catch (const std::exception &e) {
+        spdlog::warn("get enable_point_cluster error: {}", e.what());
+    }
+    try {
+        m_enable_point_altitude = (*m_config)["qgis"]["enable_point_altitude"].as<bool>();
+        auto env_enable_point_altitude = getEnvValuePtr<bool>("ENABLE_POINT_ALTITUDE");
+        if (env_enable_point_altitude.get() != nullptr) {
+            m_enable_point_altitude = *(env_enable_point_altitude.release());
+        }
+        spdlog::info("m_enable_point_altitude: {}", m_enable_point_altitude);
+    } catch (const std::exception &e) {
+        spdlog::warn("get enable_point_altitude error: {}", e.what());
+    }
 }
 
 Processor::~Processor() {
@@ -428,6 +448,7 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                 m_app->addMapBaseTileLayer();
 
                 if (!plottingWeb->path->empty()) {
+                    spdlog::debug("path is not empty, add map main tile layer");
                     QString plottingWebPaths = QString::fromStdString(*plottingWeb->path);
                     QStringList orthogonal_paths = plottingWebPaths.split(",");
                     for (int i = 0; i < orthogonal_paths.size(); ++i) {
@@ -448,12 +469,16 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                 }
 
                 if (plottingWeb->path3d != nullptr && !plottingWeb->path3d->empty()) {
+                    spdlog::debug("path3d is not empty, add 3d tile layer");
                     QString plottingWebPath3ds = QString::fromStdString(*plottingWeb->path3d);
+                    spdlog::debug("plottingWebPath3ds: {}", plottingWebPath3ds.toStdString());
                     QStringList real_3d_paths = plottingWebPath3ds.split(",");
                     for (int i = 0; i < real_3d_paths.size(); ++i) {
                         QString path3d = real_3d_paths[i].trimmed();
+                        spdlog::debug("path3d: {}", path3d.toStdString());
                         auto mapInfo = sceneMap.take(path3d);
                         if (mapInfo.isNull()) {
+                            spdlog::debug("mapInfo is null, skip load 3d tileset: {}", path3d.toStdString());
                             continue;
                         }
                         auto mapInfoObj = mapInfo.object();
@@ -464,6 +489,7 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                                 continue;
                             }
                         } else {
+                            spdlog::debug("not loadFlag in mapInfo, skip load 3d tileset: {}", path3d.toStdString());
                             continue;
                         }
                         QStringList path3d_arr = path3d.split("/");
@@ -479,6 +505,8 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
                         } else {
                             real_3d_path = path3d;
                         }
+
+                        spdlog::debug("real_3d_path: {}", real_3d_path.toStdString());
 
                         if (plottingWeb->clarity != nullptr && plottingWeb->clarity > 0) {
                             auto tile3d_max_clarity = m_max_clarity - plottingWeb->clarity;
@@ -1083,7 +1111,9 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                         layer_style,
                         style_list,
                         20,
-                        attachment);
+                        attachment,
+                        m_enable_point_altitude,
+                        m_enable_point_cluster);
                 }
             } else {
                 spdlog::warn("point_geometry_coordinates_list is empty, payloads.name: {}", payloads->name->c_str());

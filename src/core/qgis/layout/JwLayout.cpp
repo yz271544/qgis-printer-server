@@ -5,23 +5,22 @@
 #include "JwLayout.h"
 
 // 构造函数
-JwLayout::JwLayout(QgsProject* project,
-                   QgsMapCanvas* canvas,
-                   QString& sceneName,
-                   const QVariantMap& imageSpec,
-                   QString& projectDir,
-                   QString& layoutName,
-                   QString& qgisPrefixPath)
-        : mProject(project),
-        mCanvas(canvas),
-        mSceneName(sceneName),
-        mImageSpec(imageSpec),
-        mProjectDir(projectDir),
-        mLayoutName(layoutName),
-        mQgisPrefixPath(qgisPrefixPath),
-        mMapWidth(0),
-        mMapHeight(0)
-{
+JwLayout::JwLayout(QgsProject *project,
+                   QgsMapCanvas *canvas,
+                   QString &sceneName,
+                   const QVariantMap &imageSpec,
+                   QString &projectDir,
+                   QString &layoutName,
+                   QString &qgisPrefixPath)
+    : mProject(project),
+      mCanvas(canvas),
+      mSceneName(sceneName),
+      mImageSpec(imageSpec),
+      mProjectDir(projectDir),
+      mLayoutName(layoutName),
+      mQgisPrefixPath(qgisPrefixPath),
+      mMapWidth(0),
+      mMapHeight(0) {
     QString legendTitle = imageSpec["legend_title"].toString();
     spdlog::debug("construct legendTitle: {}", legendTitle.toStdString());
     this->mJwLegend = std::make_unique<JwLegend>(legendTitle, project);
@@ -29,9 +28,9 @@ JwLayout::JwLayout(QgsProject* project,
 
 // 过滤地图图层
 void JwLayout::filterMapLayers(
-        QgsLayoutItemMap* mapItem,
-        const QVector<QString>& removeLayerNames,
-        const QVector<QString>& removeLayerPrefixes) {
+    QgsLayoutItemMap *mapItem,
+    const QVector<QString> &removeLayerNames,
+    const QVector<QString> &removeLayerPrefixes) {
     for (const auto &item: removeLayerNames) {
         spdlog::debug("remove layer name: {}", item.toStdString());
     }
@@ -40,15 +39,15 @@ void JwLayout::filterMapLayers(
         spdlog::debug("remove layer prefix: {}", item.toStdString());
     }
 
-    QMap<QString, QgsMapLayer*> layers = mProject->mapLayers();
-    QList<QgsMapLayer*> filteredLayers;
-    for (QgsMapLayer* layer : layers) {
+    QMap<QString, QgsMapLayer *> layers = mProject->mapLayers();
+    QList<QgsMapLayer *> filteredLayers;
+    for (QgsMapLayer *layer: layers) {
         bool shouldAdd = true;
         if (!removeLayerNames.isEmpty() && removeLayerNames.contains(layer->name())) {
             shouldAdd = false;
         }
         if (shouldAdd && !removeLayerPrefixes.isEmpty()) {
-            for (const QString& prefix : removeLayerPrefixes) {
+            for (const QString &prefix: removeLayerPrefixes) {
                 if (layer->name().startsWith(prefix)) {
                     shouldAdd = false;
                     break;
@@ -61,8 +60,7 @@ void JwLayout::filterMapLayers(
     }
     if (mapItem) {
         std::reverse(filteredLayers.begin(), filteredLayers.end());
-        for (QgsMapLayer* filtered_layer : filteredLayers)
-        {
+        for (QgsMapLayer *filtered_layer: filteredLayers) {
             spdlog::debug("JwLayout add layer to layout map: {}", filtered_layer->name().toStdString());
         }
         mapItem->setLayers(filteredLayers);
@@ -70,14 +68,14 @@ void JwLayout::filterMapLayers(
 }
 
 // 设置页面方向
-void JwLayout::setPageOrientation(QgsPrintLayout* layout, const PaperSpecification& availablePaper, int pageNum,
+void JwLayout::setPageOrientation(QgsPrintLayout *layout, const PaperSpecification &availablePaper, int pageNum,
                                   QgsLayoutItemPage::Orientation orientation) {
-    QgsLayoutPageCollection* pageCollection = layout->pageCollection();
-    QgsLayoutItemPage* page = pageCollection->page(pageNum);
+    QgsLayoutPageCollection *pageCollection = layout->pageCollection();
+    QgsLayoutItemPage *page = pageCollection->page(pageNum);
     page->setPageSize(availablePaper.getPaperName(), orientation);
 }
 
-void JwLayout::setTitle(QgsPrintLayout* layout, const QVariantMap& titleOfLayinfo) {
+void JwLayout::setTitle(QgsPrintLayout *layout, const QVariantMap &titleOfLayinfo) {
     // 添加标题
     auto title = std::make_unique<QgsLayoutItemLabel>(layout);
     title->setText(titleOfLayinfo["text"].toString());
@@ -97,26 +95,23 @@ void JwLayout::setTitle(QgsPrintLayout* layout, const QVariantMap& titleOfLayinf
     spdlog::debug("title fontFamily {}", fontFamily.toStdString());
     // 字体颜色
     QString fontColor = mImageSpec["title_font_color"].toString();
-    if (titleOfLayinfo.contains("color"))
-    {
+    if (titleOfLayinfo.contains("color")) {
         fontColor = titleOfLayinfo["color"].toString();
         fontColor = ColorTransformUtil::strRgbaToHex(fontColor).first;
     }
     spdlog::debug("title fontColor {}", fontColor.toStdString());
     // set the font
     QgsTextFormat text_format = *QtFontUtil::createFont(
-            fontFamily,
-            titleFontSize,
-            fontColor,
-            mImageSpec["title_is_bold"].toBool(),
-            mImageSpec["title_is_italic"].toBool(),
-            Qgis::TextOrientation::Horizontal,
-            mImageSpec["title_letter_spacing"].toDouble());
+        fontFamily,
+        titleFontSize,
+        fontColor,
+        mImageSpec["title_is_bold"].toBool(),
+        mImageSpec["title_is_italic"].toBool(),
+        Qgis::TextOrientation::Horizontal,
+        mImageSpec["title_letter_spacing"].toDouble());
 
     auto font = text_format.font();
-    spdlog::debug("font 111");
     auto family = font.family();
-    spdlog::debug("font 222");
     spdlog::debug("font family: {}", family.toStdString());
     spdlog::debug("text_format -> size: {}", text_format.size());
     spdlog::debug("text_format -> color: {}", text_format.color().name().toStdString());
@@ -139,16 +134,15 @@ void JwLayout::setTitle(QgsPrintLayout* layout, const QVariantMap& titleOfLayinf
                   fontColor.toStdString(),
                   mImageSpec["title_letter_spacing"].toDouble());
     title->attemptSetSceneRect(
-            QRectF(mImageSpec["main_left_margin"].toDouble(), 0.0,
-                   mMapWidth,
-                   mImageSpec["main_top_margin"].toDouble() - 10));
+        QRectF(mImageSpec["main_left_margin"].toDouble(), 0.0,
+               mMapWidth,
+               mImageSpec["main_top_margin"].toDouble() - 10));
     layout->addLayoutItem(title.release());
 }
 
 // 添加图例
-void JwLayout::setLegend(QgsPrintLayout* layout, const QVariantMap& imageSpec, int legendWidth, int legendHeight,
-                         const QString& borderColor , const QSet<QString>& filteredLegendItems)
-{
+void JwLayout::setLegend(QgsPrintLayout *layout, const QVariantMap &imageSpec, int legendWidth, int legendHeight,
+                         const QString &borderColor, const QSet<QString> &filteredLegendItems) {
     auto legend = std::make_unique<QgsLayoutItemLegend>(layout);
     spdlog::debug("ready to custom legend");
     QPair<int, int> legendWidthHeight =
@@ -180,8 +174,7 @@ void JwLayout::setLegend(QgsPrintLayout* layout, const QVariantMap& imageSpec, i
     layout->addLayoutItem(legend.release());
 }
 
-void JwLayout::setRemarks(QgsPrintLayout* layout, const QVariantMap& remarkOfLayinfo, const bool writeQpt)
-{
+void JwLayout::setRemarks(QgsPrintLayout *layout, const QVariantMap &remarkOfLayinfo, const bool writeQpt) {
     // 获取备注文本
     QString remarkText = remarkOfLayinfo["text"].toString();
 
@@ -197,10 +190,13 @@ void JwLayout::setRemarks(QgsPrintLayout* layout, const QVariantMap& remarkOfLay
     int remarksHeight = static_cast<int>(mMapHeight * positionHeight / 100.0);
 
     // 获取字体大小
-    double remarkFontSize = remarkOfLayinfo.contains("fontSize") ? remarkOfLayinfo["fontSize"].toDouble() : mImageSpec["remark_font_size"].toDouble();
+    double remarkFontSize = remarkOfLayinfo.contains("fontSize")
+                                ? remarkOfLayinfo["fontSize"].toDouble()
+                                : mImageSpec["remark_font_size"].toDouble();
 
     // 计算文本宽度和高度
-    int remarksTextWidth = FontUtil::getTextFontWidth(remarkText, remarkFontSize, mImageSpec["remark_letter_spacing"].toFloat());
+    int remarksTextWidth = FontUtil::getTextFontWidth(remarkText, remarkFontSize,
+                                                      mImageSpec["remark_letter_spacing"].toFloat());
     int remarksTextHeight = FontUtil::getSingleTextSize(remarkFontSize);
 
     // 调整备注框的宽度和高度
@@ -216,11 +212,12 @@ void JwLayout::setRemarks(QgsPrintLayout* layout, const QVariantMap& remarkOfLay
 
     // 获取背景颜色和边框颜色
     QString bgColor = remarkOfLayinfo.contains("fillColor") && !remarkOfLayinfo["fillColor"].toString().isEmpty()
-                      ? ColorTransformUtil::strRgbaToHex(remarkOfLayinfo["fillColor"].toString()).first
-                      : mImageSpec["remark_bg_color"].toString();
-    QString bgFrameColor = remarkOfLayinfo.contains("borderColor") && !remarkOfLayinfo["borderColor"].toString().isEmpty()
-                           ? remarkOfLayinfo["borderColor"].toString()
-                           : mImageSpec["remark_bg_frame_color"].toString();
+                          ? ColorTransformUtil::strRgbaToHex(remarkOfLayinfo["fillColor"].toString()).first
+                          : mImageSpec["remark_bg_color"].toString();
+    QString bgFrameColor = remarkOfLayinfo.contains("borderColor") && !remarkOfLayinfo["borderColor"].toString().
+                           isEmpty()
+                               ? remarkOfLayinfo["borderColor"].toString()
+                               : mImageSpec["remark_bg_frame_color"].toString();
 
     // 创建备注框背景
     auto remarksBg = std::make_unique<QgsLayoutItemShape>(layout);
@@ -229,7 +226,7 @@ void JwLayout::setRemarks(QgsPrintLayout* layout, const QVariantMap& remarkOfLay
     // 设置背景颜色和边框颜色
     auto symbol = std::make_unique<QgsFillSymbol>();
     symbol->setColor(QColor(bgColor));
-    if (auto* symbolLayer = dynamic_cast<QgsSimpleMarkerSymbolLayer*>(symbol->symbolLayer(0))) {
+    if (auto *symbolLayer = dynamic_cast<QgsSimpleMarkerSymbolLayer *>(symbol->symbolLayer(0))) {
         symbolLayer->setStrokeColor(QColor(bgFrameColor));
     }
     remarksBg->setSymbol(symbol.release());
@@ -244,15 +241,16 @@ void JwLayout::setRemarks(QgsPrintLayout* layout, const QVariantMap& remarkOfLay
     remarks->setText(remarkText);
 
     // 设置字体格式
-    QgsTextFormat* remarksFont = QtFontUtil::createFont(
-            mImageSpec["remark_font_family"].toString(),
-            remarkFontSize,
-            ColorTransformUtil::strRgbaToHex(remarkOfLayinfo.contains("color") ? remarkOfLayinfo["color"].toString()
-                                                                               : mImageSpec["remark_font_color"].toString()).first,
-            mImageSpec["remark_is_bold"].toBool(),
-            mImageSpec["remark_is_italic"].toBool(),
-            Qgis::TextOrientation::Horizontal,  // static_cast<Qt::Orientation>(imageSpec["remarkOrientation"].toInt()),
-            mImageSpec["remark_letter_spacing"].toDouble()
+    QgsTextFormat *remarksFont = QtFontUtil::createFont(
+        mImageSpec["remark_font_family"].toString(),
+        remarkFontSize,
+        ColorTransformUtil::strRgbaToHex(remarkOfLayinfo.contains("color")
+                                             ? remarkOfLayinfo["color"].toString()
+                                             : mImageSpec["remark_font_color"].toString()).first,
+        mImageSpec["remark_is_bold"].toBool(),
+        mImageSpec["remark_is_italic"].toBool(),
+        Qgis::TextOrientation::Horizontal, // static_cast<Qt::Orientation>(imageSpec["remarkOrientation"].toInt()),
+        mImageSpec["remark_letter_spacing"].toDouble()
     );
     remarks->setTextFormat(*remarksFont);
 
@@ -265,7 +263,8 @@ void JwLayout::setRemarks(QgsPrintLayout* layout, const QVariantMap& remarkOfLay
 
     // 设置文本位置
     remarks->setReferencePoint(QgsLayoutItem::ReferencePoint::UpperLeft);
-    remarks->attemptSetSceneRect(QRectF(remarksX + 1, remarksY + 1, remarks->boundingRect().width(), remarks->boundingRect().height()));
+    remarks->attemptSetSceneRect(QRectF(remarksX + 1, remarksY + 1, remarks->boundingRect().width(),
+                                        remarks->boundingRect().height()));
 
     // 添加备注文本到布局
     layout->addLayoutItem(remarks.release());
@@ -281,8 +280,12 @@ void JwLayout::setRemarks(QgsPrintLayout* layout, const QVariantMap& remarkOfLay
     }
 }
 
-void JwLayout::addRightSideLabel(QgsPrintLayout* layout, const QVariantMap& subTitle, int rightSideLabelWidth, int rightSideLabelHeight)
-{
+void JwLayout::addRightSideLabel(QgsPrintLayout *layout,
+                                 const QVariantMap &subTitle,
+                                 int rightSideLabelWidth,
+                                 int rightSideLabelHeight,
+                                 bool mapDoubleFrame,
+                                 float margin_offset_if_double_frame) {
     // 创建标签项
     auto label = std::make_unique<QgsLayoutItemLabel>(layout);
 
@@ -291,11 +294,16 @@ void JwLayout::addRightSideLabel(QgsPrintLayout* layout, const QVariantMap& subT
     label->setText(labelText);
 
     // 获取字体大小和颜色
-    double rightSeamSealFontSize = subTitle.contains("fontSize") ? subTitle["fontSize"].toDouble() : mImageSpec["right_seam_seal_font_size"].toDouble();
-    QString rightSeamSealFontColor = subTitle.contains("color") ? ColorTransformUtil::strRgbaToHex(subTitle["color"].toString()).first : mImageSpec["right_seam_seal_font_color"].toString();
+    double rightSeamSealFontSize = subTitle.contains("fontSize")
+                                       ? subTitle["fontSize"].toDouble()
+                                       : mImageSpec["right_seam_seal_font_size"].toDouble();
+    QString rightSeamSealFontColor = subTitle.contains("color")
+                                         ? ColorTransformUtil::strRgbaToHex(subTitle["color"].toString()).first
+                                         : mImageSpec["right_seam_seal_font_color"].toString();
 
     // 计算文本宽度和高度
-    int textFontHeight = FontUtil::getTextFontWidth(labelText, rightSeamSealFontSize, mImageSpec["signatureLetterSpacing"].toFloat());
+    int textFontHeight = FontUtil::getTextFontWidth(labelText, rightSeamSealFontSize,
+                                                    mImageSpec["signatureLetterSpacing"].toFloat());
     int textFontWidth = FontUtil::getSingleTextSize(rightSeamSealFontSize);
 
     // 打印调试信息
@@ -323,17 +331,27 @@ void JwLayout::addRightSideLabel(QgsPrintLayout* layout, const QVariantMap& subT
     label->setVAlign(Qt::AlignVCenter);
 
     // 计算标签的位置
-    double labelX = mImageSpec["main_left_margin"].toDouble() + mMapWidth + mImageSpec["right_seam_seal_from_right_border_left_margin"].toDouble();
-    double labelY = mImageSpec["main_top_margin"].toDouble() + mImageSpec["right_seam_seal_from_right_border_left_margin"].toDouble();
+    double labelX = mImageSpec["main_left_margin"].toDouble() + mMapWidth + mImageSpec[
+                        "right_seam_seal_from_right_border_left_margin"].toDouble();
+    double labelY = mImageSpec["main_top_margin"].toDouble() + mImageSpec[
+                        "right_seam_seal_from_right_border_left_margin"].toDouble();
 
     // 设置标签的位置和大小
-    label->attemptSetSceneRect(QRectF(labelX, labelY, textFontWidth, textFontHeight));
+    if (mapDoubleFrame) {
+        label->attemptSetSceneRect(QRectF(labelX + margin_offset_if_double_frame,
+                                          labelY, textFontWidth, textFontHeight));
+    } else {
+        label->attemptSetSceneRect(QRectF(labelX, labelY, textFontWidth, textFontHeight));
+    }
 
     // 将标签添加到布局
     layout->addLayoutItem(label.release());
 }
 
-void JwLayout::addSignatureLabel(QgsPrintLayout* layout, const QString& signatureText) {
+void JwLayout::addSignatureLabel(QgsPrintLayout *layout,
+                                 const QString &signatureText,
+                                 bool mapDoubleFrame,
+                                 float margin_offset_if_double_frame) {
     // 创建标签项
     auto label = std::make_unique<QgsLayoutItemLabel>(layout);
 
@@ -341,17 +359,19 @@ void JwLayout::addSignatureLabel(QgsPrintLayout* layout, const QString& signatur
     label->setText(signatureText);
 
     // 计算文本宽度和高度
-    int textFontWidth = FontUtil::getTextFontWidth(signatureText, mImageSpec["signature_font_size"].toDouble(), mImageSpec["signature_letter_spacing"].toFloat());
+    int textFontWidth = FontUtil::getTextFontWidth(signatureText, mImageSpec["signature_font_size"].toDouble(),
+                                                   mImageSpec["signature_letter_spacing"].toFloat());
     int textFontHeight = FontUtil::getSingleTextSize(mImageSpec["signature_font_size"].toDouble());
 
     // 打印调试信息
-    spdlog::debug("add_signature_label font: {}, size: {}, color: {}, letter_spacing: {}, text_font_width: {}, text_font_height: {}",
-                  mImageSpec["right_seam_seal_family"].toString().toStdString(),
-                  mImageSpec["right_seam_seal_font_size"].toDouble(),
-                  mImageSpec["right_seam_seal_font_color"].toString().toStdString(),
-                  mImageSpec["right_seam_seal_letter_spacing"].toDouble(),
-                  textFontWidth,
-                  textFontHeight);
+    spdlog::debug(
+        "add_signature_label font: {}, size: {}, color: {}, letter_spacing: {}, text_font_width: {}, text_font_height: {}",
+        mImageSpec["right_seam_seal_family"].toString().toStdString(),
+        mImageSpec["right_seam_seal_font_size"].toDouble(),
+        mImageSpec["right_seam_seal_font_color"].toString().toStdString(),
+        mImageSpec["right_seam_seal_letter_spacing"].toDouble(),
+        textFontWidth,
+        textFontHeight);
 
     // 创建字体格式
     QgsTextFormat signatureTextFormat;
@@ -369,18 +389,25 @@ void JwLayout::addSignatureLabel(QgsPrintLayout* layout, const QString& signatur
     label->setHAlign(Qt::AlignHCenter);
 
     // 计算标签的位置
-    double labelX = mImageSpec["main_left_margin"].toDouble() + mMapWidth - textFontWidth - mImageSpec["signature_from_right_border_right_margin"].toDouble();
-    double labelY = mImageSpec["main_top_margin"].toDouble() + mMapHeight + mImageSpec["signature_from_bottom_border_top_margin"].toDouble();
+    double labelX = mImageSpec["main_left_margin"].toDouble() + mMapWidth - textFontWidth - mImageSpec[
+                        "signature_from_right_border_right_margin"].toDouble();
+    double labelY = mImageSpec["main_top_margin"].toDouble() + mMapHeight + mImageSpec[
+                        "signature_from_bottom_border_top_margin"].toDouble();
 
     // 设置标签的位置和大小
-    label->attemptSetSceneRect(QRectF(labelX, labelY, textFontWidth, textFontHeight));
+    if (mapDoubleFrame) {
+        label->attemptSetSceneRect(QRectF(labelX,
+                                          labelY + margin_offset_if_double_frame,
+                                          textFontWidth, textFontHeight));
+    } else {
+        label->attemptSetSceneRect(QRectF(labelX, labelY, textFontWidth, textFontHeight));
+    }
 
     // 将标签添加到布局
     layout->addLayoutItem(label.release());
 }
 
-void JwLayout::addScaleBar(QgsPrintLayout* layout) {
-
+void JwLayout::addScaleBar(QgsPrintLayout *layout) {
     // 创建比例尺项
     auto scaleBar = std::make_unique<QgsLayoutItemScaleBar>(layout);
 
@@ -420,13 +447,15 @@ void JwLayout::addScaleBar(QgsPrintLayout* layout) {
     layout->addLayoutItem(scaleBar.release());
 
     // 打印调试信息
-    spdlog::debug("Scale bar added at position x: {}, y: {}, width: {}, height: {}", scaleBarX, scaleBarY, scaleBarWidth, scaleBarHeight);
+    spdlog::debug("Scale bar added at position x: {}, y: {}, width: {}, height: {}", scaleBarX, scaleBarY,
+                  scaleBarWidth, scaleBarHeight);
 }
 
-void JwLayout::addArrowToLayout(QgsLayout* layout, const QVector<QgsPointXY>& points, const QColor& color, double width) {
+void JwLayout::addArrowToLayout(QgsLayout *layout, const QVector<QgsPointXY> &points, const QColor &color,
+                                double width) {
     // 将 QgsPointXY 转换为 QPolygonF
     QPolygonF polygon;
-    for (const QgsPointXY& point : points) {
+    for (const QgsPointXY &point: points) {
         polygon.append(QPointF(point.x(), point.y()));
     }
 
@@ -434,9 +463,9 @@ void JwLayout::addArrowToLayout(QgsLayout* layout, const QVector<QgsPointXY>& po
     auto polylineItem = std::make_unique<QgsLayoutItemPolyline>(polygon, layout);
 
     // 创建线符号
-    QgsLineSymbol* lineSymbol = QgsLineSymbol::createSimple(QVariantMap{
-            {"color", color.name()},
-            {"width", QString::number(width)}
+    QgsLineSymbol *lineSymbol = QgsLineSymbol::createSimple(QVariantMap{
+        {"color", color.name()},
+        {"width", QString::number(width)}
     });
 
     // 创建箭头符号层
@@ -462,8 +491,7 @@ void JwLayout::addArrowToLayout(QgsLayout* layout, const QVector<QgsPointXY>& po
     spdlog::debug("Arrow added to layout with color: {}, width: {}", color.name().toStdString(), width);
 }
 
-void JwLayout::addArrowBasedOnFrontendParams(QgsPrintLayout* layout, const QList<QVariant>& position, double rotate) {
-
+void JwLayout::addArrowBasedOnFrontendParams(QgsPrintLayout *layout, const QList<QVariant> &position, double rotate) {
     // 检查位置参数是否有效
     if (position.size() < 4) {
         spdlog::warn("Invalid position parameters. Expected 4 values: [left, top, width, height].");
@@ -500,8 +528,8 @@ void JwLayout::addArrowBasedOnFrontendParams(QgsPrintLayout* layout, const QList
 
     // 构建用于绘制箭头的点坐标列表（毫米坐标形式）
     QVector<QgsPointXY> points = {
-            QgsPointXY(rotatedStartX, rotatedStartY),
-            QgsPointXY(rotatedEndX, rotatedEndY)
+        QgsPointXY(rotatedStartX, rotatedStartY),
+        QgsPointXY(rotatedEndX, rotatedEndY)
     };
 
     // 调用添加箭头到布局的函数
@@ -517,17 +545,17 @@ void JwLayout::addArrowBasedOnFrontendParams(QgsPrintLayout* layout, const QList
 }
 
 // 初始化 2D 布局
-void JwLayout::init2DLayout(const QString& layoutName) {
+void JwLayout::init2DLayout(const QString &layoutName) {
     mLayout = new QgsPrintLayout(mProject);
     mLayout->setName(layoutName);
     mLayout->setUnits(Qgis::LayoutUnit::Millimeters);
     mLayout->initializeDefaults();
-    QgsLayoutManager* layout_manager = mProject->layoutManager();
+    QgsLayoutManager *layout_manager = mProject->layoutManager();
     layout_manager->addLayout(mLayout);
 }
 
 // get layout from project->layoutManager()
-QgsPrintLayout* JwLayout::getLayout(const QString& layoutName) {
+QgsPrintLayout *JwLayout::getLayout(const QString &layoutName) {
     auto layout_manager = mProject->layoutManager();
     auto layoutInterface = layout_manager->layoutByName(layoutName);
     if (!layoutInterface) {
@@ -535,29 +563,28 @@ QgsPrintLayout* JwLayout::getLayout(const QString& layoutName) {
         return nullptr;
     }
     if (layoutInterface->layoutType() == QgsMasterLayoutInterface::PrintLayout) {
-        auto printLayout = dynamic_cast<QgsPrintLayout*>(layoutInterface);
+        auto printLayout = dynamic_cast<QgsPrintLayout *>(layoutInterface);
         return printLayout;
     }
     return nullptr;
 }
 
-QgsLayoutItemMap* JwLayout::getMapItem() {
+QgsLayoutItemMap *JwLayout::getMapItem() {
     auto layout = getLayout(mLayoutName);
     return layout->referenceMap();
 }
 
 // 设置地图
 void JwLayout::setMap(
-        QgsPrintLayout* layout,
-        const PaperSpecification& availablePaper,
-        int mapFrameWidth,
-        const QString& mapFrameColor,
-        bool isDoubleFrame,
-        const QVector<QString>& removeLayerNames,
-        const QVector<QString>& removeLayerPrefixes,
-        double mapRotation
-)
-{
+    QgsPrintLayout *layout,
+    const PaperSpecification &availablePaper,
+    int mapFrameWidth,
+    const QString &mapFrameColor,
+    bool isDoubleFrame,
+    const QVector<QString> &removeLayerNames,
+    const QVector<QString> &removeLayerPrefixes,
+    double mapRotation
+) {
     auto mapItem = std::make_unique<QgsLayoutItemMap>(layout);
     mapItem->setMapRotation(mapRotation);
     filterMapLayers(mapItem.get(), removeLayerNames, removeLayerPrefixes);
@@ -567,14 +594,17 @@ void JwLayout::setMap(
     mapItem->setKeepLayerSet(false);
 
     // 设置地图项在布局中的位置和大小 这里因为要用纸张横向打印，所以将纸的宽高互换
-    mMapWidth = availablePaper.getPaperSize().second - mImageSpec["main_left_margin"].toDouble() - mImageSpec["main_right_margin"].toDouble();
-    mMapHeight = availablePaper.getPaperSize().first - mImageSpec["main_top_margin"].toDouble() - mImageSpec["main_bottom_margin"].toDouble();
+    mMapWidth = availablePaper.getPaperSize().second - mImageSpec["main_left_margin"].toDouble() - mImageSpec[
+                    "main_right_margin"].toDouble();
+    mMapHeight = availablePaper.getPaperSize().first - mImageSpec["main_top_margin"].toDouble() - mImageSpec[
+                     "main_bottom_margin"].toDouble();
 
     mapItem->setFrameEnabled(true);
     mapItem->setFrameStrokeColor(QColor(mapFrameColor));
     double frameWidthPixelMm = QgsUtil::d300PixelToMm(static_cast<float>(mapFrameWidth));
     if (isDoubleFrame) {
-        mapItem->setFrameStrokeWidth(QgsLayoutMeasurement(0.4, Qgis::LayoutUnit::Millimeters));
+        mapItem->setFrameStrokeWidth(
+            QgsLayoutMeasurement(0.4, Qgis::LayoutUnit::Millimeters));
         float margin_offset = FRAME_OFFSET_COEFFICIENT;
         float width_offset = margin_offset * 2;
         QString fillColor = mImageSpec["main_double_frame_fill_color"].toString();
@@ -582,13 +612,16 @@ void JwLayout::setMap(
         qreal remarksY = mImageSpec["main_top_margin"].toDouble() - margin_offset;
         qreal remarksWidth = mMapWidth + width_offset;
         qreal remarksHeight = mMapHeight + width_offset;
-        auto outerFrame = addRect(fillColor, mapFrameColor, frameWidthPixelMm, remarksX, remarksY, remarksWidth, remarksHeight);
+        auto outerFrame = addRect(fillColor, mapFrameColor,
+            frameWidthPixelMm, remarksX, remarksY, remarksWidth, remarksHeight);
         layout->addLayoutItem(outerFrame);
     } else {
-        mapItem->setFrameStrokeWidth(QgsLayoutMeasurement(frameWidthPixelMm, Qgis::LayoutUnit::Millimeters));
+        mapItem->setFrameStrokeWidth(
+            QgsLayoutMeasurement(frameWidthPixelMm, Qgis::LayoutUnit::Millimeters));
     }
 
-    mapItem->attemptSetSceneRect(QRectF(mImageSpec["main_left_margin"].toDouble(), mImageSpec["main_top_margin"].toDouble(),
+    mapItem->attemptSetSceneRect(QRectF(mImageSpec["main_left_margin"].toDouble(),
+                                        mImageSpec["main_top_margin"].toDouble(),
                                         mMapWidth, mMapHeight));
     mapItem->setExtent(mCanvas->extent());
     QgsLayoutSize fixedSize(mMapWidth, mMapHeight, Qgis::LayoutUnit::Millimeters);
@@ -596,7 +629,7 @@ void JwLayout::setMap(
     layout->addLayoutItem(mapItem.release());
 }
 
-void JwLayout::addNorthArrow(QgsPrintLayout* layout, const QVariantMap& north) {
+void JwLayout::addNorthArrow(QgsPrintLayout *layout, const QVariantMap &north) {
     // 创建指北针图片项
     auto northArrow = std::make_unique<QgsLayoutItemPicture>(layout);
     // 设置指北针图片路径
@@ -630,14 +663,14 @@ void JwLayout::addNorthArrow(QgsPrintLayout* layout, const QVariantMap& north) {
     double northX = (mImageSpec["main_left_margin"].toDouble() + mMapWidth - northWidth);
     double northY = mImageSpec["main_top_margin"].toDouble() + 1.0;
 
-    if (!north.isEmpty() and north.contains("position"))
-    {
-        if (north.value("position").toList().size() == 4)
-        {
+    if (!north.isEmpty() and north.contains("position")) {
+        if (north.value("position").toList().size() == 4) {
             northWidth = mMapWidth * north.value("position").toList().at(2).toDouble() / 100;
             northHeight = mMapHeight * north.value("position").toList().at(3).toDouble() / 100;
-            northX = mImageSpec["main_left_margin"].toDouble() + mMapWidth * north.value("position").toList().at(0).toDouble() / 100;
-            northY = mImageSpec["main_top_margin"].toDouble() + mMapHeight * north.value("position").toList().at(1).toDouble() / 100;
+            northX = mImageSpec["main_left_margin"].toDouble() + mMapWidth * north.value("position").toList().at(0).
+                     toDouble() / 100;
+            northY = mImageSpec["main_top_margin"].toDouble() + mMapHeight * north.value("position").toList().at(1).
+                     toDouble() / 100;
         }
     }
 
@@ -646,8 +679,7 @@ void JwLayout::addNorthArrow(QgsPrintLayout* layout, const QVariantMap& north) {
     // 设置指北针旋转角度 （单位为度）
     //double northRotation = north.rotate if north and north.rotate else self.image_spec.north_rotate
     double northRotation = mImageSpec["north_rotate"].toDouble();
-    if (!north.isEmpty() and north.contains("rotate"))
-    {
+    if (!north.isEmpty() and north.contains("rotate")) {
         northRotation = north.value("rotate").toDouble();
     }
     northArrow->setPictureRotation(northRotation);
@@ -656,7 +688,7 @@ void JwLayout::addNorthArrow(QgsPrintLayout* layout, const QVariantMap& north) {
     layout->addLayoutItem(northArrow.release());
 }
 
-void JwLayout::loadQptTemplate(const QString& qptFilePath, const QString& layoutTemplateName) {
+void JwLayout::loadQptTemplate(const QString &qptFilePath, const QString &layoutTemplateName) {
     // 检查文件是否存在
     if (!QFile::exists(qptFilePath)) {
         spdlog::warn("QPT file does not exist: {}", qptFilePath.toStdString());
@@ -681,7 +713,7 @@ void JwLayout::loadQptTemplate(const QString& qptFilePath, const QString& layout
     // 创建布局并加载模板
     auto layout = std::make_shared<QgsPrintLayout>(mProject);
     QgsReadWriteContext context;
-    QList<QgsLayoutItem*> qgs_layout_items = layout->loadFromTemplate(doc, context);
+    QList<QgsLayoutItem *> qgs_layout_items = layout->loadFromTemplate(doc, context);
     if (qgs_layout_items.isEmpty()) {
         spdlog::warn("Failed to load layout from QPT file: {}", qptFilePath.toStdString());
         return;
@@ -695,9 +727,9 @@ void JwLayout::loadQptTemplate(const QString& qptFilePath, const QString& layout
     spdlog::warn("Loaded layout from QPT file: {}", qptFilePath.toStdString());
 }
 
-void JwLayout::updateLayoutExtent(const QString& layoutName) {
+void JwLayout::updateLayoutExtent(const QString &layoutName) {
     // 获取布局管理器
-    QgsLayoutManager* layoutManager = mProject->layoutManager();
+    QgsLayoutManager *layoutManager = mProject->layoutManager();
 
     // 查找指定名称的布局
     auto masterLayoutInterface = layoutManager->layoutByName(layoutName);
@@ -705,18 +737,18 @@ void JwLayout::updateLayoutExtent(const QString& layoutName) {
         spdlog::warn("Layout is not a print layout: {}", layoutName.toStdString());
         return;
     }
-    auto layout = dynamic_cast<QgsPrintLayout*>(layoutManager->layoutByName(layoutName));
+    auto layout = dynamic_cast<QgsPrintLayout *>(layoutManager->layoutByName(layoutName));
     if (!layout) {
         spdlog::warn("Layout not found: {}", layoutName.toStdString());
         return;
     }
 
     // 获取主窗口的地图画布, 更新布局中所有地图项的范围
-    QList<QGraphicsItem*> graphics_items = layout->items();
-    for (QGraphicsItem* graphics_item : graphics_items) {
-        auto layout_item = dynamic_cast<QgsLayoutItem*>(graphics_item);
+    QList<QGraphicsItem *> graphics_items = layout->items();
+    for (QGraphicsItem *graphics_item: graphics_items) {
+        auto layout_item = dynamic_cast<QgsLayoutItem *>(graphics_item);
         if (layout_item) {
-            if (auto map_item = dynamic_cast<QgsLayoutItemMap*>(layout_item)) {
+            if (auto map_item = dynamic_cast<QgsLayoutItemMap *>(layout_item)) {
                 map_item->setExtent(mCanvas->extent());
             }
         }
@@ -728,16 +760,16 @@ void JwLayout::updateLayoutExtent(const QString& layoutName) {
 }
 
 // 获取图例尺寸
-QPair<double, double> JwLayout::getLegendDimensions(const QString& layoutName) {
-    QgsMasterLayoutInterface* layoutInterface = mProject->layoutManager()->layoutByName(layoutName);
+QPair<double, double> JwLayout::getLegendDimensions(const QString &layoutName) {
+    QgsMasterLayoutInterface *layoutInterface = mProject->layoutManager()->layoutByName(layoutName);
 
     if (layoutInterface) {
         if (layoutInterface->layoutType() == QgsMasterLayoutInterface::PrintLayout) {
-            auto layout = dynamic_cast<QgsPrintLayout*>(layoutInterface);
-            for (QGraphicsItem* graphicsItem : layout->items()) {
-                auto item = dynamic_cast<QgsLayoutItem*>(graphicsItem);
+            auto layout = dynamic_cast<QgsPrintLayout *>(layoutInterface);
+            for (QGraphicsItem *graphicsItem: layout->items()) {
+                auto item = dynamic_cast<QgsLayoutItem *>(graphicsItem);
                 if (item) {
-                    if (auto legend = dynamic_cast<QgsLayoutItemLegend*>(item)) {
+                    if (auto legend = dynamic_cast<QgsLayoutItemLegend *>(item)) {
                         QRectF boundingRect = legend->boundingRect();
                         return qMakePair(boundingRect.width(), boundingRect.height());
                     }
@@ -749,7 +781,7 @@ QPair<double, double> JwLayout::getLegendDimensions(const QString& layoutName) {
 }
 
 
-void JwLayout::saveQptTemplate(QgsPrintLayout* layout) {
+void JwLayout::saveQptTemplate(QgsPrintLayout *layout) {
     spdlog::debug("保存为 .qpt 文件");
     QString qptFilePath = QString("%1/%2%3").arg(mProjectDir, mLayoutName, ".qpt");
     QgsReadWriteContext context;
@@ -758,10 +790,10 @@ void JwLayout::saveQptTemplate(QgsPrintLayout* layout) {
 }
 
 
-void JwLayout::addPrintLayout(const QString& layoutType, const QString& layoutName,
-                              const QVariantMap& plottingWeb, const PaperSpecification& availablePaper,
-                              bool writeQpt, const QVector<QString>& removeLayerNames,
-                              const QVector<QString>& removeLayerPrefixes) {
+void JwLayout::addPrintLayout(const QString &layoutType, const QString &layoutName,
+                              const QVariantMap &plottingWeb, const PaperSpecification &availablePaper,
+                              bool writeQpt, const QVector<QString> &removeLayerNames,
+                              const QVector<QString> &removeLayerPrefixes) {
     // 初始化布局
     init2DLayout(layoutName);
 
@@ -774,13 +806,26 @@ void JwLayout::addPrintLayout(const QString& layoutType, const QString& layoutNa
     // 获取地图边框颜色、宽度和双边框设置
     QVariantMap layInfo = plottingWeb["layinfo"].toMap();
     QVariantMap bgPic = layInfo["bgPic"].toMap();
-    QString mapFrameColor = bgPic.contains("borderColor") ? bgPic["borderColor"].toString() : mImageSpec["main_border_color"].toString();
-    int mapFrameWidth = bgPic.contains("borderWidth") ? bgPic["borderWidth"].toInt() : mImageSpec["main_border_size"].toInt();
-    bool mapDoubleFrame = bgPic.contains("doubleFrame") ? bgPic["doubleFrame"].toBool() : mImageSpec["main_double_frame"].toBool();
-    double mapRotation = layInfo.contains("north") ? layInfo["north"].toMap()["rotate"].toDouble() : mImageSpec["north_rotate"].toDouble();
+    QString mapFrameColor = bgPic.contains("borderColor")
+                                ? bgPic["borderColor"].toString()
+                                : mImageSpec["main_border_color"].toString();
+    int mapFrameWidth = bgPic.contains("borderWidth")
+                            ? bgPic["borderWidth"].toInt()
+                            : mImageSpec["main_border_size"].toInt();
+    bool mapDoubleFrame = bgPic.contains("doubleFrame")
+                              ? bgPic["doubleFrame"].toBool()
+                              : mImageSpec["main_double_frame"].toBool();
+    double mapRotation = layInfo.contains("north")
+                             ? layInfo["north"].toMap()["rotate"].toDouble()
+                             : mImageSpec["north_rotate"].toDouble();
 
+    float margin_offset_if_double_frame = 0.0f;
+    if (mapDoubleFrame) {
+        margin_offset_if_double_frame = FRAME_OFFSET_COEFFICIENT;
+    }
     // 设置地图
-    setMap(layout, availablePaper, mapFrameWidth, mapFrameColor, mapDoubleFrame, removeLayerNames, removeLayerPrefixes, mapRotation);
+    setMap(layout, availablePaper, mapFrameWidth, mapFrameColor, mapDoubleFrame, removeLayerNames, removeLayerPrefixes,
+           mapRotation);
 
 
     // 设置标题
@@ -793,10 +838,12 @@ void JwLayout::addPrintLayout(const QString& layoutType, const QString& layoutNa
     // 添加图例
     spdlog::debug("添加图例");
     QVariantMap legendInfo = layInfo["legend"].toMap();
-    QString legendFrameColor = legendInfo.contains("borderColor") ? legendInfo["borderColor"].toString() : mImageSpec["legend_frame_color"].toString();
+    QString legendFrameColor = legendInfo.contains("borderColor")
+                                   ? legendInfo["borderColor"].toString()
+                                   : mImageSpec["legend_frame_color"].toString();
     QSet<QString> filteredLegendItems;
     if (plottingWeb.contains("legend") && plottingWeb["legend"].toMap().contains("items")) {
-        for (const QVariant& item : plottingWeb["legend"].toMap()["items"].toList()) {
+        for (const QVariant &item: plottingWeb["legend"].toMap()["items"].toList()) {
             filteredLegendItems.insert(item.toString());
         }
     }
@@ -823,7 +870,7 @@ void JwLayout::addPrintLayout(const QString& layoutType, const QString& layoutNa
     if (layInfo.contains("remark")) {
         QList<QVariant> remark_v_list = layInfo["remark"].toList();
         spdlog::debug("添加备注: {} 个", remark_v_list.length());
-        for (const QVariant& remark : remark_v_list) {
+        for (const QVariant &remark: remark_v_list) {
             setRemarks(layout, remark.toMap(), false);
         }
     }
@@ -838,13 +885,14 @@ void JwLayout::addPrintLayout(const QString& layoutType, const QString& layoutNa
     if (layInfo.contains("subTitle")) {
         QMap<QString, QVariant> subTitleVariants = layInfo["subTitle"].toMap();
         spdlog::debug("添加右侧索引标题: {}", subTitleVariants["text"].toString().toStdString());
-        addRightSideLabel(layout, subTitleVariants, 7, 100);
+        addRightSideLabel(layout, subTitleVariants, 7, 100, mapDoubleFrame, margin_offset_if_double_frame);
     }
 
     // 添加签名
     if (plottingWeb.contains("pictureUnit") && !plottingWeb["pictureUnit"].toString().isEmpty()) {
         spdlog::debug("添加签名: {}", plottingWeb["pictureUnit"].toString().toStdString());
-        addSignatureLabel(layout, plottingWeb["pictureUnit"].toString());
+        addSignatureLabel(layout, plottingWeb["pictureUnit"].toString(),
+                          mapDoubleFrame, margin_offset_if_double_frame);
     }
 
     // 添加比例尺
@@ -857,7 +905,7 @@ void JwLayout::addPrintLayout(const QString& layoutType, const QString& layoutNa
     if (layInfo.contains("arrows")) {
         QList<QVariant> arrows = layInfo["arrows"].toList();
         spdlog::debug("添加箭头: {} 个", arrows.length());
-        for (const QVariant& arrow : arrows) {
+        for (const QVariant &arrow: arrows) {
             QVariantMap arrowInfo = arrow.toMap();
             addArrowBasedOnFrontendParams(layout, arrowInfo["position"].toList(), arrowInfo["rotate"].toDouble());
         }
@@ -869,21 +917,22 @@ void JwLayout::addPrintLayout(const QString& layoutType, const QString& layoutNa
     }
 }
 
-QgsLayoutItemShape* JwLayout::addRect(
-        QString& fillColor,
-        const QString& borderColor,
-        double borderWidth,
-        qreal remarksX,
-        qreal remarksY,
-        qreal remarksWidth,
-        qreal remarksHeight
-        ) {
+QgsLayoutItemShape *JwLayout::addRect(
+    QString &fillColor,
+    const QString &borderColor,
+    double borderWidth,
+    qreal remarksX,
+    qreal remarksY,
+    qreal remarksWidth,
+    qreal remarksHeight
+) {
     auto layout = getLayout(mLayoutName);
     auto rectBg = std::make_unique<QgsLayoutItemShape>(layout);
     rectBg->setShapeType(QgsLayoutItemShape::Rectangle);
     auto symbol = std::make_unique<QgsFillSymbol>();
     symbol->setColor(QColor(fillColor));
-    if (auto* symbolLayer = dynamic_cast<QgsSimpleMarkerSymbolLayer*>(symbol->symbolLayer(0))) {
+    if (auto *symbolLayer =
+            dynamic_cast<QgsSimpleFillSymbolLayer *>(symbol->symbolLayer(0))) {
         symbolLayer->setStrokeColor(QColor(borderColor));
         symbolLayer->setStrokeWidth(borderWidth);
     }
@@ -897,8 +946,8 @@ QgsLayoutItemShape* JwLayout::addRect(
 }
 
 
-void JwLayout::exportLayoutAsPng(const QString& layoutName,
-                                 const QString& outputPath,
+void JwLayout::exportLayoutAsPng(const QString &layoutName,
+                                 const QString &outputPath,
                                  bool forceEvent) {
     double dpi = 150;
     if (mImageSpec.contains("main_dpi")) {
@@ -923,7 +972,7 @@ void JwLayout::exportLayoutAsPng(const QString& layoutName,
     }
 
     // 强制处理事件循环
-    if (forceEvent){
+    if (forceEvent) {
         QCoreApplication::processEvents();
     }
     // 创建布局导出器
@@ -941,20 +990,20 @@ void JwLayout::exportLayoutAsPng(const QString& layoutName,
         } else {
             spdlog::error("导出失败，错误码: {}", static_cast<int>(result));
         }
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
         spdlog::error("导出异常: {}", e.what());
     } catch (...) {
         spdlog::error("未知异常");
     }
     // 再次处理事件循环
-    if (forceEvent){
+    if (forceEvent) {
         QCoreApplication::processEvents();
     }
 }
 
 
-void JwLayout::exportLayoutAsPdf(const QString& layoutName,
-                                 const QString& outputPath,
+void JwLayout::exportLayoutAsPdf(const QString &layoutName,
+                                 const QString &outputPath,
                                  bool forceEvent) {
     double dpi = 150;
     if (mImageSpec.contains("main_dpi")) {
@@ -995,15 +1044,15 @@ void JwLayout::exportLayoutAsPdf(const QString& layoutName,
         } else {
             spdlog::error("导出失败，错误码: {}", static_cast<int>(result));
         }
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
         spdlog::error("导出异常: {}", e.what());
     } catch (...) {
         spdlog::error("未知异常");
     }
 }
 
-void JwLayout::exportLayoutAsSvg(const QString& layoutName,
-                                 const QString& outputPath,
+void JwLayout::exportLayoutAsSvg(const QString &layoutName,
+                                 const QString &outputPath,
                                  bool forceEvent) {
     double dpi = 150;
     if (mImageSpec.contains("main_dpi")) {
@@ -1045,10 +1094,9 @@ void JwLayout::exportLayoutAsSvg(const QString& layoutName,
         } else {
             spdlog::error("导出失败，错误码: {}", static_cast<int>(result));
         }
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
         spdlog::error("导出异常: {}", e.what());
     } catch (...) {
         spdlog::error("未知异常");
     }
-
 }

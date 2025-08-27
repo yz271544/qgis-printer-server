@@ -205,6 +205,9 @@ void JwLayout3D::setLegend(QgsPrintLayout *layout, const QVariantMap &imageSpec,
     legend->setSplitLayer(true);
     legend->setResizeToContents(true);
     legend->setReferencePoint(QgsLayoutItem::ReferencePoint::LowerRight);
+    legend->updateLegend();
+    //legend->adjustBoxSize();
+    legend->update();
     spdlog::debug("set_legend legend_x: {}, legend_y: {}, legend_width: {}, "
                   "legend_height: {}",
                   legendX, legendY, legendWidth, legendHeight);
@@ -1083,8 +1086,8 @@ void JwLayout3D::set3DMap(
         qreal remarksY = mImageSpec["main_top_margin"].toDouble() - margin_offset;
         qreal remarksWidth = mMapWidth + width_offset;
         qreal remarksHeight = mMapHeight + width_offset;
-        auto outerFrame = addRect(fillColor, mapFrameColor, frameWidthPixelMm,
-                                  remarksX, remarksY, remarksWidth, remarksHeight);
+        auto outerFrame = addRect(fillColor, mapFrameColor,
+            frameWidthPixelMm, remarksX, remarksY, remarksWidth, remarksHeight);
         layout->addLayoutItem(outerFrame);
     } else {
         mMapItem3d->setFrameStrokeWidth(
@@ -1624,8 +1627,10 @@ void JwLayout3D::destroy3DCanvas() {
 
 QgsLayoutItemShape *JwLayout3D::addRect(QString &fillColor,
                                         const QString &borderColor,
-                                        double borderWidth, qreal remarksX,
-                                        qreal remarksY, qreal remarksWidth,
+                                        double borderWidth,
+                                        qreal remarksX,
+                                        qreal remarksY,
+                                        qreal remarksWidth,
                                         qreal remarksHeight) {
     auto layout = getLayout(mLayoutName);
     auto rectBg = std::make_unique<QgsLayoutItemShape>(layout);

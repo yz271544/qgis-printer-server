@@ -6,7 +6,7 @@ Authorization: Bearer {{token}}
 {
   "selectPath": false,
   "path": "",
-  "path3d": "/map/mnt/fakeRoot/data/mapdata/3DTiles/京广线1段-3Dtile/tileset.json",
+  "path3d": "/map/mnt/fakeRoot/data/mapdata/3DTiles/郑州测试使用/京广线1段-3Dtile/tileset.json",
   "tileIndex": [
     [
       0,
@@ -71,7 +71,8 @@ Authorization: Bearer {{token}}
         35
       ],
       "items": [
-        "治安"
+        "治安",
+        "制高点"
       ]
     },
     "bgPic": {
