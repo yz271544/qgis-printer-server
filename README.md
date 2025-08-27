@@ -92,35 +92,35 @@ QT_QPA_PLATFORM=xcb __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia
 
 <table>
     <tr>
-        <td><img src="doc/images/d3_scene.png" alt="27" style="float: left; width: 48%; margin-right: 2%;"></td>
-        <td><img src="doc/images/qgz/local/打印测试-现场位置图-a3-polygon.png" alt="27-3d" style="float: left; width: 48%;"></td>
+        <td><img src="doc/images/d3_scene.png" alt="d3_scene" style="float: left; width: 48%; margin-right: 2%;"></td>
+        <td><img src="doc/images/qgz/local/打印测试-现场位置图-a3-polygon.png" alt="打印测试-现场位置图" style="float: left; width: 48%;"></td>
     </tr>
     <tr>
-        <td><img src="doc/images/qgz/local/27-现场位置图-a3-3D.png" alt="27" style="float: left; width: 48%; margin-right: 2%;"></td>
-        <td><img src="doc/images/qgz/local/27区-现场位置图-a3.png" alt="27-3d" style="float: left; width: 48%;"></td>
+        <td><img src="doc/images/qgz/local/27-现场位置图-a3-3D.png" alt="27-现场位置图" style="float: left; width: 48%; margin-right: 2%;"></td>
+        <td><img src="doc/images/qgz/local/27区-现场位置图-a3.png" alt="27区-现场位置图" style="float: left; width: 48%;"></td>
     </tr>
     <tr>
-        <td><img src="doc/images/qgz/local/打印测试-现场位置图-a3.png" alt="27" style="float: left; width: 48%; margin-right: 2%;"></td>
-        <td><img src="doc/images/qgz/local/打印测试-现场位置图-a3-3D.png" alt="27-3d" style="float: left; width: 48%;"></td>
+        <td><img src="doc/images/qgz/local/打印测试-现场位置图-a3.png" alt="打印测试-现场位置图" style="float: left; width: 48%; margin-right: 2%;"></td>
+        <td><img src="doc/images/qgz/local/打印测试-现场位置图-a3-3D.png" alt="打印测试-现场位置图-a3-3D" style="float: left; width: 48%;"></td>
     </tr>
     <tr>
-        <td><img src="doc/images/qgz/local/晋祠-现场位置图-a3.png" alt="27" style="float: left; width: 48%; margin-right: 2%;"></td>
-        <td><img src="doc/images/qgz/local/晋祠-现场位置图-a3-3D.png" alt="27-3d" style="float: left; width: 48%;"></td>
+        <td><img src="doc/images/qgz/local/晋祠-现场位置图-a3.png" alt="晋祠-现场位置图" style="float: left; width: 48%; margin-right: 2%;"></td>
+        <td><img src="doc/images/qgz/local/晋祠-现场位置图-a3-3D.png" alt="晋祠-现场位置图-a3" style="float: left; width: 48%;"></td>
     </tr>
     <tr>
-        <td><img src="doc/images/qgz/local/京广线1-现场位置图-a3-3D.png" alt="27" style="float: left; width: 48%; margin-right: 2%;"></td>
-        <td><img src="doc/images/qgz/local/瑞光电厂-现场位置图-a3-3D.png" alt="27-3d" style="float: left; width: 48%;"></td>
+        <td><img src="doc/images/qgz/local/京广线1-现场位置图-a3-3D.png" alt="京广线1-现场位置图" style="float: left; width: 48%; margin-right: 2%;"></td>
+        <td><img src="doc/images/qgz/local/瑞光电厂-现场位置图-a3-3D.png" alt="瑞光电厂-现场位置图-a3" style="float: left; width: 48%;"></td>
     </tr>
     <tr>
-        <td><img src="doc/images/qgz/local/应县木塔-现场位置图-a3.png" alt="27" style="float: left; width: 48%; margin-right: 2%;"></td>
-        <td><img src="doc/images/qgz/local/应县木塔-现场位置图-a3-3D.png" alt="27-3d" style="float: left; width: 48%;"></td>
+        <td><img src="doc/images/qgz/local/应县木塔-现场位置图-a3.png" alt="应县木塔-现场位置图" style="float: left; width: 48%; margin-right: 2%;"></td>
+        <td><img src="doc/images/qgz/local/应县木塔-现场位置图-a3-3D.png" alt="应县木塔-现场位置图-3d" style="float: left; width: 48%;"></td>
     </tr>
     <tr>
-        <td><img src="doc/images/qgz/local/g_0814-现场位置图-a3.png" alt="27" style="float: left; width: 48%; margin-right: 2%;"></td>
-        <td><img src="doc/images/qgz/local/g_0814-现场位置图-a3-3D.png" alt="27-3d" style="float: left; width: 48%;"></td>
+        <td><img src="doc/images/qgz/local/g_0814-现场位置图-a3.png" alt="g_0814-现场位置图" style="float: left; width: 48%; margin-right: 2%;"></td>
+        <td><img src="doc/images/qgz/local/g_0814-现场位置图-a3-3D.png" alt="g_0814-现场位置图-3d" style="float: left; width: 48%;"></td>
     </tr>
     <tr>
-        <td><img src="doc/images/qgz/local/zn-其他功能测试2-现场位置图-a3-3D.png" alt="27" style="float: left; width: 48%; margin-right: 2%;"></td>
-        <td><img src="doc/images/qgz/local/zn-表格导入导出测试-现场位置图-a3-3D.png" alt="27-3d" style="float: left; width: 48%;"></td>
+        <td><img src="doc/images/qgz/local/zn-其他功能测试2-现场位置图-a3-3D.png" alt="其他功能测试2" style="float: left; width: 48%; margin-right: 2%;"></td>
+        <td><img src="doc/images/qgz/local/zn-表格导入导出测试-现场位置图-a3-3D.png" alt="表格导入导出测试-3d" style="float: left; width: 48%;"></td>
     </tr>
 </table>
