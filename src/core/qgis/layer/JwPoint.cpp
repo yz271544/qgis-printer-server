@@ -31,7 +31,9 @@ void JwPoint::addPoints(
     const QJsonObject &layerStyle,
     const QList<QJsonObject> &styleList,
     int point_size,
-    const QString &iconBase64) {
+    const QString &iconBase64,
+    bool enable_point_altitude,
+    bool enable_point_cluster) {
 
     auto memPointVectorLayer = std::make_unique<QgsVectorLayer>(
             QString("PointZ?crs=%1").arg(MAIN_CRS), mLayerName, QStringLiteral("memory"));
@@ -139,13 +141,13 @@ void JwPoint::addPoints(
 
     // 设置2D渲染器
     QgsFeatureRenderer *feature_renderer = StylePoint::get2d_rule_based_renderer(
-            fontStyle, layerStyle, icon_path, point_size);
+            fontStyle, layerStyle, icon_path, point_size, enable_point_cluster);
     persistPointVectorLayer->setRenderer(feature_renderer);
 
     // 设置3D渲染器
     if (ENABLE_3D) {
         auto feature_3d_renderer = StylePoint::get3d_single_raster_symbol_renderer(
-                *persistPointVectorLayer, fontStyle, layerStyle, icon_path, point_size);
+                *persistPointVectorLayer, fontStyle, layerStyle, icon_path, point_size, enable_point_altitude);
         persistPointVectorLayer->setRenderer3D(feature_3d_renderer);
     }
 

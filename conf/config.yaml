@@ -55,6 +55,8 @@ qgis:
   default_ground_altitude: 810
   pitch_negate_threshold: 45.0
   sync_wait_time_second: 120000
+  enable_point_altitude: false
+  enable_point_cluster: false
 specification:
   - name: "现场位置图"
     local: "local"

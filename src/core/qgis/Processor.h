@@ -69,6 +69,8 @@ private:
     double m_pitch_negate_threshold = 45.0;
     int32_t m_default_max_screen_error = 300;
     int32_t m_max_clarity = 1100;
+    bool m_enable_point_cluster = false;
+    bool m_enable_point_altitude = false;
 public:
     // 构造函数
     //Processor(const QList<QString> &argvList, YAML::Node *config, std::shared_ptr<QOpenGLContext> globalGLContext);

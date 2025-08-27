@@ -152,6 +152,8 @@ inline double PITCH_NEGATE_THRESHOLD = getEnvValue<double>("PITCH_NEGATE_THRESHO
 
 inline int SYNC_WAIT_TIME_SECOND = getEnvValue<std::int32_t>("SYNC_WAIT_TIME_SECOND", 120000);
 
+inline bool ENABLE_POINT_ALTITUDE = getEnvValue<bool>("ENABLE_POINT_ALTITUDE", false);
+
 #ifdef OATPP_VERSION_LESS_1_4_0
 #define DTOWRAPPERNS oatpp::data::mapping::type
 #define OBJECTMAPPERNS oatpp::parser::json::mapping
