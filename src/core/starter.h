@@ -39,11 +39,7 @@ private:
     std::map<std::string, YAML::Node*> context_;       // 上下文存储
     Processor* processor_;
 
-    //std::unique_shared<QSurfaceFormat> mQSurfaceFormat = nullptr;
-    //std::unique_ptr<QOffscreenSurface> mQOffscreenSurface = nullptr;
     mutable std::mutex mutex_;
-//    std::shared_ptr<QSurfaceFormat> mQSurfaceFormat = std::make_shared<QSurfaceFormat>();
-//    std::shared_ptr<QOpenGLContext> mOpenGLContext = std::make_shared<QOpenGLContext>();
 
 public:
 
@@ -72,55 +68,6 @@ public:
     // 设置Processor实例
     void setProcessor(Processor* processor);
 
-    // 添加获取OpenGL上下文的方法
-    /*std::shared_ptr<QOpenGLContext> getOpenGLContext() {
-        std::lock_guard<std::mutex> lock(mutex_);
-        return mOpenGLContext;
-    }*/
-    // 添加获取离屏表面的方法
-    /*QOffscreenSurface* getOffscreenSurface() {
-        return mQOffscreenSurface.get();
-    }*/
-    // 添加获取SurfaceFormat的方法
-    /*QSurfaceFormat* getSurfaceFormat() {
-        return mQSurfaceFormat.get();
-    }*/
-    // 添加设置OpenGL上下文的方法
-    /*void setOpenGLContext(std::shared_ptr<QOpenGLContext> openGLContext) {
-        std::lock_guard<std::mutex> lock(mutex_);
-        mOpenGLContext = std::move(openGLContext);
-    }*/
-    // 添加设置离屏表面的方法
-    /*void setOffscreenSurface(QOffscreenSurface* surface) {
-        mQOffscreenSurface.reset(surface);
-    }*/
-    // 添加设置SurfaceFormat的方法
-    /*void setSurfaceFormat(QSurfaceFormat* format) {
-        mQSurfaceFormat.reset(format);
-    }*/
-    // add release mOpenGLContext
-    /*void releaseOpenGLContext() {
-        *//*if (mOpenGLContext->makeCurrent(mQOffscreenSurface.get())) {
-            mOpenGLContext->doneCurrent();
-        }*//*
-        mOpenGLContext->doneCurrent();
-        mOpenGLContext->deleteLater();
-        mOpenGLContext.reset();
-    }*/
-    // add release mQOffscreenSurface
-    /*void releaseOffscreenSurface() {
-        if (mQOffscreenSurface) {
-            mQOffscreenSurface->destroy();
-            mQOffscreenSurface.reset();
-        }
-    }*/
-    // add release mQSurfaceFormat
-    /*void releaseSurfaceFormat() {
-        if (mQSurfaceFormat) {
-            mQSurfaceFormat.reset();
-        }
-        //mQSurfaceFormat.reset();
-    }*/
 };
 
 

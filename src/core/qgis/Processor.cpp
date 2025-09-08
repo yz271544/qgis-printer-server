@@ -1373,25 +1373,6 @@ void Processor::add_3d_layout(
     spdlog::debug("init 3d map settings");
     jwLayout3d->init3DMapSettings(removeLayerNames, removeLayerPrefixes);
     spdlog::debug("done init 3d map settings");
-    // if (plottingWeb->camera == nullptr) {
-    //     spdlog::debug("plottingWeb.camera is empty");
-    //     jwLayout3d->setTest3DCanvas();
-    // } else {
-    //     if (!m_canvas3d_type.isEmpty()) {
-    //         spdlog::debug("m_canvas3d_type: {}", m_canvas3d_type.toStdString());
-    //     }
-    //     if (m_canvas3d_type == "camera") {
-    //         auto camera = plottingWeb->camera;
-    //         jwLayout3d->set3DCanvas(camera, m_default_distance);
-    //     } else if (m_canvas3d_type == "extent2d") {
-    //         jwLayout3d->setTestFrom2dExtent();
-    //     } else if (m_canvas3d_type == "test") {
-    //         jwLayout3d->setTest3DCanvas();
-    //     } else {
-    //         spdlog::warn("unknown canvas3d type: {}", m_canvas3d_type.toStdString());
-    //     }
-    // }
-    spdlog::debug("addPrintLayout 3d");
     auto camera = plottingWeb->camera;
     jwLayout3d->addPrintLayout(infos, QString("3d"), joinedLayoutName, plottingWebMap,
         available_paper, camera, write_qpt, m_max_pitch_angle, m_offset_pull_pitch, m_default_ground_altitude, m_pitch_negate_threshold);
