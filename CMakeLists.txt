@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.5)
 project(jingweiprinter)
 
 include(FetchContent)
@@ -55,6 +55,7 @@ if (NOT DEFINED $ENV{MASTER_RELEASE} AND $ENV{MASTER_RELEASE} STREQUAL "")
     FetchContent_MakeAvailable(spdlog)
 else()
     find_package(yaml-cpp REQUIRED)
+    message("YAML_CPP_BINARY_DIR: ${YAML_CPP_BINARY_DIR} YAML_CPP_LIBRARIES: ${YAML_CPP_LIBRARIES}")
     find_package(spdlog REQUIRED)
 endif()
 find_package(oatpp REQUIRED)

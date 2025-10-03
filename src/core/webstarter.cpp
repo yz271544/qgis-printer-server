@@ -9,11 +9,6 @@
 #include "controller/PlottingController.h"
 #include "service/AsyncPlottingService.h"
 
-
-//
-// Created by etl on 24-12-18.
-//
-
 WebStarter::WebStarter() = default;
 
 WebStarter::~WebStarter() = default;
