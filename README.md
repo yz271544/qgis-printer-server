@@ -97,19 +97,19 @@ QT_QPA_PLATFORM=xcb __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia
     </tr>
     <tr>
         <td><img src="doc/images/qgz/local/27-现场位置图-a3-3D.png" alt="27-现场位置图" style="float: left; width: 48%; margin-right: 2%;"></td>
-        <td><img src="doc/images/qgz/local/27区-现场位置图-a3.png" alt="27区-现场位置图" style="float: left; width: 48%;"></td>
+        <td><img src="doc/images/qgz/local/27-现场位置图-a3.png" alt="27-现场位置图" style="float: left; width: 48%;"></td>
     </tr>
     <tr>
         <td><img src="doc/images/qgz/local/打印测试-现场位置图-a3.png" alt="打印测试-现场位置图" style="float: left; width: 48%; margin-right: 2%;"></td>
         <td><img src="doc/images/qgz/local/打印测试-现场位置图-a3-3D.png" alt="打印测试-现场位置图-a3-3D" style="float: left; width: 48%;"></td>
     </tr>
     <tr>
-        <td><img src="doc/images/qgz/local/晋祠-现场位置图-a3.png" alt="晋祠-现场位置图" style="float: left; width: 48%; margin-right: 2%;"></td>
-        <td><img src="doc/images/qgz/local/晋祠-现场位置图-a3-3D.png" alt="晋祠-现场位置图-a3" style="float: left; width: 48%;"></td>
+        <td><img src="doc/images/qgz/local/jc-现场位置图-a3.png" alt="jc-现场位置图" style="float: left; width: 48%; margin-right: 2%;"></td>
+        <td><img src="doc/images/qgz/local/jc-现场位置图-a3-3D.png" alt="jc-现场位置图-a3" style="float: left; width: 48%;"></td>
     </tr>
     <tr>
-        <td><img src="doc/images/qgz/local/京广线1-现场位置图-a3-3D.png" alt="京广线1-现场位置图" style="float: left; width: 48%; margin-right: 2%;"></td>
-        <td><img src="doc/images/qgz/local/瑞光电厂-现场位置图-a3-3D.png" alt="瑞光电厂-现场位置图-a3" style="float: left; width: 48%;"></td>
+        <td><img src="doc/images/qgz/local/jgx1-现场位置图-a3-3D.png" alt="jgx1-现场位置图" style="float: left; width: 48%; margin-right: 2%;"></td>
+        <td><img src="doc/images/qgz/local/rgdc-现场位置图-a3-3D.png" alt="rgdc-现场位置图-a3" style="float: left; width: 48%;"></td>
     </tr>
     <tr>
         <td><img src="doc/images/qgz/local/g_0814-现场位置图-a3.png" alt="g_0814-现场位置图" style="float: left; width: 48%; margin-right: 2%;"></td>
