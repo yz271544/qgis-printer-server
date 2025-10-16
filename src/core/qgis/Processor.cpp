@@ -118,6 +118,9 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
         spdlog::warn("get mapping_export_nginx_url_prefix error: {}", e.what());
     }
 
+
+    spdlog::debug("jingwei_server_url:============"+jingwei_server_url.toStdString());
+
     m_plotting_fetch = std::make_unique<PlottingFetch>(jingwei_server_url.toStdString());
 
     m_app = std::make_unique<App>(argvList, m_config);
