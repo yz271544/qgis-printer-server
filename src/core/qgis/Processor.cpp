@@ -819,9 +819,19 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
 
         if (shapeType == "04") {
             // 等级域 特殊处理 同心圆
+            spdlog::debug("shape_list 长度：{}，内容如下：", shape_list.size());
             QList<QList<double>> circle_geometry_coordinates_list;
             QList<int> polygon_geometry_properties_radius;
             for (const auto &shape: shape_list) {
+
+                QJsonDocument doc(shape);
+                QString jsonStr = doc.toJson(QJsonDocument::Indented);  // Indented 格式：带缩进和换行
+
+                // 3. 输出当前 shape 的索引和内容
+
+                spdlog::debug("shape============{}", jsonStr.toStdString());  // 输出格式化的 JSON
+
+
                 if (shape.contains("geometry")) {
                     auto geometry = shape["geometry"].toObject();
                     if (geometry.contains("type")) {
@@ -848,6 +858,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                     spdlog::error("shape not contains properties, payloads.name: {}", payloads->name->c_str());
                 }
             }
+
             qDebug() << "circle_geometry_coordinates_list: " << circle_geometry_coordinates_list;
             qDebug() << "polygon_geometry_properties_radius: " << polygon_geometry_properties_radius;
 
@@ -865,6 +876,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                         QList<double> djyOpacityList;
                         for (const auto &itemDjy: djy) {
                             auto djyItem = itemDjy.toObject();
+                            qDebug() << "djyItem=====: " << djyItem;
                             if (djyItem.contains("num")) {
                                 auto percent = djyItem["num"].toDouble();
                                 djyPercentList.append(percent);
@@ -884,6 +896,8 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
             }
             qDebug() << "style_percents: " << style_percents;
             qDebug() << "style_color_list: " << style_color_list;
+            spdlog::debug("circle_geometry_coordinates_list 长度：{}，内容如下：", circle_geometry_coordinates_list.size());
+            spdlog::debug("polygon_geometry_properties_radius 长度：{}，内容如下：", polygon_geometry_properties_radius.size());
 
             auto grouped_color = ColorTransformUtil::multiColorGroup(style_color_list);
 
@@ -903,7 +917,7 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
 
             int circle_num = 0;
             QVariantMap::iterator it;
-            for (it = style_grouped.begin(); it != style_grouped.end(); ++it) {
+            /*for (it = style_grouped.begin(); it != style_grouped.end(); ++it) {
                 const auto &color_style = it.key();
                 auto color_style_dict = style_grouped.value(color_style).toMap();
                 qDebug() << "color_style: " << color_style << " --> " << color_style_dict;
@@ -991,6 +1005,10 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                     }
                 }
 
+                spdlog::debug("pointsList 长度：{}，内容如下：", pointsList.size());
+                spdlog::debug("radiusDoubleList 长度：{}，内容如下：", radiusDoubleList.size());
+                spdlog::debug("style_percents 长度：{}，内容如下：", style_percents.size());
+
                 jw_circle->addLevelKeyAreas(
                     infos,
                     pointsList,
@@ -1001,8 +1019,136 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                     72
                 );
                 circle_num++;
-            }
+            }*/
 
+            for (auto it = style_grouped.begin(); it != style_grouped.end(); ++it) {
+                const auto &color_style = it.key();
+                auto color_style_dict = it.value().toMap();
+                qDebug() << "color_style: " << color_style << " --> " << color_style_dict;
+
+                QString layerPrefix = QString::fromStdString(payloads->name);
+                QString layerName = QString("%1%2").arg(layerPrefix, QString::number(circle_num));
+                auto jw_circle = std::make_unique<JwCircle>(
+                        m_app->getSceneName(),
+                        layerName,
+                        m_app->getProjectDir(),
+                        m_app->getProject(),
+                        m_app->getTransformContext()
+                );
+
+                // 1. 解析中心点坐标列表（不变）
+                QList<QgsPoint> pointsList;
+                auto coordPointsList = color_style_dict["polygon_geometry_coordinates_list"].toList();
+                for (const auto &coordPoint : coordPointsList) {
+                    auto coordPointList = coordPoint.toList();
+                    if (coordPointList.size() >= 3) {
+                        pointsList.append(QgsPoint(
+                                coordPointList[0].toDouble(),
+                                coordPointList[1].toDouble(),
+                                coordPointList[2].toDouble()
+                        ));
+                    } else {
+                        spdlog::warn("坐标列表不完整，跳过该点: {}", coordPointList.size());
+                    }
+                }
+
+                // 2. 解析半径列表（不变）
+                QList<double> radiusDoubleList;
+                auto radiusQVariants = color_style_dict["polygon_geometry_properties_radius"].toList();
+                for (const auto &radiusQVariant : radiusQVariants) {
+                    if (radiusQVariant.canConvert<double>()) {
+                        radiusDoubleList.append(radiusQVariant.toDouble());
+                    } else {
+                        spdlog::warn("半径转换失败，跳过该值: {}", radiusQVariant.toString().toStdString());
+                    }
+                }
+
+                // 3. 解析百分比列表（二维：[中心点][层级]，不变）
+                QList<QList<double>> groupedStylePercents;
+                auto stylePercentsVariants = color_style_dict["style_percents"].toList();
+                for (const auto &percentsVariant : stylePercentsVariants) {
+                    auto percentsList = percentsVariant.toList();
+                    QList<double> currentPercents;
+                    for (const auto &p : percentsList) {
+                        if (p.canConvert<double>()) {
+                            currentPercents.append(p.toDouble());
+                        } else {
+                            spdlog::warn("百分比转换失败，跳过该值: {}", p.toString().toStdString());
+                        }
+                    }
+                    groupedStylePercents.append(currentPercents);
+                }
+
+                // 4. 解析颜色列表（核心调整：一维列表，每个元素对应一个层级颜色）
+                QList<QColor> areasColorList;  // 改为一维列表
+                auto areasColorVariants = color_style_dict["areas_color_list"].toList();  // 示例：["#ff4040", "#00cd52", ...]
+                for (const auto &colorVariant : areasColorVariants) {  // 直接遍历一维颜色列表
+                    if (colorVariant.canConvert<QString>()) {
+                        QColor color(colorVariant.toString());
+                        if (color.isValid()) {
+                            areasColorList.append(color);
+                        } else {
+                            spdlog::warn("无效颜色，跳过值: {}", colorVariant.toString().toStdString());
+                        }
+                    } else {
+                        spdlog::warn("颜色转换失败，跳过值: {}", colorVariant.toString().toStdString());
+                    }
+                }
+
+                // 5. 解析透明度列表（同步调整：一维列表，每个元素对应一个层级透明度）
+                QList<float> styleColorOpacityList;  // 改为一维列表
+                auto opacityVariants = color_style_dict["areas_opacity_list"].toList();  // 示例：[0.4, 0.4, ...]
+                for (const auto &opacityVariant : opacityVariants) {  // 直接遍历一维透明度列表
+                    if (opacityVariant.canConvert<double>()) {
+                        styleColorOpacityList.append(static_cast<float>(opacityVariant.toDouble()));
+                    } else {
+                        spdlog::warn("透明度转换失败，跳过值: {}", opacityVariant.toString().toStdString());
+                    }
+                }
+
+                // 6. 关键校验（确保参数匹配）
+                // 校验1：所有中心点的百分比子列表长度 = 颜色列表长度（层级数一致）
+                int levelCount = areasColorList.size();  // 总层级数（如3级/5级）
+                bool isLevelValid = true;
+                for (const auto &percents : groupedStylePercents) {
+                    if (percents.size() != levelCount) {
+                        spdlog::error("中心点百分比子列表长度({})与层级数({})不匹配", percents.size(), levelCount);
+                        isLevelValid = false;
+                        break;
+                    }
+                }
+                if (!isLevelValid) {
+                    spdlog::error("分组[{}]层级不匹配，跳过", color_style.toStdString());
+                    continue;
+                }
+
+                // 校验2：颜色列表长度 = 透明度列表长度（每个层级样式完整）
+                if (areasColorList.size() != styleColorOpacityList.size()) {
+                    spdlog::error("颜色列表长度({})与透明度列表长度({})不匹配，跳过分组",
+                                  areasColorList.size(), styleColorOpacityList.size());
+                    continue;
+                }
+
+                // 校验3：中心点相关列表长度一致（坐标/半径/百分比外层长度）
+                if (pointsList.size() != radiusDoubleList.size() ||
+                    pointsList.size() != groupedStylePercents.size()) {
+                    spdlog::error("中心点数量不匹配！坐标: {}, 半径: {}, 百分比: {}",
+                                  pointsList.size(), radiusDoubleList.size(), groupedStylePercents.size());
+                    continue;
+                }
+
+                // 7. 调用添加等级域的方法（参数类型匹配）
+                jw_circle->addLevelKeyAreas(
+                        infos,
+                        pointsList,
+                        radiusDoubleList,
+                        groupedStylePercents,  // 二维：[中心点][层级]
+                        areasColorList,        // 一维：[层级]（类型匹配）
+                        styleColorOpacityList, // 一维：[层级]（类型匹配）
+                        72
+                );
+                circle_num++;
+            }
         } else {
             // others, not 等级域
             QList<QList<double>> point_geometry_coordinates_list;  // points list
@@ -1436,6 +1582,7 @@ QVariantMap Processor::_grouped_circle_by_color_grouped(
         auto colors = areas_color_list[i];
         QString merged_areas_color = ColorTransformUtil::mergeColor(colors);
         if (style_grouped.contains(merged_areas_color)) {
+            spdlog::debug("limian===：{}，内容如下：", i);
             auto mergedAreaColorDict = style_grouped.value(merged_areas_color);
             auto mergedMap = mergedAreaColorDict.toMap();
 
@@ -1462,6 +1609,8 @@ QVariantMap Processor::_grouped_circle_by_color_grouped(
             percentsList.insert(percentsList.size(), QVariant(percents));
             mergedMap["style_percents"] = percentsList;
 
+            spdlog::debug("limian===：{}，内容如下：", i);
+
             // 更新 areas_color_list
             QVariantList colorList = mergedMap["areas_color_list"].toList();
             for (const auto &color: areas_color_list[i]) {
@@ -1481,6 +1630,8 @@ QVariantMap Processor::_grouped_circle_by_color_grouped(
             mergedMap["areas_opacity_list"] = opacityList;
             style_grouped.insert(merged_areas_color, mergedMap);
         } else {
+
+            spdlog::debug("waimian===：{}，内容如下：", i);
             QVariantMap data;
 
             QVariantList geometryList;
@@ -1494,6 +1645,8 @@ QVariantMap Processor::_grouped_circle_by_color_grouped(
             QVariantList radiusList;
             radiusList.append(polygon_geometry_properties_radius[i]);
             data.insert("polygon_geometry_properties_radius", radiusList);
+
+            spdlog::debug("radiusList 长度：{}，内容如下：", radiusList.size());
 
             QVariantList stylePercentsList;
             QVariantList percentsList;
