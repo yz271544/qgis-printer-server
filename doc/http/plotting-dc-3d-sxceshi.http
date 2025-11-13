@@ -1,0 +1,152 @@
+### POST plotting
+
+POST http://{{host}}:{{port}}/api/qgz
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "selectPath": false,
+  "path": "",
+  "path3d": "/map/mnt/fakeRoot/data/mapdata/ShuoZhou/1.YXMT/tileset.json",
+  "tileIndex": [
+    [
+      0,
+      0
+    ],
+    [
+      1048576,
+      -5821555
+    ]
+  ],
+  "sceneId": "1947231328878309377",
+  "sceneName": "应县木塔",
+  "geojson": {
+    "type": "Feature",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [
+            113.17425072163788,
+            39.56179064139806
+          ],
+          [
+            113.17425072163788,
+            39.570105690545528
+          ],
+          [
+            113.19691913217003,
+            39.570105690545528
+          ],
+          [
+            113.19691913217003,
+            39.56179064139806
+          ]
+        ]
+      ]
+    },
+    "properties": {}
+  },
+  "handleFlag": false,
+  "sceneType": "03",
+  "layinfo": {
+    "title": {
+      "text": "标题",
+      "position": [],
+      "borderColor": "",
+      "fillColor": "",
+      "fontSize": 28,
+      "color": "rgba(0,0,0,1)",
+      "fontBorderColor": ""
+    },
+    "subTitle": {
+      "text": "",
+      "fontSize": 16,
+      "color": "rgba(0,0,0,1)"
+    },
+    "legend": {
+      "position": [
+        84,
+        65,
+        16,
+        35
+      ]
+    },
+    "bgPic": {
+      "borderColor": "#FF0000",
+      "doubleFrame": true,
+      "borderWidth": 3
+    },
+    "remark": [
+      {
+        "text": "备注",
+        "position": [
+          0,
+          80,
+          28,
+          10
+        ],
+        "borderColor": "",
+        "fillColor": "rgba(255,255,255,1)",
+        "fontSize": 18,
+        "color": "rgba(0,0,0,1)",
+        "url": ""
+      }
+    ],
+    "arrows": [],
+    "north": {
+      "position": [
+        97,
+        1,
+        2,
+        8
+      ],
+      "rotate": 0
+    },
+    "scaleBar": false
+  },
+  "paper": "a3",
+  "pictureUnit": "制图单位：    时间：",
+  "mapType": {
+    "map": true,
+    "electron": false,
+    "is3D": true
+  },
+  "camera": {
+    "cameraLongitude": 113.18558492687922,
+    "cameraLatitude": 39.56594873440797,
+    "cameraHeight": 1686.7772839471814,
+    "cameraDirX": 0.30350814447641458,
+    "cameraDirY": -0.7086298854681445,
+    "cameraDirZ": -0.6369666330804843,
+    "cameraUpX": 0.25078054804110508,
+    "cameraUpY": -0.5855216549215677,
+    "cameraUpZ": 0.7708913725954595,
+    "cameraRightX": -0.9192344222018054,
+    "cameraRightY": -0.39371065141714559,
+    "cameraRightZ": 2.248201624865942e-15,
+    "fov": 1.0471975511965977,
+    "aspectRatio": 2.10989010989011,
+    "nearPlane": 0.1,
+    "farPlane": 10000000000,
+    "centerLongitude": 113.18558492692903,
+    "centerLatitude": 39.5659487210895,
+    "heading": "360.00",
+    "pitch": "-90.00",
+    "roll": "0.00"
+  },
+  "clarity": 800
+}
+
+### Response
+HTTP/1.1 200 OK
+Server: TornadoServer/6.4.1
+Content-Type: application/json; charset=UTF-8
+Date: Thu, 07 Nov 2024 07:12:42 GMT
+Content-Length: 141
+
+{
+  "project_zip_url": "http://localhost:80/jingweipy/test.zip",
+  "image_url": "http://localhost:80/jingweipy/local/test-位置图.png"
+}
+###

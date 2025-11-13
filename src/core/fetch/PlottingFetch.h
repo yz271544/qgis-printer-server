@@ -18,6 +18,7 @@
 #include <iostream>
 #include <QJsonObject>
 
+#include <oatpp/web/client/ApiClient.hpp>  // 包含 ApiClient 基类头文件
 #include "utils/OApiClient.h"
 #include "core/handler/dto/plotting.h"
 #include "utils/JsonUtil.h"
@@ -390,11 +391,15 @@ public:
 
         // 发送 POST 请求
         auto response = m_client->doPostPlotting(topicMapData, "application/json", m_token, m_accept, m_sceneType);
+
+
         if (response == nullptr) {
             spdlog::warn("Failed to fetch plotting response");
             return nullptr;
         }
-        try {
+        
+
+                try {
             auto loginObj = response->readBodyToDto<oatpp::Object<PlottingRespDto>>(m_objectMapper.get());
             return loginObj;
         } catch (const std::exception& e) {

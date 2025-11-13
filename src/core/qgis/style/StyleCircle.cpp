@@ -3,6 +3,8 @@
 //
 
 #include "StyleCircle.h"
+#include "qgsphongmaterialsettings.h"
+#include <qgspolygon3dsymbol.h>
 
 QgsFeatureRenderer *StyleCircle::get2dSimpleRenderer(const QColor &color, double opacity) {
     QgsSymbol *symbol = QgsSymbol::defaultSymbol(Qgis::GeometryType::Polygon);
@@ -91,12 +93,61 @@ QgsAbstract3DRenderer* StyleCircle::get3dSymbolRenderer(const QColor &color, dou
  * @param layer_style 图层样式
  * @return QgsAbstract3DRenderer 指针
  */
-QgsAbstract3DRenderer* StyleCircle::get3dSingleSymbolRenderer(const QJsonObject& fontStyle, const QJsonObject& layerStyle, float altitude) {
+/*QgsAbstract3DRenderer* StyleCircle::get3dSingleSymbolRenderer(const QJsonObject& fontStyle, const QJsonObject& layerStyle, float altitude) {
     auto symbol = std::make_unique<QgsPolygon3DSymbol>();
     auto border_color_opacity = ColorTransformUtil::strRgbaToHex(layerStyle.contains("bordercolor") ?
             layerStyle["bordercolor"].toString() : "#000000");
     symbol->setEdgeColor(QColor(border_color_opacity.first));
     symbol->setOffset(Formula::getRelativeAltitude(altitude));
+    auto renderer = std::make_unique<QgsVectorLayer3DRenderer>();
+    renderer->setSymbol(symbol.release());
+    return renderer.release();
+}*/
+
+QgsAbstract3DRenderer* StyleCircle::get3dSingleSymbolRenderer(const QJsonObject& fontStyle, const QJsonObject& layerStyle, float altitude) {
+    // -------------------------- 新增：输出layerStyle日志 --------------------------
+    // 将QJsonObject转为紧凑格式字符串（适合日志，无多余空格）
+    QJsonDocument layerStyleDoc(layerStyle);
+    QString layerStyleStr = layerStyleDoc.toJson(QJsonDocument::Compact);
+    // 输出日志，包含当前函数名和layerStyle完整内容
+    spdlog::info("[StyleCircle::get3dSingleSymbolRenderer] layerStyle configuration: {}", layerStyleStr.toStdString());
+    // -----------------------------------------------------------------------------
+
+    auto symbol = std::make_unique<QgsPolygon3DSymbol>();
+
+
+// 关键：设置微小拉伸高度（即使0.1也可），避免被视为2D面
+    symbol->setExtrusionHeight(0.1);
+    symbol->setEdgeWidth(0); // 边框宽度为0，不显示边框
+
+    // 1. 处理边框颜色和透明度
+    auto [border_color, border_opacity] =
+            ColorTransformUtil::strRgbaToHex(layerStyle.contains("bordercolor") ?
+                                             layerStyle["bordercolor"].toString() : "#000000");
+
+    // 2. 处理填充色材质和透明度
+    auto material_settings = std::make_unique<QgsPhongMaterialSettings>();
+    auto color = QColor("#000000");
+    double opacity = 1.0;
+    if (layerStyle.contains("fillColor")) {
+        auto [color_, opacity_] = ColorTransformUtil::strRgbaToHex(layerStyle["fillColor"].toString());
+        color = QColor(color_);
+        opacity = opacity_;
+        // 可选：单独输出fillColor字段日志（针对性调试）
+        spdlog::debug("[StyleCircle::get3dSingleSymbolRenderer] Parsed fillColor: {}, opacity: {}",
+                      color_.toStdString(), opacity_);
+    }
+
+    material_settings->setDiffuse(color);
+    material_settings->setAmbient(color);
+
+    material_settings->setOpacity(0.5); // 半透明
+    spdlog::debug("最终生效的透明度值: {}", material_settings->opacity());
+    symbol->setMaterialSettings(material_settings.release());
+
+    symbol->setEdgeColor(border_color);
+    symbol->setOffset(Formula::getRelativeAltitude(altitude));
+
     auto renderer = std::make_unique<QgsVectorLayer3DRenderer>();
     renderer->setSymbol(symbol.release());
     return renderer.release();
