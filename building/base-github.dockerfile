@@ -55,7 +55,7 @@ RUN mkdir /lyndon/iProject/cpath -p
 WORKDIR /lyndon/iProject/cpath
 # build and install yaml-cpp
 RUN git clone https://github.com/yz271544/yaml-cpp.git
-WORKDIR /lyndon/iProject/cpath/yaml-cpp/ml-cpp
+WORKDIR /lyndon/iProject/cpath/yaml-cpp
 RUN git checkout -b 0.8.0 0.8.0
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
 RUN cmake --build build
@@ -64,7 +64,7 @@ RUN make install
 WORKDIR /lyndon/iProject/cpath
 # build and install oatpp
 RUN git clone https://github.com/yz271544/oatpp.git
-WORKDIR /lyndon/iProject/cpath/oatpp-curl/tpp
+WORKDIR /lyndon/iProject/cpath/oatpp
 RUN git checkout -b 1.4.0 1.4.0
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
 RUN cmake --build build
