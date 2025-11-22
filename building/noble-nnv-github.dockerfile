@@ -25,7 +25,7 @@ RUN git config --global core.autocrlf input
 
 WORKDIR /lyndon/iProject/cpath
 # build and install jingweiprinter
-RUN git clone git@github.com:yz271544/jingweiprinter.git
+RUN git clone https://github.com/yz271544/jingweiprinter.git
 WORKDIR /lyndon/iProject/cpath/jingweiprinter
 RUN git checkout -b $CODE_VERSION $CODE_VERSION
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
