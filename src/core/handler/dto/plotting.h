@@ -199,6 +199,14 @@ class Camera3dPosition : public oatpp::DTO {
     DTO_FIELD(String, heading);          // 摄像机偏航角
     DTO_FIELD(String, pitch);            // 摄像机俯仰角
     DTO_FIELD(String, roll);             // 摄像机翻滚角
+
+    /**
+     * 是否导出 3D 环形轨道视频。
+     * 为 true 时，系统读取 conf/config.yaml 中 qgis.3d_orbit 配置，
+     * 根据 camera 参数动态计算轨道半径和俯仰角，逐帧渲染并合成 MP4。
+     * FFmpeg 必须在 PATH 中可用（否则降级为图片序列输出）。
+     */
+    DTO_FIELD(Boolean, export_video_enable);
 };
 
 /**

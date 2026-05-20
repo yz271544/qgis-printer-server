@@ -654,7 +654,8 @@ void Processor::export3DLayout(QString& sceneName,
                                const QString& layoutType,
                                QString& paperSpecName,
                                JwLayout3D* jwLayout3d,
-                               DTOWRAPPERNS::DTOWrapper<ResponseDto>& responseDto) {
+                               DTOWRAPPERNS::DTOWrapper<ResponseDto>& responseDto,
+                               const DTOWRAPPERNS::DTOWrapper<Camera3dPosition> &camera) {
     auto zip_file_name = zipProject(sceneName);
     auto imageSubDir = getImageSubDir(layoutType);
     // 导出图像
@@ -694,6 +695,23 @@ void Processor::export3DLayout(QString& sceneName,
     }
     /*m_globalGLContext->doneCurrent();
     spdlog::debug("doneCurrent after export image done");*/
+
+    // --- Orbit 3D video export ---
+    if (camera && camera->export_video_enable) {
+        spdlog::info("exportOrbit enabled (camera.export_video_enable=true)");
+        // Read 3d_orbit config from YAML
+        QVariantMap orbitConfig;
+        if ((*m_config)["qgis"]["3d_orbit"]) {
+            const auto &node = (*m_config)["qgis"]["3d_orbit"];
+            orbitConfig = NodeToMap::mapToVariantMap(node);
+        } else {
+            spdlog::warn("No 3d_orbit config found in config.yaml, skipping orbit export");
+        }
+        if (!orbitConfig.isEmpty()) {
+            jwLayout3d->exportOrbit(camera, responseDto, orbitConfig);
+        }
+    }
+
     jwLayout3d->destroy3DCanvas();
     spdlog::debug("close 3d canvas done");
 }
@@ -1528,7 +1546,7 @@ void Processor::add_3d_layout(
     spdlog::debug("save project");
     m_app->saveProject();
     QString paperName = QString::fromStdString(plottingWeb->paper);
-    export3DLayout(sceneName, layoutType, paperName, jwLayout3d.get(), responseDto);
+    export3DLayout(sceneName, layoutType, paperName, jwLayout3d.get(), responseDto, camera);
 }
 
 QString Processor::zipProject(const QString &scene_name) {

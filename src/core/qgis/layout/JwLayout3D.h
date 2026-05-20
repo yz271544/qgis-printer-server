@@ -72,6 +72,7 @@
 #include "utils/DegreeUtil.h"
 #include "core/qgis/d3/CameraUtil.h"
 #include "core/handler/dto/plotting.h"
+#include "utils/OrbitExporter.h"
 #include "config.h"
 
 
@@ -299,6 +300,19 @@ public:
             const QString &layoutName,
             QString &outputPath);
 
+    /**
+     * @brief exportOrbit 导出环形轨道 3D 地图视频或图像序列
+     *
+     * 读取 conf/config.yaml 中的 qgis.3d_orbit 配置，
+     * 根据 camera 参数动态计算轨道半径和俯仰角，逐帧渲染并合成视频。
+     *
+     * @param camera 摄像机参数（包含位置、目标点、方位角等）
+     * @param responseDto 响应 DTO（成功时填充 image_url 或 pdf_url）
+     */
+    void exportOrbit(
+            const DTOWRAPPERNS::DTOWrapper<Camera3dPosition> &camera,
+            DTOWRAPPERNS::DTOWrapper<ResponseDto> &responseDto,
+            const QVariantMap &orbitConfig);
     QgsPrintLayout *getLayout(const QString &layoutName);
 
     void saveQptTemplate(QgsLayout *layout);

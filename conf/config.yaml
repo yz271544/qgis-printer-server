@@ -57,6 +57,39 @@ qgis:
   sync_wait_time_second: 120000
   enable_point_altitude: false
   enable_point_cluster: false
+# 3D 环形轨道视频导出配置
+# 3D orbit video export configuration
+3d_orbit:
+  # 是否启用视频导出（可通过 API 接口的 camera.export_video_enable 覆盖）
+  enable: false
+  # 输出分辨率（宽 x 高）
+  output_width: 1920
+  output_height: 1080
+  # 帧数（轨道一圈的帧数）：360帧 = 每步进1°，120帧 = 每步进3°
+  frame_count: 120
+  # 帧率（fps）：30 = 4秒一圈，60 = 2秒一圈
+  fps: 30
+  # JPEG 中间帧质量（1-100），FFmpeg 编码前用于临时文件
+  jpeg_quality: 90
+  # 轨道半径倍数：相对于从相机到 lookAtPoint 的水平距离
+  #   1.0 = 相机恰好在轨道圆周上（与相机原始水平距离相同）
+  #   0.5 = 轨道半径 = 一半水平距离（轨道在相机以内，更靠近中心）
+  #   2.0 = 轨道半径 = 两倍水平距离（轨道在相机以外，更远离中心）
+  orbit_radius_multiplier: 1.0
+  # 轨道起始偏转角（度）：0 = 从当前 heading 开始，90 = 顺时针偏移90°
+  start_angle: 0.0
+  # 是否在 FFmpeg 编码成功后删除临时 JPEG 帧
+  delete_temp_frames: true
+  # 是否自动计算俯仰角（从 cameraHeight 与轨道半径推断）
+  # true：pitch 由 orbit_radius_multiplier 和 cameraHeight 动态计算
+  # false：pitch 使用接口传入的 camera.pitch 值
+  auto_compute_pitch: true
+  # 备用俯仰角（当 auto_compute_pitch=false 或无法计算时使用）
+  fallback_pitch: 45.0
+  # 输出格式：mp4 / mkv（调用 FFmpeg）或 png / jpg（输出图片序列）
+  output_format: "mp4"
+  # 是否在渲染每帧后调用 Qt 事件循环（避免界面假死，Windows 下建议开启）
+  process_events: true
 specification:
   - name: "现场位置图"
     local: "local"

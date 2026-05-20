@@ -6,6 +6,17 @@
 
 #include <utility>
 
+#include "utils/OrbitExporter.h"
+#include "utils/OrbitVideoEncoder.h"
+
+#include <QFileInfo>
+#include <QDir>
+#include <QTimer>
+#include <QUrl>
+#include <QCoreApplication>
+
+#include <qgsfeedback.h>
+
 // 构造函数
 JwLayout3D::JwLayout3D(QgsProject *project, QgsMapCanvas *canvas2d,
                        Qgs3DMapCanvas *canvas3d, QString &sceneName,
@@ -1651,4 +1662,142 @@ QgsLayoutItemShape *JwLayout3D::addRect(QString &fillColor,
         QRectF(remarksX, remarksY, remarksWidth, remarksHeight));
     rectBg->setZValue(0);
     return rectBg.release();
+}
+
+void JwLayout3D::exportOrbit(
+        const DTOWRAPPERNS::DTOWrapper<Camera3dPosition> &camera,
+        DTOWRAPPERNS::DTOWrapper<ResponseDto> &responseDto,
+        const QVariantMap &orbitConfig) {
+    // 1. Load orbit config from QVariantMap
+    OrbitConfig config;
+    config.loadFromVariantMap(orbitConfig);
+
+    // Override enable if the camera DTO says so
+    if (camera->export_video_enable && !config.enable) {
+        // User requested video export but config has it disabled — respect the API flag
+        spdlog::info("camera.export_video_enable=true but 3d_orbit.enable=false in config, "
+                     "skipping orbit export");
+        return;
+    }
+
+    if (!config.enable) {
+        spdlog::debug("Orbit export disabled, skipping");
+        return;
+    }
+
+    spdlog::info("Starting orbit export: frames={}, fps={}, output={}x{}, "
+                 "orbitRadiusMultiplier={}, autoComputePitch={}",
+                 config.frameCount, config.fps,
+                 config.outputWidth, config.outputHeight,
+                 config.orbitRadiusMultiplier, config.autoComputePitch);
+
+    // 2. Check FFmpeg availability if MP4/MKV output is expected
+    const QString lowerPath = config.outputFormat.toLower();
+    const bool wantsVideo = lowerPath == u"mp4" || lowerPath == u"mkv";
+    if (wantsVideo && !OrbitVideoEncoder::isFfmpegAvailable()) {
+        spdlog::error("FFmpeg not found in PATH. Cannot export video. "
+                      "Install FFmpeg or use output_format=jpg in config.yaml");
+        responseDto->error = "FFmpeg not found in PATH. Install FFmpeg or set output_format=jpg";
+        return;
+    }
+
+    // 3. Build OrbitCamera from Camera3dPosition DTO
+    // oatpp::Float64 has operator double, so direct assignment works
+    OrbitCamera orbitCam;
+    orbitCam.cameraLongitude  = static_cast<double>(camera->cameraLongitude);
+    orbitCam.cameraLatitude   = static_cast<double>(camera->cameraLatitude);
+    orbitCam.cameraHeight     = static_cast<double>(camera->cameraHeight);
+    orbitCam.cameraDirX       = static_cast<double>(camera->cameraDirX);
+    orbitCam.cameraDirY       = static_cast<double>(camera->cameraDirY);
+    orbitCam.cameraDirZ       = static_cast<double>(camera->cameraDirZ);
+    orbitCam.centerLongitude  = static_cast<double>(camera->centerLongitude);
+    orbitCam.centerLatitude   = static_cast<double>(camera->centerLatitude);
+    orbitCam.centerHeight     = static_cast<double>(camera->centerHeight);
+
+    // heading/pitch are stored as String in the DTO — parse as double
+    {
+        bool ok = false;
+        double h = QString::fromStdString(camera->heading ? *camera->heading : "").toDouble(&ok);
+        orbitCam.headingDeg = ok ? h : 0.0;
+    }
+    {
+        bool ok = false;
+        double p = QString::fromStdString(camera->pitch ? *camera->pitch : "").toDouble(&ok);
+        orbitCam.pitchDeg = ok ? p : 0.0;
+    }
+
+    // 4. Compute orbit params and build final exporter config
+    OrbitParams orbitParams(config, orbitCam);
+    const QString outputDir = mProjectDir;
+    OrbitExporterConfig exporterConfig = orbitParams.buildExporterConfig(outputDir);
+
+    // Override output format if config specifies one
+    if (!config.outputFormat.isEmpty()) {
+        QString fmt = config.outputFormat;
+        if (!fmt.startsWith(u'.')) fmt = u"."_s + fmt;
+        // Determine the final output path
+        QString outBase = mProjectDir;
+        if (!outBase.endsWith(u'/' && !outBase.endsWith(u'\\'))) outBase += u'/';
+        exporterConfig.outputPath = outBase + u"orbit"_s + fmt;
+    }
+
+    // 5. Setup offscreen engine for orbit rendering
+    //    The OrbitExporter needs an already-configured mMapSettings3d
+    if (!mMapSettings3d) {
+        spdlog::error("mMapSettings3d is null, cannot export orbit");
+        responseDto->error = "3D map settings not initialized";
+        return;
+    }
+
+    // 6. Run export
+    OrbitExporter exporter;
+    QString error;
+
+    // Use QGIS feedback mechanism for cancellation support
+    std::unique_ptr<QgsFeedback> feedback = std::make_unique<QgsFeedback>();
+
+    // Optionally poll Qt event loop to keep the application responsive
+    QTimer processTimer;
+    processTimer.setInterval(50);
+    if (config.processEvents) {
+        QObject::connect(&processTimer, &QTimer::timeout, [&]() {
+            QCoreApplication::processEvents();
+        });
+        processTimer.start();
+    }
+
+    bool ok = exporter.export(exporterConfig, *mMapSettings3d, feedback.get(), error);
+
+    processTimer.stop();
+
+    if (!ok) {
+        spdlog::error("Orbit export failed: {}", error.toStdString());
+        responseDto->error = error.toStdString();
+        return;
+    }
+
+    spdlog::info("Orbit export completed successfully");
+
+    // 7. Determine output URL
+    //    outputPath may be a directory or a file — OrbitParams always builds a full path
+    QString resultPath = exporterConfig.outputPath;
+    if (!QFileInfo::exists(resultPath)) {
+        // outputPath might be a directory — find the first file inside
+        QDir dir(resultPath);
+        if (!dir.exists() && QFileInfo(resultPath).isDir()) {
+            // It's a directory path, scan for the generated file
+            dir.setPath(resultPath);
+        }
+        QStringList files = dir.entryList({u"orbit.*"_s}, QDir::Files, QDir::Name);
+        if (!files.isEmpty()) {
+            resultPath = dir.filePath(files.first());
+        }
+    }
+
+    QUrl videoUrl = QUrl::fromLocalFile(resultPath);
+    if (resultPath.toLower().endsWith(u".mp4") || resultPath.toLower().endsWith(u".mkv")) {
+        responseDto->video_url = videoUrl.url().toStdString();
+    } else {
+        responseDto->image_url = videoUrl.url().toStdString();
+    }
 }

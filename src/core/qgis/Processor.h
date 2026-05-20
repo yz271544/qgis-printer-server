@@ -200,7 +200,8 @@ public:
                         const QString &layoutType,
                         QString &paperSpecName,
                         JwLayout3D *jwLayout3d,
-                        DTOWRAPPERNS::DTOWrapper<ResponseDto>& responseDto);
+                        DTOWRAPPERNS::DTOWrapper<ResponseDto>& responseDto,
+                        const DTOWRAPPERNS::DTOWrapper<Camera3dPosition> &camera = nullptr);
 };
 
 
