@@ -1734,11 +1734,11 @@ void JwLayout3D::exportOrbit(
     // Override output format if config specifies one
     if (!config.outputFormat.isEmpty()) {
         QString fmt = config.outputFormat;
-        if (!fmt.startsWith(u'.')) fmt = u"."_s + fmt;
+        if (!fmt.startsWith(u'.')) fmt = QStringLiteral(".") + fmt;
         // Determine the final output path
         QString outBase = mProjectDir;
-        if (!outBase.endsWith(u'/' && !outBase.endsWith(u'\\'))) outBase += u'/';
-        exporterConfig.outputPath = outBase + u"orbit"_s + fmt;
+        if (!outBase.endsWith(u'/') && !outBase.endsWith(u'\\')) outBase += u'/';
+        exporterConfig.outputPath = outBase + QStringLiteral("orbit") + fmt;
     }
 
     // 5. Setup offscreen engine for orbit rendering
@@ -1766,7 +1766,7 @@ void JwLayout3D::exportOrbit(
         processTimer.start();
     }
 
-    bool ok = exporter.export(exporterConfig, *mMapSettings3d, feedback.get(), error);
+    bool ok = exporter.exportVideo(exporterConfig, *mMapSettings3d, feedback.get(), error);
 
     processTimer.stop();
 
@@ -1788,7 +1788,7 @@ void JwLayout3D::exportOrbit(
             // It's a directory path, scan for the generated file
             dir.setPath(resultPath);
         }
-        QStringList files = dir.entryList({u"orbit.*"_s}, QDir::Files, QDir::Name);
+        QStringList files = dir.entryList(QStringList() << QStringLiteral("orbit.*"), QDir::Files, QDir::Name);
         if (!files.isEmpty()) {
             resultPath = dir.filePath(files.first());
         }

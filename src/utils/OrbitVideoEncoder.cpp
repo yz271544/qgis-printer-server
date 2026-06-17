@@ -4,6 +4,7 @@
 
 #include "utils/OrbitVideoEncoder.h"
 
+#include <QImage>
 #include <QProcess>
 #include <QDir>
 #include <QUuid>
@@ -23,7 +24,7 @@ bool OrbitVideoEncoder::start( const QString &outputPath,
   mError.clear();
 
   // Create a unique temp directory for JPEG frames
-  mTempDir = QDir::temp().filePath( u"jingwei_orbit_"_s + QUuid::createUuid().toString() );
+  mTempDir = QDir::temp().filePath( QStringLiteral("jingwei_orbit_") + QUuid::createUuid().toString() );
   if ( !QDir().mkpath( mTempDir ) )
   {
     mError = QStringLiteral( "Could not create temporary directory: %1" ).arg( mTempDir );
@@ -73,26 +74,26 @@ bool OrbitVideoEncoder::finish( bool deleteTemp )
   }
 
   // Frame pattern: frame_0001.jpg, frame_0002.jpg, ...
-  const QString framePattern = QDir( mTempDir ).filePath( u"frame_%04d.jpg"_s );
+  const QString framePattern = QDir( mTempDir ).filePath( QStringLiteral("frame_%04d.jpg") );
 
   QStringList args;
   args.reserve( 20 );
 
-  args << u"-y"_s;                                   // overwrite output
-  args << u"-framerate"_s << QString::number( mFps );
-  args << u"-i"_s << framePattern;                   // input pattern
-  args << u"-c:v"_s << u"libx264"_s;                 // H.264 codec
-  args << u"-preset"_s << u"medium"_s;               // speed vs. compression
-  args << u"-crf"_s << u"23"_s;                      // quality (0=lossless, 23=default)
-  args << u"-pix_fmt"_s << u"yuv420p"_s;             // compatibility
-  args << u"-movflags"_s << u"+faststart"_s;         // moov atom at start
-  args << u"-s"_s << QStringLiteral( "%1x%2" ).arg( mFrameSize.width() ).arg( mFrameSize.height() );
+  args << QStringLiteral("-y");                                   // overwrite output
+  args << QStringLiteral("-framerate") << QString::number( mFps );
+  args << QStringLiteral("-i") << framePattern;                   // input pattern
+  args << QStringLiteral("-c:v") << QStringLiteral("libx264");                 // H.264 codec
+  args << QStringLiteral("-preset") << QStringLiteral("medium");               // speed vs. compression
+  args << QStringLiteral("-crf") << QStringLiteral("23");                      // quality (0=lossless, 23=default)
+  args << QStringLiteral("-pix_fmt") << QStringLiteral("yuv420p");             // compatibility
+  args << QStringLiteral("-movflags") << QStringLiteral("+faststart");         // moov atom at start
+  args << QStringLiteral("-s") << QStringLiteral( "%1x%2" ).arg( mFrameSize.width() ).arg( mFrameSize.height() );
   args << mOutputPath;
 
   // Run FFmpeg synchronously
   QProcess p;
   p.setProcessChannelMode( QProcess::SeparateChannels );
-  p.start( u"ffmpeg"_s, args );
+  p.start( QStringLiteral("ffmpeg"), args );
 
   const bool finished = p.waitForFinished( 600000 );  // 10-minute timeout
   if ( !finished )
@@ -104,7 +105,7 @@ bool OrbitVideoEncoder::finish( bool deleteTemp )
 
   if ( p.exitCode() != 0 )
   {
-    mError = u"FFmpeg error (exit code %1): "_s.arg( p.exitCode() )
+    mError = QStringLiteral("FFmpeg error (exit code %1): ").arg( p.exitCode() )
            + QString::fromUtf8( p.readAllStandardError() );
     return false;
   }
@@ -120,7 +121,7 @@ bool OrbitVideoEncoder::finish( bool deleteTemp )
 bool OrbitVideoEncoder::isFfmpegAvailable()
 {
   QProcess p;
-  p.start( u"ffmpeg"_s, { u"-version"_s } );
+  p.start( QStringLiteral("ffmpeg"), { QStringLiteral("-version") } );
   const bool ok = p.waitForFinished( 5000 );
   return ok && p.exitCode() == 0;
 }

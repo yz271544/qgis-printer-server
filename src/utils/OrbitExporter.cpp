@@ -12,7 +12,11 @@
 #include <qgscameracontroller.h>
 #include <qgsfeedback.h>
 
+#include <QImage>
+#include <Qt3DRender/QRenderSettings>
+
 #include <QtMath>
+#include <type_traits>
 #include <QDir>
 #include <QUuid>
 
@@ -109,7 +113,7 @@ bool OrbitExporter::saveFrame( int frameIndex, const QImage &image )
 
 // -------------------------------------------------------------------------
 
-bool OrbitExporter::export( const OrbitExporterConfig &config,
+bool OrbitExporter::exportVideo( const OrbitExporterConfig &config,
                             Qgs3DMapSettings &mapSettings,
                             QgsFeedback *feedback,
                             QString &error )
@@ -135,7 +139,7 @@ bool OrbitExporter::export( const OrbitExporterConfig &config,
   if ( isVideoOutput )
   {
     // Create a temp directory for JPEG frames
-    mFramesOutputDir = QDir::temp().filePath( u"jingwei_orbit_"_s + QUuid::createUuid().toString() );
+    mFramesOutputDir = QDir::temp().filePath( QStringLiteral("jingwei_orbit_") + QUuid::createUuid().toString() );
     if ( !QDir().mkpath( mFramesOutputDir ) )
     {
       error = QStringLiteral( "Could not create temporary directory for frames." );
@@ -157,7 +161,7 @@ bool OrbitExporter::export( const OrbitExporterConfig &config,
   {
     // Image sequence mode
     if ( config.outputPath.isEmpty() )
-      mFramesOutputDir = QDir::temp().filePath( u"jingwei_orbit_"_s + QUuid::createUuid().toString() );
+      mFramesOutputDir = QDir::temp().filePath( QStringLiteral("jingwei_orbit_") + QUuid::createUuid().toString() );
     else
       mFramesOutputDir = config.outputPath;
 
@@ -190,7 +194,7 @@ bool OrbitExporter::export( const OrbitExporterConfig &config,
 
     // Set camera for this frame
     const auto &kf = keyframes[i];
-    mScene->cameraController()->setLookingAtMapPoint( kf.point, kf.dist, kf.pitch, kf.yaw );
+    mScene->cameraController()->setLookingAtPoint( kf.point, kf.dist, kf.pitch, kf.yaw );
 
     // Capture frame
     const QImage img = renderFrame();
@@ -231,7 +235,7 @@ void OrbitConfig::loadFromVariantMap( const QVariantMap &map )
 {
     auto get = [&]( const QString &key, auto &value ) {
         if ( map.contains( key ) )
-            value = map[key].value<decltype( value )>();
+            value = map[key].value<std::remove_reference_t<decltype(value)>>();
     };
     auto getStr = [&]( const QString &key, QString &value ) {
         if ( map.contains( key ) )
@@ -246,19 +250,19 @@ void OrbitConfig::loadFromVariantMap( const QVariantMap &map )
             value = map[key].toFloat();
     };
 
-    getBool( u"enable"_s,               enable );
-    get(    u"output_width"_s,           outputWidth );
-    get(    u"output_height"_s,          outputHeight );
-    get(    u"frame_count"_s,            frameCount );
-    get(    u"fps"_s,                    fps );
-    get(    u"jpeg_quality"_s,           jpegQuality );
-    get(    u"orbit_radius_multiplier"_s, orbitRadiusMultiplier );
-    getFloat( u"start_angle"_s,          startAngle );
-    getBool( u"delete_temp_frames"_s,    deleteTempFrames );
-    getBool( u"auto_compute_pitch"_s,    autoComputePitch );
-    getFloat( u"fallback_pitch"_s,       fallbackPitch );
-    getStr(  u"output_format"_s,         outputFormat );
-    getBool( u"process_events"_s,        processEvents );
+    getBool( QStringLiteral("enable"),               enable );
+    get(    QStringLiteral("output_width"),           outputWidth );
+    get(    QStringLiteral("output_height"),          outputHeight );
+    get(    QStringLiteral("frame_count"),            frameCount );
+    get(    QStringLiteral("fps"),                    fps );
+    get(    QStringLiteral("jpeg_quality"),           jpegQuality );
+    get(    QStringLiteral("orbit_radius_multiplier"), orbitRadiusMultiplier );
+    getFloat( QStringLiteral("start_angle"),          startAngle );
+    getBool( QStringLiteral("delete_temp_frames"),    deleteTempFrames );
+    getBool( QStringLiteral("auto_compute_pitch"),    autoComputePitch );
+    getFloat( QStringLiteral("fallback_pitch"),       fallbackPitch );
+    getStr(  QStringLiteral("output_format"),         outputFormat );
+    getBool( QStringLiteral("process_events"),        processEvents );
 }
 
 // -------------------------------------------------------------------------
@@ -319,7 +323,7 @@ OrbitExporterConfig OrbitParams::buildExporterConfig( const QString &outputDir )
     // otherwise treat as directory and append orbit.<format>
     QString outPath = outputDir;
     if ( outPath.isEmpty() )
-        outPath = QDir::temp().filePath( u"jingwei_orbit_"_s + QUuid::createUuid().toString() );
+        outPath = QDir::temp().filePath( QStringLiteral("jingwei_orbit_") + QUuid::createUuid().toString() );
 
     const QString lower = outPath.toLower();
     if ( lower.endsWith( u".mp4" ) || lower.endsWith( u".mkv" )
@@ -329,9 +333,9 @@ OrbitExporterConfig OrbitParams::buildExporterConfig( const QString &outputDir )
     }
     else
     {
-        if ( !outPath.endsWith( u"/"_s ) && !outPath.endsWith( u"\\"_s ) )
-            outPath += u"/"_s;
-        cfg.outputPath = outPath + u"orbit."_s + mConfig.outputFormat;
+        if ( !outPath.endsWith( u"/" ) && !outPath.endsWith( u"\\" ) )
+            outPath += u"/";
+        cfg.outputPath = outPath + QStringLiteral("orbit.") + mConfig.outputFormat;
     }
 
     return cfg;

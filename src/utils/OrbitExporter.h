@@ -10,7 +10,14 @@
 #include <QSize>
 #include <QVector>
 #include <QVariantMap>
+#include <QImage>
 #include <memory>
+
+#include <qgsvector3d.h>
+#include <qgsfeedback.h>
+#include <qgs3danimationsettings.h>
+#include <qgsoffscreen3dengine.h>
+#include <qgs3dmapscene.h>
 
 class QImage;
 class QgsVector3D;
@@ -22,7 +29,7 @@ class QgsFeedback;
 class OrbitVideoEncoder;
 
 /**
- * \brief Final render-time config passed to OrbitExporter::export().
+ * \brief Final render-time config passed to OrbitExporter::exportVideo().
  *
  * Produced by buildOrbitExporterConfig() from OrbitConfig + OrbitCamera.
  *
@@ -30,7 +37,7 @@ class OrbitVideoEncoder;
  * \code
  *   OrbitExporter exporter;
  *   QString error;
- *   bool ok = exporter.export( cfg, *mapSettings, nullptr, error );
+ *   bool ok = exporter.exportVideo( cfg, *mapSettings, nullptr, error );
  * \endcode
  */
 struct OrbitExporterConfig
@@ -144,7 +151,7 @@ struct OrbitConfig
     bool    deleteTempFrames    = true;
     bool    autoComputePitch    = true;
     float   fallbackPitch       = 45.0f;
-    QString outputFormat        = u"mp4"_s;
+    QString outputFormat        = QStringLiteral( "mp4" );
     bool    processEvents       = true;
 
     /**
@@ -172,7 +179,7 @@ struct OrbitConfig
  *   pitch        = auto_compute_pitch ? atan2(cameraHeight, radius_2d) : fallbackPitch
  *   yaw_i        = headingDeg + i * (360 / frameCount) for each frame
  *
- * Call buildExporterConfig() then pass the result to OrbitExporter::export().
+ * Call buildExporterConfig() then pass the result to OrbitExporter::exportVideo().
  */
 class OrbitParams
 {
@@ -245,7 +252,7 @@ class OrbitExporter : public QObject
      * \return true on success, false on failure or cancellation.
      * Must be called from the Qt GUI/main thread.
      */
-    bool export( const OrbitExporterConfig &config,
+    bool exportVideo( const OrbitExporterConfig &config,
                  Qgs3DMapSettings &mapSettings,
                  QgsFeedback *feedback,
                  QString &error );
@@ -280,7 +287,6 @@ class OrbitExporter : public QObject
 
     QVector<Qgs3DAnimationSettings::Keyframe> computeKeyframes(
         const OrbitExporterConfig &config ) const;
-
     bool setupEngine( const QSize &outputSize );
     QImage renderFrame();
     bool saveFrame( int frameIndex, const QImage &image );

@@ -5,10 +5,9 @@
 #ifndef JINGWEIPRINTER_ORBITVIDEOENCODER_H
 #define JINGWEIPRINTER_ORBITVIDEOENCODER_H
 
+#include <QImage>
 #include <QString>
 #include <QSize>
-
-class QImage;
 
 /**
  * \brief Wraps FFmpeg for video encoding of orbit animation frames.
