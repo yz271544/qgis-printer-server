@@ -139,7 +139,6 @@ Processor::Processor(const QList<QString> &argvList, YAML::Node *config) {
     }
     if (m_verbose) {
         QVariantMap::Iterator it;
-        //for (const auto &key: m_setting_image_spec->keys()) {
         for (it = m_setting_image_spec->begin(); it != m_setting_image_spec->end(); ++it) {
             auto const &key = it.key();
             spdlog::debug("image_spec: {}", key.toStdString());
@@ -416,9 +415,7 @@ Processor::processByPlottingWeb(const oatpp::String &token, const DTOWRAPPERNS::
             throw XServerRequestError(errorMsg);
         }
         spdlog::debug("invoke method to create project");
-        // Qt::TimerType tempReceiver;
         QMetaObject::invokeMethod(qApp, [this, plottingWeb, plottingRespDto, layoutType, promise, &eventLoop]() {
-            //QTimer::singleShot(0, tempRecever, [this, plottingWeb, plottingRespDto, layoutType, promise, &eventLoop]() {
             spdlog::debug("Inside invokeMethod lambda: start");
 
             QMap<QString, QJsonDocument> sceneMap;
@@ -908,109 +905,6 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
 
             int circle_num = 0;
             QVariantMap::iterator it;
-            /*for (it = style_grouped.begin(); it != style_grouped.end(); ++it) {
-                const auto &color_style = it.key();
-                auto color_style_dict = style_grouped.value(color_style).toMap();
-                qDebug() << "color_style: " << color_style << " --> " << color_style_dict;
-                QString layerPrefix = QString::fromStdString(payloads->name);
-                QString layerName = QString("%1%2").arg(layerPrefix, QString::number(circle_num));
-                auto jw_circle = std::make_unique<JwCircle>(
-                        m_app->getSceneName(),
-                        layerName,
-                        m_app->getProjectDir(),
-                        m_app->getProject(),
-                        m_app->getTransformContext()
-                );
-
-                QList<QgsPoint> pointsList;
-                if (m_verbose) {
-                    qDebug() << "polygon_geometry_coordinates_list: "
-                             << color_style_dict["polygon_geometry_coordinates_list"];
-                }
-                auto coordPointsList = color_style_dict["polygon_geometry_coordinates_list"].toList();
-                for (const auto &coordPoint: coordPointsList) {
-                    auto coordPointList = coordPoint.toList();
-                    pointsList.append(QgsPoint(coordPointList[0].toDouble(), coordPointList[1].toDouble(),
-                                               coordPointList[2].toDouble()));
-                }
-                if (m_verbose) {
-                    qDebug() << "polygon_geometry_properties_radius: "
-                             << color_style_dict["polygon_geometry_properties_radius"];
-                }
-                auto radiusQVariants = color_style_dict["polygon_geometry_properties_radius"].toList();
-                QList<double> radiusDoubleList;
-                for (const auto &radiusQVariant: radiusQVariants) {
-                    if (radiusQVariant.canConvert<double>()) {
-                        radiusDoubleList.append(radiusQVariant.toDouble());
-                    }
-                }
-
-                QList<QColor> areasColorList;
-                if (m_verbose) {
-                    qDebug() << "areas_color_list: " << color_style_dict["areas_color_list"];
-                }
-                auto areas_color_list = color_style_dict["areas_color_list"].toList();
-                for (const auto &color: areas_color_list) {
-                    if (color.canConvert<QString>()) {
-                        areasColorList.append(QColor(color.toString()));
-                    }
-                }
-                // todo throw exception when areasColorList is empty
-                QList<float> styleColorOpacityList;
-                if (m_verbose) {
-                    qDebug() << "areas_opacity_list: " << color_style_dict["areas_opacity_list"];
-                }
-                auto areas_opacity_list = color_style_dict["areas_opacity_list"].toList();
-                for (const auto &item: areas_opacity_list) {
-                    if (item.canConvert<double>()) {
-                        styleColorOpacityList.append(item.toFloat());
-                    }
-                }
-                // add level key areas
-                if (m_verbose) {
-                    for (const auto &item: pointsList) {
-                        qDebug() << "add level key areas -> pointsList: " << item.x() << ", " << item.y() << ", "
-                                 << item.z();
-                    }
-                    qDebug() << "add level key areas -> radiusDoubleList size: " << radiusDoubleList.size();
-                    for (const auto &item: radiusDoubleList) {
-                        qDebug() << "add level key areas -> radiusDoubleList: " << item;
-                    }
-
-                    qDebug() << "add level key areas -> style_percents size:" << style_percents.size();
-                    for (const auto &item: style_percents) {
-                        qDebug() << "add level key areas -> style_percents size: " << item.size();
-                        for (const auto &subItem: item) {
-                            qDebug() << "add level key areas -> style_percents: " << subItem;
-                        }
-                    }
-
-                    qDebug() << "add level key areas -> areasColorList size:" << areasColorList.size();
-                    for (const auto &item: areasColorList) {
-                        qDebug() << "add level key areas -> areasColorList: " << item;
-                    }
-
-                    qDebug() << "add level key areas -> styleColorOpacityList size:" << styleColorOpacityList.size();
-                    for (const auto &item: styleColorOpacityList) {
-                        qDebug() << "add level key areas -> styleColorOpacityList: " << item;
-                    }
-                }
-
-                spdlog::debug("pointsList 长度：{}，内容如下：", pointsList.size());
-                spdlog::debug("radiusDoubleList 长度：{}，内容如下：", radiusDoubleList.size());
-                spdlog::debug("style_percents 长度：{}，内容如下：", style_percents.size());
-
-                jw_circle->addLevelKeyAreas(
-                    infos,
-                    pointsList,
-                    radiusDoubleList,
-                    style_percents,
-                    areasColorList,
-                    styleColorOpacityList,
-                    72
-                );
-                circle_num++;
-            }*/
 
             for (auto it = style_grouped.begin(); it != style_grouped.end(); ++it) {
                 const auto &color_style = it.key();
@@ -1486,9 +1380,6 @@ void Processor::add_3d_layout(
     auto canvas3d = std::make_unique<Qgs3DMapCanvas>();
     canvas3d->setSurfaceType(QSurface::OpenGLSurface);
     canvas3d->setFormat(defaultFormat);
-    /*auto extentByGeoJson = m_app->resetCanvas(plottingWeb->geojson);
-    const QgsRectangle& extent = extentByGeoJson;
-    canvas3d->setViewFrom2DExtent(extent);*/
 
     // 初始化 3D 画布
     try {
@@ -1655,12 +1546,10 @@ QVariantMap Processor::_grouped_color_lines(
         if (style.contains("layerStyle") && style["layerStyle"].isObject()) {
             auto layerStyle = style["layerStyle"].toObject();
             if (layerStyle.contains("color")) {
-                //style_color = layerStyle["color"].toString();
                 style_color = ColorTransformUtil::strRgbaToHex(layerStyle["color"].toString()).first;
             }
         }
         if (style_color.isEmpty()) {
-            //style_color = "#000000"; // 默认颜色
             style_color = ColorTransformUtil::strRgbaToHex("rgba(0, 153, 68, 1)").first;
         }
 

@@ -93,17 +93,6 @@ QgsAbstract3DRenderer* StyleCircle::get3dSymbolRenderer(const QColor &color, dou
  * @param layer_style 图层样式
  * @return QgsAbstract3DRenderer 指针
  */
-/*QgsAbstract3DRenderer* StyleCircle::get3dSingleSymbolRenderer(const QJsonObject& fontStyle, const QJsonObject& layerStyle, float altitude) {
-    auto symbol = std::make_unique<QgsPolygon3DSymbol>();
-    auto border_color_opacity = ColorTransformUtil::strRgbaToHex(layerStyle.contains("bordercolor") ?
-            layerStyle["bordercolor"].toString() : "#000000");
-    symbol->setEdgeColor(QColor(border_color_opacity.first));
-    symbol->setOffset(Formula::getRelativeAltitude(altitude));
-    auto renderer = std::make_unique<QgsVectorLayer3DRenderer>();
-    renderer->setSymbol(symbol.release());
-    return renderer.release();
-}*/
-
 QgsAbstract3DRenderer* StyleCircle::get3dSingleSymbolRenderer(const QJsonObject& fontStyle, const QJsonObject& layerStyle, float altitude) {
     // -------------------------- 新增：输出layerStyle日志 --------------------------
     // 将QJsonObject转为紧凑格式字符串（适合日志，无多余空格）
