@@ -62,8 +62,6 @@
 #include <qgslayoutexporter.h>
 #include <qgsfillsymbollayer.h>
 #include <qgsmaplayerelevationproperties.h>
-
-//#include <qgis/app/3d/qgs3dmapcanvaswidget.h>
 #include "JwLegend.h"
 #include "core/enums/PaperSpecification.h"
 #include "utils/QgsUtil.h"

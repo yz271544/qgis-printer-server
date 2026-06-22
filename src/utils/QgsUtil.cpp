@@ -15,7 +15,6 @@ QgsTextFormat* QtFontUtil::createFont(
         double spacing)
 {
     auto text_format = std::make_unique<QgsTextFormat>();
-    //auto font = std::make_unique<QFont>(font_family);
     auto font = text_format->font();
     font.setFamily(font_family);
     font.setLetterSpacing(QFont::AbsoluteSpacing, spacing);
@@ -35,7 +34,6 @@ void QgsUtil::showLayerLabel(QgsVectorLayer* layer, const QString& style) {
     // Create label settings
     QgsPalLayerSettings label_settings;
     label_settings.fieldName = "name";
-    // label_settings.placement = QgsPalLayerSettings::OverPoint;
 
     // Create text format for the labels
     QgsTextFormat* text_format = QtFontUtil::createFont(style, 12, QString("#000000"), false, false,
@@ -53,7 +51,6 @@ QgsVectorLayerSimpleLabeling*
 QgsUtil::getLayerLabel(QVariantMap& style, const std::string& label_of_field_name) {
     QgsPalLayerSettings label_settings;
     label_settings.fieldName = label_of_field_name.c_str();
-    // label_settings.placement = QgsPalLayerSettings::OverPoint;
 
     // Create text format for the labels
     QString font_family = style.value("font_family").toString();
@@ -157,8 +154,6 @@ std::unique_ptr<QgsVectorLayer> QgsUtil::writePersistedLayer(
     QgsFeatureIterator it = layer->getFeatures();
     QgsFeature feature;
     while (it.nextFeature(feature)) {
-        //auto attributeMap = feature.attributeMap();
-        //auto const& attr_map_json = JsonUtil::variantMapToJson(attributeMap);
         if (!writer->addFeature(feature)) {
             spdlog::error("Failed to write feature ID: {}", feature.id());
         }

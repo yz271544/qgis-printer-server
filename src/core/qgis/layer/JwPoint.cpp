@@ -58,9 +58,6 @@ void JwPoint::addPoints(
     // get 坐标转换 transformer worker
     auto transformer = QgsUtil::coordinateTransformer4326To3857(mProject);
 
-    // 添加要素
-//    spdlog::info("Adding point layer: {}", this->mLayerName.toStdString());
-
     memPointVectorLayer->startEditing();
     // 添加要素
     for (size_t i = 0; i < points.size(); ++i) {
@@ -96,12 +93,10 @@ void JwPoint::addPoints(
         }
         feature.setAttributes(attribute);
         pointProvider->addFeature(feature);
-//        spdlog::debug("Added point feature {}: {}-{}-{}", pointNameList[i].toStdString(),
-//                      transformed_point->x(), transformed_point->y(), transformed_point->z());
     }
 
     if (memPointVectorLayer->commitChanges()) {
-//        spdlog::debug("Data successfully committed to layer.");
+        spdlog::debug("Data successfully committed to layer.");
     } else {
         spdlog::warn("Failed to commit data to layer: {}", pointProvider->error().message().toStdString());
     }

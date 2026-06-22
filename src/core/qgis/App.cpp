@@ -18,7 +18,6 @@ App::App(const QList<QString>& argvList, YAML::Node *config)
     mMapSettings = nullptr;
     mProjectDir = "";
     mPageSizeRegistry = std::unique_ptr<QgsPageSizeRegistry>(QgsApplication::pageSizeRegistry());
-    //mPageSizeRegistry = QgsApplication::pageSizeRegistry();
     mAvailablePapers = PaperSpecification::getLayoutPaperList();
     for (const auto &item: mAvailablePapers) {
         spdlog::debug("paper: {}", item.getPaperName().toStdString());
@@ -57,11 +56,6 @@ QgsCoordinateTransformContext& App::getTransformContext() {
 }
 
 void App::finishQgis() {
-    // QgsApplication::exitQgis();
-    // if (QgsApplication::instance()) {
-    //     QgsApplication::exitQgis();
-    // }
-//    spdlog::debug("finished qgis");
 }
 
 void App::createProject(QString& scene_name, QString& crs) {
@@ -144,7 +138,6 @@ void App::clearProject() {
 }
 
 void App::createCanvas(QString& crs) {
-    //mCanvas = new QgsMapCanvas;
     mCanvas = std::make_unique<QgsMapCanvas>();
     mCanvas->setDestinationCrs(QgsCoordinateReferenceSystem(crs));
 }
@@ -478,6 +471,5 @@ QgsPointXY App::transform4326To3857(double x, double y) {
     QgsCoordinateReferenceSystem crs4326(REAL3D_SOURCE_CRS);
     QgsCoordinateReferenceSystem crs3857(MAIN_CRS);
     QgsCoordinateTransform transform(crs4326, crs3857, mProject.get());
-    // QgsCoordinateTransform transform(crs4326, crs3857, mProject);
     return transform.transform(QgsPointXY(x, y));
 }

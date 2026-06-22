@@ -10,7 +10,6 @@ void FileUtil::create_directory(const std::string& directory_path)
     QDir dir(QString::fromStdString(directory_path));
     if (!dir.exists()) {
         if (!dir.mkpath(".")) {
-            //throw FileOperationError(QString("创建目录{%1}时出错").arg(QString::fromStdString(directory_path)).toStdString());
             throw FileOperationError(fmt::format("创建目录{}时出错",directory_path));
         }
     }

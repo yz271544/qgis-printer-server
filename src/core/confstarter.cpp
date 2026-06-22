@@ -15,20 +15,15 @@ ConfStarter::~ConfStarter() = default;
 
 // 实现Init方法，从指定路径加载配置文件，若加载失败会输出错误信息到标准错误输出流
 void ConfStarter::Init(StarterContext& context) {
-//    spdlog::debug("ConfStarter debug test");
-//    spdlog::info("ConfStarter Init start");
     try {
         // 尝试从指定路径加载配置文件，路径应根据实际项目情况正确配置
-        //config = YAML::LoadFile("/lyndon/iProject/cpath/cboot/conf/config.yaml");
         auto config = YAML::LoadFile(CONF_FILE);
         mConfig = std::make_unique<YAML::Node>(config);
         context.SetProps(mConfig.get());
-//        spdlog::info("CONF SERVER: {}, port: {}", config["app"]["name"].as<std::string>(), config["web"]["port"].as<int>());
     } catch (const YAML::BadFile& e) {
         std::cerr << "Error loading config file: " << e.what() << std::endl;
         exit(1);
     }
-//    spdlog::info("ConfStarter Init end");
 }
 
 // 实现Setup方法，目前此方法只是一个占位，可根据具体业务需求实现更详细的配置调整等功能

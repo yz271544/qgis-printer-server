@@ -27,23 +27,6 @@
 #include "config.h"
 #include "core/error/exceptions.h"
 
-// 图层类型映射
-/*QMap<QString, std::function<QgsVectorLayer *(const QString &)>> layer_type_mapping = {
-        {"point",   [](const QString &name) {
-            return new QgsVectorLayer(QString("PointZ?crs=%1").arg(MAIN_CRS), name, "memory");
-        }},
-        {"line",    [](const QString &name) {
-            return new QgsVectorLayer(QString("LineStringZ?crs=%1").arg(MAIN_CRS), name, "memory");
-        }},
-        {"polygon", [](const QString &name) {
-            return new QgsVectorLayer(QString("PolygonZ?crs=%1").arg(MAIN_CRS), name, "memory");
-        }},
-        {"circle",  [](const QString &name) {
-            return new QgsVectorLayer(QString("PolygonZ?crs=%1").arg(MAIN_CRS), name, "memory");
-        }}
-};*/
-
-
 class JwGeometry {
 public:
     /**

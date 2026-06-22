@@ -13,8 +13,6 @@ std::tuple<int, int, int, float> ColorTransformUtil::strRgbaToTupleInt(const QSt
     }
 
     QString cleanedRgba = rgba.trimmed(); // 去除前后空格
-    // qDebug() << "Original rgba:" << rgba;
-    // qDebug() << "Cleaned rgba:" << cleanedRgba;
 
     if (!cleanedRgba.startsWith("rgba(") || !cleanedRgba.endsWith(")")) {
         spdlog::critical("Invalid rgba format: must start with 'rgba(' and end with ')'");
@@ -23,7 +21,6 @@ std::tuple<int, int, int, float> ColorTransformUtil::strRgbaToTupleInt(const QSt
 
     // 去掉 'rgba(' 和 ')'
     cleanedRgba = cleanedRgba.mid(5, cleanedRgba.length() - 6).trimmed();
-    // qDebug() << "After removing 'rgba(' and ')':" << cleanedRgba;
 
     // 按逗号分割
     QStringList parts = cleanedRgba.split(",");

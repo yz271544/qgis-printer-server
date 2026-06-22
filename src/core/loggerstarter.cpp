@@ -12,7 +12,6 @@ LoggerStarter::~LoggerStarter() = default;
 
 // 实现Init方法，从指定路径加载配置文件，若加载失败会输出错误信息到标准错误输出流
 void LoggerStarter::Init(StarterContext &context) {
-//    spdlog::info("ConfStarter Init start");
     bool qtLogEnable = false;
     try {
         auto config = context.Props();
@@ -35,7 +34,6 @@ void LoggerStarter::Init(StarterContext &context) {
     } catch (const YAML::BadFile &e) {
         std::cerr << "Error loading config file: " << e.what() << std::endl;
     }
-//    spdlog::info("ConfStarter Init end");
 }
 
 // 实现Setup方法，目前此方法只是一个占位，可根据具体业务需求实现更详细的配置调整等功能

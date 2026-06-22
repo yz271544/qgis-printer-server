@@ -17,14 +17,11 @@
 int main(int argc, char* argv[]) {
     // 启动 Qt 事件循环
     QgsApplication app(argc, argv, false);
-    // QCoreApplication app(argc, argv);
     // 创建并注册不同的Starter实例
     ConfStarter confStarter;
     LoggerStarter loggerStarter;
     WebStarter webStarter;
     webStarter.SetBlocking(false);
-//    QtWebStarter webStarter;
-//    webStarter.SetBlocking(false);
     ProcessorStarter processorStarter;
     QCoreStarter qCoreStarter;
     qCoreStarter.SetBlocking(true);
@@ -45,9 +42,6 @@ int main(int argc, char* argv[]) {
     starter_register->Register(&hookStarter);
     // 启动程序
     boot->Start();
-
-    // **确保事件循环运行**
-    //spdlog::info("确保事件循环运行");
     return 0;
 
 }

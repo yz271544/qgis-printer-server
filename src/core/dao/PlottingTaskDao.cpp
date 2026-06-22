@@ -153,7 +153,6 @@ GDALDatasetPtr PlottingTaskDao::getDataSet() const {
     std::lock_guard<std::mutex> lock(db_mutex_);
     // 先尝试使用主连接
     if (m_db_conn_) {
-        //GDALDatasetPtr(m_db_conn_.get(), [](GDALDataset*) {});
         return GDALDatasetPtr(m_db_conn_.get()); // 不实际拥有所有权
     }
 
@@ -173,9 +172,6 @@ GDALDatasetPtr PlottingTaskDao::getDataSet() const {
     return GDALDatasetPtr(ds);
 }
 
-// create new task
-//std::string PlottingTaskDao::createTask(const std::string &scene_id, const QJsonDocument &plottingDtoJsonDoc) {
-
 std::string PlottingTaskDao::createTask(
     const std::string& token,
     const std::string &scene_id,
@@ -188,7 +184,6 @@ std::string PlottingTaskDao::createTask(
     }
 
     // 生成UUID作为任务ID
-    // std::string task_id(UuidUtil::generate());
     std::string task_id = plottingDto->taskId->c_str();
     auto plottingDtoJsonDoc = JsonUtil::convertDtoToQJsonObject(plottingDto);
 
@@ -639,7 +634,6 @@ oatpp::List<DTOWRAPPERNS::DTOWrapper<::TaskInfo> > PlottingTaskDao::getPageTasks
     OGRLayer *poResultLayer = m_db_conn_->ExecuteSQL(finalSQL.c_str(), nullptr, nullptr);
     if (poResultLayer == nullptr) {
         spdlog::error("SQL query failed: {}", CPLGetLastErrorMsg());
-        //GDALClose(poDS);
         return taskList;
     }
 

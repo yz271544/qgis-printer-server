@@ -42,8 +42,6 @@ QgsGeometry JwGeometry::transformPolygon(const QList<QList<QgsPoint>>& transform
 }
 
 QgsGeometry JwGeometry::transformPolygon2(const QgsPolygon& transformedPolygon) {
-    /*auto wkt_polygon = transformedPolygon.asWkt();
-    qDebug() << "wkt_polygon: " << wkt_polygon;*/
     QString wkt_polygon = "POLYGON((";
     for (auto it = transformedPolygon.vertices_begin(); it != transformedPolygon.vertices_end(); ++it) {
         auto p = *it;

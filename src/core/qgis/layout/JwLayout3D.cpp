@@ -36,41 +36,6 @@ void JwLayout3D::filterMapLayers(const QVector<QString> &removeLayerNames,
     QMap<QString, QgsMapLayer *> layers = mProject->mapLayers();
     QList<QgsMapLayer *> filteredLayers;
     for (QgsMapLayer *layer: layers) {
-        /*if (QgsRasterLayer *rasterLayer = qobject_cast<QgsRasterLayer *>(layer)) {
-            spdlog::debug("rasterLayer name: {}", layer->name().toStdString());
-            // 处理栅格图层（DEM数据通常以栅格形式存储）
-            if (rasterLayer->bandCount() > 0) {
-                // 获取栅格统计信息
-                QgsRasterBandStats stats = rasterLayer->dataProvider()->bandStatistics(1);
-                if (stats.minimumValue < minElevation) {
-                    minElevation = stats.minimumValue;
-                    maxElevation = stats.maximumValue;
-                }
-            }
-        } else if (QgsVectorLayer *vectorLayer = qobject_cast<QgsVectorLayer *>(layer)) {
-            // 处理矢量图层（可能包含高程字段）
-            // 查找可能包含高程的字段
-            spdlog::debug("vectorLayer name: {}", layer->name().toStdString());
-            for (const QgsField &field: vectorLayer->fields()) {
-                QString fieldName = field.name().toLower();
-                if (fieldName.contains("elev") || fieldName.contains("height") ||
-                    fieldName.contains("altitude") || fieldName == "z" ||
-                    fieldName == "max_z" || fieldName == "min_z") {
-                    // 遍历所有要素查找最小值
-                    QgsFeatureIterator it = vectorLayer->getFeatures();
-                    QgsFeature feature;
-                    while (it.nextFeature(feature)) {
-                        double value = feature.attribute(fieldName).toDouble();
-                        if (value < minElevation) {
-                            minElevation = value;
-                        }
-                        if (value > maxElevation) {
-                            maxElevation = value;
-                        }
-                    }
-                }
-            }
-        }*/
 
         bool shouldAdd = true;
         if (!removeLayerNames.isEmpty() &&
@@ -100,12 +65,6 @@ void JwLayout3D::filterMapLayers(const QVector<QString> &removeLayerNames,
         mapSettings3d->setLayers(filteredLayers);
         spdlog::debug("set layers to 3d map settings done");
     }
-    /*if (minElevation != std::numeric_limits<double>::max()) {
-        spdlog::debug("minElevation: {}", minElevation);
-    }
-    if (maxElevation != 0.0) {
-        spdlog::debug("maxElevation: {}", maxElevation);
-    }*/
 }
 
 // 设置页面方向
@@ -190,17 +149,6 @@ void JwLayout3D::setLegend(QgsPrintLayout *layout, const QVariantMap &imageSpec,
         "legend_y: {}, main_top_margin: {}, map_height: {}, legend_height: {}",
         legendY, imageSpec["main_top_margin"].toDouble(), mMapHeight,
         legendHeight);
-    // auto sizeOfLegend = legend->sizeWithUnits();
-    // auto rectOfLegend = legend->rectWithFrame();
-    // spdlog::info("sizeOfLegend.height: {}, sizeOfLegend.width: {},
-    // sizeOfLegend.units: {}", sizeOfLegend.height(), sizeOfLegend.width(),
-    // sizeOfLegend.units()); spdlog::info("rectOfLegend.height: {},
-    // rectOfLegend.width: {}", rectOfLegend.height(), rectOfLegend.width());
-    // spdlog::info("legendHeight: {}, mMapHeight: {}", legendHeight, mMapHeight);
-    // if (legendHeight * 2 > mMapHeight)
-    // {
-    //     legend->setColumnCount(2);
-    // }
     legend->setColumnCount(8);
     legend->setSplitLayer(true);
     legend->setResizeToContents(true);
@@ -657,11 +605,6 @@ void JwLayout3D::init3DMapSettings(
     mMapSettings3d->setTerrainGenerator(flatTerrain.release());
     mMapSettings3d->setTerrainElevationOffset(
         mProject->elevationProperties()->terrainProvider()->offset());
-    // qgis 3.42
-    // const QgsAbstractTerrainSettings *mMapSettings = mMapSettings3d->terrainSettings();
-    // const_cast<QgsAbstractTerrainSettings *>(mMapSettings)->setElevationOffset(
-    // mProject->elevationProperties()->terrainProvider()->offset());
-    // mapSettings3d->setBackgroundColor(QColor("#ffffff"));
     spdlog::debug("filtered map layers");
     const QgsReferencedRectangle projectExtent =
             mProject->viewSettings()->fullExtent();
@@ -735,13 +678,7 @@ void JwLayout3D::init3DMapSettings(
     defaultPointLight.setPosition(QgsVector3D(center.x(), center.y(), 1000));
     defaultPointLight.setConstantAttenuation(0);
     mMapSettings3d->setLightSources({defaultPointLight.clone()});
-    //    auto directionalLightSettings =
-    //    std::make_unique<QgsDirectionalLightSettings>();
-    //    mapSettings3d->setLightSources( QList<QgsLightSource *>() <<
-    //    directionalLightSettings );
     qDebug() << "set light sources:" << mMapSettings3d->lightSources();
-    //    mapSettings3d->setOutputDpi(
-    //    QGuiApplication::primaryScreen()->logicalDotsPerInch() );
     mMapSettings3d->setOutputDpi(300);
     spdlog::debug("set output dpi:", mMapSettings3d->outputDpi());
     mMapSettings3d->setRendererUsage(Qgis::RendererUsage::View);
@@ -794,17 +731,12 @@ void JwLayout3D::setTest3DCanvas() {
     CameraUtil::ExtentInfo(extent);
 
     spdlog::debug("JwLayout3D::set3DCanvas");
-    // mCanvas3d->setMapSettings(mMapSettings3d.get());   // jkg
     QgsVector3D lookAtCenterPoint = QgsVector3D(100, 500, 220.0);
-    // QgsVector3D lookAtCenterPoint = QgsVector3D(-41966.3, -53916.1, -12671.4);
-    // // dc
     QgsPointXY center(lookAtCenterPoint.x(), lookAtCenterPoint.y());
     auto distance =
             static_cast<float>(extent.width() / 1.2); // 根据场景范围调整相机距离
-    float pitch = 38.0; // jkg
-    float yaw = 20.0; // jkg
-    // float pitch = 57.3;  // dc
-    // float yaw = 321.0;   // dc
+    float pitch = 38.0;
+    float yaw = 20.0;
     mCanvas3d->setViewFromTop(center, distance, 0);
     mCanvas3d->cameraController()->setLookingAtPoint(lookAtCenterPoint, distance,
                                                      pitch, yaw);
@@ -916,8 +848,6 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
     // 7. 推算观察点位于地面的位置
     double t = cameraPos.z() / std::abs(centerZ);
     QgsVector3D lookAt = cameraPos - cameraDir * t;
-    // double t = (cameraPos.z() - centerZ) / cameraDir.z();
-    // QgsVector3D lookAt = cameraPos - cameraDir * t;
     spdlog::debug("dir z number: {}", t);
     // 8. distance
     double distance = cameraPos.distance(lookAt);
@@ -943,16 +873,7 @@ LookAtPoint *JwLayout3D::set3DCanvasCamera(
 #else
     QgsVector3D qGisLayoutLookAtDiffCenter(lookAt.x() - centerX,  lookAt.z(), lookAt.y() - centerY);
 #endif
-//     if (pitch_negate_threshold > 0) {
-//         if (std::abs(qgisPitch) > pitch_negate_threshold) {
-//             spdlog::debug("qgis pitch > {}: {}", pitch_negate_threshold, std::abs(qgisPitch));
-// #if _QGIS_VERSION_INT >= 34200
-//             qGisLayoutLookAtDiffCenter.setY(-qGisLayoutLookAtDiffCenter.y());
-// #else
-//             qGisLayoutLookAtDiffCenter.setZ(-qGisLayoutLookAtDiffCenter.z());
-// #endif
-//         }
-//     }
+
 #if _QGIS_VERSION_INT >= 34200
                 qGisLayoutLookAtDiffCenter.setY(-qGisLayoutLookAtDiffCenter.y());
 #else
@@ -1016,11 +937,7 @@ void JwLayout3D::set3DMap(
     spdlog::debug("create QDomElement:", elem3DMap.tagName().toStdString());
 
     // 创建 3D 地图项
-    // mapItem3d = QgsLayoutItem3DMap::create(layout);
-    // auto mapItem3d = std::make_unique<QgsLayoutItem3DMap>(layout);
     mMapItem3d = new QgsLayoutItem3DMap(layout);
-    // spdlog::debug("mapItem3d setIsTemporal";
-    // mapItem3d->setIsTemporal(true);
     spdlog::debug("mapItem3d");
 
     auto lookAtPoint =
@@ -1101,13 +1018,6 @@ void JwLayout3D::set3DMap(
     mMapItem3d->attemptSetSceneRect(
         QRectF(mImageSpec["main_left_margin"].toDouble(),
                mImageSpec["main_top_margin"].toDouble(), mMapWidth, mMapHeight));
-    // QgsLayoutSize fixedSize(mapWidth, mapHeight,
-    // Qgis::LayoutUnit::Millimeters); mapItem3d->attemptResize(fixedSize);
-    // 设置相机视角
-    //    spdlog::debug("设置相机视角";
-    // QgsCameraPose cameraPose;
-    // cameraPose.setDistanceFromCenterPoint(1788.7f); // 设置相机距离
-    // mapItem3d->setCameraPose(cameraPose);
     // 添加地图项到布局
     spdlog::debug("add 3d map to layout");
     layout->addLayoutItem(mMapItem3d);
@@ -1119,7 +1029,6 @@ void JwLayout3D::addNorthArrow(
     DTOWRAPPERNS::DTOWrapper<Camera3dPosition> &camera) {
     // 创建指北针图片项
     auto northArrow = std::make_unique<QgsLayoutItemPicture>(layout);
-    // auto northArrow =  new QgsLayoutItemPicture(layout);
 
     // 设置指北针图片路径
     QString northArrowPath = "";
@@ -1174,9 +1083,6 @@ void JwLayout3D::addNorthArrow(
         QRectF(northX, northY, northWidth, northHeight));
 
     // 设置指北针旋转角度 （单位为度）
-    // double northRotation = north.rotate if north and north.rotate else
-    // self.image_spec.north_rotate
-    // double northRotation = mImageSpec["north_rotate"].toDouble();
     double northRotation = std::stod(camera->heading);
     if (!north.isEmpty() and north.contains("rotate")) {
         northRotation = north.value("rotate").toDouble();
@@ -1294,15 +1200,10 @@ void JwLayout3D::addPrintLayout(
     double default_ground_altitude,
     double pitch_negate_threshold) {
 
-    /*auto plottingJson =
-            JsonUtil::variantMapToJson(const_cast<QVariantMap &>(plottingWeb));
-    spdlog::info("添加打印布局: {}", plottingJson.toJson());*/
-
     // 初始化布局
     spdlog::info("初始化3d布局");
     init3DLayout(layoutName);
 
-    // auto layout = getLayout(mLayoutName);
     auto layout = getLayout3D();
 
     // 设置纸张类型和大小

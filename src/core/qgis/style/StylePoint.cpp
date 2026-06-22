@@ -11,11 +11,6 @@ QgsFeatureRenderer* StylePoint::get2d_single_symbol_renderer()
 
     rule_font_marker->setSizeUnit(Qgis::RenderUnit::Millimeters);
     rule_font_marker->setSize(3);
-    // rule_font_marker->setColor(QColor("#ede91a"));
-    // rule_font_marker->setFillColor(QColor("#ede91a"));
-
-    // rule_font_marker->setDataDefinedProperty(QgsSymbolLayer::Property::Character, QgsProperty::fromExpression("name"));
-    // rule_font_marker->setOffset(QPointF(0, -5));
 
     const bool is_compatible = rule_symbol->changeSymbolLayer(0, rule_font_marker.release());
     spdlog::debug("is_compatible: {}", is_compatible);
@@ -75,12 +70,6 @@ QgsFeatureRenderer* StylePoint::get2d_rule_based_renderer(
     spdlog::debug("set rule_font_marker fontColor: {}", (*label_style)["fontColor"].toString().toStdString());
     rule_font_marker->setColor(QColor((*label_style)["fontColor"].toString()));
     rule_font_marker->setFillColor(QColor((*label_style)["fontColor"].toString()));
-    //    rule_font_marker->setColor(QColor(237, 233, 26));
-    //    rule_font_marker->setFillColor(QColor(237, 233, 26));
-    //    rule_font_marker->setColor(QColor("#EDE91A"));
-    //    rule_font_marker->setFillColor(QColor("#EDE91A"));
-    //    rule_font_marker->setColor(QColor("#ede91a"));
-    //    rule_font_marker->setFillColor(QColor("#ede91a"));
 
     rule_font_marker->setDataDefinedProperty(QgsSymbolLayer::Property::Character, QgsProperty::fromExpression("name"));
     rule_font_marker->setOffset(QPointF(0, -5));
@@ -167,9 +156,6 @@ QgsAbstract3DRenderer* StylePoint::get3d_single_raster_symbol_renderer(
         qreal point_size,
         bool enable_point_altitude) {
 
-    // QJsonDocument doc(layerStyle);
-    // QJsonDocument fdoc(fontStyle);
-    // spdlog::debug("fontStyle: {}, layerStyle: {}, point_size: {}", fdoc.toJson(QJsonDocument::Compact), doc.toJson(QJsonDocument::Compact), point_size);
     float scale = 0.8f;
     if (layerStyle.contains("scale")) {
         try {
@@ -230,7 +216,6 @@ QgsAbstract3DRenderer* StylePoint::get3d_single_raster_symbol_renderer(
     symbol->setAltitudeClamping(Qgis::AltitudeClamping::Relative);
     if (enable_point_altitude) {
         QMatrix4x4 transform = symbol->transform(); // 获取当前变换
-        //transform(1, 3) = 5.5;
         transform(1, 3) = point_size_mm * scale;
         symbol->setTransform(transform); // 应用新变换
     }

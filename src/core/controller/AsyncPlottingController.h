@@ -79,7 +79,6 @@ public:
         Action onDtoLoaded(const DTOWRAPPERNS::DTOWrapper<PlottingDto>& plottingDto) {
             try {
                 // 创建新任务
-                // QJsonDocument plottingDtoJsonDoc = JsonUtil::convertDtoToQJsonObject(plottingDto);
                 auto token = request->getHeader("Authorization");
                 auto procTask = processTask(token, plottingDto);
 

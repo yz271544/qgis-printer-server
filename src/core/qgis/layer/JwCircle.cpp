@@ -54,8 +54,6 @@ void JwCircle::addCircle(QgsPoint &centerPoint,
     auto transformer = QgsUtil::coordinateTransformer4326To3857(mProject);
 
     // 添加要素
-//    spdlog::info("JwCircle addCircle layer: {}", this->mLayerName.toStdString());
-
     memCircleVectorLayer->startEditing();
 
     float renderer_altitude = 101.0f;
@@ -113,7 +111,6 @@ void JwCircle::addCircle(QgsPoint &centerPoint,
     }
     // 触发重绘
     persistCircleVectorLayer->triggerRepaint();
-    //persistCircleVectorLayer->trigger3DUpdate();
     // 添加到项目
     mProject->addMapLayer(persistCircleVectorLayer.release());
 }
@@ -182,10 +179,6 @@ void JwCircle::addCircles(
             attribute.append(radius);
             feature.setAttributes(attribute);
             circleProvider->addFeature(feature);
-//            spdlog::debug("added circle feature {}: {}-{}-{} {}",
-//                          name.toStdString(),
-//                          center_transformed->x(), center_transformed->y(),
-//                          center_transformed->z(), radius);
             renderer_altitude = static_cast<float>(center_transformed->z());
         } catch (const std::exception &e) {
             spdlog::error("add circle {}-{}-{} {} feature error: {}",
@@ -223,7 +216,6 @@ void JwCircle::addCircles(
     }
     // 触发重绘
     persistCircleVectorLayer->triggerRepaint();
-    //persistCircleVectorLayer->trigger3DUpdate();
     // 添加到项目
     mProject->addMapLayer(persistCircleVectorLayer.release());
 }
@@ -266,9 +258,6 @@ void JwCircle::addCircleKeyAreas(
 
     // get 坐标转换 transformer worker
     auto transformer = QgsUtil::coordinateTransformer4326To3857(mProject);
-
-    // 添加要素
-//    spdlog::info("JwCircle addCircleKeyAreas layer:{}", this->mLayerName.toStdString());
 
     // 分别创建三个同心圆并添加到图层
     QList<QString> areaNames;
@@ -350,7 +339,6 @@ void JwCircle::addCircleKeyAreas(
     }
     // 触发重绘
     persistCircleVectorLayer->triggerRepaint();
-    //persistCircleVectorLayer->trigger3DUpdate();
     // 添加到项目
     mProject->addMapLayer(persistCircleVectorLayer.release());
 }
@@ -531,7 +519,6 @@ void JwCircle::addLevelKeyAreas(
     }
     // 触发重绘
     persistCircleVectorLayer->triggerRepaint();
-    //persistCircleVectorLayer->trigger3DUpdate();
     // 添加到项目
     mProject->addMapLayer(persistCircleVectorLayer.release());
 }

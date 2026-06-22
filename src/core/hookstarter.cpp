@@ -25,11 +25,6 @@ HookStarter::~HookStarter()
 
 void HookStarter::sig_handler(StarterContext& context)
 {
-//    spdlog::warn("start sig_handler");
-//    for (const auto& callback : callbacks) {
-//        callback(context);
-//    }
-
     static std::atomic<bool> isHandlingSignal{false};
 
     if (isHandlingSignal.exchange(true)) {

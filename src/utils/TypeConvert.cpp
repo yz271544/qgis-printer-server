@@ -41,8 +41,3 @@ QList<QList<QList<double>>> TypeConvert::convertToNestedList(const QList<QVarian
 
     return result;
 }
-
-
-//QList<QList<QList<double>>> TypeConvert::convertToNestedList(const QList<QVariant>& variantList) {
-//    return convertVariant<QList<QList<QList<double>>>>(variantList);
-//}

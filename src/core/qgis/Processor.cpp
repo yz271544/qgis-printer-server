@@ -689,8 +689,6 @@ void Processor::export3DLayout(QString& sceneName,
                 .append("/").append(imageSubDir).append("/").append(svgName);
         responseDto->image_url = image_url.toStdString();
     }
-    /*m_globalGLContext->doneCurrent();
-    spdlog::debug("doneCurrent after export image done");*/
     jwLayout3d->destroy3DCanvas();
     spdlog::debug("close 3d canvas done");
 }
@@ -709,7 +707,6 @@ void Processor::fivePointGeometry(const DTOWRAPPERNS::DTOWrapper<GeoPolygonJsonD
         for (size_t i = 0; i < coords->size(); i++) {
             geoPts.append(QgsPointXY((coords)[i][0], (coords)[i][1]));
         }
-        //geoPts.append(QgsPointXY(cameraLongitude, cameraLatitude));
         // 检查摄像机位置是否已存在于 geoPts 中
         QgsPointXY cameraPoint(cameraLongitude, cameraLatitude);
         if (!geoPts.contains(cameraPoint)) {
@@ -737,15 +734,9 @@ void Processor::checkDealWithClosedGeometry(const DTOWRAPPERNS::DTOWrapper<GeoPo
             throw GeometryCheckError("Invalid Polygon data");
         }
 
-        /*auto isEqX = DOUBLECOMPARENEAR(geojson->geometry->coordinates[0][0][0], geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() - 1][0]);
-        auto isEqY = DOUBLECOMPARENEAR(geojson->geometry->coordinates[0][0][1], geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() - 1][1]);
-        spdlog::info("isEqX: {}", isEqX);
-        spdlog::info("isEqY: {}", isEqY);*/
-
         auto isEq = POINTXYCOMPARENEAR(geojson->geometry->coordinates[0][0],
                                        geojson->geometry->coordinates[0][geojson->geometry->coordinates[0]->size() -
                                                                          1]);
-        //if (!isEqX || !isEqY ) {
         if (!isEq) {
             // 处理闭合几何图形
             geojson->geometry->coordinates[0]->push_back(geojson->geometry->coordinates[0][0]);
@@ -1127,7 +1118,6 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                 );
                 int line_num = 0;
                 QVariantMap::iterator it;
-                //for (const auto &color_style: grouped_color.keys()) {
                 for (it = grouped_color.begin(); it != grouped_color.end(); ++it) {
                     const auto &color_style = it.key();
                     auto color_style_dict = grouped_color.value(color_style).toMap();
@@ -1206,7 +1196,6 @@ void Processor::plottingLayers(const DTOWRAPPERNS::DTOWrapper<PlottingRespDto> &
                 );
                 int polygon_num = 0;
                 QVariantMap::iterator it;
-                //for (const auto &color_style: grouped_color.keys()) {
                 for (it = grouped_color.begin(); it != grouped_color.end(); ++it) {
                     const auto &color_style = it.key();
                     auto color_style_dict = grouped_color.value(color_style).toMap();

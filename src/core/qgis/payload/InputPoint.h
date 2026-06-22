@@ -38,6 +38,4 @@ public:
 
 };
 
-
-
 #endif //CBOOT_INPUTPOINT_H

@@ -53,8 +53,6 @@ void JwPolygon::addPolygons(
     memPolygonVectorLayer->updatedFields();
 
     // Set coordinate transform
-    // QgsCoordinateTransform* transformer = QgsUtil::coordinateTransformer4326To3857(mProject);
-
     // Add features to the writer
     memPolygonVectorLayer->startEditing();
 

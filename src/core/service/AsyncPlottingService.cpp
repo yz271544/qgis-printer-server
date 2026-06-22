@@ -144,8 +144,6 @@ bool AsyncPlottingService::processRequest(
 void AsyncPlottingService::startProcessing() {
     asyncProcessingThread = std::thread([this]() {
         // 获取当前日期
-        //std::string current_date = static_cast<std::string>(time(nullptr));
-
         spdlog::info("stopProcess: {}", stopProcess);
         while (!stopProcess) {
             std::unique_lock<std::mutex> lock(asyncQueueMutex);
