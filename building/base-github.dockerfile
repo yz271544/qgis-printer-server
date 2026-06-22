@@ -1,5 +1,10 @@
-FROM qgis/qgis:3.40.5-noble
+ARG BASE_TAG_VERSION
+
+FROM qgis/qgis:${BASE_TAG_VERSION}-noble
 LABEL authors="Lyndon"
+
+ARG BASE_TAG_VERSION
+RUN echo "Building with base tag version: $BASE_TAG_VERSION"
 
 ARG CODE_VERSION
 RUN echo "Building with code version: $CODE_VERSION"
@@ -31,7 +36,7 @@ RUN apt-get install -y bison build-essential ca-certificates ccache cmake cmake-
     qtpositioning5-dev qttools5-dev qttools5-dev-tools sip-tools spawn-fcgi xauth xfonts-100dpi xfonts-75dpi \
     xfonts-base xfonts-scalable xvfb libcurl4-openssl-dev libarchive13t64 libarchive-dev
 
-RUN apt-get install -y libqgis-dev=1:3.42.3+40noble
+RUN apt-get install -y libqgis-dev=1:${BASE_TAG_VERSION}+40noble
 
 # set git proxy
 RUN mkdir -p /root/.ssh
@@ -49,7 +54,7 @@ RUN git config --global core.autocrlf input
 RUN mkdir /lyndon/iProject/cpath -p
 WORKDIR /lyndon/iProject/cpath
 # build and install yaml-cpp
-RUN git clone git@github.com:yz271544/yaml-cpp.git
+RUN git clone https://github.com/yz271544/yaml-cpp.git
 WORKDIR /lyndon/iProject/cpath/yaml-cpp
 RUN git checkout -b 0.8.0 0.8.0
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
@@ -58,7 +63,7 @@ WORKDIR /lyndon/iProject/cpath/yaml-cpp/build
 RUN make install
 WORKDIR /lyndon/iProject/cpath
 # build and install oatpp
-RUN git clone git@github.com:yz271544/oatpp.git
+RUN git clone https://github.com/yz271544/oatpp.git
 WORKDIR /lyndon/iProject/cpath/oatpp
 RUN git checkout -b 1.4.0 1.4.0
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
@@ -67,7 +72,7 @@ WORKDIR /lyndon/iProject/cpath/oatpp/build
 RUN make install
 WORKDIR /lyndon/iProject/cpath
 # build and install oatpp-curl
-RUN git clone git@github.com:yz271544/oatpp-curl.git
+RUN git clone https://github.com/yz271544/oatpp-curl.git
 WORKDIR /lyndon/iProject/cpath/oatpp-curl
 RUN git checkout -b 1.4.0 1.4.0
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
@@ -76,7 +81,7 @@ WORKDIR /lyndon/iProject/cpath/oatpp-curl/build
 RUN make install
 WORKDIR /lyndon/iProject/cpath
 # build and install spdlog
-RUN git clone git@github.com:yz271544/spdlog.git
+RUN git clone https://github.com/yz271544/spdlog.git
 WORKDIR /lyndon/iProject/cpath/spdlog
 RUN git checkout -b v1.9.2 v1.9.2
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local

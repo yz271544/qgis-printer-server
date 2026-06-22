@@ -1,4 +1,6 @@
-FROM registry.cn-beijing.aliyuncs.com/dc_huzy/jingweiprinter-base:3.42.3-noble AS builder
+ARG BASE_TAG_VERSION
+
+FROM registry.cn-beijing.aliyuncs.com/dc_huzy/jingweiprinter-base:${BASE_TAG_VERSION}-noble AS builder
 LABEL authors="Lyndon"
 
 ARG CODE_VERSION
@@ -25,7 +27,7 @@ RUN git config --global core.autocrlf input
 
 WORKDIR /lyndon/iProject/cpath
 # build and install jingweiprinter
-RUN git clone git@github.com:yz271544/jingweiprinter.git
+RUN git clone https://github.com/yz271544/qgis-printer-server.git jingweiprinter
 WORKDIR /lyndon/iProject/cpath/jingweiprinter
 RUN git checkout -b $CODE_VERSION $CODE_VERSION
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
@@ -34,7 +36,7 @@ WORKDIR /lyndon/iProject/cpath/jingweiprinter/build
 RUN make install
 WORKDIR /lyndon/iProject/cpath
 
-FROM qgis/qgis:3.42.3-noble AS runner
+FROM qgis/qgis:${BASE_TAG_VERSION}-noble AS runner
 LABEL authors="Lyndon"
 
 COPY --from=builder /usr/local/lib /usr/local/lib

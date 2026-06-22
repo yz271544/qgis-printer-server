@@ -343,6 +343,47 @@ void JwCircle::addCircleKeyAreas(
     mProject->addMapLayer(persistCircleVectorLayer.release());
 }
 
+// 输出 areasPercent 到日志（嵌套列表格式化）
+void logAreasPercent(const QList<QList<double>>& areasPercent) {
+    // 1. 处理空列表场景
+    if (areasPercent.isEmpty()) {
+        spdlog::debug("areasPercent: 空列表");
+        return;
+    }
+
+    // 2. 双层遍历：外层遍历每个中心点的百分比子列表，内层遍历子列表元素
+    QString totalLogStr = "areasPercent: [";  // 总日志字符串
+    for (int centerIdx = 0; centerIdx < areasPercent.size(); ++centerIdx) {
+        const QList<double>& percentList = areasPercent[centerIdx];  // 单个中心点的百分比列表
+        QString subListStr = QString("中心点%1: [").arg(centerIdx);  // 子列表日志（带中心点索引）
+
+        // 3. 遍历子列表中的每个百分比值（格式化数值，避免科学计数法）
+        for (int i = 0; i < percentList.size(); ++i) {
+            // 保留1位小数（可根据需求调整，如改为0位：'f',0）
+            subListStr += QString::number(percentList[i], 'f', 1);
+            if (i != percentList.size() - 1) {
+                subListStr += ", ";  // 非最后一个元素加逗号分隔
+            }
+        }
+
+        // 4. 完善子列表字符串（处理空子列表）
+        if (percentList.isEmpty()) {
+            subListStr += "空列表";
+        }
+        subListStr += "]";
+
+        // 5. 拼接子列表到总日志（多个中心点用逗号分隔）
+        totalLogStr += subListStr;
+        if (centerIdx != areasPercent.size() - 1) {
+            totalLogStr += ", ";
+        }
+    }
+    totalLogStr += "]";
+
+    // 6. 输出到日志（用 info/debug 级别，根据调试需求选择）
+    spdlog::info("{}", totalLogStr.toStdString());
+}
+
 void JwCircle::addLevelKeyAreas(
     QVariantMap& infos,
     const QList<QgsPoint>& areasCenterPointList,
@@ -351,6 +392,21 @@ void JwCircle::addLevelKeyAreas(
     const QList<QColor>& areasColorList,
     const QList<float>& areasOpacityList,
     int numSegments) {
+    spdlog::info("输入列表长度不匹配！中心点: {}, 半径: {}, 百分比: {}",
+                  areasCenterPointList.size(), areasRadii.size(), areasPercent.size());
+    // --------------------------
+    // 第一步：输入校验（原有逻辑）
+    if (areasCenterPointList.size() != areasRadii.size() ||
+        areasCenterPointList.size() != areasPercent.size()) {
+        spdlog::error("输入列表长度不匹配！中心点: {}, 半径: {}, 百分比: {}",
+                      areasCenterPointList.size(), areasRadii.size(), areasPercent.size());
+        return;
+    }
+
+    // --------------------------
+    // 第二步：调用日志函数，输出 areasPercent（新增代码）
+    logAreasPercent(areasPercent);
+
     auto memCircleVectorLayer = std::make_unique<QgsVectorLayer>(
             QString("PolygonZ?crs=%1").arg(MAIN_CRS), mLayerName, QStringLiteral("memory"));
     if (!memCircleVectorLayer->isValid()) {
@@ -522,3 +578,4 @@ void JwCircle::addLevelKeyAreas(
     // 添加到项目
     mProject->addMapLayer(persistCircleVectorLayer.release());
 }
+
