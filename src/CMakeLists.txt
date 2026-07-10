@@ -1,5 +1,13 @@
 include(ComponentQGIS.cmake)
 
+# 检查 FFmpeg 是否在 PATH 中（运行时依赖，非编译链接）
+find_program(FFMPEG_EXECUTABLE ffmpeg)
+if(FFMPEG_EXECUTABLE)
+    message(STATUS "FFmpeg found: ${FFMPEG_EXECUTABLE} (用于 MP4 视频轨道导出)")
+else()
+    message(WARNING "FFmpeg not found in PATH — MP4/MKV 轨道导出功能将不可用，请安装 ffmpeg")
+endif()
+
 file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.h *.cpp)
 set(SOURCES ${SOURCES})
 message("SOURCES: ${SOURCES}")

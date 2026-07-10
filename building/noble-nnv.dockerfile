@@ -47,7 +47,7 @@ COPY conf/config-prod.yaml /usr/local/bin/conf/config.yaml
 #COPY building/proxy.conf /etc/apt/apt.conf.d/proxy.conf
 RUN sed -i "s/mirrors.aliyun.com/mirrors.ustc.edu.cn/g" /etc/apt/sources.list.d/ubuntu.sources
 RUN apt update
-RUN apt install -y libarchive13t64
+RUN apt install -y libarchive13t64 ffmpeg
 RUN apt install -y net-tools telnet dnsutils
 RUN apt install -y libqapt3 libqapt3-runtime
 RUN apt install -y mesa-utils
